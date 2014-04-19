@@ -11,7 +11,7 @@ namespace Kerbal_Construction_Time
         //[Persistent] public double BuildTimeModifier;
         [Persistent] public bool SandboxEnabled;
         [Persistent] public double SimulationTimeLimit;
-        [Persistent] public bool AutoRevertOnCrash;
+        //[Persistent] public bool AutoRevertOnCrash;
         //[Persistent] public bool Use6HourDays;
 
 
@@ -20,7 +20,7 @@ namespace Kerbal_Construction_Time
            // BuildTimeModifier = 1.0;
             SandboxEnabled = true;
             SimulationTimeLimit = 7200;
-            AutoRevertOnCrash = true;
+           // AutoRevertOnCrash = true;
             //Use6HourDays = GameSettings.KERBIN_TIME;
         }
 

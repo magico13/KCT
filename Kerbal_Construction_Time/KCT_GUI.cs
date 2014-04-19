@@ -486,10 +486,9 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             GUILayout.Label("This is a simulation. It will end when one of the following conditions are met:", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
             GUILayout.Label("The time limit is exceeded", GUILayout.ExpandWidth(true));
-            GUILayout.Label("The vessel is destroyed", GUILayout.ExpandWidth(true));
-            GUILayout.Label("The revert button is pressed", GUILayout.ExpandWidth(true));
+            GUILayout.Label("The flight scene is exited", GUILayout.ExpandWidth(true));
             GUILayout.Label(" ", GUILayout.ExpandWidth(true));
-            GUILayout.Label("You cannot save, switch vessels, or pause the game during a simulation.", GUILayout.ExpandWidth(true));
+            GUILayout.Label("You cannot save or switch vessels during a simulation.", GUILayout.ExpandWidth(true));
             if (GUILayout.Button("End Simulation", GUILayout.ExpandWidth(true)))
             {
                 showSimulationCompleteFlight = true;
