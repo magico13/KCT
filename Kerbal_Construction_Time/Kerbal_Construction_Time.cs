@@ -117,6 +117,7 @@ namespace Kerbal_Construction_Time
             {
                 Debug.Log("[KCT] Adding Toolbar Button");
                 KCT_GameStates.kctToolbarButton = ToolbarManager.Instance.add("Kerbal_Construction_Time", "MainButton");
+                if (!KCT_GameStates.settings.enabledForSave) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
                 KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
                 KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
                 KCT_GameStates.kctToolbarButton.OnClick += ((e) =>
@@ -151,39 +152,6 @@ namespace Kerbal_Construction_Time
 
         }
 
-       /* private void addToolbarButton()
-        {
-            try
-            {
-                Debug.Log("[KCT] Adding Toolbar Button");
-                if (ToolbarManager.ToolbarAvailable)
-                {
-                    KCT_GameStates.kctToolbarButton = ToolbarManager.Instance.add("Kerbal_Construction_Time", "MainButton");
-                    KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
-                    KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
-                    KCT_GameStates.kctToolbarButton.OnClick += ((e) =>
-                    {
-                        KCT_GUI.onClick();
-                    });
-                }
-                
-                //ToolbarButtonWrapper btn = new ToolbarButtonWrapper("Kerbal_Construction_Time", "btnToolbar");
-               // KCT_GameStates.kctToolbarButton = Toolbar.ToolbarManager.Instance.add("Kerbal_Construction_Time", "MainButton");
-                //KCT_GameStates.kctToolbarButton.TexturePath = "KerbalConstructionTime/KCT_on";
-                KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
-                KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
-                KCT_GameStates.kctToolbarButton.OnClick += ((e) =>
-                {
-                    KCT_GUI.onClick();
-                });
-            }
-            catch (Exception e)
-            {
-                //DestroyToolbarButton(btnReturn);
-                Debug.Log("[KCT] Error Adding Toolbar Button! " + e.Message);
-            }
-        }*/
-
         private static bool eventAdded = false;
         public void Start()
         {
@@ -191,10 +159,7 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.settings.Save(); //Save the settings file, with defaults if it doesn't exist
             KCT_GameStates.timeSettings.Load(); //Load the time settings
             KCT_GameStates.timeSettings.Save(); //Save the time settings
-
-            if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && !KCT_GameStates.settings.SandboxEnabled) //If disabled in sandbox games, then stop execution now
-                return;
-
+            
             //Code for saving to the persistence.sfs
             ProtoScenarioModule scenario = HighLogic.CurrentGame.scenarios.Find(s => s.moduleName == typeof(KerbalConstructionTimeData).Name);
             if (scenario == null)
@@ -231,6 +196,10 @@ namespace Kerbal_Construction_Time
             }
             //End code for persistence.sfs
 
+            if (!KCT_GameStates.settings.enabledForSave)
+                return;
+
+
             //Begin primary mod functions
             if (!eventAdded)
             {
@@ -241,6 +210,7 @@ namespace Kerbal_Construction_Time
                 GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
                 //GameEvents.onFlightReady.Add(flightReadyEvent);
                 GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
+                GameEvents.onVesselSOIChanged.Add(SOIChangeEvent);
                 eventAdded = true;
             }
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
@@ -264,6 +234,16 @@ namespace Kerbal_Construction_Time
                 KCT_GUI.hideAll();
                 KCT_GameStates.reset();
             }
+            else if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
+            {
+                if (KCT_GameStates.VesselTypesForSOI.Contains(FlightGlobals.ActiveVessel.vesselType) && !KCT_GameStates.BodiesVisited.Contains(FlightGlobals.ActiveVessel.mainBody.bodyName))
+                {
+                    KCT_GameStates.BodiesVisited.Add(FlightGlobals.ActiveVessel.mainBody.bodyName);
+                    var message = new ScreenMessage("[KCT] New simulation body unlocked: " + FlightGlobals.ActiveVessel.mainBody.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage(message, true);
+                }
+            }
+
             if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
             {
                 if (FlightGlobals.ActiveVessel.situation != Vessel.Situations.PRELAUNCH)
@@ -275,6 +255,7 @@ namespace Kerbal_Construction_Time
                 else
                 {
                     KCT_Utilities.enableSimulationLocks();
+                    moved = false;
                 }
             }
 
@@ -331,19 +312,22 @@ namespace Kerbal_Construction_Time
             {
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE); 
             }
+        }
 
-          /*  if (scene == GameScenes.FLIGHT && HighLogic.LoadedSceneIsEditor) //Possible workaround for using the launch button?
+        public void SOIChangeEvent(GameEvents.HostedFromToAction<Vessel,CelestialBody> ev)
+        {
+            List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
+            if (!invalidTypes.Contains(ev.host.vesselType) && !KCT_GameStates.BodiesVisited.Contains(ev.to.bodyName) && !KCT_GameStates.flightSimulated)
             {
-                if (!KCT_GameStates.flightSimulated)
-                {
-                    HighLogic.LoadScene(HighLogic.LoadedScene);
-                }
-            }*/
+                KCT_GameStates.BodiesVisited.Add(ev.to.bodyName);
+                var message = new ScreenMessage("[KCT] New simulation body unlocked: " + ev.to.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                ScreenMessages.PostScreenMessage(message, true);
+            }
         }
 
         public void launchScreenOpenEvent(GameEvents.VesselSpawnInfo v)
         {
-            KCT_GameStates.flightSimulated = true; //Maybe this will work for when you launch from the pad?
+            KCT_GameStates.flightSimulated = true;
         }
 
         public void vesselLaunchEvent(EventReport e)
@@ -370,7 +354,7 @@ namespace Kerbal_Construction_Time
         public void vesselDestroyEvent(Vessel v)
         {
             if (v != null && v.mainBody.bodyName == "Kerbin" && (!v.loaded || v.packed) && v.altitude < 35000 &&
-                (v.situation == Vessel.Situations.FLYING || v.situation == Vessel.Situations.SUB_ORBITAL) && !v.isEVA && !v.isActiveVessel)
+                (v.situation == Vessel.Situations.FLYING || v.situation == Vessel.Situations.SUB_ORBITAL) && !v.isEVA && !(HighLogic.LoadedSceneIsFlight && v.isActiveVessel))
             {
                 double totalMass = 0;
                 double dragCoeff = 0;
@@ -402,13 +386,25 @@ namespace Kerbal_Construction_Time
                         Type rCType = realChute.GetType();
                         if ((object)realChute != null)
                         {
-                            float area = (float)rCType.GetProperty("deployedArea").GetValue(realChute, null);
-                            Debug.Log("chute area: " + area);
-                            object mat = rCType.GetField("mat").GetValue(realChute);
-                            Type matType = mat.GetType();
-                            float dragC = (float)matType.GetProperty("dragCoefficient").GetValue(mat, null);
+                            System.Reflection.MemberInfo member = rCType.GetMember("deployedDiameter")[0];
+                            float area = (float)KCT_Utilities.GetMemberInfoValue(member, realChute);
+                            area = Mathf.PI*Mathf.Pow(area/2, 2); //Determine the area manually since the "deployedArea" parameter no longer exists in RC
+                            Debug.Log("Chute area: " + area);
+                            
+                            member = rCType.GetMember("material")[0];
+                            string mat = (string)KCT_Utilities.GetMemberInfoValue(member, realChute);
+                            Debug.Log("Material is "+mat);
+
+                            Type matLibraryType = AssemblyLoader.loadedAssemblies
+                                .SelectMany(a => a.assembly.GetExportedTypes())
+                                .SingleOrDefault(t => t.FullName == "RealChute.Libraries.MaterialsLibrary");
+                            
+                            System.Reflection.MethodInfo matMethod = matLibraryType.GetMethod("GetMaterial", new Type[] { mat.GetType() });
+                            object MatLibraryInstance = matLibraryType.GetProperty("instance").GetValue(null, null);
+                            object materialObject = matMethod.Invoke(MatLibraryInstance, new object[]{mat});
+
+                            float dragC = (float)KCT_Utilities.GetMemberInfoValue(materialObject.GetType().GetMember("dragCoefficient")[0], materialObject);
                             Debug.Log("dragC: " + dragC);
-                           // totalArea += area;
                             isParachute = true;
                             realChuteInUse = true;
                             totalDrag += (1 * 100 * dragC * area / 2000f);
@@ -440,13 +436,12 @@ namespace Kerbal_Construction_Time
                     Debug.Log("[KCT] Recovered parts from " + v.vesselName);
                     foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
                     {
-                       // Debug.Log("[KCT] " + p.partInfo.name);
+                        Debug.Log("[KCT] " + p.partInfo.name);
                         KCT_Utilities.AddPartToInventory(p.partInfo.name);
                     }
                 }
             }
         }
-
 
         private void revertToEditor(String reason)
         {
@@ -465,9 +460,10 @@ namespace Kerbal_Construction_Time
                 FlightDriver.RevertToPrelaunch(GameScenes.SPH);
         }
 
+        private static bool moved = false;
         public void FixedUpdate()
         {
-            if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && !KCT_GameStates.settings.SandboxEnabled) //Stop execution if sandbox game and sandbox not enabled
+            if (!KCT_GameStates.settings.enabledForSave)
                 return;
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
@@ -497,28 +493,13 @@ namespace Kerbal_Construction_Time
                             if ((10 * TimeWarp.deltaTime) > Math.Max((ship.buildTime - ship.progress), 0) && TimeWarp.CurrentRate > 1.0f)
                             {
                                 TimeWarp.SetRate(--warpRate, true);
-                                //warpRate = (int)Math.Floor(warpRate/2.0);
-                                //TimeWarp.SetRate(warpRate, true);
                             }
-                           /* if (((ship.buildTime - ship.progress) < Math.Pow(4, warpRate)) &&
-                                ((ship.buildTime - ship.progress) < Math.Pow(4, warpRate - 1)))
-                            {
-                                TimeWarp.SetRate(--warpRate, true);
-
-                            }*/
                             else if (warpRate == 0 && KCT_GameStates.warpInitiated)
                             {
                                 KCT_GameStates.canWarp = false;
                                 KCT_GameStates.warpInitiated = false;
 
                             }
-                            //else if ((warpRate < 7) && ((ship.buildTime - ship.progress) > Math.Pow(4, warpRate)))
-                          /*  else if ((warpRate < 7) && ((ship.buildTime - ship.progress) > (10 * TimeWarp.deltaTime)))
-                            {
-                                TimeWarp.SetRate(++warpRate, true);
-                                KCT_GameStates.warpRateReached = true;
-
-                            }*/
                             KCT_GameStates.lastWarpRate = warpRate;
                         }
 
@@ -539,6 +520,15 @@ namespace Kerbal_Construction_Time
                         {
                             KCT_GameStates.launchedVessel.RemoveFromBuildList();
                         }
+
+                        List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
+                        if (!invalidTypes.Contains(FlightGlobals.ActiveVessel.vesselType) && !KCT_GameStates.BodiesVisited.Contains(FlightGlobals.ActiveVessel.mainBody.bodyName))
+                        {
+                            KCT_GameStates.BodiesVisited.Add(FlightGlobals.ActiveVessel.mainBody.bodyName);
+                            var message = new ScreenMessage("[KCT] New simulation body unlocked: " + FlightGlobals.ActiveVessel.mainBody.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                            ScreenMessages.PostScreenMessage(message, true);
+                        }
+                        
                         KCT_GameStates.delayStart = false;
                     }
                 }
@@ -550,7 +540,17 @@ namespace Kerbal_Construction_Time
                         KCT_GUI.hideAll();
                         KCT_GUI.showSimulationWindow = true;
                         KCT_GUI.showTimeRemaining = true;
+                        
                         KCT_GameStates.delayStart=false;
+                    }
+                    if (FlightGlobals.ActiveVessel.loaded && !FlightGlobals.ActiveVessel.packed && !moved)
+                    {
+                        //KCT_OrbitAdjuster.PutInOrbitAround("Moho", 100000);
+                        moved = true;
+                        if (KCT_GameStates.simulateInOrbit)
+                        {
+                            KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simOrbitAltitude);
+                        }
                     }
                   /*  if (KCT_GameStates.activeVessel.vessel.GetOrbit().ApA > 250000 || KCT_GameStates.activeVessel.vessel.GetOrbit().PeA > 70000)
                     {

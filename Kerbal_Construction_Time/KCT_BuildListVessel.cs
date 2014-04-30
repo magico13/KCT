@@ -89,6 +89,8 @@ namespace Kerbal_Construction_Time
 
         public List<Part> GetParts() // Doesn't work. I'd like to find a way to make it work though.
         {
+
+            //Part p = new Part();
            /* if (ship.parts != null && ship.parts.Count > 0)
                 return ship.parts;
             */

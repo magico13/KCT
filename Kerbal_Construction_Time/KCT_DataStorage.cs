@@ -66,6 +66,8 @@ namespace Kerbal_Construction_Time
 
     public class KCT_DataStorage : ConfigNodeStorage
     {
+        [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && KCT_GameStates.settings.SandboxEnabled));
+        [Persistent] List<String> BodiesVisited = new List<string> {"Kerbin"};
         [Persistent] List<String> PartTracker = new List<String>();
         [Persistent] List<String> PartInventory = new List<String>();
 
@@ -73,12 +75,16 @@ namespace Kerbal_Construction_Time
         {
             KCT_GameStates.PartTracker = ListToDict(PartTracker);
             KCT_GameStates.PartInventory = ListToDict(PartInventory);
+            KCT_GameStates.settings.enabledForSave = enabledForSave;
+            KCT_GameStates.BodiesVisited = BodiesVisited;
         }
 
         public override void OnEncodeToConfigNode()
         {
             PartTracker = DictToList(KCT_GameStates.PartTracker);
             PartInventory = DictToList(KCT_GameStates.PartInventory);
+            enabledForSave = KCT_GameStates.settings.enabledForSave;
+            BodiesVisited = KCT_GameStates.BodiesVisited;
         }
 
         private bool VesselIsInWorld(Guid id)

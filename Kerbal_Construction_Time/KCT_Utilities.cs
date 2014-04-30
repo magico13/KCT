@@ -157,6 +157,9 @@ namespace Kerbal_Construction_Time
         {
             String textureReturn;
 
+            if (!KCT_GameStates.settings.enabledForSave)
+                return "KerbalConstructionTime/icons/KCT_off";
+
             //Flash for up to 3 seconds, at half second intervals per icon
             if (KCT_GameStates.kctToolbarButton.Important && (DateTime.Now.CompareTo(startedFlashing.AddSeconds(3))) < 0 && DateTime.Now.Millisecond < 500)
                 textureReturn = "KerbalConstructionTime/icons/KCT_off";
@@ -394,10 +397,37 @@ namespace Kerbal_Construction_Time
         public static void RampUpWarp()
         {
             KCT_BuildListVessel ship = KCT_Utilities.NextShipToFinish();
-            while ((ship.buildTime-ship.progress > 15*TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex+1 < TimeWarp.fetch.warpRates.Count()))
+            while ((ship.buildTime-ship.progress > 15*TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex < KCT_GameStates.settings.MaxTimeWarp))
             {
                 TimeWarp.SetRate(TimeWarp.CurrentRateIndex + 1, true);
             }
+        }
+
+        public static void DisableModFunctionality()
+        {
+            disableSimulationLocks();
+            InputLockManager.RemoveControlLock("KCTLaunchLock");
+            KCT_GUI.hideAll();
+        }
+
+        public static CelestialBody GetBodyByName(String name)
+        {
+            foreach (CelestialBody b in FlightGlobals.Bodies)
+            {
+                if (b.bodyName.ToLower() == name.ToLower())
+                    return b;
+            }
+            return null;
+        }
+
+        public static object GetMemberInfoValue(System.Reflection.MemberInfo member, object sourceObject)
+        {
+            object newVal;
+            if (member is System.Reflection.FieldInfo)
+                newVal = ((System.Reflection.FieldInfo)member).GetValue(sourceObject);
+            else
+                newVal = ((System.Reflection.PropertyInfo)member).GetValue(sourceObject, null);
+            return newVal;
         }
     }
 }

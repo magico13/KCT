@@ -9,7 +9,7 @@ namespace Kerbal_Construction_Time
     public static class KCT_GUI
     {
         public static bool showMainGUI, showEditorGUI, showSOIAlert, showLaunchAlert, showSimulationCompleteEditor, showSimulationWindow, showTimeRemaining, 
-            showSimulationCompleteFlight, showBuildList, showClearLaunch, showShipRoster, showCrewSelect;
+            showSimulationCompleteFlight, showBuildList, showClearLaunch, showShipRoster, showCrewSelect, showSettings, showSimConfig, showBodyChooser;
 
         private static Vector2 scrollPos;
 
@@ -18,7 +18,7 @@ namespace Kerbal_Construction_Time
         private static Rect editorWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 275, 135);
         private static Rect SOIAlertPosition = new Rect(Screen.width / 3, Screen.height / 3, 250, 100);
 
-        private static Rect centralWindowPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 50) / 2, 150, 50);
+        private static Rect centralWindowPosition = new Rect((Screen.width - 150) / 2, (Screen.height - 50) / 2, 150, 50);
 
         //private static Rect launchAlertPosition = new Rect((Screen.width-75)/2, (Screen.height-100)/2, 150, 100);
         //private static Rect simulationCompleteEditorPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
@@ -28,14 +28,16 @@ namespace Kerbal_Construction_Time
         private static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
         private static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, Screen.width/4, 64);
         private static Rect crewListWindowPosition = new Rect((3*Screen.width/8), (Screen.height / 4), Screen.width / 4, 1);
+        private static Rect settingsPosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), Screen.width / 4, 1);
+        private static Rect simulationConfigPosition = new Rect((Screen.width / 2)-120, (Screen.height / 4), 240, 1);
         private static GUIStyle windowStyle = new GUIStyle(HighLogic.Skin.window);
 
         private static List<GameScenes> validScenes = new List<GameScenes> { GameScenes.FLIGHT, GameScenes.EDITOR, GameScenes.SPH, GameScenes.SPACECENTER, GameScenes.TRACKSTATION };
         public static void SetGUIPositions(GUI.WindowFunction OnWindow)
         {
-            if (validScenes.Contains(HighLogic.LoadedScene) && !(HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && !KCT_GameStates.settings.SandboxEnabled))
+            if (validScenes.Contains(HighLogic.LoadedScene)) //&& KCT_GameStates.settings.enabledForSave)//!(HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && !KCT_GameStates.settings.SandboxEnabled))
             {
-                if (!ToolbarManager.ToolbarAvailable && GUI.Button(iconPosition, "KCT", GUI.skin.button))
+                if (!ToolbarManager.ToolbarAvailable && KCT_GameStates.settings.enabledForSave && GUI.Button(iconPosition, "KCT", GUI.skin.button))
                 {
                     onClick();
                 }
@@ -43,6 +45,11 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture(); //Set texture, allowing for flashing of icon.
                 }
+
+                if (showSettings)
+                    settingsPosition = GUILayout.Window(8955, settingsPosition, KCT_GUI.DrawSettings, "KCT Settings", windowStyle);
+                if (!KCT_GameStates.settings.enabledForSave)
+                    return;
 
                 if (showMainGUI)
                     mainWindowPosition = GUILayout.Window(8950, mainWindowPosition, KCT_GUI.DrawMainGUI, "Kerbal Construction Time", windowStyle);
@@ -68,7 +75,10 @@ namespace Kerbal_Construction_Time
                     crewListWindowPosition = GUILayout.Window(8953, crewListWindowPosition, KCT_GUI.DrawShipRoster, "Select Crew", windowStyle);
                 if (showCrewSelect)
                     crewListWindowPosition = GUILayout.Window(8954, crewListWindowPosition, KCT_GUI.DrawCrewSelect, "Select Crew", windowStyle);
-                
+                if (showSimConfig)
+                    simulationConfigPosition = GUILayout.Window(8951, simulationConfigPosition, KCT_GUI.DrawSimulationConfigure, "Simulation Configuration", windowStyle);
+                if (showBodyChooser)
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawBodyChooser, "Choose Body", windowStyle);
             }
         }
 
@@ -76,6 +86,12 @@ namespace Kerbal_Construction_Time
         {
             if (ToolbarManager.ToolbarAvailable)
                 if (KCT_GameStates.kctToolbarButton.Important) KCT_GameStates.kctToolbarButton.Important = false;
+
+            if (!KCT_GameStates.settings.enabledForSave)
+            {
+                ShowSettings();
+                return;
+            }
 
             if (HighLogic.LoadedScene == GameScenes.FLIGHT && !KCT_GameStates.flightSimulated)
             {
@@ -112,6 +128,9 @@ namespace Kerbal_Construction_Time
             showClearLaunch = false;
             showShipRoster = false;
             showCrewSelect = false;
+            showSettings = false;
+            showSimConfig = false;
+            showBodyChooser = false;
         }
 
         public static void DrawGUIs(int windowID)
@@ -357,6 +376,119 @@ namespace Kerbal_Construction_Time
             GUI.DragWindow();
         }
 
+        private static string orbitAltString="";
+        public static void DrawSimulationConfigure(int windowID)
+        {
+            GUILayout.BeginVertical();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Body: ");
+            if (KCT_GameStates.simulationBody == null)
+                KCT_GameStates.simulationBody = KCT_Utilities.GetBodyByName("Kerbin");
+            GUILayout.Label(KCT_GameStates.simulationBody.bodyName);
+            if (GUILayout.Button("Select", GUILayout.ExpandWidth(false)))
+            {
+                //show body chooser
+                showSimConfig = false;
+                showBodyChooser = true;
+                centralWindowPosition.height = 1;
+                simulationConfigPosition.height = 1;
+            }
+            GUILayout.EndHorizontal();
+            if (KCT_GameStates.simulationBody.bodyName == "Kerbin")
+            {
+                bool changed = KCT_GameStates.simulateInOrbit;
+                KCT_GameStates.simulateInOrbit = GUILayout.Toggle(KCT_GameStates.simulateInOrbit, " Start in orbit?");
+                if (KCT_GameStates.simulateInOrbit != changed)
+                    simulationConfigPosition.height = 1;
+
+                if (KCT_GameStates.simulateInOrbit)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Orbit Altitude: ");
+                    orbitAltString=GUILayout.TextField(orbitAltString);
+                    GUILayout.EndHorizontal();
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Min: " + KCT_GameStates.simulationBody.maxAtmosphereAltitude);
+                    GUILayout.Label("Max: " + Math.Floor(KCT_GameStates.simulationBody.sphereOfInfluence));
+                    GUILayout.EndHorizontal();
+                }
+            }
+            else
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Orbit Altitude: ");
+                orbitAltString=GUILayout.TextField(orbitAltString);
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Min: " + KCT_GameStates.simulationBody.maxAtmosphereAltitude);
+                GUILayout.Label("Max: " + KCT_GameStates.simulationBody.sphereOfInfluence);
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Simulate", GUILayout.ExpandWidth(true)))
+            {
+                if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
+                    KCT_GameStates.simulateInOrbit = true;
+
+                if (KCT_GameStates.simulateInOrbit)
+                {
+                    if (!double.TryParse(orbitAltString, out KCT_GameStates.simOrbitAltitude))
+                        KCT_GameStates.simOrbitAltitude = KCT_GameStates.simulationBody.maxAtmosphereAltitude + 1000;
+                    else
+                        KCT_GameStates.simOrbitAltitude = Math.Min(Math.Max(KCT_GameStates.simOrbitAltitude, KCT_GameStates.simulationBody.maxAtmosphereAltitude), KCT_GameStates.simulationBody.sphereOfInfluence);
+                }
+                KCT_GameStates.flightSimulated = true;
+                KCT_Utilities.enableSimulationLocks();
+                EditorLogic.fetch.launchVessel();
+                showSimConfig = false;
+                centralWindowPosition.height = 1;
+            }
+            if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(true)))
+            {
+                showSimConfig = false;
+                centralWindowPosition.height = 1;
+            }
+            GUILayout.EndHorizontal();
+            
+            GUILayout.EndVertical();
+        }
+
+        public static void DrawBodyChooser(int windowID)
+        {
+            GUILayout.BeginVertical();
+            if (KCT_GameStates.settings.EnableAllBodies)
+            {
+                foreach (CelestialBody body in FlightGlobals.Bodies)
+                {
+                    if (GUILayout.Button(body.bodyName))
+                    {
+                        KCT_GameStates.simulationBody = body;
+                        showBodyChooser = false;
+                        showSimConfig = true;
+                        centralWindowPosition.height = 1;
+                        centralWindowPosition.y = (Screen.height - 50) / 2;
+                    }
+                }
+            }
+            else
+            {
+                foreach (String bodyName in KCT_GameStates.BodiesVisited)
+                {
+                    if (GUILayout.Button(bodyName))
+                    {
+                        KCT_GameStates.simulationBody = KCT_Utilities.GetBodyByName(bodyName);
+                        showBodyChooser = false;
+                        showSimConfig = true;
+                        centralWindowPosition.height = 1;
+                        centralWindowPosition.y = (Screen.height - 50) / 2;
+                    }
+                }
+            }
+            //centralWindowPosition.center.Set(Screen.width / 2f, Screen.height / 2f);
+            centralWindowPosition.y = (Screen.height-centralWindowPosition.height) / 2;
+            GUILayout.EndVertical();
+        }
+
         public static void DrawLaunchAlert(int windowID)
         {
             GUILayout.BeginVertical();
@@ -370,9 +502,11 @@ namespace Kerbal_Construction_Time
             }
             if (GUILayout.Button("Simulate Launch", GUILayout.ExpandWidth(true)))
             {
-                KCT_GameStates.flightSimulated = true;
+                /*KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
-                EditorLogic.fetch.launchVessel();
+                EditorLogic.fetch.launchVessel();*/
+                showLaunchAlert = false;
+                showSimConfig = true;
                 centralWindowPosition.height = 1;
             }
             if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(true)))
@@ -501,6 +635,17 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
         }
 
+        private static void ShowSettings()
+        {
+            newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
+            newBuildEffect = KCT_GameStates.timeSettings.BuildEffect.ToString();
+            newInvEffect = KCT_GameStates.timeSettings.InventoryEffect.ToString();
+            enabledForSave = KCT_GameStates.settings.enabledForSave;
+            enableAllBodies = KCT_GameStates.settings.EnableAllBodies;
+            newTimeWarp = KCT_GameStates.settings.MaxTimeWarp.ToString();
+            showSettings = !showSettings;
+        }
+
         private static int listWindow = 0;
         public static void DrawBuildListWindow(int windowID)
         {
@@ -572,6 +717,10 @@ namespace Kerbal_Construction_Time
                 else
                     listWindow = 4;
                 buildListWindowPosition.height = 32 * KCT_GameStates.SPHWarehouse.Count + 3 * 32;
+            }
+            if (HighLogic.LoadedScene == GameScenes.SPACECENTER && GUILayout.Button("Settings"))
+            {
+                ShowSettings();
             }
             GUILayout.EndHorizontal();
             //Content of lists
@@ -1070,6 +1219,79 @@ namespace Kerbal_Construction_Time
                 crewListWindowPosition.height = 1;
             }
             GUILayout.EndVertical();
+        }
+
+
+        public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp;
+        public static bool enabledForSave, enableAllBodies;
+        private static void DrawSettings(int windowID)
+        {
+            GUILayout.BeginVertical();
+            GUILayout.Label("Game Settings");
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Enabled for this save?");
+            enabledForSave = GUILayout.Toggle(enabledForSave, enabledForSave ? " Enabled":" Disabled");
+            GUILayout.EndHorizontal();
+            //GUILayout.Label("General Settings");
+            GUILayout.Label("");
+            GUILayout.Label("Global Settings");
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Max TimeWarp");
+            //string newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
+            int warpIndex = 0;
+            int.TryParse(newTimeWarp, out warpIndex);
+            GUILayout.Label(TimeWarp.fetch.warpRates[Math.Min(TimeWarp.fetch.warpRates.Count() - 1, Math.Max(0, warpIndex))].ToString() + "x");
+            newTimeWarp = GUILayout.TextField(newTimeWarp, 1, GUILayout.Width(20));
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Override Body Tracker?");
+            enableAllBodies = GUILayout.Toggle(enableAllBodies, enableAllBodies ? " Overridden" : " Normal");
+            GUILayout.EndHorizontal();
+
+            GUILayout.Label("");
+            GUILayout.Label("Global Time Settings");
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Overall Multiplier");
+            //string newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
+            newMultiplier = GUILayout.TextField(newMultiplier, 10, GUILayout.Width(100));
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Build Effect");
+            //string newBuildEffect = KCT_GameStates.timeSettings.BuildEffect.ToString();
+            newBuildEffect = GUILayout.TextField(newBuildEffect, 10, GUILayout.Width(100));
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Inventory Effect");
+            //string newInvEffect = KCT_GameStates.timeSettings.InventoryEffect.ToString();
+            newInvEffect = GUILayout.TextField(newInvEffect, 10, GUILayout.Width(100));
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Save"))
+            {
+                if (!enabledForSave && KCT_GameStates.settings.enabledForSave)
+                    KCT_Utilities.DisableModFunctionality();
+                KCT_GameStates.settings.enabledForSave = enabledForSave;
+
+                KCT_GameStates.settings.MaxTimeWarp = Math.Min(TimeWarp.fetch.warpRates.Count()-1, Math.Max(0, int.Parse(newTimeWarp)));
+                KCT_GameStates.settings.EnableAllBodies = enableAllBodies;
+                KCT_GameStates.settings.Save();
+
+                KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);
+                KCT_GameStates.timeSettings.BuildEffect = double.Parse(newBuildEffect);
+                KCT_GameStates.timeSettings.InventoryEffect = double.Parse(newInvEffect);
+                KCT_GameStates.timeSettings.Save();
+                showSettings = false;
+            }
+            if (GUILayout.Button("Cancel"))
+            {
+                showSettings = false;
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
+            GUI.DragWindow();
         }
     }
 }

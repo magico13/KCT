@@ -30,12 +30,20 @@ namespace Kerbal_Construction_Time
         public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
         public static IButton kctToolbarButton;
 
+        public static CelestialBody simulationBody;
+        public static bool simulateInOrbit = false;
+        public static double simOrbitAltitude = 0;
+        public static List<String> BodiesVisited = new List<string> {"Kerbin"};
+
         public static void reset()
         {
             PartTracker = new Dictionary<string, int>();
             PartInventory = new Dictionary<string, int>();
             flightSimulated = false;
             vesselDict = new Dictionary<string, string>();
+            simulationBody = KCT_Utilities.GetBodyByName("Kerbin");
+            simulateInOrbit = false;
+            BodiesVisited = new List<string> {"Kerbin"};
           /*  VABList = new List<KCT_BuildListVessel>();
             VABWarehouse = new List<KCT_BuildListVessel>();
             SPHList = new List<KCT_BuildListVessel>();
