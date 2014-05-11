@@ -12,7 +12,9 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool SandboxEnabled;
         [Persistent] public double SimulationTimeLimit;
         [Persistent] public int MaxTimeWarp;
+        [Persistent] public int SandboxUpgrades;
         [Persistent] public bool EnableAllBodies;
+        [Persistent] public bool ForceStopWarp;
         public bool enabledForSave=true;
         //[Persistent] public bool AutoRevertOnCrash;
         //[Persistent] public bool Use6HourDays;
@@ -25,6 +27,8 @@ namespace Kerbal_Construction_Time
             SimulationTimeLimit = 7200;
             MaxTimeWarp = TimeWarp.fetch.warpRates.Count() - 1;
             EnableAllBodies = false;
+            ForceStopWarp = false;
+            SandboxUpgrades = 30;
            // AutoRevertOnCrash = true;
             //Use6HourDays = GameSettings.KERBIN_TIME;
         }

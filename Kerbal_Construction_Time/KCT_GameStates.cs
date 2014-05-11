@@ -26,6 +26,9 @@ namespace Kerbal_Construction_Time
         public static List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHWarehouse = new List<KCT_BuildListVessel>();
+        public static List<int> VABUpgrades = new List<int>() {0};
+        public static List<int> SPHUpgrades = new List<int>() {0};
+        public static int TotalUpgradePoints = 0;
         public static KCT_BuildListVessel launchedVessel;
         public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
         public static IButton kctToolbarButton;
@@ -44,6 +47,9 @@ namespace Kerbal_Construction_Time
             simulationBody = KCT_Utilities.GetBodyByName("Kerbin");
             simulateInOrbit = false;
             BodiesVisited = new List<string> {"Kerbin"};
+            TotalUpgradePoints = 0;
+            VABUpgrades = new List<int>() {0};
+            SPHUpgrades = new List<int>() {0};
           /*  VABList = new List<KCT_BuildListVessel>();
             VABWarehouse = new List<KCT_BuildListVessel>();
             SPHList = new List<KCT_BuildListVessel>();

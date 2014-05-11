@@ -10,13 +10,24 @@ namespace Kerbal_Construction_Time
     public class KCT_BuildListVessel
     {
         public ShipConstruct ship;
-        public double progress, buildTime;
+        public double progress, buildPoints;
         public String launchSite, flag, shipName;
         public ListType type;
         public enum ListType { VAB, SPH };
         public List<string> InventoryParts;
         public ConfigNode shipNode;
         public Guid id;
+        public double buildRate { get { return KCT_Utilities.GetBuildRate(this); } }
+        public double timeLeft
+        {
+            get
+            {
+                if (buildRate > 0)
+                    return (buildPoints-progress)/buildRate;
+                else
+                    return double.PositiveInfinity;
+            }
+        }
 
         public KCT_BuildListVessel(ShipConstruct s, String ls, double time, String flagURL)
         {
@@ -24,7 +35,7 @@ namespace Kerbal_Construction_Time
             shipNode = s.SaveShip();
             shipName = s.shipName;
             launchSite = ls;
-            buildTime = time;
+            buildPoints = time;
             progress = 0;
             flag = flagURL;
             if (launchSite == "LaunchPad")
@@ -40,7 +51,7 @@ namespace Kerbal_Construction_Time
             ship = new ShipConstruct();
             launchSite = ls;
             shipName = name;
-            buildTime = time;
+            buildPoints = time;
             progress = 0;
             flag = flagURL;
             if (launchSite == "LaunchPad")
@@ -52,7 +63,7 @@ namespace Kerbal_Construction_Time
 
         public ShipConstruct getShip()
         {
-            if (ship.Parts != null && ship.Parts.Count > 0) //If the parts are there, then the ship is loaded
+            if (ship!= null && ship.Parts != null && ship.Parts.Count > 0) //If the parts are there, then the ship is loaded
             {
                 return ship;
             }
@@ -71,44 +82,86 @@ namespace Kerbal_Construction_Time
             FlightDriver.StartWithNewLaunch(tempFile, flag, launchSite, new VesselCrewManifest());
         }
 
-        public void RemoveFromBuildList()
+        public bool RemoveFromBuildList()
         {
             string typeName="";
+            bool removed = false;
             if (type == ListType.SPH)
             {
-                KCT_GameStates.SPHWarehouse.Remove(this);
+                removed = KCT_GameStates.SPHWarehouse.Remove(this);
                 typeName="SPH";
             }
             else if (type == ListType.VAB)
             {
-                KCT_GameStates.VABWarehouse.Remove(this);
+                removed = KCT_GameStates.VABWarehouse.Remove(this);
                 typeName="VAB";
             }
-            Debug.Log("[KCT] Removing " + shipName + " from "+ typeName +" build list.");
+            Debug.Log("[KCT] Removing " + shipName + " from "+ typeName +" storage.");
+            if (!removed)
+            {
+                Debug.Log("[KCT] Failed to remove ship from storage! Performing direct comparison of ShipNode...");
+                foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHWarehouse)
+                {
+                    if (blv.shipNode == this.shipNode)
+                    {
+                        Debug.Log("[KCT] Ship found in SPH storage. Removing...");
+                        removed = KCT_GameStates.SPHWarehouse.Remove(blv);
+                    }
+                }
+                if (!removed)
+                {
+                    foreach (KCT_BuildListVessel blv in KCT_GameStates.VABWarehouse)
+                    {
+                        if (blv.shipNode == this.shipNode)
+                        {
+                            Debug.Log("[KCT] Ship found in VAB storage. Removing...");
+                            removed = KCT_GameStates.VABWarehouse.Remove(blv);
+                        }
+                    }
+                }
+            }
+            if (removed) Debug.Log("[KCT] Sucessfully removed ship from storage.");
+            return removed;
         }
 
         public List<Part> GetParts() // Doesn't work. I'd like to find a way to make it work though.
         {
-
-            //Part p = new Part();
-           /* if (ship.parts != null && ship.parts.Count > 0)
-                return ship.parts;
-            */
-
             List<Part> retList = new List<Part>();
-           // ConfigNode[] partNodes = shipNode.GetNodes("PART");
-            ProtoVessel pv = new ProtoVessel(shipNode, HighLogic.CurrentGame);
+            
+
+           /* if (ship.parts != null && ship.parts.Count > 0)
+                return ship.parts;*/
+
+            ConfigNode[] partNodes = shipNode.GetNodes("PART");
+            Debug.Log("[KCT] partNodes count: " + partNodes.Length);
+
+            foreach (ConfigNode CN in partNodes)
+            {
+                ProtoPart p = new ProtoPart();
+                ConfigNode.LoadObjectFromConfig(p, CN);
+                //object o = ConfigNode.CreateObjectFromConfig("Part", CN);
+                //Part p = (Part)o;
+                //retList.Add(p);
+                Debug.Log("[KCT] " + p);
+            }
+
+            /*foreach (Part p in retList)
+            {
+                Debug.Log("[KCT] Part name: " + p.partInfo.name);
+            }*/
+           // 
+            //ProtoVessel pv = new ProtoVessel(shipNode, HighLogic.CurrentGame);
             /*pv.protoPartSnapshots[0].partRef
             foreach (ConfigNode cn in partNodes)
             {
                 Part p = new Part();
                 p.protoPartSnapshot.l
             }*/
-            foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
+           /* foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
             {
                 retList.Add(pps.partRef);
                 Debug.Log("[KCT] "+pps.partRef.partInfo.name);
-            }
+            }*/
             return retList;
         }
 
@@ -120,12 +173,12 @@ namespace Kerbal_Construction_Time
 
         public double ProgressPercent()
         {
-            return 100 * (progress / buildTime);
+            return 100 * (progress / buildPoints);
         }
 
         public bool isComplete()
         {
-            return (progress >= buildTime);
+            return (progress >= buildPoints);
         }
     }
 }

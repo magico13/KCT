@@ -124,7 +124,7 @@ namespace Kerbal_Construction_Time
             public BuildListItem FromBuildListVessel(KCT_BuildListVessel blv)
             {
                 this.progress = blv.progress;
-                this.buildTime = blv.buildTime;
+                this.buildTime = blv.buildPoints;
                 this.launchSite = blv.launchSite;
                 this.flag = blv.flag;
                 //this.shipURL = blv.shipURL;

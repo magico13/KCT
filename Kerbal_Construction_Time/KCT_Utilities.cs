@@ -87,9 +87,13 @@ namespace Kerbal_Construction_Time
             {
                 double effectiveCost = 0;
                 String name = p.partInfo.name;
-                if (useInventory && invCopy.ContainsKey(name)) // If the part is in the inventory, it has a small effect on the total craft
+                if (useInventory && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
                 {
-                    effectiveCost = p.partInfo.cost / KCT_GameStates.timeSettings.InventoryEffect;
+                    // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
+                    if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
+                        effectiveCost = Math.Min(p.partInfo.cost / (KCT_GameStates.timeSettings.InventoryEffect + (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1))), p.partInfo.cost);
+                    else // Otherwise the cost is just the normal cost divided by the inventory effect
+                        effectiveCost = p.partInfo.cost / KCT_GameStates.timeSettings.InventoryEffect;
                     --invCopy[name];
                     if (invCopy[name] == 0)
                         invCopy.Remove(name);
@@ -122,24 +126,64 @@ namespace Kerbal_Construction_Time
             return GetBuildTime(parts, true, true);
         }
 
+        public static double GetBuildRate(int index, KCT_BuildListVessel.ListType type)
+        {
+            double ret = 0;
+            if (type == KCT_BuildListVessel.ListType.VAB)
+            {
+                if (KCT_GameStates.VABUpgrades.Count - 1 >= index)
+                {
+                    ret = KCT_GameStates.VABUpgrades[index] * (index+1) * 0.05;
+                    if (index == 0) ret += 1;
+                }
+            }
+            else
+            {
+                if (KCT_GameStates.SPHUpgrades.Count - 1 >= index)
+                {
+                    ret = KCT_GameStates.SPHUpgrades[index] * (index+1) * 0.05;
+                    if (index == 0) ret += 1;
+                }
+            }
+            return ret;
+        }
+
+        public static double GetBuildRate(KCT_BuildListVessel ship)
+        {
+            if (ship.type == KCT_BuildListVessel.ListType.VAB)
+                return GetBuildRate(KCT_GameStates.VABList.IndexOf(ship), ship.type);
+            else if (ship.type == KCT_BuildListVessel.ListType.SPH)
+                return GetBuildRate(KCT_GameStates.SPHList.IndexOf(ship), ship.type);
+            else
+                return 0;
+        }
+
         private static double lastUT=0.0, UT;
         public static void ProgressBuildTime()
         {
             UT = Planetarium.GetUniversalTime();
             if (lastUT < UT && lastUT > 0)
             {
-                double buildRate = 1.0;
+                double buildRate = 0;
                 if (KCT_GameStates.VABList.Count > 0)
                 {
-                    KCT_GameStates.VABList[0].AddProgress(buildRate * (UT - lastUT));
-                    if (KCT_GameStates.VABList[0].isComplete())
-                        MoveVesselToWarehouse(0, 0);
+                    for (int i = 0; i < KCT_GameStates.VABList.Count; i++)
+                    {
+                        buildRate = GetBuildRate(i, KCT_BuildListVessel.ListType.VAB);
+                        KCT_GameStates.VABList[i].AddProgress(buildRate * (UT - lastUT));
+                        if (KCT_GameStates.VABList[i].isComplete())
+                            MoveVesselToWarehouse(0, i);
+                    }
                 }
                 if (KCT_GameStates.SPHList.Count > 0)
                 {
-                    KCT_GameStates.SPHList[0].AddProgress(buildRate * (UT - lastUT));
-                    if (KCT_GameStates.SPHList[0].isComplete())
-                        MoveVesselToWarehouse(1, 0);
+                    for (int i = 0; i < KCT_GameStates.SPHList.Count; i++)
+                    {
+                        buildRate = GetBuildRate(i, KCT_BuildListVessel.ListType.SPH);
+                        KCT_GameStates.SPHList[i].AddProgress(buildRate * (UT - lastUT));
+                        if (KCT_GameStates.SPHList[i].isComplete())
+                            MoveVesselToWarehouse(1, i);
+                    }
                 }
                /* foreach (KCTVessel kctV in KCT_GameStates.vesselList)
                 {
@@ -184,7 +228,7 @@ namespace Kerbal_Construction_Time
                 startedFlashing = DateTime.Now; //Set the time to start flashing
             }
 
-            if (KCT_GameStates.warpInitiated && TimeWarp.CurrentRateIndex != 0)
+            if ((KCT_GameStates.warpInitiated || KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRateIndex != 0)
             {
                 TimeWarp.SetRate(0, true); //Turn off timewarp when a ship finishes. Fix for it not stopping on finish.
                 KCT_GameStates.warpInitiated = false;
@@ -210,18 +254,18 @@ namespace Kerbal_Construction_Time
             {
                 List<Part> ship = blv.getShip().parts;
                 double newTime = KCT_Utilities.GetBuildTime(ship, true, false); //Don't use the part inventory when determining the time
-                if (newTime < blv.buildTime)
+                if (newTime < blv.buildPoints)
                 {
-                    blv.buildTime = blv.buildTime - ((blv.buildTime - newTime) * (100 - blv.ProgressPercent())/100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
+                    blv.buildPoints = blv.buildPoints - ((blv.buildPoints - newTime) * (100 - blv.ProgressPercent())/100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
                 }
             }
             foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHList)
             {
                 List<Part> ship = blv.getShip().parts;
                 double newTime = KCT_Utilities.GetBuildTime(ship, true, false);
-                if (newTime < blv.buildTime)
+                if (newTime < blv.buildPoints)
                 {
-                    blv.buildTime = blv.buildTime - ((blv.buildTime - newTime) * (100 - blv.ProgressPercent()) / 100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
+                    blv.buildPoints = blv.buildPoints - ((blv.buildPoints - newTime) * (100 - blv.ProgressPercent()) / 100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
                 }
             }
         }
@@ -343,32 +387,56 @@ namespace Kerbal_Construction_Time
         public static void AddVesselToBuildList()
         {
             KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.Parts), EditorLogic.FlagURL);
+            string type = "";
             if (blv.type == KCT_BuildListVessel.ListType.VAB)
             {
                 KCT_GameStates.VABList.Add(blv);
+                type = "VAB";
             }
             else if (blv.type == KCT_BuildListVessel.ListType.SPH)
             {
                 KCT_GameStates.SPHList.Add(blv);
+                type = "SPH";
             }
             foreach (Part p in EditorLogic.fetch.ship.Parts)
             {
                 if (KCT_Utilities.RemovePartFromInventory(p))
                     blv.InventoryParts.Add(p.partInfo.name);
             }
-            Debug.Log("[KCT] "+blv.shipName+" added to build list");
+            Debug.Log("[KCT] Added " + blv.shipName + " to " + type + " build list.");
+            var message = new ScreenMessage("[KCT] Added " + blv.shipName + " to "+type+" build list.", 4.0f, ScreenMessageStyle.UPPER_RIGHT);
+            ScreenMessages.PostScreenMessage(message, true);
         }
 
         public static KCT_BuildListVessel NextShipToFinish()
         {
-            KCT_BuildListVessel ship;
-            if (KCT_GameStates.VABList.Count > 0)
+            KCT_BuildListVessel ship = null;
+            double shortestTime = double.PositiveInfinity;
+            foreach (KCT_BuildListVessel blv in KCT_GameStates.VABList)
+            {
+                double time = blv.timeLeft;
+                if (time < shortestTime)
+                {
+                    ship = blv;
+                    shortestTime = time;
+                }
+            }
+            foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHList)
+            {
+                double time = blv.timeLeft;
+                if (time < shortestTime)
+                {
+                    ship = blv;
+                    shortestTime = time;
+                }
+            }
+  /*          if (KCT_GameStates.VABList.Count > 0)
             {
                 KCT_BuildListVessel vab = KCT_GameStates.VABList[0];
                 if (KCT_GameStates.SPHList.Count > 0)
                 {
                     KCT_BuildListVessel sph = KCT_GameStates.SPHList[0];
-                    if (vab.buildTime - vab.progress < sph.buildTime - sph.progress)
+                    if (vab.buildPoints - vab.progress < sph.buildPoints - sph.progress)
                     {
                         ship = vab;
                     }
@@ -390,14 +458,14 @@ namespace Kerbal_Construction_Time
                 {
                     ship = null;
                 }
-            }
+            }*/
             return ship;
         }
 
         public static void RampUpWarp()
         {
             KCT_BuildListVessel ship = KCT_Utilities.NextShipToFinish();
-            while ((ship.buildTime-ship.progress > 15*TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex < KCT_GameStates.settings.MaxTimeWarp))
+            while ((ship.timeLeft > 15*TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex < KCT_GameStates.settings.MaxTimeWarp))
             {
                 TimeWarp.SetRate(TimeWarp.CurrentRateIndex + 1, true);
             }
@@ -428,6 +496,14 @@ namespace Kerbal_Construction_Time
             else
                 newVal = ((System.Reflection.PropertyInfo)member).GetValue(sourceObject, null);
             return newVal;
+        }
+
+        public static int TotalSpentUpgrades()
+        {
+            int spentPoints = 0;
+            foreach (int i in KCT_GameStates.VABUpgrades) spentPoints += i;
+            foreach (int i in KCT_GameStates.SPHUpgrades) spentPoints += i;
+            return spentPoints;
         }
     }
 }

@@ -199,7 +199,6 @@ namespace Kerbal_Construction_Time
             if (!KCT_GameStates.settings.enabledForSave)
                 return;
 
-
             //Begin primary mod functions
             if (!eventAdded)
             {
@@ -211,6 +210,7 @@ namespace Kerbal_Construction_Time
                 //GameEvents.onFlightReady.Add(flightReadyEvent);
                 GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
                 GameEvents.onVesselSOIChanged.Add(SOIChangeEvent);
+                GameEvents.OnTechnologyResearched.Add(TechUnlockEvent);
                 eventAdded = true;
             }
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
@@ -233,6 +233,10 @@ namespace Kerbal_Construction_Time
             {
                 KCT_GUI.hideAll();
                 KCT_GameStates.reset();
+                if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
+                {
+                    KCT_GameStates.TotalUpgradePoints = KCT_GameStates.settings.SandboxUpgrades;
+                }
             }
             else if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
             {
@@ -289,6 +293,16 @@ namespace Kerbal_Construction_Time
                     }
                 }
                 KCT_GameStates.launchedCrew.Clear();
+            }
+        }
+
+        public void TechUnlockEvent(GameEvents.HostTargetAction<RDTech, RDTech.OperationResult> ev)
+        {
+            if (ev.target == RDTech.OperationResult.Successful)
+            {
+                ++KCT_GameStates.TotalUpgradePoints;
+                var message = new ScreenMessage("[KCT] Upgrade Point Added!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                ScreenMessages.PostScreenMessage(message, true);
             }
         }
 
@@ -473,7 +487,7 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_BuildListVessel ship = KCT_Utilities.NextShipToFinish();
 
-                    if (KCT_GameStates.canWarp && ship != null && ship.progress < ship.buildTime)
+                    if (KCT_GameStates.canWarp && ship != null && ship.progress < ship.buildPoints)
                     {
                         int warpRate = TimeWarp.CurrentRateIndex;
                         if (SOIAlert())
@@ -490,7 +504,7 @@ namespace Kerbal_Construction_Time
                         }
                         else
                         {
-                            if ((10 * TimeWarp.deltaTime) > Math.Max((ship.buildTime - ship.progress), 0) && TimeWarp.CurrentRate > 1.0f)
+                            if ((10 * TimeWarp.deltaTime) > Math.Max((ship.buildPoints - ship.progress), 0) && TimeWarp.CurrentRate > 1.0f)
                             {
                                 TimeWarp.SetRate(--warpRate, true);
                             }
@@ -504,7 +518,7 @@ namespace Kerbal_Construction_Time
                         }
 
                     }
-                    else if (ship != null && KCT_GameStates.warpInitiated && TimeWarp.CurrentRate != 0 && (ship.buildTime - ship.progress) < (TimeWarp.deltaTime*2) && (ship.buildTime > ship.progress)) //Still warp down even if we don't control the clock
+                    else if (ship != null && (KCT_GameStates.warpInitiated || KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRate != 0 && (ship.buildPoints - ship.progress) < (TimeWarp.deltaTime*2) && (ship.buildPoints > ship.progress)) //Still warp down even if we don't control the clock
                     {
                         TimeWarp.SetRate(0, false);
                         KCT_GameStates.warpInitiated = false;
@@ -590,6 +604,16 @@ namespace Kerbal_Construction_Time
                             b.getShip();
                         foreach (KCT_BuildListVessel b in KCT_GameStates.SPHWarehouse)
                             b.getShip();
+
+
+                        if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER && KCT_GameStates.TotalUpgradePoints == 0)
+                        {
+                            ConfigNode CN = new ConfigNode();
+                            ResearchAndDevelopment.Instance.snapshot.Save(CN);
+                            ConfigNode[] techNodes = CN.GetNodes("Tech");
+                            Debug.Log("[KCT] technodes length: " + techNodes.Length);
+                            KCT_GameStates.TotalUpgradePoints = techNodes.Length - 1;
+                        }
                         KCT_GameStates.delayStart = false;
                     }
                 }
