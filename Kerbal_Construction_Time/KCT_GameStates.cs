@@ -35,7 +35,7 @@ namespace Kerbal_Construction_Time
 
         public static CelestialBody simulationBody;
         public static bool simulateInOrbit = false;
-        public static double simOrbitAltitude = 0;
+        public static double simOrbitAltitude = 0, simInclination = 0;
         public static List<String> BodiesVisited = new List<string> {"Kerbin"};
 
         public static void reset()

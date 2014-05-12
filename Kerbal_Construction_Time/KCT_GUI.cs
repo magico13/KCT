@@ -10,7 +10,7 @@ namespace Kerbal_Construction_Time
     {
         public static bool showMainGUI, showEditorGUI, showSOIAlert, showLaunchAlert, showSimulationCompleteEditor, showSimulationWindow, showTimeRemaining, 
             showSimulationCompleteFlight, showBuildList, showClearLaunch, showShipRoster, showCrewSelect, showSettings, showSimConfig, showBodyChooser, showUpgradeWindow,
-            showBLPlus;
+            showBLPlus, showRename;
 
         private static Vector2 scrollPos;
 
@@ -25,8 +25,6 @@ namespace Kerbal_Construction_Time
         //private static Rect simulationCompleteEditorPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
         //private static Rect simulationCompleteFlightPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
         private static Rect simulationWindowPosition = new Rect((Screen.width - 250) / 2, (Screen.height - 250) / 2, 250, 250);
-        
-
         private static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
         private static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 460, 64);
         private static Rect crewListWindowPosition = new Rect((3*Screen.width/8), (Screen.height / 4), Screen.width / 4, 1);
@@ -87,6 +85,8 @@ namespace Kerbal_Construction_Time
                     upgradePosition = GUILayout.Window(8952, upgradePosition, KCT_GUI.DrawUpgradeWindow, "Upgrades", windowStyle);
                 if (showBLPlus)
                     bLPlusPosition = GUILayout.Window(8953, bLPlusPosition, KCT_GUI.DrawBLPlusWindow, "Options", windowStyle);
+                if (showRename)
+                    centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawRenameWindow, "Rename", windowStyle);
             }
         }
 
@@ -143,6 +143,7 @@ namespace Kerbal_Construction_Time
             showBodyChooser = false;
             showUpgradeWindow = false;
             showBLPlus = false;
+            showRename = false;
         }
 
         public static void DrawGUIs(int windowID)
@@ -173,6 +174,8 @@ namespace Kerbal_Construction_Time
                 DrawCrewSelect(windowID);
             if (showUpgradeWindow)
                 DrawUpgradeWindow(windowID);
+            if (showRename)
+                DrawRenameWindow(windowID);
         }
 
         public static void DrawMainGUI(int windowID) //Deprecated to all hell now I think
@@ -232,10 +235,21 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("Build Time at " + KCT_Utilities.GetBuildRate(0, type) + " BP/s:", GUILayout.ExpandHeight(true));
             GUILayout.Label(KCT_Utilities.GetFormattedTime(buildTime / KCT_Utilities.GetBuildRate(0, type)), GUILayout.ExpandHeight(true));
 
-            if (GUILayout.Button("Launch!", GUILayout.ExpandHeight(true)))
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Build"))
             {
-                showLaunchAlert = true;
+                KCT_GameStates.flightSimulated = false;
+                KCT_Utilities.disableSimulationLocks();
+                KCT_Utilities.AddVesselToBuildList();
+                //showLaunchAlert = true;
             }
+            if (GUILayout.Button("Simulate"))
+            {
+                //InputLockManager.SetControlLock(ControlTypes.ed, "KCTLockSimQS");
+                EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
+                showSimConfig = true;
+            }
+            GUILayout.EndHorizontal();
             if (GUILayout.Button("Part Inventory", GUILayout.ExpandHeight(true)))
             {
                 showInventory = !showInventory;
@@ -394,7 +408,7 @@ namespace Kerbal_Construction_Time
             GUI.DragWindow();
         }
 
-        private static string orbitAltString="";
+        private static string orbitAltString="", orbitIncString="";
         public static void DrawSimulationConfigure(int windowID)
         {
             GUILayout.BeginVertical();
@@ -418,28 +432,21 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.simulateInOrbit = GUILayout.Toggle(KCT_GameStates.simulateInOrbit, " Start in orbit?");
                 if (KCT_GameStates.simulateInOrbit != changed)
                     simulationConfigPosition.height = 1;
-
-                if (KCT_GameStates.simulateInOrbit)
-                {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label("Orbit Altitude: ");
-                    orbitAltString=GUILayout.TextField(orbitAltString);
-                    GUILayout.EndHorizontal();
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label("Min: " + KCT_GameStates.simulationBody.maxAtmosphereAltitude);
-                    GUILayout.Label("Max: " + Math.Floor(KCT_GameStates.simulationBody.sphereOfInfluence));
-                    GUILayout.EndHorizontal();
-                }
             }
-            else
+            if (KCT_GameStates.simulationBody.bodyName != "Kerbin" || (KCT_GameStates.simulationBody.bodyName == "Kerbin" && KCT_GameStates.simulateInOrbit))
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Orbit Altitude: ");
-                orbitAltString=GUILayout.TextField(orbitAltString);
+                orbitAltString = GUILayout.TextField(orbitAltString, GUILayout.Width(100));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Min: " + KCT_GameStates.simulationBody.maxAtmosphereAltitude);
-                GUILayout.Label("Max: " + KCT_GameStates.simulationBody.sphereOfInfluence);
+                GUILayout.Label("Max: " + Math.Floor(KCT_GameStates.simulationBody.sphereOfInfluence));
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Inclination: ");
+                orbitIncString = GUILayout.TextField(orbitIncString, GUILayout.Width(50));
                 GUILayout.EndHorizontal();
             }
             GUILayout.BeginHorizontal();
@@ -454,9 +461,15 @@ namespace Kerbal_Construction_Time
                         KCT_GameStates.simOrbitAltitude = KCT_GameStates.simulationBody.maxAtmosphereAltitude + 1000;
                     else
                         KCT_GameStates.simOrbitAltitude = Math.Min(Math.Max(KCT_GameStates.simOrbitAltitude, KCT_GameStates.simulationBody.maxAtmosphereAltitude), KCT_GameStates.simulationBody.sphereOfInfluence);
+
+                    if (!double.TryParse(orbitIncString, out KCT_GameStates.simInclination))
+                        KCT_GameStates.simInclination = 0;
+                    else
+                        KCT_GameStates.simInclination = KCT_GameStates.simInclination % 360;
                 }
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
+                EditorLogic.fetch.Unlock("KCTGUILock");
                 EditorLogic.fetch.launchVessel();
                 showSimConfig = false;
                 centralWindowPosition.height = 1;
@@ -465,6 +478,7 @@ namespace Kerbal_Construction_Time
             {
                 showSimConfig = false;
                 centralWindowPosition.height = 1;
+                EditorLogic.fetch.Unlock("KCTGUILock");
             }
             GUILayout.EndHorizontal();
             
@@ -591,6 +605,7 @@ namespace Kerbal_Construction_Time
 
             if (GUILayout.Button("Restart Simulation"))
             {
+                Kerbal_Construction_Time.moved = false;
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
                 KCT_GameStates.simulationEndTime = 0;
@@ -636,11 +651,12 @@ namespace Kerbal_Construction_Time
         public static void DrawSimulationWindow(int windowID)
         {
             GUILayout.BeginVertical();
-            GUILayout.Label("This is a simulation. It will end when one of the following conditions are met:", GUILayout.ExpandHeight(true));
+            GUILayout.Label("This is a simulation. It will end when one of the following conditions are met:");
             GUILayout.Label("The time limit is exceeded");
             GUILayout.Label("The flight scene is exited");
             GUILayout.Label(" ");
             GUILayout.Label("You cannot save or switch vessels during a simulation.");
+            GUILayout.Label("Note: If you want to build this ship, press the Build button in the editor.");
             if (GUILayout.Button("End Simulation"))
             {
                 showSimulationCompleteFlight = true;
@@ -999,45 +1015,6 @@ namespace Kerbal_Construction_Time
                 if (p.CrewCapacity > 0) return p;
             }
             return null;
-        }
-
-        private static bool CanJumpTime() 
-        {//So, I can't get SOI changes ahead of time except for the active vessel, but I can check if the vessels are in certain situations.
-            //For example, if the vessel is landed/prelaunch/splashed down then its safe to jump time
-            //If there are no vessels, then its also safe.
-            //If the periapsis and apoapsis are within 10% of the apoapsis, then the orbit is pretty circular, and thus (probably) no SOI changes
-            //If the vessel is marked as debris then we don't really care about it
-            if (FlightGlobals.Vessels == null || FlightGlobals.Vessels.Count == 0)
-            {
-                return true;
-            }
-            else
-            {
-                foreach (Vessel v in FlightGlobals.Vessels)
-                {
-                    if (KCT_GameStates.VesselTypesForSOI.Contains(v.vesselType))
-                    {
-                        if (v.situation == Vessel.Situations.ESCAPING || v.situation == Vessel.Situations.FLYING)
-                        {
-                            return false;
-                        }
-                        else if (v.situation == Vessel.Situations.ORBITING || v.situation == Vessel.Situations.SUB_ORBITAL)
-                        {
-                            if (v.orbit != null && (v.orbit.ApA - v.orbit.PeA) <= (v.orbit.ApA*0.1))
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                    else
-                        continue;
-                }
-            }
-            return true;
         }
 
         public static void DrawClearLaunch(int windowID)
@@ -1538,15 +1515,71 @@ namespace Kerbal_Construction_Time
             if (GUILayout.Button("View (NF)"))
             {
                 showBLPlus = false;
+                if (b.type == KCT_BuildListVessel.ListType.VAB)
+                {
+                    HighLogic.LoadScene(GameScenes.EDITOR);
+                    EditorLogic.fetch.ship = b.getShip();
+                }
+                else
+                {
+                    HighLogic.LoadScene(GameScenes.SPH);
+                    EditorLogic.fetch.ship = b.getShip();
+                }
             }
-            if (GUILayout.Button("Rename (NF)"))
+            if (GUILayout.Button("Rename"))
             {
+                centralWindowPosition.width = 15 * b.shipName.Length;
+                centralWindowPosition.xMin = (Screen.width - centralWindowPosition.width) / 2;
+                centralWindowPosition.height = 1;
                 showBLPlus = false;
+                showRename = true;
+                newName = b.shipName;
+                //newDesc = b.getShip().shipDescription;
             }
             if (GUILayout.Button("Close"))
             {
                 showBLPlus = false;
             }
+            GUILayout.EndVertical();
+        }
+
+        private static string newName = "";
+        public static void DrawRenameWindow(int windowID)
+        {
+            centralWindowPosition.yMin = (Screen.height - centralWindowPosition.height) / 2;
+            GUILayout.BeginVertical();
+            GUILayout.Label("Name:");
+            newName = GUILayout.TextField(newName);
+            //GUILayout.Label("Description:");
+            //newDesc = GUILayout.TextArea(newDesc);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Save"))
+            {
+                List<KCT_BuildListVessel> buildList = new List<KCT_BuildListVessel>();
+                switch (listWindow)
+                {
+                    case 1: buildList = KCT_GameStates.VABList; break;
+                    case 2: buildList = KCT_GameStates.SPHList; break;
+                    case 3: buildList = KCT_GameStates.VABWarehouse; break;
+                    case 4: buildList = KCT_GameStates.SPHWarehouse; break;
+                    default: showBLPlus = false; break;
+                }
+                KCT_BuildListVessel b = buildList[IndexSelected];
+                b.shipName = newName; //Change the name from our point of view
+                b.getShip().shipName = newName; //Change the name in the actual ship
+                b.shipNode = b.getShip().SaveShip(); //Save the change to the ship config node
+                //b.getShip().shipDescription = newDesc;
+                showRename = false;
+                centralWindowPosition.width = 150;
+                centralWindowPosition.xMin = (Screen.width - 150) / 2;
+            }
+            if (GUILayout.Button("Cancel"))
+            {
+                centralWindowPosition.width = 150;
+                centralWindowPosition.xMin = (Screen.width - 150) / 2;
+                showRename = false;
+            }
+            GUILayout.EndHorizontal();
             GUILayout.EndVertical();
         }
     }

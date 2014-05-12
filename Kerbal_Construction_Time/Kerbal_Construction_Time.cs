@@ -474,7 +474,7 @@ namespace Kerbal_Construction_Time
                 FlightDriver.RevertToPrelaunch(GameScenes.SPH);
         }
 
-        private static bool moved = false;
+        public static bool moved = false;
         public void FixedUpdate()
         {
             if (!KCT_GameStates.settings.enabledForSave)
@@ -563,7 +563,7 @@ namespace Kerbal_Construction_Time
                         moved = true;
                         if (KCT_GameStates.simulateInOrbit)
                         {
-                            KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simOrbitAltitude);
+                            KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simOrbitAltitude, KCT_GameStates.simInclination);
                         }
                     }
                   /*  if (KCT_GameStates.activeVessel.vessel.GetOrbit().ApA > 250000 || KCT_GameStates.activeVessel.vessel.GetOrbit().PeA > 70000)

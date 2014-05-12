@@ -18,10 +18,15 @@ namespace Kerbal_Construction_Time
     {
         public static void PutInOrbitAround(CelestialBody body, double altitude)
         {
-            OrbitDriver _orbit = FlightGlobals.ActiveVessel.orbitDriver;
-            //double altitude = 100000.0;
-            Set(_orbit.orbit, CreateOrbit(0, 0, altitude + body.Radius, 0, 0, 0, 0, body));
+            PutInOrbitAround(body, altitude, 0);
         }
+        public static void PutInOrbitAround(CelestialBody body, double altitude, double inclination)
+        {
+            OrbitDriver _orbit = FlightGlobals.ActiveVessel.orbitDriver;
+            Set(_orbit.orbit, CreateOrbit(inclination, 0, altitude + body.Radius, 0, 0, 0, 0, body));
+        }
+
+
         public static void Set(Orbit orbit, Orbit newOrbit)
         {
             var vessel = FlightGlobals.fetch == null ? null : FlightGlobals.Vessels.FirstOrDefault(v => v.orbitDriver != null && v.orbit == orbit);
