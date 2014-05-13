@@ -69,6 +69,7 @@ namespace Kerbal_Construction_Time
         [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && KCT_GameStates.settings.SandboxEnabled));
         [Persistent] List<int> VABUpgrades = new List<int>() {0};
         [Persistent] List<int> SPHUpgrades = new List<int>() {0};
+        [Persistent] List<int> RDUpgrades = new List<int>() {0,0};
         [Persistent] int TotalUpgradePoints = 0;
         [Persistent] List<String> BodiesVisited = new List<string> {"Kerbin"};
         [Persistent] List<String> PartTracker = new List<String>();
@@ -82,6 +83,7 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.BodiesVisited = BodiesVisited;
             KCT_GameStates.VABUpgrades = VABUpgrades;
             KCT_GameStates.SPHUpgrades = SPHUpgrades;
+            KCT_GameStates.RDUpgrades = RDUpgrades;
             KCT_GameStates.TotalUpgradePoints = TotalUpgradePoints;
         }
 
@@ -93,6 +95,7 @@ namespace Kerbal_Construction_Time
             BodiesVisited = KCT_GameStates.BodiesVisited;
             VABUpgrades = KCT_GameStates.VABUpgrades;
             SPHUpgrades = KCT_GameStates.SPHUpgrades;
+            RDUpgrades = KCT_GameStates.RDUpgrades;
             TotalUpgradePoints = KCT_GameStates.TotalUpgradePoints;
         }
 

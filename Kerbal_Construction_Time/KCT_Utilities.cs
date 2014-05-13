@@ -220,6 +220,22 @@ namespace Kerbal_Construction_Time
             return textureReturn;
         }
 
+        public static bool CurrentGameIsCareer()
+        {
+            return HighLogic.CurrentGame.Mode == Game.Modes.CAREER;
+        }
+        public static bool CurrentGameIsSandbox()
+        {
+            return HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX;
+        }
+
+        public static void AddScienceWithMessage(float science)
+        {
+            ResearchAndDevelopment.Instance.Science += science;
+            var message = new ScreenMessage("[KCT] "+science+" science added.", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+            ScreenMessages.PostScreenMessage(message, true);
+        }
+
         public static void MoveVesselToWarehouse(int ListIdentifier, int index)
         {
             if (ToolbarManager.ToolbarAvailable)
@@ -239,6 +255,8 @@ namespace Kerbal_Construction_Time
                 KCT_BuildListVessel blv = KCT_GameStates.VABList[index];
                 KCT_GameStates.VABList.RemoveAt(index);
                 KCT_GameStates.VABWarehouse.Add(blv);
+                if (CurrentGameIsCareer())
+                    AddScienceWithMessage((float)(KCT_GameStates.RDUpgrades[0] * 0.5 * blv.buildPoints / 86400));
                 foreach (Part p in blv.getShip().parts)
                     AddPartToTracker(p);
             }
@@ -247,6 +265,8 @@ namespace Kerbal_Construction_Time
                 KCT_BuildListVessel blv = KCT_GameStates.SPHList[index];
                 KCT_GameStates.SPHList.RemoveAt(index);
                 KCT_GameStates.SPHWarehouse.Add(blv);
+                if (CurrentGameIsCareer())
+                    AddScienceWithMessage((float)(KCT_GameStates.RDUpgrades[0] * 0.5 * blv.buildPoints / 86400));
                 foreach (Part p in blv.getShip().parts)
                     AddPartToTracker(p);
             }
@@ -268,6 +288,7 @@ namespace Kerbal_Construction_Time
                     blv.buildPoints = blv.buildPoints - ((blv.buildPoints - newTime) * (100 - blv.ProgressPercent()) / 100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
                 }
             }
+            KCT_GUI.ResetBLWindow();
         }
 
         public static void AddPartToInventory(Part part)
@@ -503,6 +524,7 @@ namespace Kerbal_Construction_Time
             int spentPoints = 0;
             foreach (int i in KCT_GameStates.VABUpgrades) spentPoints += i;
             foreach (int i in KCT_GameStates.SPHUpgrades) spentPoints += i;
+            foreach (int i in KCT_GameStates.RDUpgrades) spentPoints += i;
             return spentPoints;
         }
     }
