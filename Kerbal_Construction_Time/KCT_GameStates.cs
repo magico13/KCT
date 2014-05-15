@@ -31,7 +31,8 @@ namespace Kerbal_Construction_Time
         public static List<int> RDUpgrades = new List<int>() {0, 0};
         public static int TotalUpgradePoints = 0;
         public static KCT_BuildListVessel launchedVessel;
-        public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
+        //public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
+        public static List<List<ProtoCrewMember>> launchedCrew = new List<List<ProtoCrewMember>>();
         public static IButton kctToolbarButton;
 
         public static CelestialBody simulationBody;

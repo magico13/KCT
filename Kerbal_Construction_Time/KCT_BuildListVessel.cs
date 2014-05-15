@@ -9,7 +9,7 @@ namespace Kerbal_Construction_Time
 {
     public class KCT_BuildListVessel
     {
-        public ShipConstruct ship;
+        private ShipConstruct ship;
         public double progress, buildPoints;
         public String launchSite, flag, shipName;
         public ListType type;
@@ -28,14 +28,25 @@ namespace Kerbal_Construction_Time
                     return double.PositiveInfinity;
             }
         }
+        public List<Part> ExtractedParts { 
+            get 
+            { 
+                List<Part> temp = new List<Part>();
+                foreach (string s in this.GetPartNames())
+                {
+                    temp.Add(KCT_Utilities.GetAvailablePartByName(s).partPrefab);
+                }
+                return temp;
+            } 
+        }
 
-        public KCT_BuildListVessel(ShipConstruct s, String ls, double time, String flagURL)
+        public KCT_BuildListVessel(ShipConstruct s, String ls, double bP, String flagURL)
         {
             ship = s;
             shipNode = s.SaveShip();
             shipName = s.shipName;
             launchSite = ls;
-            buildPoints = time;
+            buildPoints = bP;
             progress = 0;
             flag = flagURL;
             if (launchSite == "LaunchPad")
@@ -46,12 +57,12 @@ namespace Kerbal_Construction_Time
             id = Guid.NewGuid();
         }
 
-        public KCT_BuildListVessel(String name, String ls, double time, String flagURL)
+        public KCT_BuildListVessel(String name, String ls, double bP, String flagURL)
         {
             ship = new ShipConstruct();
             launchSite = ls;
             shipName = name;
-            buildPoints = time;
+            buildPoints = bP;
             progress = 0;
             flag = flagURL;
             if (launchSite == "LaunchPad")
@@ -61,15 +72,28 @@ namespace Kerbal_Construction_Time
             InventoryParts = new List<string>();
         }
 
-        public ShipConstruct getShip()
+        public KCT_BuildListVessel NewCopy(bool RecalcTime)
         {
-            if (ship!= null && ship.Parts != null && ship.Parts.Count > 0) //If the parts are there, then the ship is loaded
+            KCT_BuildListVessel ret = new KCT_BuildListVessel(this.shipName, this.launchSite, this.buildPoints, this.flag);
+            ret.shipNode = this.shipNode.CreateCopy();
+            ret.id = Guid.NewGuid();
+            if (RecalcTime)
+            {
+                ret.buildPoints = KCT_Utilities.GetBuildTime(ret.GetPartNames(), true, true);
+            }
+            return ret;
+        }
+
+        public ShipConstruct GetShip()
+        {
+            if (ship != null && ship.Parts != null && ship.Parts.Count > 0) //If the parts are there, then the ship is loaded
             {
                 return ship;
             }
-            else if (shipNode != null)
+            else if (shipNode != null) //Otherwise load the ship from the ConfigNode
             {
                 ship.LoadShip(shipNode);
+                //ConfigNode.LoadObjectFromConfig(ship, shipNode);
             }
             return ship;
         }
@@ -99,10 +123,10 @@ namespace Kerbal_Construction_Time
             Debug.Log("[KCT] Removing " + shipName + " from "+ typeName +" storage.");
             if (!removed)
             {
-                Debug.Log("[KCT] Failed to remove ship from storage! Performing direct comparison of ShipNode...");
+                Debug.Log("[KCT] Failed to remove ship from storage! Performing direct comparison of ids...");
                 foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHWarehouse)
                 {
-                    if (blv.shipNode == this.shipNode)
+                    if (blv.id == this.id)
                     {
                         Debug.Log("[KCT] Ship found in SPH storage. Removing...");
                         removed = KCT_GameStates.SPHWarehouse.Remove(blv);
@@ -112,7 +136,7 @@ namespace Kerbal_Construction_Time
                 {
                     foreach (KCT_BuildListVessel blv in KCT_GameStates.VABWarehouse)
                     {
-                        if (blv.shipNode == this.shipNode)
+                        if (blv.id == this.id)
                         {
                             Debug.Log("[KCT] Ship found in VAB storage. Removing...");
                             removed = KCT_GameStates.VABWarehouse.Remove(blv);
@@ -124,44 +148,22 @@ namespace Kerbal_Construction_Time
             return removed;
         }
 
-        public List<Part> GetParts() // Doesn't work. I'd like to find a way to make it work though.
+        public List<String> GetPartNames()
         {
-            List<Part> retList = new List<Part>();
-            
-
-           /* if (ship.parts != null && ship.parts.Count > 0)
-                return ship.parts;*/
-
+            List<String> retList = new List<String>();
             ConfigNode[] partNodes = shipNode.GetNodes("PART");
-            Debug.Log("[KCT] partNodes count: " + partNodes.Length);
+           // Debug.Log("[KCT] partNodes count: " + partNodes.Length);
 
             foreach (ConfigNode CN in partNodes)
             {
-                ProtoPart p = new ProtoPart();
+                FakePart p = new FakePart();
                 ConfigNode.LoadObjectFromConfig(p, CN);
-                //object o = ConfigNode.CreateObjectFromConfig("Part", CN);
-                //Part p = (Part)o;
-                //retList.Add(p);
-                Debug.Log("[KCT] " + p);
+                string pName = "";
+                for (int i = 0; i < p.part.Split('_').Length-1; i++ )
+                    pName += p.part.Split('_')[i];
+                retList.Add(pName);
+                //Debug.Log("[KCT] " + pName);
             }
-
-            /*foreach (Part p in retList)
-            {
-                Debug.Log("[KCT] Part name: " + p.partInfo.name);
-            }*/
-           // 
-            //ProtoVessel pv = new ProtoVessel(shipNode, HighLogic.CurrentGame);
-            /*pv.protoPartSnapshots[0].partRef
-            foreach (ConfigNode cn in partNodes)
-            {
-                Part p = new Part();
-                p.protoPartSnapshot.l
-            }*/
-           /* foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
-            {
-                retList.Add(pps.partRef);
-                Debug.Log("[KCT] "+pps.partRef.partInfo.name);
-            }*/
             return retList;
         }
 

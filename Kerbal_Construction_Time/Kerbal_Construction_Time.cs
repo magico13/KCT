@@ -240,12 +240,7 @@ namespace Kerbal_Construction_Time
             }
             else if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
             {
-                if (KCT_GameStates.VesselTypesForSOI.Contains(FlightGlobals.ActiveVessel.vesselType) && !KCT_GameStates.BodiesVisited.Contains(FlightGlobals.ActiveVessel.mainBody.bodyName))
-                {
-                    KCT_GameStates.BodiesVisited.Add(FlightGlobals.ActiveVessel.mainBody.bodyName);
-                    var message = new ScreenMessage("[KCT] New simulation body unlocked: " + FlightGlobals.ActiveVessel.mainBody.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                    ScreenMessages.PostScreenMessage(message, true);
-                }
+
             }
 
             if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
@@ -270,9 +265,9 @@ namespace Kerbal_Construction_Time
                 for (int i = 0; i < FlightGlobals.ActiveVessel.parts.Count; i++)
                 {
                     Part p = FlightGlobals.ActiveVessel.parts[i];
-                    if (KCT_GameStates.launchedCrew.ContainsKey(p.uid))
+                    //if (KCT_GameStates.launchedCrew.ContainsKey(p.uid))
                     {
-                        List<ProtoCrewMember> crewList = KCT_GameStates.launchedCrew[p.uid];
+                        List<ProtoCrewMember> crewList = KCT_GameStates.launchedCrew[i];
                         foreach (ProtoCrewMember crewMember in crewList)
                         {
                             if (crewMember != null)
@@ -367,8 +362,8 @@ namespace Kerbal_Construction_Time
 
         public void vesselDestroyEvent(Vessel v)
         {
-            if (v != null && v.mainBody.bodyName == "Kerbin" && (!v.loaded || v.packed) && v.altitude < 35000 &&
-                (v.situation == Vessel.Situations.FLYING || v.situation == Vessel.Situations.SUB_ORBITAL) && !v.isEVA && !(HighLogic.LoadedSceneIsFlight && v.isActiveVessel))
+            if (v != null && !(HighLogic.LoadedSceneIsFlight && v.isActiveVessel) && v.mainBody.bodyName == "Kerbin" && (!v.loaded || v.packed) && v.altitude < 35000 &&
+               (v.situation == Vessel.Situations.FLYING || v.situation == Vessel.Situations.SUB_ORBITAL) && !v.isEVA)
             {
                 double totalMass = 0;
                 double dragCoeff = 0;
@@ -381,22 +376,30 @@ namespace Kerbal_Construction_Time
                     foreach (Part p in v.Parts)
                         p.Pack();
 
+               if (v.protoVessel == null)
+                    return;
                 foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
                 {
-                    //  Debug.Log("Has part " + p.partName + ", mass " + p.mass);
+                    //Debug.Log("[KCT] Has part " + p.partName + ", mass " + p.mass);
+                    List<string> ModuleNames = new List<string>();
+                    foreach (ProtoPartModuleSnapshot ppms in p.modules)
+                    {
+                        //Debug.Log(ppms.moduleName);
+                        ModuleNames.Add(ppms.moduleName);
+                    }
                     totalMass += p.mass;
                     bool isParachute = false;
-                    if (p.partRef.Modules.Contains("ModuleParachute"))
+                    if (ModuleNames.Contains("ModuleParachute"))
                     {
                         Debug.Log("[KCT] Found parachute module on " + p.partInfo.name);
-                        ModuleParachute mp = (ModuleParachute)p.partRef.Modules["ModuleParachute"];
+                        ModuleParachute mp = (ModuleParachute)p.modules.First(mod => mod.moduleName == "ModuleParachute").moduleRef;
                         dragCoeff += p.mass * mp.fullyDeployedDrag;
                         isParachute = true;
                     }
-                    if (p.partRef.Modules.Contains("RealChuteModule"))
+                    if (ModuleNames.Contains("RealChuteModule"))
                     {
                         Debug.Log("[KCT] Found realchute module on " + p.partInfo.name);
-                        PartModule realChute = p.partRef.Modules["RealChuteModule"];
+                        PartModule realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule").moduleRef;//p.partRef.Modules["RealChuteModule"];
                         Type rCType = realChute.GetType();
                         if ((object)realChute != null)
                         {
@@ -426,7 +429,7 @@ namespace Kerbal_Construction_Time
                     }
                     if (!isParachute)
                     {
-                        dragCoeff += p.mass * p.partRef.maximum_drag;
+                        dragCoeff += p.mass * 0.2;
                     }
                 }
                 double Vt = 9999;
@@ -533,6 +536,7 @@ namespace Kerbal_Construction_Time
                         if (FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
                         {
                             KCT_GameStates.launchedVessel.RemoveFromBuildList();
+                            FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
                         }
 
                         List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
@@ -597,13 +601,16 @@ namespace Kerbal_Construction_Time
                     if (KCT_GameStates.delayStart) //Get the ships so that they'll be available later (to avoid issues with loading during flight)
                     {
                         foreach (KCT_BuildListVessel b in KCT_GameStates.VABList)
-                            b.getShip();
+                            b.GetPartNames();
+                        
+                       /* foreach (KCT_BuildListVessel b in KCT_GameStates.VABList)
+                            b.GetShip();
                         foreach (KCT_BuildListVessel b in KCT_GameStates.SPHList)
-                            b.getShip();
+                            b.GetShip();
                         foreach (KCT_BuildListVessel b in KCT_GameStates.VABWarehouse)
-                            b.getShip();
+                            b.GetShip();
                         foreach (KCT_BuildListVessel b in KCT_GameStates.SPHWarehouse)
-                            b.getShip();
+                            b.GetShip();*/
 
 
                         if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER && KCT_GameStates.TotalUpgradePoints == 0)

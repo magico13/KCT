@@ -116,7 +116,8 @@ namespace Kerbal_Construction_Time
             {
                 KCT_BuildListVessel ret = new KCT_BuildListVessel(shipName, launchSite, buildTime, flag);
                 ret.progress = progress;
-                ret.InventoryParts = InventoryParts;
+                if (InventoryParts != null)
+                    ret.InventoryParts = InventoryParts;
                 ret.id = new Guid(shipID);
                 return ret;
             }

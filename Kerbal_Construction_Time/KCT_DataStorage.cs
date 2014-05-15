@@ -63,6 +63,10 @@ namespace Kerbal_Construction_Time
         }
     }
 
+    public class FakePart : ConfigNodeStorage
+    {
+        [Persistent] public string part = "";
+    }
 
     public class KCT_DataStorage : ConfigNodeStorage
     {
