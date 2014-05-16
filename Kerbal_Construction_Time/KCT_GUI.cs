@@ -12,6 +12,8 @@ namespace Kerbal_Construction_Time
             showSimulationCompleteFlight, showBuildList, showClearLaunch, showShipRoster, showCrewSelect, showSettings, showSimConfig, showBodyChooser, showUpgradeWindow,
             showBLPlus, showRename;
 
+        private static bool unlockEditor;
+
         private static Vector2 scrollPos;
 
         private static Rect iconPosition = new Rect(Screen.width / 4, Screen.height - 30, 50, 30);//110
@@ -87,6 +89,12 @@ namespace Kerbal_Construction_Time
                     bLPlusPosition = GUILayout.Window(8953, bLPlusPosition, KCT_GUI.DrawBLPlusWindow, "Options", windowStyle);
                 if (showRename)
                     centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawRenameWindow, "Rename", windowStyle);
+
+                if (unlockEditor)
+                {
+                    EditorLogic.fetch.Unlock("KCTGUILock");
+                    unlockEditor = false;
+                }
             }
         }
 
@@ -104,6 +112,7 @@ namespace Kerbal_Construction_Time
             if (HighLogic.LoadedScene == GameScenes.FLIGHT && !KCT_GameStates.flightSimulated)
             {
                 //showMainGUI = !showMainGUI;
+                buildListWindowPosition.height = 1;
                 showBuildList = !showBuildList;
                 showBLPlus = false;
                 listWindow = 0;
@@ -118,6 +127,7 @@ namespace Kerbal_Construction_Time
             }
             else if ((HighLogic.LoadedScene == GameScenes.SPACECENTER) || (HighLogic.LoadedScene == GameScenes.TRACKSTATION))
             {
+                buildListWindowPosition.height = 1;
                 showBuildList = !showBuildList;
                 showBLPlus = false;
                 listWindow = 0;
@@ -245,8 +255,8 @@ namespace Kerbal_Construction_Time
             }
             if (GUILayout.Button("Simulate"))
             {
-                //InputLockManager.SetControlLock(ControlTypes.ed, "KCTLockSimQS");
-                EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
+                simulationConfigPosition.height = 1;
+                EditorLogic.fetch.Lock(true, false, true, "KCTGUILock");
                 showSimConfig = true;
             }
             GUILayout.EndHorizontal();
@@ -469,7 +479,7 @@ namespace Kerbal_Construction_Time
                 }
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
-                EditorLogic.fetch.Unlock("KCTGUILock");
+                unlockEditor = true;
                 EditorLogic.fetch.launchVessel();
                 showSimConfig = false;
                 centralWindowPosition.height = 1;
@@ -478,7 +488,7 @@ namespace Kerbal_Construction_Time
             {
                 showSimConfig = false;
                 centralWindowPosition.height = 1;
-                EditorLogic.fetch.Unlock("KCTGUILock");
+                unlockEditor = true;
             }
             GUILayout.EndHorizontal();
             

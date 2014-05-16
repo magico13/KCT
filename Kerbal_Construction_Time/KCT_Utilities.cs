@@ -258,9 +258,12 @@ namespace Kerbal_Construction_Time
 
         public static void AddScienceWithMessage(float science)
         {
-            ResearchAndDevelopment.Instance.Science += science;
-            var message = new ScreenMessage("[KCT] "+science+" science added.", 4.0f, ScreenMessageStyle.UPPER_LEFT);
-            ScreenMessages.PostScreenMessage(message, true);
+            if (science > 0)
+            {
+                ResearchAndDevelopment.Instance.Science += science;
+                var message = new ScreenMessage("[KCT] " + science + " science added.", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                ScreenMessages.PostScreenMessage(message, true);
+            }
         }
 
         public static void MoveVesselToWarehouse(int ListIdentifier, int index)
