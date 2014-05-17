@@ -212,6 +212,19 @@ namespace Kerbal_Construction_Time
                             MoveVesselToWarehouse(1, i);
                     }
                 }
+
+                for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
+                {
+                    KCT_TechItem tech = KCT_GameStates.TechList[i];
+                    buildRate = tech.BuildRate;
+                    tech.progress+=(buildRate * (UT - lastUT));
+                    if (tech.isComplete)
+                    {
+                        KCT_GameStates.TechList.Remove(tech);
+                        tech.EnableTech();
+                    }
+                }
+                
                /* foreach (KCTVessel kctV in KCT_GameStates.vesselList)
                 {
                     if (kctV.building)

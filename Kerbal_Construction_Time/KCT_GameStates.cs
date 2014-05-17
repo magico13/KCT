@@ -26,6 +26,7 @@ namespace Kerbal_Construction_Time
         public static List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHWarehouse = new List<KCT_BuildListVessel>();
+        public static List<KCT_TechItem> TechList = new List<KCT_TechItem>();
         public static List<int> VABUpgrades = new List<int>() {0};
         public static List<int> SPHUpgrades = new List<int>() {0};
         public static List<int> RDUpgrades = new List<int>() {0, 0};
@@ -42,6 +43,7 @@ namespace Kerbal_Construction_Time
 
         public static void reset()
         {
+            TechList = new List<KCT_TechItem>();
             PartTracker = new Dictionary<string, int>();
             PartInventory = new Dictionary<string, int>();
             flightSimulated = false;

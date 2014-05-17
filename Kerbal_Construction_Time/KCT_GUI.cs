@@ -792,6 +792,16 @@ namespace Kerbal_Construction_Time
                 buildListWindowPosition.height = 1;
                 showBLPlus = false;
             }
+            if (GUILayout.Button("R&D"))
+            {
+                if (listWindow == 5)
+                    listWindow = 0;
+                else
+                    listWindow = 5;
+                //buildListWindowPosition.height = 32 * KCT_GameStates.SPHWarehouse.Count + 3 * 32;
+                buildListWindowPosition.height = 1;
+                showBLPlus = false;
+            }
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER && GUILayout.Button("Upgrades"))
             {
                 showUpgradeWindow = true;
@@ -1028,6 +1038,27 @@ namespace Kerbal_Construction_Time
                             showBLPlus = true;
                         IndexSelected = i;
                     }
+                    GUILayout.EndHorizontal();
+                }
+                GUILayout.EndScrollView();
+            }
+            else if (listWindow == 5) //R&D
+            {
+                List<KCT_TechItem> techList = KCT_GameStates.TechList;
+                GUILayout.Label("Research and Development");
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Node Name:");
+                GUILayout.Label("Progress:");
+                GUILayout.Label("Time Left:");
+                GUILayout.EndHorizontal();
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((techList.Count) * 25 + 10, Screen.height / 1.4F)));
+                for (int i = 0; i < techList.Count; i++)
+                {
+                    KCT_TechItem t = techList[i];
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(t.techName);
+                    GUILayout.Label(Math.Round(100*t.progress/t.scienceCost, 2)+" %");
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(t.TimeLeft));
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();

@@ -45,8 +45,10 @@ namespace Kerbal_Construction_Time
             base.OnSave(node);
             KCT_DataStorage kctVS = new KCT_DataStorage();
             KCT_BuildListStorage bls = new KCT_BuildListStorage();
+            KCT_TechStorage tS = new KCT_TechStorage();
             node.AddNode(kctVS.AsConfigNode());
             node.AddNode(bls.AsConfigNode());
+            node.AddNode(tS.AsConfigNode());
 
             for (int i=0; i<KCT_GameStates.VABList.Count; i++)
             {
@@ -79,6 +81,7 @@ namespace Kerbal_Construction_Time
             base.OnLoad(node);
             KCT_DataStorage kctVS = new KCT_DataStorage();
             KCT_BuildListStorage bls = new KCT_BuildListStorage();
+            KCT_TechStorage tS = new KCT_TechStorage();
             ConfigNode CN = node.GetNode(kctVS.GetType().Name);
             if (CN != null)
                 ConfigNode.LoadObjectFromConfig(kctVS, CN);
@@ -86,6 +89,10 @@ namespace Kerbal_Construction_Time
             CN = node.GetNode(bls.GetType().Name);
             if (CN != null)
                 ConfigNode.LoadObjectFromConfig(bls, CN);
+
+            CN = node.GetNode(tS.GetType().Name);
+            if (CN != null)
+                ConfigNode.LoadObjectFromConfig(tS, CN);
 
             for (int i = 0; i < KCT_GameStates.VABList.Count; i++)
             {
@@ -196,6 +203,9 @@ namespace Kerbal_Construction_Time
             }
             //End code for persistence.sfs
 
+            if (!KCT_GameStates.settings.enabledForSave && InputLockManager.GetControlLock("KCTLaunchLock") == ControlTypes.EDITOR_LAUNCH)
+                InputLockManager.RemoveControlLock("KCTLaunchLock");
+
             if (!KCT_GameStates.settings.enabledForSave)
                 return;
 
@@ -295,9 +305,24 @@ namespace Kerbal_Construction_Time
         {
             if (ev.target == RDTech.OperationResult.Successful)
             {
-                ++KCT_GameStates.TotalUpgradePoints;
-                var message = new ScreenMessage("[KCT] Upgrade Point Added!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                ScreenMessages.PostScreenMessage(message, true);
+                KCT_TechItem tech = new KCT_TechItem(ev.host);
+                tech.DisableTech();
+                if (!tech.isInList())
+                {
+                    ++KCT_GameStates.TotalUpgradePoints;
+                    var message = new ScreenMessage("[KCT] Upgrade Point Added!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage(message, true);
+
+                    KCT_GameStates.TechList.Add(tech);
+                    message = new ScreenMessage("[KCT] Node will unlock in "+tech.TimeLeft/86400+" days.", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage(message, true);
+                }
+                else
+                {
+                    ResearchAndDevelopment.Instance.Science += tech.scienceCost;
+                    var message = new ScreenMessage("[KCT] This node is already being researched!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage(message, true);
+                }
             }
         }
 
