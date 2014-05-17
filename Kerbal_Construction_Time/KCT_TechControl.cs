@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Kerbal_Construction_Time
 {
-    public class KCT_TechItem
+    public class KCT_TechItem : IKCTBuildItem
     {
         public int scienceCost;
         public string techName, techID;
@@ -58,6 +58,26 @@ namespace Kerbal_Construction_Time
                     return true;
             }
             return false;
+        }
+
+        public string IKCTBuildItem.GetItemName()
+        {
+            return this.techName;
+        }
+
+        public double IKCTBuildItem.GetBuildRate()
+        {
+            return this.BuildRate;
+        }
+
+        public double IKCTBuildItem.GetTimeLeft()
+        {
+            return this.TimeLeft;
+        }
+
+        public KCT_BuildListVessel.ListType IKCTBuildItem.GetListType()
+        {
+            return KCT_BuildListVessel.ListType.TechNode;
         }
     }
 

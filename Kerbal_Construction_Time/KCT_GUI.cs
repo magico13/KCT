@@ -680,7 +680,7 @@ namespace Kerbal_Construction_Time
         }
 
         public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit;
-        public static bool enabledForSave, enableAllBodies, forceStopWarp;
+        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock;
         private static void ShowSettings()
         {
             newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
@@ -693,6 +693,7 @@ namespace Kerbal_Construction_Time
             newSandboxUpgrades = KCT_GameStates.settings.SandboxUpgrades.ToString();
             newUpgradeCount = KCT_GameStates.TotalUpgradePoints.ToString();
             newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
+            instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
             settingsPosition.height = 1;
             showSettings = !showSettings;
         }
@@ -713,19 +714,25 @@ namespace Kerbal_Construction_Time
             //List next vessel to finish
             GUILayout.BeginHorizontal();
             GUILayout.Label("Next vessel:");
-            KCT_BuildListVessel ship = KCT_Utilities.NextShipToFinish();
-            if (ship != null)
+            IKCTBuildItem buildItem = KCT_Utilities.NextShipToFinish();
+            if (buildItem != null)
             {
-                GUILayout.Label(ship.shipName);
-                if (ship.type == KCT_BuildListVessel.ListType.VAB)
+                //KCT_BuildListVessel ship = (KCT_BuildListVessel)buildItem;
+                GUILayout.Label(buildItem.GetItemName());
+                if (buildItem.GetListType() == KCT_BuildListVessel.ListType.VAB)
                 {
                     GUILayout.Label("VAB");
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(ship.timeLeft));
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
                 }
-                else
+                else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.SPH)
                 {
                     GUILayout.Label("SPH");
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(ship.timeLeft));
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
+                }
+                else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.TechNode)
+                {
+                    GUILayout.Label("Tech");
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
                 }
                 
                 
@@ -792,7 +799,7 @@ namespace Kerbal_Construction_Time
                 buildListWindowPosition.height = 1;
                 showBLPlus = false;
             }
-            if (GUILayout.Button("R&D"))
+            if (KCT_Utilities.CurrentGameIsCareer() && GUILayout.Button("R&D"))
             {
                 if (listWindow == 5)
                     listWindow = 0;
@@ -1407,6 +1414,10 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("Upgrades for New Sandbox", GUILayout.Width(width1));
             newSandboxUpgrades = GUILayout.TextField(newSandboxUpgrades, 3, GUILayout.Width(40));
             GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Instant Tech Unlock", GUILayout.Width(width1));
+            forceStopWarp = GUILayout.Toggle(instantTechUnlock, instantTechUnlock ? " Enabled" : " Disabled", GUILayout.Width(width2));
+            GUILayout.EndHorizontal();
 
             GUILayout.Label("");
             GUILayout.Label("Global Time Settings");
@@ -1586,10 +1597,10 @@ namespace Kerbal_Construction_Time
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Development");
-                GUILayout.Label(KCT_GameStates.RDUpgrades[1] + " Upgrades");
+                GUILayout.Label("1 day/"+Math.Pow(2, KCT_GameStates.RDUpgrades[1])+" sci");
                 if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
                 {
-                    if (GUILayout.Button("+", GUILayout.Width(45)))
+                    if (GUILayout.Button("1d/" + Math.Pow(2, KCT_GameStates.RDUpgrades[1]+1), GUILayout.Width(45)))
                     {
                         ++KCT_GameStates.RDUpgrades[1];
                     }

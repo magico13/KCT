@@ -510,6 +510,31 @@ namespace Kerbal_Construction_Time
             ScreenMessages.PostScreenMessage(message, true);
         }
 
+        public static IKCTBuildItem NextThingToFinish()
+        {
+            IKCTBuildItem thing = null;
+            double shortestTime = double.PositiveInfinity;
+            foreach (IKCTBuildItem blv in KCT_GameStates.VABList)
+            {
+                double time = blv.GetTimeLeft();
+                if (time < shortestTime)
+                {
+                    thing = blv;
+                    shortestTime = time;
+                }
+            }
+            foreach (IKCTBuildItem blv in KCT_GameStates.SPHList)
+            {
+                double time = blv.GetTimeLeft();
+                if (time < shortestTime)
+                {
+                    thing = blv;
+                    shortestTime = time;
+                }
+            }
+            return thing;
+        }
+
         public static KCT_BuildListVessel NextShipToFinish()
         {
             KCT_BuildListVessel ship = null;
@@ -566,8 +591,9 @@ namespace Kerbal_Construction_Time
 
         public static void RampUpWarp()
         {
-            KCT_BuildListVessel ship = KCT_Utilities.NextShipToFinish();
-            while ((ship.timeLeft > 15*TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex < KCT_GameStates.settings.MaxTimeWarp))
+            //KCT_BuildListVessel ship = KCT_Utilities.NextShipToFinish();
+            IKCTBuildItem ship = KCT_Utilities.NextThingToFinish();
+            while ((ship.GetTimeLeft() > 15*TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex < KCT_GameStates.settings.MaxTimeWarp))
             {
                 TimeWarp.SetRate(TimeWarp.CurrentRateIndex + 1, true);
             }

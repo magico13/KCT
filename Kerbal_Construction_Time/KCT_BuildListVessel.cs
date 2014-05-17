@@ -7,13 +7,21 @@ using System.IO;
 
 namespace Kerbal_Construction_Time
 {
-    public class KCT_BuildListVessel
+    public interface IKCTBuildItem
+    {
+        public string GetItemName();
+        public double GetBuildRate();
+        public double GetTimeLeft();
+        public KCT_BuildListVessel.ListType GetListType();
+    }
+
+    public class KCT_BuildListVessel : IKCTBuildItem
     {
         private ShipConstruct ship;
         public double progress, buildPoints;
         public String launchSite, flag, shipName;
         public ListType type;
-        public enum ListType { VAB, SPH };
+        public enum ListType { VAB, SPH, TechNode };
         public List<string> InventoryParts;
         public ConfigNode shipNode;
         public Guid id;
@@ -181,6 +189,26 @@ namespace Kerbal_Construction_Time
         public bool isComplete()
         {
             return (progress >= buildPoints);
+        }
+
+        public string IKCTBuildItem.GetItemName()
+        {
+            return this.shipName;
+        }
+
+        public double IKCTBuildItem.GetBuildRate()
+        {
+            return this.buildRate;
+        }
+
+        public double IKCTBuildItem.GetTimeLeft()
+        {
+            return this.timeLeft;
+        }
+
+        public ListType IKCTBuildItem.GetListType()
+        {
+            return this.type;
         }
     }
 }
