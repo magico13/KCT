@@ -7,14 +7,6 @@ using System.IO;
 
 namespace Kerbal_Construction_Time
 {
-    public interface IKCTBuildItem
-    {
-        public string GetItemName();
-        public double GetBuildRate();
-        public double GetTimeLeft();
-        public KCT_BuildListVessel.ListType GetListType();
-    }
-
     public class KCT_BuildListVessel : IKCTBuildItem
     {
         private ShipConstruct ship;
@@ -153,6 +145,7 @@ namespace Kerbal_Construction_Time
                 }
             }
             if (removed) Debug.Log("[KCT] Sucessfully removed ship from storage.");
+            else Debug.Log("[KCT] Still couldn't remove ship!");
             return removed;
         }
 
@@ -186,29 +179,30 @@ namespace Kerbal_Construction_Time
             return 100 * (progress / buildPoints);
         }
 
-        public bool isComplete()
-        {
-            return (progress >= buildPoints);
-        }
-
-        public string IKCTBuildItem.GetItemName()
+        string IKCTBuildItem.GetItemName()
         {
             return this.shipName;
         }
 
-        public double IKCTBuildItem.GetBuildRate()
+        double IKCTBuildItem.GetBuildRate()
         {
             return this.buildRate;
         }
 
-        public double IKCTBuildItem.GetTimeLeft()
+        double IKCTBuildItem.GetTimeLeft()
         {
             return this.timeLeft;
         }
 
-        public ListType IKCTBuildItem.GetListType()
+        ListType IKCTBuildItem.GetListType()
         {
             return this.type;
         }
+
+        bool IKCTBuildItem.IsComplete()
+        {
+            return (progress >= buildPoints);
+        }
+
     }
 }

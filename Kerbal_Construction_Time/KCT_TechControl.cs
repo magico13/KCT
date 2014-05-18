@@ -11,7 +11,7 @@ namespace Kerbal_Construction_Time
         public int scienceCost;
         public string techName, techID;
         public double progress;
-        private ProtoTechNode protoNode;
+        public ProtoTechNode protoNode;
         public double BuildRate { get { return (Math.Pow(2, KCT_GameStates.RDUpgrades[1] + 1) / 86400.0); } } //0pts=1day/2sci, 1pt=1/4, 2=1/8, 3=1/16, 4=1/32...n=1/2^(n+1)
         public double TimeLeft { get { return (scienceCost - progress) / BuildRate; } }
         public bool isComplete { get { return progress >= scienceCost; } }
@@ -35,7 +35,6 @@ namespace Kerbal_Construction_Time
             techName = name;
             progress = prog;
             scienceCost = sci;
-            protoNode = ResearchAndDevelopment.Instance.GetTechState(techID);
         }
 
         public void DisableTech()
@@ -60,25 +59,31 @@ namespace Kerbal_Construction_Time
             return false;
         }
 
-        public string IKCTBuildItem.GetItemName()
+        string IKCTBuildItem.GetItemName()
         {
             return this.techName;
         }
 
-        public double IKCTBuildItem.GetBuildRate()
+        double IKCTBuildItem.GetBuildRate()
         {
             return this.BuildRate;
         }
 
-        public double IKCTBuildItem.GetTimeLeft()
+        double IKCTBuildItem.GetTimeLeft()
         {
             return this.TimeLeft;
         }
 
-        public KCT_BuildListVessel.ListType IKCTBuildItem.GetListType()
+        KCT_BuildListVessel.ListType IKCTBuildItem.GetListType()
         {
             return KCT_BuildListVessel.ListType.TechNode;
         }
+
+        bool IKCTBuildItem.IsComplete()
+        {
+            return (this.isComplete);
+        }
+
     }
 
     public class KCT_TechStorageItem
@@ -122,7 +127,8 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.TechList.Clear();
             foreach (KCT_TechStorageItem tSI in this.techBuildList)
             {
-                KCT_GameStates.TechList.Add(tSI.ToTechItem());
+                KCT_TechItem tI = tSI.ToTechItem();
+                KCT_GameStates.TechList.Add(tI);
             }
         }
     }

@@ -164,13 +164,17 @@ namespace Kerbal_Construction_Time
                     if (index == 0) ret += 1;
                 }
             }
-            else
+            else if (type == KCT_BuildListVessel.ListType.SPH)
             {
                 if (KCT_GameStates.SPHUpgrades.Count - 1 >= index)
                 {
                     ret = KCT_GameStates.SPHUpgrades[index] * (index+1) * 0.05;
                     if (index == 0) ret += 1;
                 }
+            }
+            else if (type == KCT_BuildListVessel.ListType.TechNode)
+            {
+                ret = Math.Pow(2, KCT_GameStates.RDUpgrades[1] + 1) / 86400.0;
             }
             return ret;
         }
@@ -198,7 +202,7 @@ namespace Kerbal_Construction_Time
                     {
                         buildRate = GetBuildRate(i, KCT_BuildListVessel.ListType.VAB);
                         KCT_GameStates.VABList[i].AddProgress(buildRate * (UT - lastUT));
-                        if (KCT_GameStates.VABList[i].isComplete())
+                        if (((IKCTBuildItem)KCT_GameStates.VABList[i]).IsComplete())
                             MoveVesselToWarehouse(0, i);
                     }
                 }
@@ -208,7 +212,7 @@ namespace Kerbal_Construction_Time
                     {
                         buildRate = GetBuildRate(i, KCT_BuildListVessel.ListType.SPH);
                         KCT_GameStates.SPHList[i].AddProgress(buildRate * (UT - lastUT));
-                        if (KCT_GameStates.SPHList[i].isComplete())
+                        if (((IKCTBuildItem)KCT_GameStates.SPHList[i]).IsComplete())
                             MoveVesselToWarehouse(1, i);
                     }
                 }
@@ -218,10 +222,13 @@ namespace Kerbal_Construction_Time
                     KCT_TechItem tech = KCT_GameStates.TechList[i];
                     buildRate = tech.BuildRate;
                     tech.progress+=(buildRate * (UT - lastUT));
-                    if (tech.isComplete)
+                    if (tech.isComplete || KCT_GameStates.settings.InstantTechUnlock)
                     {
-                        KCT_GameStates.TechList.Remove(tech);
+                        if (KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRate > 1f)
+                            TimeWarp.SetRate(0, true);
+                        if (tech.protoNode == null) continue;
                         tech.EnableTech();
+                        KCT_GameStates.TechList.Remove(tech);
                     }
                 }
                 
@@ -524,6 +531,15 @@ namespace Kerbal_Construction_Time
                 }
             }
             foreach (IKCTBuildItem blv in KCT_GameStates.SPHList)
+            {
+                double time = blv.GetTimeLeft();
+                if (time < shortestTime)
+                {
+                    thing = blv;
+                    shortestTime = time;
+                }
+            }
+            foreach (IKCTBuildItem blv in KCT_GameStates.TechList)
             {
                 double time = blv.GetTimeLeft();
                 if (time < shortestTime)

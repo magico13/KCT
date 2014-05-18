@@ -74,6 +74,12 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.SPHWarehouse[i].shipNode.CopyTo(CN, "SPHWH" + i);
                 node.AddNode(CN);
             }
+            for (int i=0; i< KCT_GameStates.TechList.Count; i++)
+            {
+                ConfigNode CN = new ConfigNode("Tech"+i);
+                KCT_GameStates.TechList[i].protoNode.Save(CN);
+                node.AddNode(CN);
+            }
         }
         public override void OnLoad(ConfigNode node)
         {
@@ -109,6 +115,10 @@ namespace Kerbal_Construction_Time
             for (int i = 0; i < KCT_GameStates.SPHWarehouse.Count; i++)
             {
                 KCT_GameStates.SPHWarehouse[i].shipNode = node.GetNode("SPHWH" + i);
+            }
+            for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
+            {
+                KCT_GameStates.TechList[i].protoNode = new ProtoTechNode(node.GetNode("Tech" + i));
             }
 
             //if (HighLogic.LoadedScene == GameScenes.FLIGHT)
@@ -516,9 +526,9 @@ namespace Kerbal_Construction_Time
             {
                 if (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated)
                 {
-                    KCT_BuildListVessel ship = KCT_Utilities.NextShipToFinish();
+                    IKCTBuildItem ikctItem = KCT_Utilities.NextThingToFinish();
 
-                    if (KCT_GameStates.canWarp && ship != null && ship.progress < ship.buildPoints)
+                    if (KCT_GameStates.canWarp && ikctItem != null && !ikctItem.IsComplete())
                     {
                         int warpRate = TimeWarp.CurrentRateIndex;
                         if (SOIAlert())
@@ -535,7 +545,7 @@ namespace Kerbal_Construction_Time
                         }
                         else
                         {
-                            if ((10 * TimeWarp.deltaTime) > Math.Max((ship.buildPoints - ship.progress), 0) && TimeWarp.CurrentRate > 1.0f)
+                            if ((10 * TimeWarp.deltaTime) > Math.Max((ikctItem.GetTimeLeft()), 0) && TimeWarp.CurrentRate > 1.0f)
                             {
                                 TimeWarp.SetRate(--warpRate, true);
                             }
@@ -549,7 +559,7 @@ namespace Kerbal_Construction_Time
                         }
 
                     }
-                    else if (ship != null && (KCT_GameStates.warpInitiated || KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRate != 0 && (ship.buildPoints - ship.progress) < (TimeWarp.deltaTime*2) && (ship.buildPoints > ship.progress)) //Still warp down even if we don't control the clock
+                    else if (ikctItem != null && (KCT_GameStates.warpInitiated || KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRate != 0 && (ikctItem.GetTimeLeft()) < (TimeWarp.deltaTime*2) && (!ikctItem.IsComplete())) //Still warp down even if we don't control the clock
                     {
                         TimeWarp.SetRate(0, false);
                         KCT_GameStates.warpInitiated = false;

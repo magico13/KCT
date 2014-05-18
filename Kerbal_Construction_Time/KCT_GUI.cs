@@ -41,7 +41,7 @@ namespace Kerbal_Construction_Time
         {
             if (validScenes.Contains(HighLogic.LoadedScene)) //&& KCT_GameStates.settings.enabledForSave)//!(HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && !KCT_GameStates.settings.SandboxEnabled))
             {
-                if (!ToolbarManager.ToolbarAvailable && KCT_GameStates.settings.enabledForSave && GUI.Button(iconPosition, "KCT", GUI.skin.button))
+                if (!ToolbarManager.ToolbarAvailable && GUI.Button(iconPosition, "KCT", GUI.skin.button))
                 {
                     onClick();
                 }
@@ -714,7 +714,7 @@ namespace Kerbal_Construction_Time
             //List next vessel to finish
             GUILayout.BeginHorizontal();
             GUILayout.Label("Next vessel:");
-            IKCTBuildItem buildItem = KCT_Utilities.NextShipToFinish();
+            IKCTBuildItem buildItem = KCT_Utilities.NextThingToFinish();
             if (buildItem != null)
             {
                 //KCT_BuildListVessel ship = (KCT_BuildListVessel)buildItem;
@@ -799,7 +799,7 @@ namespace Kerbal_Construction_Time
                 buildListWindowPosition.height = 1;
                 showBLPlus = false;
             }
-            if (KCT_Utilities.CurrentGameIsCareer() && GUILayout.Button("R&D"))
+            if (KCT_Utilities.CurrentGameIsCareer() && !KCT_GameStates.settings.InstantTechUnlock && GUILayout.Button("Tech"))
             {
                 if (listWindow == 5)
                     listWindow = 0;
@@ -886,19 +886,20 @@ namespace Kerbal_Construction_Time
             else if (listWindow==2) //SPH Build List
             {
                 List<KCT_BuildListVessel> buildList = KCT_GameStates.SPHList;
-                GUILayout.Label("SPH Build List", GUILayout.Width(width1));
+                GUILayout.Label("SPH Build List");
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Name:", GUILayout.Width(width1));
+                GUILayout.Label("Name:");
                 GUILayout.Label("Progress:", GUILayout.Width(width1/2));
                 GUILayout.Label("Time Left:", GUILayout.Width(width2));
                 GUILayout.Label("BP:", GUILayout.Width(width1/2));
+                GUILayout.Space((butW + 4) * 3);
                 GUILayout.EndHorizontal();
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((buildList.Count) * 25 + 10, Screen.height / 1.4F)));
                 for (int i = 0; i < buildList.Count; i++)
                 {
                     KCT_BuildListVessel b = buildList[i];
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(b.shipName, GUILayout.Width(width1));
+                    GUILayout.Label(b.shipName);
                     GUILayout.Label(Math.Round(b.ProgressPercent(), 2).ToString() + "%", GUILayout.Width(width1/2));
                     if (b.buildRate > 0)
                         GUILayout.Label(KCT_Utilities.GetColonFormattedTime(b.timeLeft), GUILayout.Width(width2));
@@ -1055,8 +1056,8 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("Research and Development");
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Node Name:");
-                GUILayout.Label("Progress:");
-                GUILayout.Label("Time Left:");
+                GUILayout.Label("Progress:", GUILayout.Width(width1));
+                GUILayout.Label("Time Left:", GUILayout.Width(width1));
                 GUILayout.EndHorizontal();
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((techList.Count) * 25 + 10, Screen.height / 1.4F)));
                 for (int i = 0; i < techList.Count; i++)
@@ -1064,17 +1065,17 @@ namespace Kerbal_Construction_Time
                     KCT_TechItem t = techList[i];
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(t.techName);
-                    GUILayout.Label(Math.Round(100*t.progress/t.scienceCost, 2)+" %");
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(t.TimeLeft));
+                    GUILayout.Label(Math.Round(100 * t.progress / t.scienceCost, 2) + " %", GUILayout.Width(width1));
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(t.TimeLeft), GUILayout.Width(width1));
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();
             }
-            else
+            /*else
             {
                 //if (buildListWindowPosition.height > 32*3) buildListWindowPosition.height = 32*3;
                 //buildListWindowPosition.height = 1;
-            }
+            }*/
             GUILayout.EndVertical();
             GUI.DragWindow();
         }
@@ -1416,7 +1417,7 @@ namespace Kerbal_Construction_Time
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label("Instant Tech Unlock", GUILayout.Width(width1));
-            forceStopWarp = GUILayout.Toggle(instantTechUnlock, instantTechUnlock ? " Enabled" : " Disabled", GUILayout.Width(width2));
+            instantTechUnlock = GUILayout.Toggle(instantTechUnlock, instantTechUnlock ? " Enabled" : " Disabled", GUILayout.Width(width2));
             GUILayout.EndHorizontal();
 
             GUILayout.Label("");
@@ -1451,6 +1452,7 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.SimulationTimeLimit = Math.Max(double.Parse(newTimeLimit), 0);
                 KCT_GameStates.settings.EnableAllBodies = enableAllBodies;
                 KCT_GameStates.settings.ForceStopWarp = forceStopWarp;
+                KCT_GameStates.settings.InstantTechUnlock = instantTechUnlock;
                 KCT_GameStates.settings.SandboxUpgrades = int.Parse(newSandboxUpgrades);
                 KCT_GameStates.settings.Save();
 
@@ -1585,7 +1587,7 @@ namespace Kerbal_Construction_Time
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Research");
-                GUILayout.Label((KCT_GameStates.RDUpgrades[0]*0.5) + " science/day");
+                GUILayout.Label((KCT_GameStates.RDUpgrades[0]*0.5) + " sci/86400 BP");
                 if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
                 {
                     if (GUILayout.Button("+0.5", GUILayout.Width(45)))
@@ -1597,10 +1599,10 @@ namespace Kerbal_Construction_Time
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Development");
-                GUILayout.Label("1 day/"+Math.Pow(2, KCT_GameStates.RDUpgrades[1])+" sci");
+                GUILayout.Label("1 day/"+Math.Pow(2, KCT_GameStates.RDUpgrades[1]+1)+" sci");
                 if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
                 {
-                    if (GUILayout.Button("1d/" + Math.Pow(2, KCT_GameStates.RDUpgrades[1]+1), GUILayout.Width(45)))
+                    if (GUILayout.Button("1d/" + Math.Pow(2, KCT_GameStates.RDUpgrades[1]+2), GUILayout.ExpandWidth(false)))
                     {
                         ++KCT_GameStates.RDUpgrades[1];
                     }
@@ -1619,7 +1621,7 @@ namespace Kerbal_Construction_Time
             bLPlusPosition.xMin = buildListWindowPosition.xMax;
             bLPlusPosition.width = 100;
             bLPlusPosition.yMin = buildListWindowPosition.yMin;
-            bLPlusPosition.height = 150;
+            bLPlusPosition.height = 175;
             //bLPlusPosition.height = bLPlusPosition.yMax - bLPlusPosition.yMin;
             List<KCT_BuildListVessel> buildList = new List<KCT_BuildListVessel>();
             switch (listWindow)
@@ -1658,7 +1660,7 @@ namespace Kerbal_Construction_Time
                     HighLogic.LoadScene(GameScenes.EDITOR);
                     //EditorLogic.fetch.ship = b.getShip();
                 }
-                else
+                else if (b.type == KCT_BuildListVessel.ListType.SPH)
                 {
                     HighLogic.LoadScene(GameScenes.SPH);
                     //EditorLogic.fetch.ship = b.getShip();
