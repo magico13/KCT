@@ -68,6 +68,29 @@ namespace Kerbal_Construction_Time
         [Persistent] public string part = "";
     }
 
+    public class FakeTechNode : ConfigNodeStorage
+    {
+        [Persistent] public string id = "";
+        [Persistent] public string state = "";
+
+        public ProtoTechNode ToProtoTechNode()
+        {
+            ProtoTechNode ret = new ProtoTechNode();
+            ret.techID = id;
+            if (state == "Available")
+                ret.state = RDTech.State.Available;
+            else
+                ret.state = RDTech.State.Unavailable;
+            return ret;
+        }
+
+        public FakeTechNode FromProtoTechNode(ProtoTechNode node)
+        {
+            this.id = node.techID;
+            this.state = node.state.ToString();
+            return this;
+        }
+    }
     public class KCT_DataStorage : ConfigNodeStorage
     {
         [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && KCT_GameStates.settings.SandboxEnabled));

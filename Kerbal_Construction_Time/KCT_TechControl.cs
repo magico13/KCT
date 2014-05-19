@@ -110,6 +110,7 @@ namespace Kerbal_Construction_Time
     public class KCT_TechStorage : ConfigNodeStorage
     {
         [Persistent] List<KCT_TechStorageItem> techBuildList = new List<KCT_TechStorageItem>();
+       // [Persistent] ConfigNode techNode = new ConfigNode();
         public override void OnEncodeToConfigNode()
         {
             base.OnEncodeToConfigNode();
@@ -117,6 +118,8 @@ namespace Kerbal_Construction_Time
             foreach (KCT_TechItem tech in KCT_GameStates.TechList)
             {
                 KCT_TechStorageItem tSI = new KCT_TechStorageItem();
+                //this.techNode =
+               // tech.protoNode.Save(techNode);
                 techBuildList.Add(tSI.FromTechItem(tech));
             }
         }
@@ -128,6 +131,7 @@ namespace Kerbal_Construction_Time
             foreach (KCT_TechStorageItem tSI in this.techBuildList)
             {
                 KCT_TechItem tI = tSI.ToTechItem();
+               // tI.protoNode = new ProtoTechNode(techNode);
                 KCT_GameStates.TechList.Add(tI);
             }
         }
