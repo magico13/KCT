@@ -609,9 +609,13 @@ namespace Kerbal_Construction_Time
         {
             //KCT_BuildListVessel ship = KCT_Utilities.NextShipToFinish();
             IKCTBuildItem ship = KCT_Utilities.NextThingToFinish();
-            while ((ship.GetTimeLeft() > 15*TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex < KCT_GameStates.settings.MaxTimeWarp))
+            int lastRateIndex = TimeWarp.CurrentRateIndex;
+            int newRate = TimeWarp.CurrentRateIndex + 1;
+            while ((ship.GetTimeLeft() > 15*TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex < KCT_GameStates.settings.MaxTimeWarp) && (lastRateIndex < newRate))
             {
-                TimeWarp.SetRate(TimeWarp.CurrentRateIndex + 1, true);
+                lastRateIndex = TimeWarp.CurrentRateIndex;
+                TimeWarp.SetRate(lastRateIndex + 1, true);
+                newRate = TimeWarp.CurrentRateIndex;
             }
         }
 
