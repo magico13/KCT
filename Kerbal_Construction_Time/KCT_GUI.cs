@@ -230,7 +230,10 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
-            GUI.DragWindow();
+            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+            {
+                GUI.DragWindow();
+            }
         }
 
         private static bool showInventory = false;
@@ -401,7 +404,10 @@ namespace Kerbal_Construction_Time
             
 
             GUILayout.EndVertical();
-            GUI.DragWindow();
+            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+            {
+                GUI.DragWindow();
+            }
 
         }
 
@@ -415,7 +421,10 @@ namespace Kerbal_Construction_Time
                 showSOIAlert = false;
             }
             GUILayout.EndVertical();
-            GUI.DragWindow();
+            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+            {
+                GUI.DragWindow();
+            }
         }
 
         private static string orbitAltString="", orbitIncString="";
@@ -655,7 +664,10 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("Pre-launch");
             GUI.skin.label.alignment = TextAnchor.MiddleLeft;
             GUILayout.EndVertical();
-            GUI.DragWindow();
+            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+            {
+                GUI.DragWindow();
+            }
         }
 
         public static void DrawSimulationWindow(int windowID)
@@ -1077,7 +1089,10 @@ namespace Kerbal_Construction_Time
                 //buildListWindowPosition.height = 1;
             }*/
             GUILayout.EndVertical();
-            GUI.DragWindow();
+            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+            {
+                GUI.DragWindow();
+            }
         }
 
         private static bool IsCrewable(List<Part> ship)
@@ -1470,7 +1485,10 @@ namespace Kerbal_Construction_Time
             }
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
-            GUI.DragWindow();
+            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+            {
+                GUI.DragWindow();
+            }
         }
 
         private static int upgradeWindowHolder = 0;
@@ -1483,7 +1501,7 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("Available: " + (KCT_GameStates.TotalUpgradePoints - spentPoints));
             GUILayout.EndHorizontal();
 
-            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+            if (KCT_Utilities.CurrentGameIsCareer())
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Buy Upgrade:\n250 Science");
@@ -1612,7 +1630,10 @@ namespace Kerbal_Construction_Time
             }
             if (GUILayout.Button("Close")) { showUpgradeWindow = false; showBuildList = true; }
             GUILayout.EndVertical();
-            GUI.DragWindow();
+            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+            {
+                GUI.DragWindow();
+            }
         }
 
         private static int IndexSelected=0;
