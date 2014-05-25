@@ -1504,8 +1504,8 @@ namespace Kerbal_Construction_Time
             if (KCT_Utilities.CurrentGameIsCareer())
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Buy Upgrade:\n250 Science");
-                if (GUILayout.Button("Purchase", GUILayout.ExpandWidth(false)))
+                GUILayout.Label("Buy Point: ");
+                if (GUILayout.Button("250 Sci", GUILayout.ExpandWidth(false)))
                 {
                     if (ResearchAndDevelopment.Instance.Science >= 250.0F)
                     {
@@ -1515,6 +1515,19 @@ namespace Kerbal_Construction_Time
                 }
                 GUILayout.EndHorizontal();
             }
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Reset Upgrades: ");
+            if (GUILayout.Button("2 Points", GUILayout.ExpandWidth(false)))
+            {
+                if (KCT_GameStates.TotalUpgradePoints - spentPoints > 1)
+                {
+                    KCT_GameStates.VABUpgrades = new List<int>() {0};
+                    KCT_GameStates.SPHUpgrades = new List<int>() { 0 };
+                    KCT_GameStates.RDUpgrades = new List<int>() { 0, 0 };
+                }
+            }
+            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("VAB")) { upgradeWindowHolder = 0; upgradePosition.height = 1; }
