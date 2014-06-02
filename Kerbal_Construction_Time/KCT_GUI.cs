@@ -172,7 +172,7 @@ namespace Kerbal_Construction_Time
                 DrawSimulationCompleteFlight(windowID);
             if (showSimulationWindow)
                 DrawSimulationWindow(windowID);
-            if (showTimeRemaining)
+            if (showTimeRemaining && KCT_GameStates.settings.SimulationTimeLimit > 0)
                 DrawSimulationTimeWindow(windowID);
             if (showBuildList)
                 DrawBuildListWindow(windowID);
@@ -679,10 +679,38 @@ namespace Kerbal_Construction_Time
             GUILayout.Label(" ");
             GUILayout.Label("You cannot save or switch vessels during a simulation.");
             GUILayout.Label("Note: If you want to build this ship, press the Build button in the editor.");
-            if (GUILayout.Button("End Simulation"))
+            /*if (GUILayout.Button("End Simulation"))
             {
                 showSimulationCompleteFlight = true;
                 showSimulationWindow = false;
+            }*/
+            if (GUILayout.Button("Restart Simulation"))
+            {
+                showSimulationWindow = false;
+                Kerbal_Construction_Time.moved = false;
+                KCT_GameStates.flightSimulated = true;
+                KCT_Utilities.enableSimulationLocks();
+                KCT_GameStates.simulationEndTime = 0;
+                if (MCEWrapper.MCEAvailable) //Support for MCE
+                    MCEWrapper.IloadMCEbackup();
+                FlightDriver.RevertToLaunch();
+                centralWindowPosition.height = 1;
+            }
+            if (GUILayout.Button("Revert to Editor"))
+            {
+                showSimulationWindow = false;
+                KCT_GameStates.simulationReason = "USER";
+                Debug.Log("[KCT] Simulation complete: " + "USER");
+                KCT_Utilities.disableSimulationLocks();
+                KCT_GameStates.flightSimulated = false;
+                KCT_GameStates.simulationEndTime = 0;
+                if (MCEWrapper.MCEAvailable) //Support for MCE
+                    MCEWrapper.IloadMCEbackup();
+                if (FlightDriver.LaunchSiteName == "LaunchPad")
+                    FlightDriver.RevertToPrelaunch(GameScenes.EDITOR);
+                else if (FlightDriver.LaunchSiteName == "Runway")
+                    FlightDriver.RevertToPrelaunch(GameScenes.SPH);
+                centralWindowPosition.height = 1;
             }
             if (GUILayout.Button("Close"))
             {
