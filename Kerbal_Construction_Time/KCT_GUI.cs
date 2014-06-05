@@ -120,7 +120,17 @@ namespace Kerbal_Construction_Time
             }
             else if (KCT_GameStates.settings.DisableBuildTime && HighLogic.LoadedSceneIsEditor)
             {
-                showSimConfig = !showSimConfig;
+                if (!showSimConfig)
+                {
+                    simulationConfigPosition.height = 1;
+                    EditorLogic.fetch.Lock(true, false, true, "KCTGUILock");
+                    showSimConfig = true;
+                }
+                else
+                {
+                    showSimConfig = false;
+                    unlockEditor = true;
+                }
             }
             else if (HighLogic.LoadedScene == GameScenes.FLIGHT && !KCT_GameStates.flightSimulated && !PrimarilyDisabled)
             {

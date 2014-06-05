@@ -488,8 +488,9 @@ namespace Kerbal_Construction_Time
                 if (KCT_Utilities.RemovePartFromInventory(p))
                     blv.InventoryParts.Add(p.partInfo.name);
             }
+            blv.shipName = EditorLogic.fetch.shipNameField.Text;
             Debug.Log("[KCT] Added " + blv.shipName + " to " + type + " build list.");
-            var message = new ScreenMessage("[KCT] Added " + blv.shipName + " to "+type+" build list.", 4.0f, ScreenMessageStyle.UPPER_RIGHT);
+            var message = new ScreenMessage("\n\n[KCT] Added " + blv.shipName + " to "+type+" build list.", 4.0f, ScreenMessageStyle.UPPER_RIGHT);
             ScreenMessages.PostScreenMessage(message, true);
         }
 

@@ -55,10 +55,11 @@ namespace Kerbal_Construction_Time
             VABUpgrades = new List<int>() {0};
             SPHUpgrades = new List<int>() {0};
             RDUpgrades = new List<int>() {0, 0};
-          /*  VABList = new List<KCT_BuildListVessel>();
+
+            VABList = new List<KCT_BuildListVessel>();
             VABWarehouse = new List<KCT_BuildListVessel>();
             SPHList = new List<KCT_BuildListVessel>();
-            SPHWarehouse = new List<KCT_BuildListVessel>();*/
+            SPHWarehouse = new List<KCT_BuildListVessel>();
         }
 
     }
