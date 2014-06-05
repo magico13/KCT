@@ -98,18 +98,31 @@ namespace Kerbal_Construction_Time
             }
         }
 
+        public static bool PrimarilyDisabled { get { return (!KCT_GameStates.settings.enabledForSave || KCT_GameStates.settings.DisableBuildTime); } }
+
         public static void onClick()
         {
             if (ToolbarManager.ToolbarAvailable)
                 if (KCT_GameStates.kctToolbarButton.Important) KCT_GameStates.kctToolbarButton.Important = false;
 
-            if (!KCT_GameStates.settings.enabledForSave)
+          /*  if (!KCT_GameStates.settings.enabledForSave)
             {
                 ShowSettings();
                 return;
-            }
+            }*/
 
-            if (HighLogic.LoadedScene == GameScenes.FLIGHT && !KCT_GameStates.flightSimulated)
+            if (PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.SPACECENTER))
+            {
+                if (!showSettings)
+                    ShowSettings();
+                else
+                    showSettings = false;
+            }
+            else if (KCT_GameStates.settings.DisableBuildTime && HighLogic.LoadedSceneIsEditor)
+            {
+                showSimConfig = !showSimConfig;
+            }
+            else if (HighLogic.LoadedScene == GameScenes.FLIGHT && !KCT_GameStates.flightSimulated && !PrimarilyDisabled)
             {
                 //showMainGUI = !showMainGUI;
                 buildListWindowPosition.height = 1;
@@ -121,11 +134,11 @@ namespace Kerbal_Construction_Time
             {
                 showSimulationWindow = !showSimulationWindow;
             }
-            else if ((HighLogic.LoadedScene == GameScenes.EDITOR) || (HighLogic.LoadedScene == GameScenes.SPH))
+            else if ((HighLogic.LoadedScene == GameScenes.EDITOR) || (HighLogic.LoadedScene == GameScenes.SPH) && !PrimarilyDisabled)
             {
                 showEditorGUI = !showEditorGUI;
             }
-            else if ((HighLogic.LoadedScene == GameScenes.SPACECENTER) || (HighLogic.LoadedScene == GameScenes.TRACKSTATION))
+            else if ((HighLogic.LoadedScene == GameScenes.SPACECENTER) || (HighLogic.LoadedScene == GameScenes.TRACKSTATION) && !PrimarilyDisabled)
             {
                 buildListWindowPosition.height = 1;
                 showBuildList = !showBuildList;
@@ -720,7 +733,7 @@ namespace Kerbal_Construction_Time
         }
 
         public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit;
-        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock;
+        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes;
         private static void ShowSettings()
         {
             newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
@@ -734,6 +747,7 @@ namespace Kerbal_Construction_Time
             newUpgradeCount = KCT_GameStates.TotalUpgradePoints.ToString();
             newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
             instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
+            disableBuildTimes = KCT_GameStates.settings.DisableBuildTime;
             settingsPosition.height = 1;
             showSettings = !showSettings;
         }
@@ -1435,6 +1449,14 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("");
             GUILayout.Label("Global Settings");
             GUILayout.BeginHorizontal();
+            GUILayout.Label("Build Times Enabled?", GUILayout.Width(width1));
+            disableBuildTimes = GUILayout.Toggle(disableBuildTimes, disableBuildTimes ? " No" : " Yes", GUILayout.Width(width2));
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Instant Tech Unlock", GUILayout.Width(width1));
+            instantTechUnlock = GUILayout.Toggle(instantTechUnlock, instantTechUnlock ? " Enabled" : " Disabled", GUILayout.Width(width2));
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
             GUILayout.Label("Max TimeWarp", GUILayout.Width(width1));
             //string newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
             int warpIndex = 0;
@@ -1458,10 +1480,7 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("Upgrades for New Sandbox", GUILayout.Width(width1));
             newSandboxUpgrades = GUILayout.TextField(newSandboxUpgrades, 3, GUILayout.Width(40));
             GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Instant Tech Unlock", GUILayout.Width(width1));
-            instantTechUnlock = GUILayout.Toggle(instantTechUnlock, instantTechUnlock ? " Enabled" : " Disabled", GUILayout.Width(width2));
-            GUILayout.EndHorizontal();
+
 
             GUILayout.Label("");
             GUILayout.Label("Global Time Settings");
@@ -1497,6 +1516,7 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.ForceStopWarp = forceStopWarp;
                 KCT_GameStates.settings.InstantTechUnlock = instantTechUnlock;
                 KCT_GameStates.settings.SandboxUpgrades = int.Parse(newSandboxUpgrades);
+                KCT_GameStates.settings.DisableBuildTime = disableBuildTimes;
                 KCT_GameStates.settings.Save();
 
                 KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);
@@ -1504,12 +1524,12 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.timeSettings.InventoryEffect = double.Parse(newInvEffect);
                 KCT_GameStates.timeSettings.Save();
                 showSettings = false;
-                if (enabledForSave) showBuildList = true;
+                if (!PrimarilyDisabled) showBuildList = true;
             }
             if (GUILayout.Button("Cancel"))
             {
                 showSettings = false;
-                if (enabledForSave) showBuildList = true;
+                if (!PrimarilyDisabled) showBuildList = true;
             }
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
@@ -1669,7 +1689,7 @@ namespace Kerbal_Construction_Time
                 GUILayout.EndHorizontal();
 
             }
-            if (GUILayout.Button("Close")) { showUpgradeWindow = false; showBuildList = true; }
+            if (GUILayout.Button("Close")) { showUpgradeWindow = false; if (!PrimarilyDisabled) showBuildList = true; }
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
             {

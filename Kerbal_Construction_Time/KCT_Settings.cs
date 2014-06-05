@@ -16,6 +16,7 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool EnableAllBodies;
         [Persistent] public bool ForceStopWarp;
         [Persistent] public bool InstantTechUnlock;
+        [Persistent] public bool DisableBuildTime;
         public bool enabledForSave=true;
         //[Persistent] public bool AutoRevertOnCrash;
         //[Persistent] public bool Use6HourDays;
@@ -31,6 +32,7 @@ namespace Kerbal_Construction_Time
             ForceStopWarp = false;
             SandboxUpgrades = 30;
             InstantTechUnlock = false;
+            DisableBuildTime = false;
            // AutoRevertOnCrash = true;
             //Use6HourDays = GameSettings.KERBIN_TIME;
         }

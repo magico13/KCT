@@ -213,7 +213,7 @@ namespace Kerbal_Construction_Time
             }
             //End code for persistence.sfs
 
-            if (!KCT_GameStates.settings.enabledForSave && InputLockManager.GetControlLock("KCTLaunchLock") == ControlTypes.EDITOR_LAUNCH)
+            if (KCT_GUI.PrimarilyDisabled && InputLockManager.GetControlLock("KCTLaunchLock") == ControlTypes.EDITOR_LAUNCH)
                 InputLockManager.RemoveControlLock("KCTLaunchLock");
 
             if (!KCT_GameStates.settings.enabledForSave)
@@ -223,10 +223,13 @@ namespace Kerbal_Construction_Time
             if (!eventAdded)
             {
                 //addToolbarButton();
+                if (!KCT_GameStates.settings.DisableBuildTime)
+                {
+                    GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
+                }
                 GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
                 GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
                 GameEvents.onLaunch.Add(vesselLaunchEvent);
-                GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
                 //GameEvents.onFlightReady.Add(flightReadyEvent);
                 GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
                 GameEvents.onVesselSOIChanged.Add(SOIChangeEvent);
@@ -246,8 +249,11 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_GUI.hideAll();
                 }
-                KCT_GUI.showEditorGUI = true;
-                InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+                if (!KCT_GUI.PrimarilyDisabled)
+                {
+                    KCT_GUI.showEditorGUI = true;
+                    InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+                }
             }
             else if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
@@ -258,10 +264,10 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.TotalUpgradePoints = KCT_GameStates.settings.SandboxUpgrades;
                 }
             }
-            else if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
+           /* else if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
             {
 
-            }
+            }*/
 
             if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
             {
@@ -278,7 +284,7 @@ namespace Kerbal_Construction_Time
                 }
             }
 
-            if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH
+            if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH
                         && FlightGlobals.ActiveVessel.GetCrewCount() == 0 && KCT_GameStates.launchedCrew.Count > 0)
             {
                 CrewRoster roster = HighLogic.CurrentGame.CrewRoster;
