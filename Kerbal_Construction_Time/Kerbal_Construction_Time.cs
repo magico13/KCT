@@ -322,14 +322,14 @@ namespace Kerbal_Construction_Time
             if (ev.target == RDTech.OperationResult.Successful)
             {
                 KCT_TechItem tech = new KCT_TechItem(ev.host);
-                if (!KCT_GameStates.settings.InstantTechUnlock || !KCT_GameStates.settings.DisableBuildTime) tech.DisableTech();
+                if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime) tech.DisableTech();
                 if (!tech.isInList())
                 {
                     ++KCT_GameStates.TotalUpgradePoints;
                     var message = new ScreenMessage("[KCT] Upgrade Point Added!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
                     ScreenMessages.PostScreenMessage(message, true);
 
-                    if (!KCT_GameStates.settings.InstantTechUnlock || !KCT_GameStates.settings.DisableBuildTime)
+                    if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime)
                     {
                         KCT_GameStates.TechList.Add(tech);
                         message = new ScreenMessage("[KCT] Node will unlock in " + tech.TimeLeft / 86400 + " days.", 4.0f, ScreenMessageStyle.UPPER_LEFT);

@@ -153,6 +153,16 @@ namespace Kerbal_Construction_Time
             return GetBuildTime(aParts, true, true);
         }
 
+        public static double GetBuildTime(List<Part> parts, bool useTracker, bool useInventory)
+        {
+            List<AvailablePart> aParts = new List<AvailablePart>();
+            foreach (Part p in parts)
+            {
+                aParts.Add(p.partInfo);
+            }
+            return GetBuildTime(aParts, useTracker, useInventory);
+        }
+
         public static double GetBuildRate(int index, KCT_BuildListVessel.ListType type)
         {
             double ret = 0;
@@ -469,9 +479,9 @@ namespace Kerbal_Construction_Time
             System.IO.File.Delete(backupFile);
         }
 
-        public static void AddVesselToBuildList()
+        public static void AddVesselToBuildList(bool useInventory)
         {
-            KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.Parts), EditorLogic.FlagURL);
+            KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.Parts, true, useInventory), EditorLogic.FlagURL);
             string type = "";
             if (blv.type == KCT_BuildListVessel.ListType.VAB)
             {
@@ -483,15 +493,23 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.SPHList.Add(blv);
                 type = "SPH";
             }
-            foreach (Part p in EditorLogic.fetch.ship.Parts)
+            if (useInventory)
             {
-                if (KCT_Utilities.RemovePartFromInventory(p))
-                    blv.InventoryParts.Add(p.partInfo.name);
+                foreach (Part p in EditorLogic.fetch.ship.Parts)
+                {
+                    if (KCT_Utilities.RemovePartFromInventory(p))
+                        blv.InventoryParts.Add(p.partInfo.name);
+                }
             }
             blv.shipName = EditorLogic.fetch.shipNameField.Text;
             Debug.Log("[KCT] Added " + blv.shipName + " to " + type + " build list.");
             var message = new ScreenMessage("\n\n[KCT] Added " + blv.shipName + " to "+type+" build list.", 4.0f, ScreenMessageStyle.UPPER_RIGHT);
             ScreenMessages.PostScreenMessage(message, true);
+        }
+
+        public static void AddVesselToBuildList()
+        {
+            AddVesselToBuildList(true);
         }
 
         public static void AddVesselToBuildList(KCT_BuildListVessel blv)

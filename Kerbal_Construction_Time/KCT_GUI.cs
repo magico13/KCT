@@ -69,7 +69,7 @@ namespace Kerbal_Construction_Time
                     centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimulationCompleteFlight, "Simulation Complete!", windowStyle);
                 if (showSimulationWindow)
                     simulationWindowPosition = GUILayout.Window(8950, simulationWindowPosition, KCT_GUI.DrawSimulationWindow, "KCT Simulation", windowStyle);
-                if (showTimeRemaining)
+                if (showTimeRemaining && KCT_GameStates.settings.SimulationTimeLimit > 0)
                     timeRemainingPosition = GUILayout.Window(8951, timeRemainingPosition, KCT_GUI.DrawSimulationTimeWindow, "Time left:", windowStyle);
                 if (showBuildList)
                     buildListWindowPosition = GUILayout.Window(8950, buildListWindowPosition, KCT_GUI.DrawBuildListWindow, "Build List", windowStyle);
@@ -259,24 +259,36 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        private static bool showInventory = false;
+        private static bool showInventory = false, useInventory = true;
         private static string currentCategoryString = "NONE";
+        private static string buildRateForDisplay;
         private static void DrawEditorGUI(int windowID)
         {
-            double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.Parts);
+            double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.parts, true, useInventory);
             KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
             GUILayout.BeginVertical();
             GUILayout.Label("Total Build Points (BP):", GUILayout.ExpandHeight(true));
             GUILayout.Label(buildTime.ToString(), GUILayout.ExpandHeight(true));
-            GUILayout.Label("Build Time at " + KCT_Utilities.GetBuildRate(0, type) + " BP/s:", GUILayout.ExpandHeight(true));
-            GUILayout.Label(KCT_Utilities.GetFormattedTime(buildTime / KCT_Utilities.GetBuildRate(0, type)), GUILayout.ExpandHeight(true));
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Build Time at ");
+            //+ KCT_Utilities.GetBuildRate(0, type) + " BP/s:", 
+            if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type).ToString();
+            buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
+            //double.TryParse(tempString, out buildRateForDisplay);
+            GUILayout.Label(" BP/s:");
+            GUILayout.EndHorizontal();
+            double bR;
+            if (double.TryParse(buildRateForDisplay, out bR)) GUILayout.Label(KCT_Utilities.GetFormattedTime(buildTime / bR));
+            else GUILayout.Label("Invalid Build Rate");
+
+            useInventory = GUILayout.Toggle(useInventory, " Use parts from inventory?");
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Build"))
             {
                 KCT_GameStates.flightSimulated = false;
                 KCT_Utilities.disableSimulationLocks();
-                KCT_Utilities.AddVesselToBuildList();
+                KCT_Utilities.AddVesselToBuildList(useInventory);
                 //showLaunchAlert = true;
             }
             if (GUILayout.Button("Simulate"))
@@ -338,85 +350,42 @@ namespace Kerbal_Construction_Time
                 GUILayout.EndHorizontal();
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((activeList.Count + 1) * 30, Screen.height / 1.4F))); //
                 GUILayout.BeginHorizontal();
-                /*GUILayout.Label("Name:", GUILayout.ExpandHeight(true));
-                GUILayout.Label("Available:", GUILayout.ExpandHeight(true));
-                GUILayout.Label("In use:", GUILayout.ExpandHeight(true));
-                GUILayout.EndHorizontal();
 
-                PartCategories CategoryCurrent = PartCategories.none;
-                switch (currentCategoryString)
+                GUILayout.BeginVertical();
+                GUILayout.Label("Name:", GUILayout.ExpandHeight(true));
+                for (int i=0; i<activeList.Count; i++)
                 {
-                    case "AERO": CategoryCurrent = PartCategories.Aero; break;
-                    case "CONTROL": CategoryCurrent = PartCategories.Control; break;
-                    case "PODS": CategoryCurrent = PartCategories.Pods; break;
-                    case "PROPULSION": CategoryCurrent = PartCategories.Propulsion; break;
-                    case "SCIENCE": CategoryCurrent = PartCategories.Science; break;
-                    case "STRUCTURAL": CategoryCurrent = PartCategories.Structural; break;
-                    case "UTILITY": CategoryCurrent = PartCategories.Utility; break;
+                    string name = activeList.Keys.ElementAt(i);
+                    GUILayout.Label(name, GUILayout.ExpandHeight(true));   
                 }
-
-                for (int i = 0; i < KCT_GameStates.PartInventory.Count; i++)
+                GUILayout.EndVertical();
+                
+                GUILayout.BeginVertical();
+                GUILayout.Label("Available:", GUILayout.ExpandHeight(true));
+                for (int i = 0; i < activeList.Count; i++)
                 {
-                    PartCategories category = PartCategories.none;
-                    string name = KCT_GameStates.PartInventory.Keys.ElementAt(i);
-                    foreach (AvailablePart p in PartLoader.LoadedPartsList)
+                    GUILayout.Label(activeList.Values.ElementAt(i).ToString(), GUILayout.ExpandHeight(true));
+                }
+                GUILayout.EndVertical();
+
+                GUILayout.BeginVertical();
+                GUILayout.Label("In use:", GUILayout.ExpandHeight(true));
+                for (int i = 0; i < activeList.Count; i++)
+                {
+                    int inUse = 0;
+                    if (useInventory)
                     {
-                        if (p.name == name)
-                        {
-                            name = p.title;
-                            category = p.category;
-                            break;
-                        }
-                    }
-                    if (CategoryCurrent == category)
-                    {
-                        GUILayout.BeginHorizontal();
-                        GUILayout.Label(name, GUILayout.ExpandHeight(true));
-                        GUILayout.Label(KCT_GameStates.PartInventory.Values.ElementAt(i).ToString(), GUILayout.ExpandHeight(true));
-                        int inUse = 0;
-                        String pName = KCT_GameStates.PartInventory.Keys.ElementAt(i);
+                        String name = activeList.Keys.ElementAt(i);
                         for (int j = 0; j < EditorLogic.fetch.ship.parts.Count; j++)
                         {
-                            if (EditorLogic.fetch.ship.parts[j].partInfo.name == pName)
+                            if (EditorLogic.fetch.ship.parts[j].partInfo.title == name)
                                 ++inUse;
                         }
-                        GUILayout.Label(inUse.ToString(), GUILayout.ExpandHeight(true));
-                        GUILayout.EndHorizontal();
                     }
-                }*/
-
-                   GUILayout.BeginVertical();
-                   GUILayout.Label("Name:", GUILayout.ExpandHeight(true));
-                   for (int i=0; i<activeList.Count; i++)
-                   {
-                        string name = activeList.Keys.ElementAt(i);
-                        GUILayout.Label(name, GUILayout.ExpandHeight(true));   
-                   }
-                   GUILayout.EndVertical();
-                
-                   GUILayout.BeginVertical();
-                   GUILayout.Label("Available:", GUILayout.ExpandHeight(true));
-                   for (int i = 0; i < activeList.Count; i++)
-                   {
-                       GUILayout.Label(activeList.Values.ElementAt(i).ToString(), GUILayout.ExpandHeight(true));
-                   }
-                   GUILayout.EndVertical();
-
-                   GUILayout.BeginVertical();
-                   GUILayout.Label("In use:", GUILayout.ExpandHeight(true));
-                   for (int i = 0; i < activeList.Count; i++)
-                   {
-                       int inUse = 0;
-                       String name = activeList.Keys.ElementAt(i);
-                       for (int j = 0; j < EditorLogic.fetch.ship.parts.Count; j++)
-                       {
-                           if (EditorLogic.fetch.ship.parts[j].partInfo.title == name)
-                               ++inUse;
-                       }
-                       GUILayout.Label(inUse.ToString(), GUILayout.ExpandHeight(true));
-                   }
-                   GUILayout.EndVertical();
-                   GUILayout.EndHorizontal();
+                    GUILayout.Label(inUse.ToString(), GUILayout.ExpandHeight(true));
+                }
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
                 GUILayout.EndScrollView();
             }
            /* else
@@ -1460,7 +1429,7 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("Global Settings");
             GUILayout.BeginHorizontal();
             GUILayout.Label("Build Times Enabled?", GUILayout.Width(width1));
-            disableBuildTimes = GUILayout.Toggle(disableBuildTimes, disableBuildTimes ? " No" : " Yes", GUILayout.Width(width2));
+            disableBuildTimes = GUILayout.Toggle(disableBuildTimes, disableBuildTimes ? " Disabled" : " Enabled", GUILayout.Width(width2));
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label("Instant Tech Unlock", GUILayout.Width(width1));
@@ -1744,20 +1713,25 @@ namespace Kerbal_Construction_Time
                 showBLPlus = false;
                 ResetBLWindow();
             }
-            if (GUILayout.Button("View (NF)"))
+            /*if (GUILayout.Button("View (NF)"))
             {
                 showBLPlus = false;
+                string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
+                b.shipNode.Save(tempFile);
+                EditorLogic.LoadShipFromFile(tempFile);
                 if (b.type == KCT_BuildListVessel.ListType.VAB)
                 {
                     HighLogic.LoadScene(GameScenes.EDITOR);
                     //EditorLogic.fetch.ship = b.getShip();
+                    EditorLogic.LoadShipFromFile(tempFile);
                 }
                 else if (b.type == KCT_BuildListVessel.ListType.SPH)
                 {
                     HighLogic.LoadScene(GameScenes.SPH);
+                    EditorLogic.LoadShipFromFile(tempFile);
                     //EditorLogic.fetch.ship = b.getShip();
                 }
-            }
+            }*/
             if (GUILayout.Button("Rename"))
             {
                 centralWindowPosition.width = Screen.width / 8;
