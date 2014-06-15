@@ -222,6 +222,9 @@ namespace Kerbal_Construction_Time
             //Begin primary mod functions
             if (!eventAdded)
             {
+                if (KCT_GameStates.settings.CheckForUpdates) //Check for updates
+                    KCT_UpdateChecker.CheckForUpdate(false);
+
                 //addToolbarButton();
                 if (!KCT_GameStates.settings.DisableBuildTime)
                 {
@@ -234,6 +237,7 @@ namespace Kerbal_Construction_Time
                 GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
                 GameEvents.onVesselSOIChanged.Add(SOIChangeEvent);
                 GameEvents.OnTechnologyResearched.Add(TechUnlockEvent);
+
                 eventAdded = true;
             }
             KCT_GameStates.UT = Planetarium.GetUniversalTime();

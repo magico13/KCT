@@ -62,6 +62,7 @@
     <Compile Include="KCT_OrbitAdjuster.cs" />
     <Compile Include="KCT_Settings.cs" />
     <Compile Include="KCT_TechControl.cs" />
+    <Compile Include="KCT_UpdateChecker.cs" />
     <Compile Include="KCT_Utilities.cs" />
     <Compile Include="Kerbal_Construction_Time.cs" />
     <Compile Include="MCEWrapper.cs" />

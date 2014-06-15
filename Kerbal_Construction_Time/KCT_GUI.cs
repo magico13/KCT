@@ -712,7 +712,7 @@ namespace Kerbal_Construction_Time
         }
 
         public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit;
-        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes;
+        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates;
         private static void ShowSettings()
         {
             newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
@@ -727,6 +727,7 @@ namespace Kerbal_Construction_Time
             newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
             instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
             disableBuildTimes = KCT_GameStates.settings.DisableBuildTime;
+            checkForUpdates = KCT_GameStates.settings.CheckForUpdates;
             settingsPosition.height = 1;
             showSettings = !showSettings;
         }
@@ -1109,6 +1110,8 @@ namespace Kerbal_Construction_Time
                 //if (buildListWindowPosition.height > 32*3) buildListWindowPosition.height = 32*3;
                 //buildListWindowPosition.height = 1;
             }*/
+            if (KCT_UpdateChecker.UpdateFound)
+                GUILayout.Label("Update available! Current: " + KCT_UpdateChecker.CurrentVersion + " New: " + KCT_UpdateChecker.WebVersion);
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
             {
@@ -1459,7 +1462,12 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("Upgrades for New Sandbox", GUILayout.Width(width1));
             newSandboxUpgrades = GUILayout.TextField(newSandboxUpgrades, 3, GUILayout.Width(40));
             GUILayout.EndHorizontal();
-
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Auto Check For Updates", GUILayout.Width(width1));
+            checkForUpdates = GUILayout.Toggle(checkForUpdates, checkForUpdates ? " Enabled" : " Disabled");
+            if (GUILayout.Button("Check"))
+                KCT_UpdateChecker.CheckForUpdate(true);
+            GUILayout.EndHorizontal();
 
             GUILayout.Label("");
             GUILayout.Label("Global Time Settings");
@@ -1496,6 +1504,7 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.InstantTechUnlock = instantTechUnlock;
                 KCT_GameStates.settings.SandboxUpgrades = int.Parse(newSandboxUpgrades);
                 KCT_GameStates.settings.DisableBuildTime = disableBuildTimes;
+                KCT_GameStates.settings.CheckForUpdates = checkForUpdates;
                 KCT_GameStates.settings.Save();
 
                 KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);
