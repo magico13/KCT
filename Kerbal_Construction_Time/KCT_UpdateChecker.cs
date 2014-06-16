@@ -9,7 +9,7 @@ namespace Kerbal_Construction_Time
     class KCT_UpdateChecker
     {
         public static bool UpdateFound = false;
-        public static string CurrentVersion = "0.7.1.0";
+        public static string CurrentVersion = "0.7.2.0";
         public static String WebVersion = "";
         static string updateSite = "http://magico13.net/KCT/latest";
         public static Boolean CheckForUpdate(bool ForceCheck)

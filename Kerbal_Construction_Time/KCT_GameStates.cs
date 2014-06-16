@@ -35,6 +35,8 @@ namespace Kerbal_Construction_Time
         //public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
         public static List<List<ProtoCrewMember>> launchedCrew = new List<List<ProtoCrewMember>>();
         public static IButton kctToolbarButton;
+        public static bool EditorShipEditingMode = false;
+
 
         public static CelestialBody simulationBody;
         public static bool simulateInOrbit = false;

@@ -258,6 +258,13 @@ namespace Kerbal_Construction_Time
                     KCT_GUI.showEditorGUI = true;
                     InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
                 }
+                if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
+                {
+                    string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
+                    EditorLogic.LoadShipFromFile(tempFile);
+                    EditorLogic.fetch.shipNameField.Text = KCT_GameStates.launchedVessel.shipName;
+                    KCT_GameStates.delayStart = false;
+                }
             }
             else if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
@@ -672,6 +679,23 @@ namespace Kerbal_Construction_Time
                         KCT_GameStates.delayStart = false;
                     }
                 }
+
+               /* if (HighLogic.LoadedSceneIsEditor)
+                {
+                    if (KCT_GameStates.delayStart)
+                    {
+                        if (KCT_GameStates.EditorShipEditingMode)
+                        {
+                            string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
+                            EditorLogic.LoadShipFromFile(tempFile);
+                            //KCT_GameStates.EditorShipEditingMode = false;
+                        }
+                        KCT_GameStates.delayStart = false;
+                    }
+
+                }*/
+
+
                 KCT_Utilities.ProgressBuildTime();
             }
             catch (IndexOutOfRangeException e)

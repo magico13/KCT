@@ -310,40 +310,36 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.warpInitiated = false;
             }
 
+            KCT_BuildListVessel vessel = null;
             if (ListIdentifier == 0) //VAB list
             {
-                KCT_BuildListVessel blv = KCT_GameStates.VABList[index];
+                vessel = KCT_GameStates.VABList[index];
                 KCT_GameStates.VABList.RemoveAt(index);
-                KCT_GameStates.VABWarehouse.Add(blv);
-                if (CurrentGameIsCareer())
-                    AddScienceWithMessage((float)(KCT_GameStates.RDUpgrades[0] * 0.5 * blv.buildPoints / 86400));
-                List<string> trackedParts = new List<string>();
-                foreach (string p in blv.GetPartNames())
-                {
-                    if (!trackedParts.Contains(p))
-                    {
-                        AddPartToTracker(p);
-                        trackedParts.Add(p);
-                    }
-                }
+                KCT_GameStates.VABWarehouse.Add(vessel);
             }
             else if (ListIdentifier == 1)//SPH list
             {
-                KCT_BuildListVessel blv = KCT_GameStates.SPHList[index];
+                vessel = KCT_GameStates.SPHList[index];
                 KCT_GameStates.SPHList.RemoveAt(index);
-                KCT_GameStates.SPHWarehouse.Add(blv);
-                if (CurrentGameIsCareer())
-                    AddScienceWithMessage((float)(KCT_GameStates.RDUpgrades[0] * 0.5 * blv.buildPoints / 86400));
-                List<string> trackedParts = new List<string>();
-                foreach (string p in blv.GetPartNames())
+                KCT_GameStates.SPHWarehouse.Add(vessel);
+            }
+
+            //Assign science based on science rate
+            if (CurrentGameIsCareer() && !vessel.cannotEarnScience)
+                AddScienceWithMessage((float)(KCT_GameStates.RDUpgrades[0] * 0.5 * vessel.buildPoints / 86400));
+
+            //Add parts to the tracker
+            List<string> trackedParts = new List<string>();
+            foreach (string p in vessel.GetPartNames()) 
+            {
+                if (!trackedParts.Contains(p))
                 {
-                    if (!trackedParts.Contains(p))
-                    {
-                        AddPartToTracker(p);
-                        trackedParts.Add(p);
-                    }
+                    AddPartToTracker(p);
+                    trackedParts.Add(p);
                 }
             }
+
+
             foreach (KCT_BuildListVessel blv in KCT_GameStates.VABList)
             {
                 List<string> ship = blv.GetPartNames();
@@ -479,9 +475,21 @@ namespace Kerbal_Construction_Time
             System.IO.File.Delete(backupFile);
         }
 
-        public static void AddVesselToBuildList(bool useInventory)
+
+        public static KCT_BuildListVessel AddVesselToBuildList()
+        {
+            return AddVesselToBuildList(true);
+        }
+
+        public static KCT_BuildListVessel AddVesselToBuildList(bool useInventory)
         {
             KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.Parts, true, useInventory), EditorLogic.FlagURL);
+            blv.shipName = EditorLogic.fetch.shipNameField.Text;
+            return AddVesselToBuildList(blv, useInventory);
+        }
+
+        public static KCT_BuildListVessel AddVesselToBuildList(KCT_BuildListVessel blv, bool useInventory)
+        {
             string type = "";
             if (blv.type == KCT_BuildListVessel.ListType.VAB)
             {
@@ -495,45 +503,16 @@ namespace Kerbal_Construction_Time
             }
             if (useInventory)
             {
-                foreach (Part p in EditorLogic.fetch.ship.Parts)
+                foreach (string p in blv.GetPartNames())
                 {
                     if (KCT_Utilities.RemovePartFromInventory(p))
-                        blv.InventoryParts.Add(p.partInfo.name);
+                        blv.InventoryParts.Add(p);
                 }
             }
-            blv.shipName = EditorLogic.fetch.shipNameField.Text;
             Debug.Log("[KCT] Added " + blv.shipName + " to " + type + " build list.");
-            var message = new ScreenMessage("\n\n[KCT] Added " + blv.shipName + " to "+type+" build list.", 4.0f, ScreenMessageStyle.UPPER_RIGHT);
+            var message = new ScreenMessage("\n\n[KCT] Added " + blv.shipName + " to " + type + " build list.", 4.0f, ScreenMessageStyle.UPPER_RIGHT);
             ScreenMessages.PostScreenMessage(message, true);
-        }
-
-        public static void AddVesselToBuildList()
-        {
-            AddVesselToBuildList(true);
-        }
-
-        public static void AddVesselToBuildList(KCT_BuildListVessel blv)
-        {
-            //KCT_BuildListVessel blv = vessel.NewCopy(true);
-            string type = "";
-            if (blv.type == KCT_BuildListVessel.ListType.VAB)
-            {
-                KCT_GameStates.VABList.Add(blv);
-                type = "VAB";
-            }
-            else if (blv.type == KCT_BuildListVessel.ListType.SPH)
-            {
-                KCT_GameStates.SPHList.Add(blv);
-                type = "SPH";
-            }
-            foreach (string p in blv.GetPartNames())
-            {
-                if (KCT_Utilities.RemovePartFromInventory(p))
-                    blv.InventoryParts.Add(p);
-            }
-            Debug.Log("[KCT] Added " + blv.shipName + " to " + type + " build list.");
-            var message = new ScreenMessage("[KCT] Added " + blv.shipName + " to " + type + " build list.", 4.0f, ScreenMessageStyle.UPPER_RIGHT);
-            ScreenMessages.PostScreenMessage(message, true);
+            return blv;
         }
 
         public static IKCTBuildItem NextThingToFinish()

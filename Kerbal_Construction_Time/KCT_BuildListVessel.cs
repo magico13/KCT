@@ -17,6 +17,7 @@ namespace Kerbal_Construction_Time
         public List<string> InventoryParts;
         public ConfigNode shipNode;
         public Guid id;
+        public bool cannotEarnScience = false;
         public double buildRate { get { return KCT_Utilities.GetBuildRate(this); } }
         public double timeLeft
         {
@@ -112,18 +113,24 @@ namespace Kerbal_Construction_Time
             bool removed = false;
             if (type == ListType.SPH)
             {
-                removed = KCT_GameStates.SPHWarehouse.Remove(this);
+                if (KCT_GameStates.SPHWarehouse.Contains(this))
+                    removed = KCT_GameStates.SPHWarehouse.Remove(this);
+                else if (KCT_GameStates.SPHList.Contains(this))
+                    removed = KCT_GameStates.SPHList.Remove(this);
                 typeName="SPH";
             }
             else if (type == ListType.VAB)
             {
-                removed = KCT_GameStates.VABWarehouse.Remove(this);
+                if (KCT_GameStates.VABWarehouse.Contains(this))
+                    removed = KCT_GameStates.VABWarehouse.Remove(this);
+                else if (KCT_GameStates.VABList.Contains(this))
+                    removed = KCT_GameStates.VABList.Remove(this);
                 typeName="VAB";
             }
-            Debug.Log("[KCT] Removing " + shipName + " from "+ typeName +" storage.");
+            Debug.Log("[KCT] Removing " + shipName + " from "+ typeName +" storage/list.");
             if (!removed)
             {
-                Debug.Log("[KCT] Failed to remove ship from storage! Performing direct comparison of ids...");
+                Debug.Log("[KCT] Failed to remove ship from list! Performing direct comparison of ids...");
                 foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHWarehouse)
                 {
                     if (blv.id == this.id)
@@ -140,6 +147,28 @@ namespace Kerbal_Construction_Time
                         {
                             Debug.Log("[KCT] Ship found in VAB storage. Removing...");
                             removed = KCT_GameStates.VABWarehouse.Remove(blv);
+                        }
+                    }
+                }
+                if (!removed)
+                {
+                    foreach (KCT_BuildListVessel blv in KCT_GameStates.VABList)
+                    {
+                        if (blv.id == this.id)
+                        {
+                            Debug.Log("[KCT] Ship found in VAB List. Removing...");
+                            removed = KCT_GameStates.VABList.Remove(blv);
+                        }
+                    }
+                }
+                if (!removed)
+                {
+                    foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHList)
+                    {
+                        if (blv.id == this.id)
+                        {
+                            Debug.Log("[KCT] Ship found in SPH list. Removing...");
+                            removed = KCT_GameStates.SPHList.Remove(blv);
                         }
                     }
                 }
