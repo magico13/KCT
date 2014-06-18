@@ -347,6 +347,22 @@ namespace Kerbal_Construction_Time
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
                 GUILayout.EndHorizontal();
+                GUILayout.Label("");
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Simulate"))
+                {
+                    simulationConfigPosition.height = 1;
+                    EditorLogic.fetch.Lock(true, false, true, "KCTGUILock");
+                    showSimConfig = true;
+                    //KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
+                }
+                if (GUILayout.Button("Part Inventory", GUILayout.ExpandHeight(true)))
+                {
+                    showInventory = !showInventory;
+                    editorWindowPosition.width = 275;
+                    editorWindowPosition.height = 1;
+                }
+                GUILayout.EndHorizontal();
             }
 
 
@@ -710,7 +726,9 @@ namespace Kerbal_Construction_Time
             }*/
             if (GUILayout.Button("Build It!"))
             {
-                KCT_Utilities.AddVesselToBuildList(KCT_GameStates.launchedVessel, useInventory);
+                KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
+                toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.GetPartNames(), true, useInventory);
+                KCT_Utilities.AddVesselToBuildList(toBuild, useInventory);
             }
             if (GUILayout.Button("Restart Simulation"))
             {
