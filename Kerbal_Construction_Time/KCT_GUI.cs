@@ -308,9 +308,9 @@ namespace Kerbal_Construction_Time
             }
             else //Edit mode
             {
-                KCT_BuildListVessel ship = KCT_GameStates.launchedVessel;
-                double origBP = KCT_Utilities.GetBuildTime(ship.GetPartNames(), true, ship.InventoryParts.Count > 0);
-                double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.parts, true, ship.InventoryParts.Count > 0);
+                KCT_BuildListVessel ship = KCT_GameStates.editedVessel;
+                double origBP = ship.isFinished ? KCT_Utilities.GetBuildTime(ship.GetPartNames(), true, useInventory) : ship.buildPoints; //If the ship is finished, recalculate times. Else, use predefined times.
+                double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.parts, true, useInventory);
                 double difference = Math.Abs(buildTime - origBP);
                 if (ship.progress > origBP) ship.progress = origBP;
                 GUILayout.Label("Original: " + Math.Max(0, Math.Round(ship.progress, 2)) + "/" + Math.Round(origBP, 2) + " BP (" + Math.Max(0, Math.Round(100 * (ship.progress / origBP), 2)) + "%)");
@@ -362,14 +362,14 @@ namespace Kerbal_Construction_Time
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
                 GUILayout.EndHorizontal();
-                GUILayout.Label("");
+                //GUILayout.Label("");
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Simulate"))
                 {
                     simulationConfigPosition.height = 1;
                     EditorLogic.fetch.Lock(true, false, true, "KCTGUILock");
                     showSimConfig = true;
-                    //KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
+                    KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                 }
                 if (GUILayout.Button("Part Inventory", GUILayout.ExpandHeight(true)))
                 {
@@ -739,12 +739,12 @@ namespace Kerbal_Construction_Time
                 showSimulationCompleteFlight = true;
                 showSimulationWindow = false;
             }*/
-            if (GUILayout.Button("Build It!"))
+         /*   if (GUILayout.Button("Build It!"))  //Huge issue with this: the persistence is reset upon exit, nullifying additions.
             {
                 KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
                 toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.GetPartNames(), true, useInventory);
                 KCT_Utilities.AddVesselToBuildList(toBuild, useInventory);
-            }
+            }*/
             if (GUILayout.Button("Restart Simulation"))
             {
                 showSimulationWindow = false;
@@ -1792,7 +1792,7 @@ namespace Kerbal_Construction_Time
                 string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
                 b.shipNode.Save(tempFile);
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE); 
-                KCT_GameStates.launchedVessel = b;
+                KCT_GameStates.editedVessel = b;
                 KCT_GameStates.EditorShipEditingMode = true;
 
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_EXIT, "KCTEditExit");

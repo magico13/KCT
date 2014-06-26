@@ -20,7 +20,7 @@ namespace Kerbal_Construction_Time
 
         public override void OnDecodeFromConfigNode()
         {
-            if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
+            //if (HighLogic.LoadedScene == GameScenes.SPACECENTER) //With the new system of loading, these are unnecessary.
             {
                 KCT_GameStates.VABList.Clear();
                 KCT_GameStates.SPHList.Clear();
@@ -30,25 +30,25 @@ namespace Kerbal_Construction_Time
             foreach (BuildListItem b in VABBuildList)
             {
                 KCT_BuildListVessel blv = b.ToBuildListVessel();
-                if (ListContains(blv, KCT_GameStates.VABList) < 0)
+                //if (ListContains(blv, KCT_GameStates.VABList) < 0)
                     KCT_GameStates.VABList.Add(blv);
             }
             foreach (BuildListItem b in SPHBuildList)
             {
                 KCT_BuildListVessel blv = b.ToBuildListVessel();
-                if (ListContains(blv, KCT_GameStates.SPHList) < 0)
+                //if (ListContains(blv, KCT_GameStates.SPHList) < 0)
                     KCT_GameStates.SPHList.Add(blv);
             }
             foreach (BuildListItem b in VABWarehouse)
             {
                 KCT_BuildListVessel blv = b.ToBuildListVessel();
-                if (ListContains(blv, KCT_GameStates.VABWarehouse) < 0)
+               // if (ListContains(blv, KCT_GameStates.VABWarehouse) < 0)
                     KCT_GameStates.VABWarehouse.Add(blv);
             }
             foreach (BuildListItem b in SPHWarehouse)
             {
                 KCT_BuildListVessel blv = b.ToBuildListVessel();
-                if (ListContains(blv, KCT_GameStates.SPHWarehouse) < 0)
+               // if (ListContains(blv, KCT_GameStates.SPHWarehouse) < 0)
                     KCT_GameStates.SPHWarehouse.Add(blv);
             }
         }

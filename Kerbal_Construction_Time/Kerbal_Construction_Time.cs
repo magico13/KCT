@@ -230,7 +230,7 @@ namespace Kerbal_Construction_Time
             {
                 try
                 {
-                    Debug.Log("[KCT[ Adding InternalModule scenario to game '" + HighLogic.CurrentGame.Title + "'");
+                    Debug.Log("[KCT] Adding InternalModule scenario to game '" + HighLogic.CurrentGame.Title + "'");
                     HighLogic.CurrentGame.AddProtoScenarioModule(typeof(KerbalConstructionTimeData), new GameScenes[] {GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.EDITOR, GameScenes.SPH, GameScenes.TRACKSTATION});
                     // the game will add this scenario to the appropriate persistent file on save from now on
                 }
@@ -267,22 +267,12 @@ namespace Kerbal_Construction_Time
                 return;
 
             //Begin primary mod functions
-            if (!KCT_Events.eventAdded)
+            if (!KCT_Events.instance.eventAdded)
             {
                 if (KCT_GameStates.settings.CheckForUpdates) //Check for updates
                     KCT_UpdateChecker.CheckForUpdate(false);
-                if (!KCT_GameStates.settings.DisableBuildTime)
-                {
-                    GameEvents.onGUILaunchScreenSpawn.Add(KCT_Events.launchScreenOpenEvent);
-                }
-                GameEvents.onVesselRecovered.Add(KCT_Events.vesselRecoverEvent);
-                GameEvents.onVesselDestroy.Add(KCT_Events.vesselDestroyEvent);
-                GameEvents.onLaunch.Add(KCT_Events.vesselLaunchEvent);
-                GameEvents.onGameSceneLoadRequested.Add(KCT_Events.gameSceneEvent);
-                GameEvents.onVesselSOIChanged.Add(KCT_Events.SOIChangeEvent);
-                GameEvents.OnTechnologyResearched.Add(KCT_Events.TechUnlockEvent);
 
-                KCT_Events.eventAdded = true;
+                KCT_Events.instance.addEvents();
             }
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             
@@ -304,10 +294,10 @@ namespace Kerbal_Construction_Time
                 }
                 if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
                 {
+                    KCT_GameStates.delayStart = false;
                     string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
                     EditorLogic.LoadShipFromFile(tempFile);
                     EditorLogic.fetch.shipNameField.Text = KCT_GameStates.launchedVessel.shipName;
-                    KCT_GameStates.delayStart = false;
                 }
             }
             else if (HighLogic.LoadedScene == GameScenes.SPACECENTER)

@@ -8,9 +8,31 @@ namespace Kerbal_Construction_Time
 {
     class KCT_Events
     {
-        public static bool eventAdded = false;
+        public static KCT_Events instance = new KCT_Events();
+        public bool eventAdded;
 
-        public static void TechUnlockEvent(GameEvents.HostTargetAction<RDTech, RDTech.OperationResult> ev)
+        public KCT_Events()
+        {
+            eventAdded = false;
+        }
+
+        public void addEvents()
+        {
+            if (!KCT_GameStates.settings.DisableBuildTime)
+            {
+                GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
+            }
+            GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
+            GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
+            GameEvents.onLaunch.Add(vesselLaunchEvent);
+            GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
+            GameEvents.onVesselSOIChanged.Add(SOIChangeEvent);
+            GameEvents.OnTechnologyResearched.Add(TechUnlockEvent);
+
+            eventAdded = true;
+        }
+
+        public void TechUnlockEvent(GameEvents.HostTargetAction<RDTech, RDTech.OperationResult> ev)
         {
             if (ev.target == RDTech.OperationResult.Successful)
             {
@@ -38,7 +60,7 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public static void gameSceneEvent(GameScenes scene)
+        public void gameSceneEvent(GameScenes scene)
         {
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
             if (validScenes.Contains(scene))
@@ -60,7 +82,7 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public static void SOIChangeEvent(GameEvents.HostedFromToAction<Vessel, CelestialBody> ev)
+        public void SOIChangeEvent(GameEvents.HostedFromToAction<Vessel, CelestialBody> ev)
         {
             List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
             if (!invalidTypes.Contains(ev.host.vesselType) && !KCT_GameStates.BodiesVisited.Contains(ev.to.bodyName) && !KCT_GameStates.flightSimulated)
@@ -71,12 +93,12 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public static void launchScreenOpenEvent(GameEvents.VesselSpawnInfo v)
+        public void launchScreenOpenEvent(GameEvents.VesselSpawnInfo v)
         {
             KCT_GameStates.flightSimulated = true;
         }
 
-        public static void vesselLaunchEvent(EventReport e)
+        public void vesselLaunchEvent(EventReport e)
         {
             if (KCT_GameStates.flightSimulated && KCT_GameStates.settings.SimulationTimeLimit > 0)
             {
@@ -84,7 +106,7 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public static void vesselRecoverEvent(ProtoVessel v)
+        public void vesselRecoverEvent(ProtoVessel v)
         {
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
             {
@@ -97,7 +119,7 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public static void vesselDestroyEvent(Vessel v)
+        public void vesselDestroyEvent(Vessel v)
         {
             if (v != null && !(HighLogic.LoadedSceneIsFlight && v.isActiveVessel) && v.mainBody.bodyName == "Kerbin" && (!v.loaded || v.packed) && v.altitude < 35000 &&
                (v.situation == Vessel.Situations.FLYING || v.situation == Vessel.Situations.SUB_ORBITAL) && !v.isEVA)
