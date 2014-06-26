@@ -56,6 +56,7 @@
     <Compile Include="IKCTBuildItem.cs" />
     <Compile Include="KCT_BuildListStorage.cs" />
     <Compile Include="KCT_BuildListVessel.cs" />
+    <Compile Include="KCT_Events.cs" />
     <Compile Include="KCT_GameStates.cs" />
     <Compile Include="KCT_GUI.cs" />
     <Compile Include="KCT_DataStorage.cs" />

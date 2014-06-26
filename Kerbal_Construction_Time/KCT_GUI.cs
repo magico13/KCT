@@ -315,7 +315,22 @@ namespace Kerbal_Construction_Time
                 if (ship.progress > origBP) ship.progress = origBP;
                 GUILayout.Label("Original: " + Math.Max(0, Math.Round(ship.progress, 2)) + "/" + Math.Round(origBP, 2) + " BP (" + Math.Max(0, Math.Round(100 * (ship.progress / origBP), 2)) + "%)");
                 GUILayout.Label("Edited: " + Math.Max(0, Math.Round(ship.progress - (1.1 * difference), 2)) + "/" + Math.Round(buildTime, 2) + " BP (" + Math.Max(0, Math.Round(100 * ((ship.progress-(1.1*difference)) / buildTime), 2)) + "%)");
-                
+
+                KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Build Time at ");
+                //+ KCT_Utilities.GetBuildRate(0, type) + " BP/s:", 
+                if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type).ToString();
+                buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
+                //double.TryParse(tempString, out buildRateForDisplay);
+                GUILayout.Label(" BP/s:");
+                GUILayout.EndHorizontal();
+                double bR;
+                if (double.TryParse(buildRateForDisplay, out bR)) GUILayout.Label(KCT_Utilities.GetFormattedTime(buildTime / bR));
+                else GUILayout.Label("Invalid Build Rate");
+
+                useInventory = GUILayout.Toggle(useInventory, " Use parts from inventory?");
+
                 //GUILayout.Label("Difference: " + Math.Round(Math.Abs(difference), 2)+" BP");
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Save Edits"))

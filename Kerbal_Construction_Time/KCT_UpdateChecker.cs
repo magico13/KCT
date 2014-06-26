@@ -9,9 +9,9 @@ namespace Kerbal_Construction_Time
     class KCT_UpdateChecker
     {
         public static bool UpdateFound = false;
-        public static string CurrentVersion = "0.7.2.0";
+        public static string CurrentVersion = "0.6.2.0";
         public static String WebVersion = "";
-        static string updateSite = "http://magico13.net/KCT/latest";
+        static string updateSite = "http://magico13.net/KCT/latest-0-23-5";
         public static Boolean CheckForUpdate(bool ForceCheck)
         {
             if (ForceCheck || WebVersion == "")
@@ -21,7 +21,7 @@ namespace Kerbal_Construction_Time
                 while (!www.isDone) { }
 
                 WebVersion = www.text.Trim();
-                Debug.Log("[KCT] Current version: " + CurrentVersion);
+                //Debug.Log("[KCT] Current version: " + CurrentVersion);
                 Debug.Log("[KCT] Received version: " + WebVersion);
                 
                 if (WebVersion == "")
@@ -30,9 +30,9 @@ namespace Kerbal_Construction_Time
                     UpdateFound = CompareVersions(WebVersion, CurrentVersion);
             }
             if (UpdateFound)
-                Debug.Log("[KCT] Update found!");
+                Debug.Log("[KCT] Update found: "+WebVersion+" Current: "+CurrentVersion);
             else
-                Debug.Log("[KCT] No new updates.");
+                Debug.Log("[KCT] No new updates. Current: " + CurrentVersion);
             return UpdateFound;
         }
 

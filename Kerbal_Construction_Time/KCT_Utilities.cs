@@ -171,7 +171,7 @@ namespace Kerbal_Construction_Time
                 if (KCT_GameStates.VABUpgrades.Count - 1 >= index)
                 {
                     ret = KCT_GameStates.VABUpgrades[index] * (index+1) * 0.05;
-                    if (index == 0) ret += 1;
+                    if (index == 0) ret += 0.1;
                 }
             }
             else if (type == KCT_BuildListVessel.ListType.SPH)
@@ -179,7 +179,7 @@ namespace Kerbal_Construction_Time
                 if (KCT_GameStates.SPHUpgrades.Count - 1 >= index)
                 {
                     ret = KCT_GameStates.SPHUpgrades[index] * (index+1) * 0.05;
-                    if (index == 0) ret += 1;
+                    if (index == 0) ret += 0.1;
                 }
             }
             else if (type == KCT_BuildListVessel.ListType.TechNode)

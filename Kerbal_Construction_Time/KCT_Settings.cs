@@ -31,7 +31,7 @@ namespace Kerbal_Construction_Time
             MaxTimeWarp = TimeWarp.fetch.warpRates.Count() - 1;
             EnableAllBodies = false;
             ForceStopWarp = false;
-            SandboxUpgrades = 30;
+            SandboxUpgrades = 45;
             InstantTechUnlock = false;
             DisableBuildTime = false;
             CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
