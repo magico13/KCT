@@ -259,6 +259,7 @@ namespace Kerbal_Construction_Time
 
         private static bool showInventory = false, useInventory = true;
         private static string currentCategoryString = "NONE";
+        private static int currentCategoryInt = -1;
         private static string buildRateForDisplay;
         private static void DrawEditorGUI(int windowID)
         {
@@ -299,7 +300,7 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                 }
                 GUILayout.EndHorizontal();
-                if (GUILayout.Button("Part Inventory", GUILayout.ExpandHeight(true)))
+                if (GUILayout.Button("Part Inventory"))
                 {
                     showInventory = !showInventory;
                     editorWindowPosition.width = 275;
@@ -371,7 +372,7 @@ namespace Kerbal_Construction_Time
                     showSimConfig = true;
                     KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                 }
-                if (GUILayout.Button("Part Inventory", GUILayout.ExpandHeight(true)))
+                if (GUILayout.Button("Part Inventory"))
                 {
                     showInventory = !showInventory;
                     editorWindowPosition.width = 275;
@@ -383,18 +384,30 @@ namespace Kerbal_Construction_Time
 
             if (showInventory)
             {
-                List<String> categories = new List<String> { "Pods", "Propulsion", "Control", "Structural", "Aero", "Utility", "Science" };
+                List<string> categories = new List<string> { "Pods", "Prop.", "Ctl.", "Struct.", "Aero", "Util.", "Sci." };
+                int lastCat = currentCategoryInt;
+                currentCategoryInt = GUILayout.Toolbar(currentCategoryInt, categories.ToArray(), GUILayout.ExpandWidth(false));
+                if (GUI.changed)
+                {
+                    editorWindowPosition.height = 1;
+                    showBLPlus = false;
+                    if (lastCat == currentCategoryInt)
+                    {
+                        currentCategoryInt = -1;
+                    }
+                }
                 Dictionary<String, int> activeList = new Dictionary<string, int>();
                 PartCategories CategoryCurrent = PartCategories.none;
-                switch (currentCategoryString)
+                switch (currentCategoryInt)
                 {
-                    case "Aero": CategoryCurrent = PartCategories.Aero; break;
-                    case "Control": CategoryCurrent = PartCategories.Control; break;
-                    case "Pods": CategoryCurrent = PartCategories.Pods; break;
-                    case "Propulsion": CategoryCurrent = PartCategories.Propulsion; break;
-                    case "Science": CategoryCurrent = PartCategories.Science; break;
-                    case "Structural": CategoryCurrent = PartCategories.Structural; break;
-                    case "Utility": CategoryCurrent = PartCategories.Utility; break;
+                    case 0: CategoryCurrent = PartCategories.Pods; break;
+                    case 1: CategoryCurrent = PartCategories.Propulsion; break;
+                    case 2: CategoryCurrent = PartCategories.Control; break;
+                    case 3: CategoryCurrent = PartCategories.Structural; break;
+                    case 4: CategoryCurrent = PartCategories.Aero; break;
+                    case 5: CategoryCurrent = PartCategories.Utility; break;
+                    case 6: CategoryCurrent = PartCategories.Science; break;
+                    default: CategoryCurrent = PartCategories.none; break;
                 }
 
                 for (int i = 0; i < KCT_GameStates.PartInventory.Count; i++)
@@ -413,7 +426,7 @@ namespace Kerbal_Construction_Time
                         }
                     }
                 }
-                GUILayout.BeginHorizontal();
+                /*GUILayout.BeginHorizontal();
                 foreach (string cat in categories)
                 {
                     if (GUILayout.Button(cat))
@@ -422,7 +435,7 @@ namespace Kerbal_Construction_Time
                         editorWindowPosition.height = 135;
                     }
                 }
-                GUILayout.EndHorizontal();
+                GUILayout.EndHorizontal();*/
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((activeList.Count + 1) * 30, Screen.height / 1.4F))); //
                 GUILayout.BeginHorizontal();
 
