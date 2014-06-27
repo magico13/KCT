@@ -462,7 +462,7 @@ namespace Kerbal_Construction_Time
                         foreach (KCT_BuildListVessel b in KCT_GameStates.VABList)
                             b.GetPartNames();
 
-                        if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER && KCT_GameStates.TotalUpgradePoints == 0)
+                        if (KCT_Utilities.CurrentGameIsCareer() && KCT_GameStates.TotalUpgradePoints == 0)
                         {
                             ConfigNode CN = new ConfigNode();
                             ResearchAndDevelopment.Instance.snapshot.Save(CN);
@@ -470,6 +470,7 @@ namespace Kerbal_Construction_Time
                             Debug.Log("[KCT] technodes length: " + techNodes.Length);
                             KCT_GameStates.TotalUpgradePoints = techNodes.Length + 14;
                         }
+                        KCT_GameStates.upgradesUpdated = true;
                         KCT_GameStates.delayStart = false;
                     }
                 }

@@ -94,6 +94,7 @@ namespace Kerbal_Construction_Time
     public class KCT_DataStorage : ConfigNodeStorage
     {
         [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && KCT_GameStates.settings.SandboxEnabled));
+        [Persistent] bool upgradesUpdated = false;
         [Persistent] List<int> VABUpgrades = new List<int>() {0};
         [Persistent] List<int> SPHUpgrades = new List<int>() {0};
         [Persistent] List<int> RDUpgrades = new List<int>() {0,0};
@@ -112,6 +113,16 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.SPHUpgrades = SPHUpgrades;
             KCT_GameStates.RDUpgrades = RDUpgrades;
             KCT_GameStates.TotalUpgradePoints = TotalUpgradePoints;
+            //Fix for change to number of upgrades at start.
+            if (upgradesUpdated == false)
+            {
+                KCT_GameStates.TotalUpgradePoints += 15;
+                KCT_GameStates.VABUpgrades = new List<int>() { 0 };
+                KCT_GameStates.SPHUpgrades = new List<int>() { 0 };
+                KCT_GameStates.RDUpgrades = new List<int>() { 0, 0 };
+                upgradesUpdated = true;
+            }
+            KCT_GameStates.upgradesUpdated = upgradesUpdated;
         }
 
         public override void OnEncodeToConfigNode()
@@ -124,6 +135,7 @@ namespace Kerbal_Construction_Time
             SPHUpgrades = KCT_GameStates.SPHUpgrades;
             RDUpgrades = KCT_GameStates.RDUpgrades;
             TotalUpgradePoints = KCT_GameStates.TotalUpgradePoints;
+            upgradesUpdated = KCT_GameStates.upgradesUpdated;
         }
 
         private bool VesselIsInWorld(Guid id)
