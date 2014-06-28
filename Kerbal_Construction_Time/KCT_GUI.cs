@@ -374,30 +374,31 @@ namespace Kerbal_Construction_Time
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Save Edits"))
                 {
-                    InputLockManager.RemoveControlLock("KCTEditExit");
-                    InputLockManager.RemoveControlLock("KCTEditLoad");
-                    InputLockManager.RemoveControlLock("KCTEditNew");
-
                     
-                    ship.RemoveFromBuildList();
                     KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(useInventory);//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                     newShip.progress = Math.Max(0, progress-(1.1*difference));
                     if (ship.isFinished)
                         newShip.cannotEarnScience = true;
+                    ship.RemoveFromBuildList();
 
                     //KCT_Utilities.AddVesselToBuildList(newShip);
                     GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE); 
 
                     KCT_GameStates.EditorShipEditingMode = false;
-                    HighLogic.LoadScene(GameScenes.SPACECENTER);
-                }
-                if (GUILayout.Button("Cancel Edits"))
-                {
+
                     InputLockManager.RemoveControlLock("KCTEditExit");
                     InputLockManager.RemoveControlLock("KCTEditLoad");
                     InputLockManager.RemoveControlLock("KCTEditNew");
 
+                    HighLogic.LoadScene(GameScenes.SPACECENTER);
+                }
+                if (GUILayout.Button("Cancel Edits"))
+                {
                     KCT_GameStates.EditorShipEditingMode = false;
+                    InputLockManager.RemoveControlLock("KCTEditExit");
+                    InputLockManager.RemoveControlLock("KCTEditLoad");
+                    InputLockManager.RemoveControlLock("KCTEditNew");
+                    
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
                 GUILayout.EndHorizontal();

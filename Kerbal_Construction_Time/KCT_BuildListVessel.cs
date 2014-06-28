@@ -138,6 +138,7 @@ namespace Kerbal_Construction_Time
                     {
                         Debug.Log("[KCT] Ship found in SPH storage. Removing...");
                         removed = KCT_GameStates.SPHWarehouse.Remove(blv);
+                        break;
                     }
                 }
                 if (!removed)
@@ -148,6 +149,7 @@ namespace Kerbal_Construction_Time
                         {
                             Debug.Log("[KCT] Ship found in VAB storage. Removing...");
                             removed = KCT_GameStates.VABWarehouse.Remove(blv);
+                            break;
                         }
                     }
                 }
@@ -159,6 +161,7 @@ namespace Kerbal_Construction_Time
                         {
                             Debug.Log("[KCT] Ship found in VAB List. Removing...");
                             removed = KCT_GameStates.VABList.Remove(blv);
+                            break;
                         }
                     }
                 }
@@ -170,6 +173,7 @@ namespace Kerbal_Construction_Time
                         {
                             Debug.Log("[KCT] Ship found in SPH list. Removing...");
                             removed = KCT_GameStates.SPHList.Remove(blv);
+                            break;
                         }
                     }
                 }
