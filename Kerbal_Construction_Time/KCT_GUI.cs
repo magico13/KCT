@@ -258,7 +258,7 @@ namespace Kerbal_Construction_Time
         }
 
         private static bool showInventory = false, useInventory = true;
-        private static string currentCategoryString = "NONE";
+        //private static string currentCategoryString = "NONE";
         private static int currentCategoryInt = -1;
         private static string buildRateForDisplay;
         private static void DrawEditorGUI(int windowID)
@@ -277,10 +277,28 @@ namespace Kerbal_Construction_Time
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
                 //double.TryParse(tempString, out buildRateForDisplay);
                 GUILayout.Label(" BP/s:");
-                GUILayout.EndHorizontal();
+                List<double> rates = new List<double>();
+                if (type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB();
+                else rates = KCT_Utilities.BuildRatesSPH();
                 double bR;
-                if (double.TryParse(buildRateForDisplay, out bR)) GUILayout.Label(KCT_Utilities.GetFormattedTime(buildTime / bR));
-                else GUILayout.Label("Invalid Build Rate");
+                if (double.TryParse(buildRateForDisplay, out bR))
+                {
+                    if (GUILayout.Button("*", GUILayout.ExpandWidth(false)))
+                    {
+                        if (rates.Contains(bR))
+                            bR = rates[(rates.IndexOf(bR) + 1) % rates.Count];
+                        else
+                            bR = rates[0];
+                        buildRateForDisplay = bR.ToString();
+                    }
+                    GUILayout.EndHorizontal();
+                    GUILayout.Label(KCT_Utilities.GetFormattedTime(buildTime / bR));
+                }
+                else
+                {
+                    GUILayout.EndHorizontal();
+                    GUILayout.Label("Invalid Build Rate");
+                }
 
                 useInventory = GUILayout.Toggle(useInventory, " Use parts from inventory?");
 
@@ -313,9 +331,11 @@ namespace Kerbal_Construction_Time
                 double origBP = ship.isFinished ? KCT_Utilities.GetBuildTime(ship.GetPartNames(), true, useInventory) : ship.buildPoints; //If the ship is finished, recalculate times. Else, use predefined times.
                 double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.parts, true, useInventory);
                 double difference = Math.Abs(buildTime - origBP);
-                if (ship.progress > origBP) ship.progress = origBP;
-                GUILayout.Label("Original: " + Math.Max(0, Math.Round(ship.progress, 2)) + "/" + Math.Round(origBP, 2) + " BP (" + Math.Max(0, Math.Round(100 * (ship.progress / origBP), 2)) + "%)");
-                GUILayout.Label("Edited: " + Math.Max(0, Math.Round(ship.progress - (1.1 * difference), 2)) + "/" + Math.Round(buildTime, 2) + " BP (" + Math.Max(0, Math.Round(100 * ((ship.progress-(1.1*difference)) / buildTime), 2)) + "%)");
+                double progress;
+                if (ship.isFinished) progress = origBP;
+                else progress = ship.progress;
+                GUILayout.Label("Original: " + Math.Max(0, Math.Round(progress, 2)) + "/" + Math.Round(origBP, 2) + " BP (" + Math.Max(0, Math.Round(100 * (progress / origBP), 2)) + "%)");
+                GUILayout.Label("Edited: " + Math.Max(0, Math.Round(progress - (1.1 * difference), 2)) + "/" + Math.Round(buildTime, 2) + " BP (" + Math.Max(0, Math.Round(100 * ((progress-(1.1*difference)) / buildTime), 2)) + "%)");
 
                 KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
                 GUILayout.BeginHorizontal();
@@ -325,10 +345,28 @@ namespace Kerbal_Construction_Time
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
                 //double.TryParse(tempString, out buildRateForDisplay);
                 GUILayout.Label(" BP/s:");
-                GUILayout.EndHorizontal();
+                List<double> rates = new List<double>();
+                if (ship.type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB();
+                else rates = KCT_Utilities.BuildRatesSPH();
                 double bR;
-                if (double.TryParse(buildRateForDisplay, out bR)) GUILayout.Label(KCT_Utilities.GetFormattedTime(buildTime / bR));
-                else GUILayout.Label("Invalid Build Rate");
+                if (double.TryParse(buildRateForDisplay, out bR))
+                {
+                    if (GUILayout.Button("*", GUILayout.ExpandWidth(false)))
+                    {
+                        if (rates.Contains(bR))
+                            bR = rates[(rates.IndexOf(bR) + 1) % rates.Count];
+                        else
+                            bR = rates[0];
+                        buildRateForDisplay = bR.ToString();
+                    }
+                    GUILayout.EndHorizontal();
+                    GUILayout.Label(KCT_Utilities.GetFormattedTime(Math.Abs(buildTime - progress) / bR));
+                }
+                else
+                {
+                    GUILayout.EndHorizontal();
+                    GUILayout.Label("Invalid Build Rate");
+                }
 
                 useInventory = GUILayout.Toggle(useInventory, " Use parts from inventory?");
 
@@ -342,9 +380,9 @@ namespace Kerbal_Construction_Time
 
                     
                     ship.RemoveFromBuildList();
-                    KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(ship.InventoryParts.Count > 0);//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
-                    newShip.progress = Math.Max(0, ship.progress-(1.1*difference));
-                    if (ship.timeLeft <= 0)
+                    KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(useInventory);//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
+                    newShip.progress = Math.Max(0, progress-(1.1*difference));
+                    if (ship.isFinished)
                         newShip.cannotEarnScience = true;
 
                     //KCT_Utilities.AddVesselToBuildList(newShip);
@@ -1589,8 +1627,8 @@ namespace Kerbal_Construction_Time
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Current: " + KCT_UpdateChecker.CurrentVersion);
-                if (KCT_UpdateChecker.UpdateFound)
-                    GUILayout.Label("Update: " + KCT_UpdateChecker.WebVersion);
+                if (KCT_UpdateChecker.WebVersion != "")
+                    GUILayout.Label("Latest: " + KCT_UpdateChecker.WebVersion);
                 GUILayout.EndHorizontal();
 
             }
@@ -1874,6 +1912,7 @@ namespace Kerbal_Construction_Time
                 centralWindowPosition.width = Screen.width / 8;
                 centralWindowPosition.xMin = (Screen.width - centralWindowPosition.width) / 2;
                 centralWindowPosition.height = 1;
+                showBuildList = false;
                 showBLPlus = false;
                 showRename = true;
                 newName = b.shipName;
@@ -1923,12 +1962,14 @@ namespace Kerbal_Construction_Time
                 showRename = false;
                 centralWindowPosition.width = 150;
                 centralWindowPosition.xMin = (Screen.width - 150) / 2;
+                showBuildList = true;
             }
             if (GUILayout.Button("Cancel"))
             {
                 centralWindowPosition.width = 150;
                 centralWindowPosition.xMin = (Screen.width - 150) / 2;
                 showRename = false;
+                showBuildList = true;
             }
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();

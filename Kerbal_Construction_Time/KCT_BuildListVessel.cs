@@ -40,7 +40,7 @@ namespace Kerbal_Construction_Time
                 return temp;
             } 
         }
-        public bool isFinished { get { return progress > buildPoints; } }
+        public bool isFinished { get { return progress >= buildPoints; } }
 
         public KCT_BuildListVessel(ShipConstruct s, String ls, double bP, String flagURL)
         {

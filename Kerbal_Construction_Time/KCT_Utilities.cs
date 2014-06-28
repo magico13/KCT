@@ -199,6 +199,22 @@ namespace Kerbal_Construction_Time
                 return 0;
         }
 
+        public static List<double> BuildRatesVAB()
+        {
+            List<double> rates = new List<double>();
+            for (int i=0; i<KCT_GameStates.VABUpgrades.Count; i++)
+                rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.VAB));
+            return rates;
+        }
+
+        public static List<double> BuildRatesSPH()
+        {
+            List<double> rates = new List<double>();
+            for (int i = 0; i < KCT_GameStates.SPHUpgrades.Count; i++)
+                rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.VAB));
+            return rates;
+        }
+
         private static double lastUT=0.0, UT;
         public static void ProgressBuildTime()
         {
