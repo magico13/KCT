@@ -17,7 +17,8 @@ namespace Kerbal_Construction_Time
         public List<string> InventoryParts;
         public ConfigNode shipNode;
         public Guid id;
-        public bool cannotEarnScience = false;
+        public bool cannotEarnScience;
+
         public double buildRate { get { return KCT_Utilities.GetBuildRate(this); } }
         public double timeLeft
         {
@@ -69,6 +70,7 @@ namespace Kerbal_Construction_Time
                 type = ListType.SPH;
             InventoryParts = new List<string>();
             id = Guid.NewGuid();
+            cannotEarnScience = false;
         }
 
         public KCT_BuildListVessel(String name, String ls, double bP, String flagURL)
@@ -84,6 +86,7 @@ namespace Kerbal_Construction_Time
             else
                 type = ListType.SPH;
             InventoryParts = new List<string>();
+            cannotEarnScience = false;
         }
 
         public KCT_BuildListVessel NewCopy(bool RecalcTime)

@@ -385,6 +385,7 @@ namespace Kerbal_Construction_Time
                     KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(KCT_Utilities.PartListToDict(ship.InventoryParts));//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                     newShip.progress = newProgress;
                     //newShip.buildPoints = buildTime;
+                    Debug.Log("[KCT] Finished? " + ship.isFinished);
                     if (ship.isFinished)
                         newShip.cannotEarnScience = true;
                     foreach (string s in newShip.InventoryParts) //Compare the old inventory parts and the new one, removing the new ones from the old

@@ -61,24 +61,44 @@ namespace Kerbal_Construction_Time
             SPHWarehouse.Clear();
             foreach (KCT_BuildListVessel b in KCT_GameStates.VABList)
             {
+                if (b.shipNode == null)
+                {
+                    Debug.Log("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN VABList");
+                    continue;
+                }
                 BuildListItem bls = new BuildListItem();
                 bls.FromBuildListVessel(b);
                 VABBuildList.Add(bls);
             }
             foreach (KCT_BuildListVessel b in KCT_GameStates.SPHList)
             {
+                if (b.shipNode == null)
+                {
+                    Debug.Log("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN SPHList");
+                    continue;
+                }
                 BuildListItem bls = new BuildListItem();
                 bls.FromBuildListVessel(b);
                 SPHBuildList.Add(bls);
             }
             foreach (KCT_BuildListVessel b in KCT_GameStates.VABWarehouse)
             {
+                if (b.shipNode == null)
+                {
+                    Debug.Log("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN VABWarehouse");
+                    continue;
+                }
                 BuildListItem bls = new BuildListItem();
                 bls.FromBuildListVessel(b);
                 VABWarehouse.Add(bls);
             }
             foreach (KCT_BuildListVessel b in KCT_GameStates.SPHWarehouse)
             {
+                if (b.shipNode == null)
+                {
+                    Debug.Log("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN SPHWarehouse");
+                    continue;
+                }
                 BuildListItem bls = new BuildListItem();
                 bls.FromBuildListVessel(b);
                 SPHWarehouse.Add(bls);
@@ -110,7 +130,8 @@ namespace Kerbal_Construction_Time
             String launchSite, flag;
             [Persistent]
             List<string> InventoryParts;
-
+            [Persistent]
+            bool cannotEarnScience;
 
             public KCT_BuildListVessel ToBuildListVessel()
             {
@@ -119,6 +140,7 @@ namespace Kerbal_Construction_Time
                 if (InventoryParts != null)
                     ret.InventoryParts = InventoryParts;
                 ret.id = new Guid(shipID);
+                ret.cannotEarnScience = cannotEarnScience;
                 return ret;
             }
 
@@ -132,6 +154,7 @@ namespace Kerbal_Construction_Time
                 this.shipName = blv.shipName;
                 this.InventoryParts = blv.InventoryParts;
                 this.shipID = blv.id.ToString();
+                this.cannotEarnScience = blv.cannotEarnScience;
                 
                 return this;
 
