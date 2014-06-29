@@ -327,15 +327,23 @@ namespace Kerbal_Construction_Time
             }
             else //Edit mode
             {
+                if (showInventory) //The part inventory is not shown in the editor mode
+                {
+                    showInventory = false;
+                    editorWindowPosition.width = 275;
+                    editorWindowPosition.height = 1;
+                }
+
                 KCT_BuildListVessel ship = KCT_GameStates.editedVessel;
-                double origBP = ship.isFinished ? KCT_Utilities.GetBuildTime(ship.GetPartNames(), true, useInventory) : ship.buildPoints; //If the ship is finished, recalculate times. Else, use predefined times.
-                double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.parts, true, useInventory);
+                double origBP = ship.isFinished ? KCT_Utilities.GetBuildTime(ship.GetPartNames(), true, ship.InventoryParts) : ship.buildPoints; //If the ship is finished, recalculate times. Else, use predefined times.
+                double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.parts, true, ship.InventoryParts);
                 double difference = Math.Abs(buildTime - origBP);
                 double progress;
                 if (ship.isFinished) progress = origBP;
                 else progress = ship.progress;
+                double newProgress = Math.Max(0, progress - (1.1 * difference));
                 GUILayout.Label("Original: " + Math.Max(0, Math.Round(progress, 2)) + "/" + Math.Round(origBP, 2) + " BP (" + Math.Max(0, Math.Round(100 * (progress / origBP), 2)) + "%)");
-                GUILayout.Label("Edited: " + Math.Max(0, Math.Round(progress - (1.1 * difference), 2)) + "/" + Math.Round(buildTime, 2) + " BP (" + Math.Max(0, Math.Round(100 * ((progress-(1.1*difference)) / buildTime), 2)) + "%)");
+                GUILayout.Label("Edited: " + Math.Round(newProgress, 2) + "/" + Math.Round(buildTime, 2) + " BP (" + Math.Round(100 * newProgress / buildTime, 2) + "%)");
 
                 KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
                 GUILayout.BeginHorizontal();
@@ -360,7 +368,7 @@ namespace Kerbal_Construction_Time
                         buildRateForDisplay = bR.ToString();
                     }
                     GUILayout.EndHorizontal();
-                    GUILayout.Label(KCT_Utilities.GetFormattedTime(Math.Abs(buildTime - progress) / bR));
+                    GUILayout.Label(KCT_Utilities.GetFormattedTime(Math.Abs(buildTime - newProgress) / bR));
                 }
                 else
                 {
@@ -368,18 +376,27 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label("Invalid Build Rate");
                 }
 
-                useInventory = GUILayout.Toggle(useInventory, " Use parts from inventory?");
+                //useInventory = GUILayout.Toggle(useInventory, " Use parts from inventory?");
 
                 //GUILayout.Label("Difference: " + Math.Round(Math.Abs(difference), 2)+" BP");
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Save Edits"))
                 {
-                    
-                    KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(useInventory);//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
-                    newShip.progress = Math.Max(0, progress-(1.1*difference));
+                    KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(KCT_Utilities.PartListToDict(ship.InventoryParts));//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
+                    newShip.progress = newProgress;
+                    //newShip.buildPoints = buildTime;
                     if (ship.isFinished)
                         newShip.cannotEarnScience = true;
+                    foreach (string s in newShip.InventoryParts) //Compare the old inventory parts and the new one, removing the new ones from the old
+                    {
+                        if (ship.InventoryParts.Contains(s))
+                            ship.InventoryParts.Remove(s);
+                    }
+                    foreach (string s in ship.InventoryParts) //Add the remaining old parts to the overall inventory
+                        KCT_Utilities.AddPartToInventory(s);
+
                     ship.RemoveFromBuildList();
+
 
                     //KCT_Utilities.AddVesselToBuildList(newShip);
                     GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE); 
@@ -389,7 +406,7 @@ namespace Kerbal_Construction_Time
                     InputLockManager.RemoveControlLock("KCTEditExit");
                     InputLockManager.RemoveControlLock("KCTEditLoad");
                     InputLockManager.RemoveControlLock("KCTEditNew");
-
+                    Debug.Log("[KCT] Edits saved.");
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
                 if (GUILayout.Button("Cancel Edits"))
@@ -398,7 +415,7 @@ namespace Kerbal_Construction_Time
                     InputLockManager.RemoveControlLock("KCTEditExit");
                     InputLockManager.RemoveControlLock("KCTEditLoad");
                     InputLockManager.RemoveControlLock("KCTEditNew");
-                    
+                    Debug.Log("[KCT] Edits cancelled.");
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
                 GUILayout.EndHorizontal();
@@ -411,12 +428,12 @@ namespace Kerbal_Construction_Time
                     showSimConfig = true;
                     KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                 }
-                if (GUILayout.Button("Part Inventory"))
+                /*if (GUILayout.Button("Part Inventory"))
                 {
                     showInventory = !showInventory;
                     editorWindowPosition.width = 275;
                     editorWindowPosition.height = 1;
-                }
+                }*/
                 GUILayout.EndHorizontal();
             }
 
@@ -944,70 +961,6 @@ namespace Kerbal_Construction_Time
                     listWindow = -1;
                 }
             }
-           /* GUILayout.BeginHorizontal();
-            if (GUILayout.Button("VAB List"))
-            {
-                if (listWindow == 1)
-                    listWindow = 0;
-                else
-                    listWindow = 1;
-                //buildListWindowPosition.height = 32 * KCT_GameStates.VABList.Count+3*32;
-                buildListWindowPosition.height = 1;
-                showBLPlus = false;
-            }
-            if (GUILayout.Button("SPH List"))
-            {
-                if (listWindow == 2)
-                    listWindow = 0;
-                else
-                    listWindow = 2;
-                //buildListWindowPosition.height = 32 * KCT_GameStates.SPHList.Count + 3 * 32;
-                buildListWindowPosition.height = 1;
-                showBLPlus = false;
-            }
-            if (GUILayout.Button("VAB Storage"))
-            {
-                if (listWindow == 3)
-                    listWindow = 0;
-                else
-                    listWindow = 3;
-                //buildListWindowPosition.height = 32 * KCT_GameStates.VABWarehouse.Count + 3 * 32;
-                buildListWindowPosition.height = 1;
-                showBLPlus = false;
-            }
-            if (GUILayout.Button("SPH Storage"))
-            {
-                if (listWindow == 4)
-                    listWindow = 0;
-                else
-                    listWindow = 4;
-                //buildListWindowPosition.height = 32 * KCT_GameStates.SPHWarehouse.Count + 3 * 32;
-                buildListWindowPosition.height = 1;
-                showBLPlus = false;
-            }
-            if (KCT_Utilities.CurrentGameIsCareer() && !KCT_GameStates.settings.InstantTechUnlock && GUILayout.Button("Tech"))
-            {
-                if (listWindow == 5)
-                    listWindow = 0;
-                else
-                    listWindow = 5;
-                //buildListWindowPosition.height = 32 * KCT_GameStates.SPHWarehouse.Count + 3 * 32;
-                buildListWindowPosition.height = 1;
-                showBLPlus = false;
-            }
-            if (HighLogic.LoadedScene == GameScenes.SPACECENTER && GUILayout.Button("Upgrades"))
-            {
-                showUpgradeWindow = true;
-                showBuildList = false;
-                showBLPlus = false;
-            }
-            if (HighLogic.LoadedScene == GameScenes.SPACECENTER && GUILayout.Button("Settings"))
-            {
-                showBuildList = false;
-                showBLPlus = false;
-                ShowSettings();
-            }
-            GUILayout.EndHorizontal();*/
             //Content of lists
             if (listWindow==0) //VAB Build List
             {
@@ -1921,7 +1874,7 @@ namespace Kerbal_Construction_Time
             }
             if (GUILayout.Button("Duplicate"))
             {
-                KCT_Utilities.AddVesselToBuildList(b.NewCopy(true), true);
+                KCT_Utilities.AddVesselToBuildList(b.NewCopy(true), b.InventoryParts.Count > 0);
             }
             if (GUILayout.Button("Close"))
             {

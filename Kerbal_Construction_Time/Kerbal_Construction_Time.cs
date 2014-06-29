@@ -482,6 +482,7 @@ namespace Kerbal_Construction_Time
                         KCT_GameStates.delayStart = false;
                         if (KCT_GameStates.EditorShipEditingMode)
                         {
+                            Debug.Log("[KCT] Editing " + KCT_GameStates.editedVessel.shipName);
                             EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
                         }
                     }

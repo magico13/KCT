@@ -81,7 +81,7 @@ namespace Kerbal_Construction_Time
             ret.id = Guid.NewGuid();
             if (RecalcTime)
             {
-                ret.buildPoints = KCT_Utilities.GetBuildTime(ret.GetPartNames(), true, true);
+                ret.buildPoints = KCT_Utilities.GetBuildTime(ret.GetPartNames(), true, this.InventoryParts.Count > 0);
             }
             return ret;
         }
