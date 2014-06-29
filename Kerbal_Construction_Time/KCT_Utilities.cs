@@ -122,7 +122,9 @@ namespace Kerbal_Construction_Time
 
         public static double GetBuildTime(List<AvailablePart> parts, bool useTracker, bool useInventory)
         {
-            return GetBuildTime(parts, useTracker, KCT_GameStates.PartInventory);
+            Dictionary<String, int> dict = new Dictionary<string, int>();
+            if (useInventory) dict = KCT_GameStates.PartInventory;
+            return GetBuildTime(parts, useTracker, dict);
         }
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, List<String> inventory)

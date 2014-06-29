@@ -446,7 +446,6 @@ namespace Kerbal_Construction_Time
                 if (GUI.changed)
                 {
                     editorWindowPosition.height = 1;
-                    showBLPlus = false;
                     if (lastCat == currentCategoryInt)
                     {
                         currentCategoryInt = -1;
@@ -1821,11 +1820,32 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             if (GUILayout.Button("Scrap"))
             {
+                Debug.Log("[KCT] Scrapping " + b.shipName);
                 if (listWindow < 2)
                 {
+                    List<AvailablePart> parts = b.ExtractedAvParts;
+                    int totalCost = 0;
+                    foreach (AvailablePart p in parts)
+                        totalCost += p.cost;
                     if (b.InventoryParts != null)
+                    {
                         foreach (String s in b.InventoryParts)
+                        {
+                            AvailablePart aP = parts.Find(a => a.name == s);
+                            totalCost -= aP.cost;
+                            parts.Remove(aP);
                             KCT_Utilities.AddPartToInventory(s);
+                        }
+                        totalCost = (int) (totalCost * b.ProgressPercent() / 100);
+                        int sum = 0;
+                        while (parts.Find(a => a.cost < (totalCost-sum)) != null)
+                        {
+                            AvailablePart aP = parts.Find(a => a.cost < (totalCost - sum));
+                            sum += aP.cost;
+                            parts.Remove(aP);
+                            KCT_Utilities.AddPartToInventory(aP.name);
+                        }
+                    }
                     buildList.RemoveAt(IndexSelected);
                 }
                 else

@@ -40,6 +40,18 @@ namespace Kerbal_Construction_Time
                 return temp;
             } 
         }
+        public List<AvailablePart> ExtractedAvParts
+        {
+            get
+            {
+                List<AvailablePart> temp = new List<AvailablePart>();
+                foreach (string s in this.GetPartNames())
+                {
+                    temp.Add(KCT_Utilities.GetAvailablePartByName(s));
+                }
+                return temp;
+            }
+        }
         public bool isFinished { get { return progress >= buildPoints; } }
 
         public KCT_BuildListVessel(ShipConstruct s, String ls, double bP, String flagURL)
