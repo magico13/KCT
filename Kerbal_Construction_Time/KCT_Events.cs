@@ -80,6 +80,13 @@ namespace Kerbal_Construction_Time
             {
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
             }
+            if (HighLogic.LoadedSceneIsFlight && scene != GameScenes.FLIGHT && KCT_GameStates.buildSimulatedVessel)
+            {
+                KCT_GameStates.buildSimulatedVessel = false;
+                KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
+                toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.GetPartNames(), true, KCT_GUI.useInventory);
+                KCT_Utilities.AddVesselToBuildList(toBuild, KCT_GUI.useInventory);
+            }
         }
 
         public void SOIChangeEvent(GameEvents.HostedFromToAction<Vessel, CelestialBody> ev)

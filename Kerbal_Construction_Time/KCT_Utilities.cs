@@ -522,7 +522,7 @@ namespace Kerbal_Construction_Time
         {
             InputLockManager.SetControlLock(ControlTypes.QUICKSAVE, "KCTLockSimQS");
             InputLockManager.SetControlLock(ControlTypes.QUICKLOAD, "KCTLockSimQL");
-            InputLockManager.SetControlLock(ControlTypes.VESSEL_SWITCHING, "KCTLockSimVS");
+            //InputLockManager.SetControlLock(ControlTypes.VESSEL_SWITCHING, "KCTLockSimVS");
           //  InputLockManager.SetControlLock(ControlTypes.PAUSE, "KCTLockSimPause");
            // InputLockManager.SetControlLock(ControlTypes.EVA_INPUT, "KCTLockSimEVA");
          //   KCT_GameStates.flightSimulated = true;
@@ -531,7 +531,7 @@ namespace Kerbal_Construction_Time
         {
             InputLockManager.RemoveControlLock("KCTLockSimQS");
             InputLockManager.RemoveControlLock("KCTLockSimQL");
-            InputLockManager.RemoveControlLock("KCTLockSimVS");
+            //InputLockManager.RemoveControlLock("KCTLockSimVS");
          //   InputLockManager.RemoveControlLock("KCTLockSimPause");
            // InputLockManager.RemoveControlLock("KCTLockSimEVA");
           //  KCT_GameStates.flightSimulated = false;

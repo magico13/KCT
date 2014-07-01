@@ -257,7 +257,7 @@ namespace Kerbal_Construction_Time
                 GUI.DragWindow();
         }
 
-        private static bool showInventory = false, useInventory = true;
+        public static bool showInventory = false, useInventory = true;
         //private static string currentCategoryString = "NONE";
         private static int currentCategoryInt = -1;
         private static string buildRateForDisplay;
@@ -801,19 +801,20 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("The time limit is exceeded");
             GUILayout.Label("The flight scene is exited");
             GUILayout.Label(" ");
-            GUILayout.Label("You cannot save or switch vessels during a simulation.");
+            GUILayout.Label("All progress is lost in a simulation.");
             //GUILayout.Label("Note: If you want to build this ship, press the Build button in the editor.");
             /*if (GUILayout.Button("End Simulation"))
             {
                 showSimulationCompleteFlight = true;
                 showSimulationWindow = false;
             }*/
-         /*   if (GUILayout.Button("Build It!"))  //Huge issue with this: the persistence is reset upon exit, nullifying additions.
+            if (GUILayout.Button("Build It!"))  //Huge issue with this: the persistence is reset upon exit, nullifying additions.
             {
-                KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
-                toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.GetPartNames(), true, useInventory);
-                KCT_Utilities.AddVesselToBuildList(toBuild, useInventory);
-            }*/
+                KCT_GameStates.buildSimulatedVessel = true;
+                Debug.Log("[KCT] Ship added from simulation.");
+                var message = new ScreenMessage("[KCT] Ship will be added upon simulation completion!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                ScreenMessages.PostScreenMessage(message, true);
+            }
             if (GUILayout.Button("Restart Simulation"))
             {
                 showSimulationWindow = false;
