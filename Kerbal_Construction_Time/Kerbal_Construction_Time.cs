@@ -367,6 +367,15 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
+                if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.buildSimulatedVessel && KCT_GameStates.delayStart)
+                {
+                    KCT_GameStates.buildSimulatedVessel = false;
+                    KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
+                    toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.GetPartNames(), true, KCT_GUI.useInventory);
+                    KCT_Utilities.AddVesselToBuildList(toBuild, KCT_GUI.useInventory);
+                }
+
+
                 if (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated)
                 {
                     IKCTBuildItem ikctItem = KCT_Utilities.NextThingToFinish();
@@ -458,10 +467,10 @@ namespace Kerbal_Construction_Time
                 }
                 if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
                 {
-                    if (KCT_GameStates.delayStart) //Get the ships so that they'll be available later (to avoid issues with loading during flight)
+                    if (KCT_GameStates.delayStart)
                     {
-                        foreach (KCT_BuildListVessel b in KCT_GameStates.VABList)
-                            b.GetPartNames();
+                        /*foreach (KCT_BuildListVessel b in KCT_GameStates.VABList)
+                            b.GetPartNames();*/
 
                         if (KCT_Utilities.CurrentGameIsCareer() && KCT_GameStates.TotalUpgradePoints == 0)
                         {

@@ -35,9 +35,7 @@ namespace Kerbal_Construction_Time
             { 
                 List<Part> temp = new List<Part>();
                 foreach (string s in this.GetPartNames())
-                {
                     temp.Add(KCT_Utilities.GetAvailablePartByName(s).partPrefab);
-                }
                 return temp;
             } 
         }
@@ -47,9 +45,7 @@ namespace Kerbal_Construction_Time
             {
                 List<AvailablePart> temp = new List<AvailablePart>();
                 foreach (string s in this.GetPartNames())
-                {
                     temp.Add(KCT_Utilities.GetAvailablePartByName(s));
-                }
                 return temp;
             }
         }

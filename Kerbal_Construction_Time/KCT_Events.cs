@@ -71,7 +71,7 @@ namespace Kerbal_Construction_Time
                     KCT_Utilities.LoadSimulationSave();
                 }
             }
-            if (HighLogic.LoadedScene != GameScenes.FLIGHT && scene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Backup save at simulation start
+            if (!HighLogic.LoadedSceneIsFlight && scene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Backup save at simulation start
             {
                 KCT_Utilities.MakeSimulationSave();
             }
@@ -79,13 +79,6 @@ namespace Kerbal_Construction_Time
             if (HighLogic.LoadedScene == scene && (scene == GameScenes.EDITOR || scene == GameScenes.SPH)) //Fix for null reference when using new or load buttons in editor
             {
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
-            }
-            if (HighLogic.LoadedSceneIsFlight && scene != GameScenes.FLIGHT && KCT_GameStates.buildSimulatedVessel)
-            {
-                KCT_GameStates.buildSimulatedVessel = false;
-                KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
-                toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.GetPartNames(), true, KCT_GUI.useInventory);
-                KCT_Utilities.AddVesselToBuildList(toBuild, KCT_GUI.useInventory);
             }
         }
 
