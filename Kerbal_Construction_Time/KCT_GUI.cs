@@ -1107,7 +1107,7 @@ namespace Kerbal_Construction_Time
                                 //KCT_GameStates.launchedCrew.Add(FirstCrewable(b.ExtractedParts).uid, HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, true).GetAllCrew(true));
                                 partNames = KCT_GameStates.launchedVessel.GetPartNames();
                                 parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                                if (KCT_GameStates.launchedCrew.Count != partNames.Count)
+                                //if (KCT_GameStates.launchedCrew.Count != partNames.Count)
                                 {
                                     KCT_GameStates.launchedCrew = new List<List<ProtoCrewMember>>();
                                     foreach (string s in partNames)
@@ -1161,7 +1161,7 @@ namespace Kerbal_Construction_Time
                                 //KCT_GameStates.launchedCrew.Add(FirstCrewable(b.GetShip().parts).uid, HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, true).GetAllCrew(true));
                                 partNames = KCT_GameStates.launchedVessel.GetPartNames();
                                 parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                                if (KCT_GameStates.launchedCrew.Count != partNames.Count)
+                                //if (KCT_GameStates.launchedCrew.Count != partNames.Count)
                                 {
                                     KCT_GameStates.launchedCrew = new List<List<ProtoCrewMember>>();
                                     foreach (string s in partNames)
@@ -1301,13 +1301,19 @@ namespace Kerbal_Construction_Time
                         {
                             if (KCT_GameStates.launchedCrew[j].Count <= i)
                             {
-                                ProtoCrewMember crewMember = CrewAvailable().First();
-                                if (crewMember != null) KCT_GameStates.launchedCrew[j].Add(crewMember);
+                                if (CrewAvailable().Count > 0)
+                                {
+                                    ProtoCrewMember crewMember = CrewAvailable()[0];
+                                    if (crewMember != null) KCT_GameStates.launchedCrew[j].Add(crewMember);
+                                }
                             }
                             if (KCT_GameStates.launchedCrew[j][i] == null)
                             {
-                                ProtoCrewMember crewMember = CrewAvailable().First();
-                                if (crewMember != null) KCT_GameStates.launchedCrew[j][i] = crewMember;
+                                if (CrewAvailable().Count > 0)
+                                {
+                                    ProtoCrewMember crewMember = CrewAvailable()[0];
+                                    if (crewMember != null) KCT_GameStates.launchedCrew[j][i] = crewMember;
+                                }
                             }
                         }
                     }
@@ -1315,7 +1321,10 @@ namespace Kerbal_Construction_Time
             }
             if (GUILayout.Button("Clear All"))
             {
-                KCT_GameStates.launchedCrew.Clear();
+                foreach (List<ProtoCrewMember> list in KCT_GameStates.launchedCrew)
+                {
+                    list.Clear();
+                }
             }
             GUILayout.EndHorizontal();
             int numberItems = 0;
@@ -1344,12 +1353,12 @@ namespace Kerbal_Construction_Time
                         {
                             if (KCT_GameStates.launchedCrew[j].Count <= i)
                             {
-                                ProtoCrewMember crewMember = CrewAvailable().First();
+                                ProtoCrewMember crewMember = CrewAvailable()[0];
                                 if (crewMember!=null) KCT_GameStates.launchedCrew[j].Add(crewMember);
                             }
                             else if (KCT_GameStates.launchedCrew[j][i] == null)
                             {
-                                KCT_GameStates.launchedCrew[j][i] = CrewAvailable().First();
+                                KCT_GameStates.launchedCrew[j][i] = CrewAvailable()[0];
                             }
                         }
                     }
@@ -1367,7 +1376,8 @@ namespace Kerbal_Construction_Time
                             if (GUILayout.Button("Remove", GUILayout.Width(120)))
                             {
                                 KCT_GameStates.launchedCrew[j][i].rosterStatus = ProtoCrewMember.RosterStatus.AVAILABLE;
-                                KCT_GameStates.launchedCrew[j].RemoveAt(i);
+                                //KCT_GameStates.launchedCrew[j].RemoveAt(i);
+                                KCT_GameStates.launchedCrew[j][i] = null;
                             }
                         }
                         else
@@ -1500,6 +1510,7 @@ namespace Kerbal_Construction_Time
                     showCrewSelect = false;
                     showShipRoster = true;
                     crewListWindowPosition.height = 1;
+                    break;
                 }
             }
             GUILayout.EndVertical();
