@@ -1407,7 +1407,9 @@ namespace Kerbal_Construction_Time
                             if (CrewAvailable().Count == 0 && GUILayout.Button("Hire Random", GUILayout.Width(120)))
                             {
                                 ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants[0];
-                                hired.rosterStatus = ProtoCrewMember.RosterStatus.AVAILABLE;
+                                //hired.rosterStatus = ProtoCrewMember.RosterStatus.AVAILABLE;
+                                //HighLogic.CurrentGame.CrewRoster.AddCrewMember(hired);
+                                HighLogic.CurrentGame.CrewRoster.Applicants.HireApplicant(hired, Planetarium.GetUniversalTime());
                                 List<ProtoCrewMember> activeCrew;
                                 activeCrew = KCT_GameStates.launchedCrew[j];
                                 if (activeCrew.Count > i)
