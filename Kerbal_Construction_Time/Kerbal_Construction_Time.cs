@@ -311,9 +311,9 @@ namespace Kerbal_Construction_Time
                 }
             }
 
-            if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
+            if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated) //Now that vessel switching is enabled, this all won't work properly
             {
-                if (FlightGlobals.ActiveVessel.situation != Vessel.Situations.PRELAUNCH)
+                /*if (FlightGlobals.ActiveVessel.situation != Vessel.Situations.PRELAUNCH)
                 {
                     KCT_GameStates.flightSimulated = false; //If you open, then close the launch window, then go to another flight it won't lock controls
                     //However, if you go to a launch already on the pad through the window, you will have controls locked :/
@@ -323,7 +323,7 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_Utilities.enableSimulationLocks();
                     moved = false;
-                }
+                }*/
             }
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH
@@ -334,7 +334,9 @@ namespace Kerbal_Construction_Time
                 {
                     Part p = FlightGlobals.ActiveVessel.parts[i];
                     {
-                        List<ProtoCrewMember> crewList = KCT_GameStates.launchedCrew[i];
+                        CrewedPart cP = KCT_GameStates.launchedCrew.Find(part => part.partID == p.uid);
+                        if (cP == null) continue;
+                        List<ProtoCrewMember> crewList = cP.crewList;
                         foreach (ProtoCrewMember crewMember in crewList)
                         {
                             if (crewMember != null)

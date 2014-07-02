@@ -121,6 +121,9 @@ namespace Kerbal_Construction_Time
 
         public void vesselDestroyEvent(Vessel v)
         {
+            if (FlightGlobals.fetch == null)
+                return;
+
             if (v != null && !(HighLogic.LoadedSceneIsFlight && v.isActiveVessel) && v.mainBody.bodyName == "Kerbin" && (!v.loaded || v.packed) && v.altitude < 35000 &&
                (v.situation == Vessel.Situations.FLYING || v.situation == Vessel.Situations.SUB_ORBITAL) && !v.isEVA)
             {

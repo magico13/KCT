@@ -33,7 +33,7 @@ namespace Kerbal_Construction_Time
         public static int TotalUpgradePoints = 0;
         public static KCT_BuildListVessel launchedVessel, editedVessel;
         //public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
-        public static List<List<ProtoCrewMember>> launchedCrew = new List<List<ProtoCrewMember>>();
+        public static List<CrewedPart> launchedCrew = new List<CrewedPart>();
         public static IButton kctToolbarButton;
         public static bool EditorShipEditingMode = false, buildSimulatedVessel = false;
         public static bool upgradesUpdated = false;
@@ -65,6 +65,25 @@ namespace Kerbal_Construction_Time
             SPHWarehouse = new List<KCT_BuildListVessel>();
         }
 
+    }
+
+    public class CrewedPart
+    {
+        public List<ProtoCrewMember> crewList;
+        public uint partID;
+
+        public CrewedPart(uint ID, List<ProtoCrewMember> crew)
+        {
+            partID = ID;
+            crewList = crew;
+        }
+
+        public CrewedPart FromPart(Part part, List<ProtoCrewMember> crew)
+        {
+            partID = part.uid;
+            crewList = crew;
+            return this;
+        }
     }
 
 }

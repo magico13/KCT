@@ -34,8 +34,12 @@ namespace Kerbal_Construction_Time
             get 
             { 
                 List<Part> temp = new List<Part>();
-                foreach (string s in this.GetPartNames())
-                    temp.Add(KCT_Utilities.GetAvailablePartByName(s).partPrefab);
+                foreach (PseudoPart PP in this.GetPseudoParts())
+                {
+                    Part p = KCT_Utilities.GetAvailablePartByName(PP.name).partPrefab;
+                    p.uid = PP.uid;
+                    temp.Add(p);
+                }
                 return temp;
             } 
         }
@@ -213,6 +217,27 @@ namespace Kerbal_Construction_Time
             return retList;
         }
 
+        public List<PseudoPart> GetPseudoParts()
+        {
+            List<PseudoPart> retList = new List<PseudoPart>();
+            ConfigNode[] partNodes = shipNode.GetNodes("PART");
+            // Debug.Log("[KCT] partNodes count: " + partNodes.Length);
+
+            foreach (ConfigNode CN in partNodes)
+            {
+                FakePart p = new FakePart();
+                ConfigNode.LoadObjectFromConfig(p, CN);
+                string pName = "";
+                string[] split = p.part.Split('_');
+                for (int i = 0; i < split.Length - 1; i++)
+                    pName += split[i];
+                PseudoPart returnPart = new PseudoPart(pName, split[split.Length - 1]);
+                retList.Add(returnPart);
+                //Debug.Log("[KCT] " + pName);
+            }
+            return retList;
+        }
+
         public double AddProgress(double toAdd)
         {
             progress+=toAdd;
@@ -249,5 +274,23 @@ namespace Kerbal_Construction_Time
             return (progress >= buildPoints);
         }
 
+    }
+
+    public class PseudoPart
+    {
+        public string name;
+        public uint uid;
+        
+        public PseudoPart(string PartName, uint ID)
+        {
+            name = PartName;
+            uid = ID;
+        }
+
+        public PseudoPart(string PartName, string ID)
+        {
+            name = PartName;
+            uid = uint.Parse(ID);
+        }
     }
 }
