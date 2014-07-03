@@ -36,7 +36,7 @@ namespace Kerbal_Construction_Time
         public static List<CrewedPart> launchedCrew = new List<CrewedPart>();
         public static IButton kctToolbarButton;
         public static bool EditorShipEditingMode = false, buildSimulatedVessel = false;
-        public static bool upgradesUpdated = false;
+        public static bool firstStart = true;
 
 
         public static CelestialBody simulationBody;
@@ -46,6 +46,7 @@ namespace Kerbal_Construction_Time
 
         public static void reset()
         {
+            firstStart = true;
             TechList = new List<KCT_TechItem>();
             PartTracker = new Dictionary<string, int>();
             PartInventory = new Dictionary<string, int>();

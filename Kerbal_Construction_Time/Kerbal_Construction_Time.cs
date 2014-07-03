@@ -482,7 +482,13 @@ namespace Kerbal_Construction_Time
                             Debug.Log("[KCT] technodes length: " + techNodes.Length);
                             KCT_GameStates.TotalUpgradePoints = techNodes.Length + 14;
                         }
-                        KCT_GameStates.upgradesUpdated = true;
+
+                        if (KCT_GameStates.firstStart)
+                        {
+                            KCT_GUI.showFirstRun = true;
+                        }
+
+                        KCT_GameStates.firstStart = false;
                         KCT_GameStates.delayStart = false;
                     }
                 }

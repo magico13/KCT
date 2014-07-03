@@ -10,7 +10,7 @@ namespace Kerbal_Construction_Time
     {
         public static bool showMainGUI, showEditorGUI, showSOIAlert, showLaunchAlert, showSimulationCompleteEditor, showSimulationWindow, showTimeRemaining, 
             showSimulationCompleteFlight, showBuildList, showClearLaunch, showShipRoster, showCrewSelect, showSettings, showSimConfig, showBodyChooser, showUpgradeWindow,
-            showBLPlus, showRename;
+            showBLPlus, showRename, showFirstRun;
 
         private static bool unlockEditor;
 
@@ -89,6 +89,8 @@ namespace Kerbal_Construction_Time
                     bLPlusPosition = GUILayout.Window(8953, bLPlusPosition, KCT_GUI.DrawBLPlusWindow, "Options", windowStyle);
                 if (showRename)
                     centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawRenameWindow, "Rename", windowStyle);
+                if (showFirstRun)
+                    centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawFirstRun, "Kerbal Construction Time", windowStyle);
 
                 if (unlockEditor)
                 {
@@ -178,6 +180,7 @@ namespace Kerbal_Construction_Time
             showUpgradeWindow = false;
             showBLPlus = false;
             showRename = false;
+            showFirstRun = false;
         }
 
         public static void DrawGUIs(int windowID)
@@ -210,6 +213,8 @@ namespace Kerbal_Construction_Time
                 DrawUpgradeWindow(windowID);
             if (showRename)
                 DrawRenameWindow(windowID);
+            if (showFirstRun)
+                DrawFirstRun(windowID);
         }
 
         public static void DrawMainGUI(int windowID) //Deprecated to all hell now I think
@@ -262,6 +267,7 @@ namespace Kerbal_Construction_Time
         //private static string currentCategoryString = "NONE";
         private static int currentCategoryInt = -1;
         private static string buildRateForDisplay;
+        private static int rateIndexHolder = 0;
         private static void DrawEditorGUI(int windowID)
         {
             GUILayout.BeginVertical();
@@ -286,10 +292,8 @@ namespace Kerbal_Construction_Time
                 {
                     if (GUILayout.Button("*", GUILayout.ExpandWidth(false)))
                     {
-                        if (rates.Contains(bR))
-                            bR = rates[(rates.IndexOf(bR) + 1) % rates.Count];
-                        else
-                            bR = rates[0];
+                        rateIndexHolder = (rateIndexHolder + 1) % rates.Count;
+                        bR = rates[rateIndexHolder];
                         buildRateForDisplay = bR.ToString();
                     }
                     GUILayout.EndHorizontal();
@@ -362,10 +366,8 @@ namespace Kerbal_Construction_Time
                 {
                     if (GUILayout.Button("*", GUILayout.ExpandWidth(false)))
                     {
-                        if (rates.Contains(bR))
-                            bR = rates[(rates.IndexOf(bR) + 1) % rates.Count];
-                        else
-                            bR = rates[0];
+                        rateIndexHolder = (rateIndexHolder + 1) % rates.Count;
+                        bR = rates[rateIndexHolder];
                         buildRateForDisplay = bR.ToString();
                     }
                     GUILayout.EndHorizontal();
@@ -2002,6 +2004,40 @@ namespace Kerbal_Construction_Time
             }
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
+        }
+
+        public static void DrawFirstRun(int windowID)
+        {
+            if (centralWindowPosition.width != 450)
+            {
+                centralWindowPosition.Set((Screen.width - 450) / 2, (Screen.height - 200) / 2, 450, 200);
+            }
+            GUILayout.BeginVertical();
+            GUILayout.Label("Welcome to KCT! It is advised that you spend your " + KCT_GameStates.TotalUpgradePoints + " upgrades to increase the build rate in the building you will primarily be using.");
+            GUILayout.Label("Please see the getting started guide included in the download or available from the forum for more information!");
+            if (GUILayout.Button("Spend Upgrades"))
+            {
+                showFirstRun = false;
+                centralWindowPosition.height = 1;
+                centralWindowPosition.width = 150;
+                showUpgradeWindow = true;
+            }
+            if (GUILayout.Button("Settings"))
+            {
+                showFirstRun = false;
+                centralWindowPosition.height = 1;
+                centralWindowPosition.width = 150;
+                ShowSettings();
+            }
+            if (GUILayout.Button("Not Now"))
+            {
+                showFirstRun = false;
+                centralWindowPosition.height = 1;
+                centralWindowPosition.width = 150;
+            }
+            GUILayout.EndVertical();
+            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+                GUI.DragWindow();
         }
     }
 }
