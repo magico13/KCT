@@ -132,10 +132,12 @@ namespace Kerbal_Construction_Time
             List<string> InventoryParts;
             [Persistent]
             bool cannotEarnScience;
+            [Persistent]
+            float cost = 0;
 
             public KCT_BuildListVessel ToBuildListVessel()
             {
-                KCT_BuildListVessel ret = new KCT_BuildListVessel(shipName, launchSite, buildTime, flag);
+                KCT_BuildListVessel ret = new KCT_BuildListVessel(shipName, launchSite, buildTime, flag, cost);
                 ret.progress = progress;
                 if (InventoryParts != null)
                     ret.InventoryParts = InventoryParts;
@@ -155,6 +157,7 @@ namespace Kerbal_Construction_Time
                 this.InventoryParts = blv.InventoryParts;
                 this.shipID = blv.id.ToString();
                 this.cannotEarnScience = blv.cannotEarnScience;
+                this.cost = blv.cost;
                 
                 return this;
 

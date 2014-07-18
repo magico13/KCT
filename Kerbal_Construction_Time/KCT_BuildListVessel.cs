@@ -18,6 +18,19 @@ namespace Kerbal_Construction_Time
         public ConfigNode shipNode;
         public Guid id;
         public bool cannotEarnScience;
+        public float cost = 0;
+        /*public float dryCost {get {return totalCost - fuelCost;}}
+        public float totalCost
+        {
+            get
+            {
+                float total = 0;
+                foreach (AvailablePart a in ExtractedAvParts)
+                    total += a.cost;
+                return total;
+            }
+        }
+        public float fuelCost = 0;*/
 
         public double buildRate { get { return KCT_Utilities.GetBuildRate(this); } }
         public double timeLeft
@@ -60,6 +73,11 @@ namespace Kerbal_Construction_Time
             ship = s;
             shipNode = s.SaveShip();
             shipName = s.shipName;
+            //Get total ship cost
+            float dry, fuel;
+            s.GetShipCosts(out dry, out fuel);
+            cost = dry + fuel;
+
             launchSite = ls;
             buildPoints = bP;
             progress = 0;
@@ -73,7 +91,7 @@ namespace Kerbal_Construction_Time
             cannotEarnScience = false;
         }
 
-        public KCT_BuildListVessel(String name, String ls, double bP, String flagURL)
+        public KCT_BuildListVessel(String name, String ls, double bP, String flagURL, float spentFunds)
         {
             ship = new ShipConstruct();
             launchSite = ls;
@@ -87,11 +105,12 @@ namespace Kerbal_Construction_Time
                 type = ListType.SPH;
             InventoryParts = new List<string>();
             cannotEarnScience = false;
+            cost = spentFunds;
         }
 
         public KCT_BuildListVessel NewCopy(bool RecalcTime)
         {
-            KCT_BuildListVessel ret = new KCT_BuildListVessel(this.shipName, this.launchSite, this.buildPoints, this.flag);
+            KCT_BuildListVessel ret = new KCT_BuildListVessel(this.shipName, this.launchSite, this.buildPoints, this.flag, this.cost);
             ret.shipNode = this.shipNode.CreateCopy();
             ret.id = Guid.NewGuid();
             if (RecalcTime)
@@ -120,6 +139,7 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.flightSimulated = false;
             string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
             shipNode.Save(tempFile);
+            Kerbal_Construction_Time.revertToLaunchSaver = false;
             FlightDriver.StartWithNewLaunch(tempFile, flag, launchSite, new VesselCrewManifest());
         }
 

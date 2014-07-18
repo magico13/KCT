@@ -310,8 +310,8 @@ namespace Kerbal_Construction_Time
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Build"))
                 {
-                    KCT_GameStates.flightSimulated = false;
-                    KCT_Utilities.disableSimulationLocks();
+                    //KCT_GameStates.flightSimulated = false;
+                    //KCT_Utilities.disableSimulationLocks();
                     KCT_Utilities.AddVesselToBuildList(useInventory);
                     //showLaunchAlert = true;
                 }
@@ -385,6 +385,7 @@ namespace Kerbal_Construction_Time
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Save Edits"))
                 {
+                    KCT_Utilities.AddFunds(ship.cost);
                     KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(KCT_Utilities.PartListToDict(ship.InventoryParts));//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                     newShip.progress = newProgress;
                     //newShip.buildPoints = buildTime;
@@ -757,8 +758,8 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
                 KCT_GameStates.simulationEndTime = 0;
-                if (MCEWrapper.MCEAvailable) //Support for MCE
-                    MCEWrapper.IloadMCEbackup();
+               // if (MCEWrapper.MCEAvailable) //Support for MCE
+               //     MCEWrapper.IloadMCEbackup();
                 FlightDriver.RevertToLaunch();
                 centralWindowPosition.height = 1;
             }
@@ -770,8 +771,8 @@ namespace Kerbal_Construction_Time
                 KCT_Utilities.disableSimulationLocks();
                 KCT_GameStates.flightSimulated = false;
                 KCT_GameStates.simulationEndTime = 0;
-                if (MCEWrapper.MCEAvailable) //Support for MCE
-                    MCEWrapper.IloadMCEbackup();
+               // if (MCEWrapper.MCEAvailable) //Support for MCE
+               //     MCEWrapper.IloadMCEbackup();
                 if (FlightDriver.LaunchSiteName == "LaunchPad")
                     FlightDriver.RevertToPrelaunch(GameScenes.EDITOR);
                 else if (FlightDriver.LaunchSiteName == "Runway")
@@ -825,8 +826,8 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
                 KCT_GameStates.simulationEndTime = 0;
-                if (MCEWrapper.MCEAvailable) //Support for MCE
-                    MCEWrapper.IloadMCEbackup();
+             //   if (MCEWrapper.MCEAvailable) //Support for MCE
+             //       MCEWrapper.IloadMCEbackup();
                 FlightDriver.RevertToLaunch();
                 centralWindowPosition.height = 1;
             }
@@ -838,8 +839,8 @@ namespace Kerbal_Construction_Time
                 KCT_Utilities.disableSimulationLocks();
                 KCT_GameStates.flightSimulated = false;
                 KCT_GameStates.simulationEndTime = 0;
-                if (MCEWrapper.MCEAvailable) //Support for MCE
-                    MCEWrapper.IloadMCEbackup();
+              //  if (MCEWrapper.MCEAvailable) //Support for MCE
+              //      MCEWrapper.IloadMCEbackup();
                 if (FlightDriver.LaunchSiteName == "LaunchPad")
                     FlightDriver.RevertToPrelaunch(GameScenes.EDITOR);
                 else if (FlightDriver.LaunchSiteName == "Runway")
@@ -1394,7 +1395,7 @@ namespace Kerbal_Construction_Time
                             GUILayout.Label(KCT_GameStates.launchedCrew[j].crewList[i].name);
                             if (GUILayout.Button("Remove", GUILayout.Width(120)))
                             {
-                                KCT_GameStates.launchedCrew[j].crewList[i].rosterStatus = ProtoCrewMember.RosterStatus.AVAILABLE;
+                                KCT_GameStates.launchedCrew[j].crewList[i].rosterStatus = ProtoCrewMember.RosterStatus.Available;
                                 //KCT_GameStates.launchedCrew[j].RemoveAt(i);
                                 KCT_GameStates.launchedCrew[j].crewList[i] = null;
                             }
@@ -1413,10 +1414,10 @@ namespace Kerbal_Construction_Time
                             }
                             if (CrewAvailable().Count == 0 && GUILayout.Button("Hire Random", GUILayout.Width(120)))
                             {
-                                ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants[0];
+                                ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(0);
                                 //hired.rosterStatus = ProtoCrewMember.RosterStatus.AVAILABLE;
                                 //HighLogic.CurrentGame.CrewRoster.AddCrewMember(hired);
-                                HighLogic.CurrentGame.CrewRoster.Applicants.HireApplicant(hired, Planetarium.GetUniversalTime());
+                                HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
                                 List<ProtoCrewMember> activeCrew;
                                 activeCrew = KCT_GameStates.launchedCrew[j].crewList;
                                 if (activeCrew.Count > i)
@@ -1463,10 +1464,10 @@ namespace Kerbal_Construction_Time
         private static List<ProtoCrewMember> CrewAvailable()
         {
             List<ProtoCrewMember> availableCrew = new List<ProtoCrewMember>();
-            foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster) //Initialize available crew list
+            foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Crew) //Initialize available crew list
             {
                 bool available = true;
-                if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.AVAILABLE)
+                if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
                 {
                     foreach (CrewedPart cP in KCT_GameStates.launchedCrew)
                     {
@@ -1710,7 +1711,7 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("Available: " + (KCT_GameStates.TotalUpgradePoints - spentPoints));
             GUILayout.EndHorizontal();
 
-            if (KCT_Utilities.CurrentGameIsCareer())
+            if (KCT_Utilities.CurrentGameHasScience())
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Buy Point: ");
@@ -1741,7 +1742,7 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("VAB")) { upgradeWindowHolder = 0; upgradePosition.height = 1; }
             if (GUILayout.Button("SPH")) { upgradeWindowHolder = 1; upgradePosition.height = 1; }
-            if (KCT_Utilities.CurrentGameIsCareer() && GUILayout.Button("R&D")) { upgradeWindowHolder = 2; upgradePosition.height = 1; }
+            if (KCT_Utilities.CurrentGameHasScience() && GUILayout.Button("R&D")) { upgradeWindowHolder = 2; upgradePosition.height = 1; }
             GUILayout.EndHorizontal();
 
             if (upgradeWindowHolder==0) //VAB
@@ -1881,7 +1882,7 @@ namespace Kerbal_Construction_Time
                 if (listWindow < 2)
                 {
                     List<AvailablePart> parts = b.ExtractedAvParts;
-                    int totalCost = 0;
+                    float totalCost = 0;
                     foreach (AvailablePart p in parts)
                         totalCost += p.cost;
                     if (b.InventoryParts != null)
@@ -1894,7 +1895,7 @@ namespace Kerbal_Construction_Time
                             KCT_Utilities.AddPartToInventory(s);
                         }
                         totalCost = (int) (totalCost * b.ProgressPercent() / 100);
-                        int sum = 0;
+                        float sum = 0;
                         while (parts.Find(a => a.cost < (totalCost-sum)) != null)
                         {
                             AvailablePart aP = parts.Find(a => a.cost < (totalCost - sum));
@@ -1911,6 +1912,7 @@ namespace Kerbal_Construction_Time
                         KCT_Utilities.AddPartToInventory(p);
                     buildList.RemoveAt(IndexSelected);
                 }
+                KCT_Utilities.AddFunds(b.cost);
                 showBLPlus = false;
                 ResetBLWindow();
             }

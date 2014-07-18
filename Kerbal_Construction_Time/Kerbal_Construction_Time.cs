@@ -329,7 +329,7 @@ namespace Kerbal_Construction_Time
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH
                         && FlightGlobals.ActiveVessel.GetCrewCount() == 0 && KCT_GameStates.launchedCrew.Count > 0)
             {
-                CrewRoster roster = HighLogic.CurrentGame.CrewRoster;
+                KerbalRoster roster = HighLogic.CurrentGame.CrewRoster;
                 for (int i = 0; i < FlightGlobals.ActiveVessel.parts.Count; i++)
                 {
                     Part p = FlightGlobals.ActiveVessel.parts[i];
@@ -342,14 +342,14 @@ namespace Kerbal_Construction_Time
                             if (crewMember != null)
                             {
                                 ProtoCrewMember finalCrewMember = crewMember;
-                                foreach (ProtoCrewMember rosterCrew in roster)
+                                foreach (ProtoCrewMember rosterCrew in roster.Crew)
                                 {
                                     if (rosterCrew.name == crewMember.name)
                                         finalCrewMember = rosterCrew;
                                 }
                                 Debug.Log("[KCT] Assigning " + finalCrewMember.name + " to " + p.partInfo.name);
                                 p.AddCrewmemberAt(finalCrewMember, crewList.IndexOf(crewMember));
-                                finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.ASSIGNED;
+                                finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Assigned;
                                 if (finalCrewMember.seat != null)
                                     finalCrewMember.seat.SpawnCrew();
                             }
@@ -360,7 +360,7 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public static bool moved = false;
+        public static bool moved = false, revertToLaunchSaver = false;
         public void FixedUpdate()
         {
             if (!KCT_GameStates.settings.enabledForSave)
@@ -425,10 +425,13 @@ namespace Kerbal_Construction_Time
                     {
                         KCT_GUI.hideAll();
 
-                        if (FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
+                        if (!revertToLaunchSaver && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
                         {
+                            //Add the cost of the ship to the funds so it can be removed again by KSP
+                            KCT_Utilities.AddFunds(KCT_GameStates.launchedVessel.cost);
                             KCT_GameStates.launchedVessel.RemoveFromBuildList();
                             FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
+                            revertToLaunchSaver = true;
                         }
 
                         List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
@@ -474,7 +477,7 @@ namespace Kerbal_Construction_Time
                         /*foreach (KCT_BuildListVessel b in KCT_GameStates.VABList)
                             b.GetPartNames();*/
 
-                        if (KCT_Utilities.CurrentGameIsCareer() && KCT_GameStates.TotalUpgradePoints == 0)
+                        if (KCT_Utilities.CurrentGameHasScience() && KCT_GameStates.TotalUpgradePoints == 0)
                         {
                             ConfigNode CN = new ConfigNode();
                             ResearchAndDevelopment.Instance.snapshot.Save(CN);

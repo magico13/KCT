@@ -80,6 +80,12 @@ namespace Kerbal_Construction_Time
             {
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
             }
+
+            if (HighLogic.LoadedSceneIsFlight && scene != GameScenes.FLIGHT && !KCT_GameStates.flightSimulated)
+            {
+                //Reset the Revert To Launch Saver to false whenever starting the flight scene from another scene
+                Kerbal_Construction_Time.revertToLaunchSaver = false;
+            }
         }
 
         public void SOIChangeEvent(GameEvents.HostedFromToAction<Vessel, CelestialBody> ev)

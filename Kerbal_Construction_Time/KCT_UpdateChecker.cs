@@ -11,7 +11,7 @@ namespace Kerbal_Construction_Time
         public static bool UpdateFound = false;
         public static string CurrentVersion { get {return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(); } }
         public static String WebVersion = "";
-        static string updateSite = "http://magico13.net/KCT/latest-0-23-5";
+        static string updateSite = "http://magico13.net/KCT/latest-0-24-0";
         public static Boolean CheckForUpdate(bool ForceCheck)
         {
             //System.Version current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
