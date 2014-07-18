@@ -46,7 +46,7 @@ namespace Kerbal_Construction_Time
 
         public static void reset()
         {
-            firstStart = true;
+            //firstStart = true;
             TechList = new List<KCT_TechItem>();
             PartTracker = new Dictionary<string, int>();
             PartInventory = new Dictionary<string, int>();

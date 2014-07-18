@@ -139,7 +139,6 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.flightSimulated = false;
             string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
             shipNode.Save(tempFile);
-            Kerbal_Construction_Time.revertToLaunchSaver = false;
             FlightDriver.StartWithNewLaunch(tempFile, flag, launchSite, new VesselCrewManifest());
         }
 

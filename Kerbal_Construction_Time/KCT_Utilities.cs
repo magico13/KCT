@@ -794,6 +794,38 @@ namespace Kerbal_Construction_Time
             foreach (int i in KCT_GameStates.RDUpgrades) spentPoints += i;
             return spentPoints;
         }
+
+        public static float GetRecoveryValueForParachutes(ProtoVessel pv)
+        {
+            double distanceFromKSC = SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(pv.latitude, pv.longitude));
+            double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
+            float recoveryPercent = 0.75f * Mathf.Lerp(0.98f, 0.1f, (float)(distanceFromKSC / maxDist));
+            float totalReturn = 0;
+            foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
+            {
+                float dryCost, fuelCost;
+                totalReturn += ShipConstruction.GetPartCosts(pps, pps.partInfo, out dryCost, out fuelCost);
+            }
+            float totalBeforeReturn = (float)Math.Round(totalReturn, 2);
+            totalReturn *= recoveryPercent;
+            totalReturn = (float)Math.Round(totalReturn, 2);
+            Debug.Log("[KCT] Vessel being recovered by KCT. Percent returned: " + 100 * recoveryPercent + "%. Distance from KSC: " + Math.Round(distanceFromKSC/1000, 2) + " km");
+            Debug.Log("[KCT] Funds being returned: " + totalReturn + "/" + totalBeforeReturn);
+            return totalReturn;
+        }
+
+        public static bool StageRecoveryAddonActive
+        {
+            get
+            {
+                Type SR = AssemblyLoader.loadedAssemblies
+                .Select(a => a.assembly.GetExportedTypes())
+                .SelectMany(t => t)
+                .FirstOrDefault(t => t.FullName == "StageRecovery.StageRecovery");
+
+                return (SR != null);
+            }
+        }
     }
 }
 /*

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using System.Collections;
 
 namespace Kerbal_Construction_Time
 {
@@ -81,10 +82,12 @@ namespace Kerbal_Construction_Time
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
             }
 
-            if (HighLogic.LoadedSceneIsFlight && scene != GameScenes.FLIGHT && !KCT_GameStates.flightSimulated)
+            if (scene == GameScenes.MAINMENU)
             {
-                //Reset the Revert To Launch Saver to false whenever starting the flight scene from another scene
-                Kerbal_Construction_Time.revertToLaunchSaver = false;
+                KCT_GameStates.reset();
+                KCT_GameStates.firstStart = true;
+                KCT_Utilities.disableSimulationLocks();
+                InputLockManager.RemoveControlLock("KCTLaunchLock");
             }
         }
 
@@ -171,14 +174,18 @@ namespace Kerbal_Construction_Time
                         Type rCType = realChute.GetType();
                         if ((object)realChute != null)
                         {
-                            System.Reflection.MemberInfo member = rCType.GetMember("deployedDiameter")[0];
-                            float area = (float)KCT_Utilities.GetMemberInfoValue(member, realChute);
-                            area = Mathf.PI * Mathf.Pow(area / 2, 2); //Determine the area manually since the "deployedArea" parameter no longer exists in RC
-                            Debug.Log("Chute area: " + area);
+                            System.Reflection.MemberInfo chuteModule = rCType.GetMember("parachutes")[0];
+                            object chutes = KCT_Utilities.GetMemberInfoValue(chuteModule, realChute);
+                            Type chuteType = chutes.GetType().GetGenericArguments()[0];
+                            var pList = (IList)chutes;
 
-                            member = rCType.GetMember("material")[0];
-                            string mat = (string)KCT_Utilities.GetMemberInfoValue(member, realChute);
-                            Debug.Log("Material is " + mat);
+                            System.Reflection.MemberInfo member = chuteType.GetMember("deployedArea")[0];
+                            float area = (float)KCT_Utilities.GetMemberInfoValue(member, pList[0]);
+                           // Debug.Log("Chute area: " + area);
+
+                            member = chuteType.GetMember("material")[0];
+                            string mat = (string)KCT_Utilities.GetMemberInfoValue(member, pList[0]);
+                           // Debug.Log("Material is " + mat);
 
                             Type matLibraryType = AssemblyLoader.loadedAssemblies
                                 .SelectMany(a => a.assembly.GetExportedTypes())
@@ -189,7 +196,7 @@ namespace Kerbal_Construction_Time
                             object materialObject = matMethod.Invoke(MatLibraryInstance, new object[] { mat });
 
                             float dragC = (float)KCT_Utilities.GetMemberInfoValue(materialObject.GetType().GetMember("dragCoefficient")[0], materialObject);
-                            Debug.Log("dragC: " + dragC);
+                           // Debug.Log("dragC: " + dragC);
                             isParachute = true;
                             realChuteInUse = true;
                             totalDrag += (1 * 100 * dragC * area / 2000f);
@@ -221,9 +228,13 @@ namespace Kerbal_Construction_Time
                     Debug.Log("[KCT] Recovered parts from " + v.vesselName);
                     foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
                     {
-                        Debug.Log("[KCT] " + p.partInfo.name);
+                        //Debug.Log("[KCT] " + p.partInfo.name);
                         KCT_Utilities.AddPartToInventory(p.partInfo.name);
                     }
+                    if (!KCT_Utilities.StageRecoveryAddonActive) //Delegate funds handling to Stage Recovery if it's present
+                        KCT_Utilities.AddFunds(KCT_Utilities.GetRecoveryValueForParachutes(v.protoVessel));
+                    else
+                        Debug.Log("[KCT] Delegating Funds recovery to StageRecovery Addon");
                 }
             }
         }

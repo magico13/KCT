@@ -97,6 +97,17 @@ namespace Kerbal_Construction_Time
                     EditorLogic.fetch.Unlock("KCTGUILock");
                     unlockEditor = false;
                 }
+
+                if (showFirstRun || showRename || showUpgradeWindow || showSettings || showCrewSelect || showShipRoster)
+                {
+                    if (InputLockManager.IsUnlocked(ControlTypes.KSC_FACILITIES))
+                        InputLockManager.SetControlLock(ControlTypes.KSC_FACILITIES, "KCTKSCLock");
+                }
+                else
+                {
+                    if (InputLockManager.GetControlLock("KCTKSCLock") != ControlTypes.None && InputLockManager.IsLocked(ControlTypes.KSC_FACILITIES))
+                        InputLockManager.RemoveControlLock("KCTKSCLock");
+                }
             }
         }
 
@@ -125,7 +136,7 @@ namespace Kerbal_Construction_Time
                 if (!showSimConfig)
                 {
                     simulationConfigPosition.height = 1;
-                    EditorLogic.fetch.Lock(true, false, true, "KCTGUILock");
+                    EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
                     showSimConfig = true;
                 }
                 else
@@ -318,7 +329,7 @@ namespace Kerbal_Construction_Time
                 if (GUILayout.Button("Simulate"))
                 {
                     simulationConfigPosition.height = 1;
-                    EditorLogic.fetch.Lock(true, false, true, "KCTGUILock");
+                    EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
                     showSimConfig = true;
                     KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                 }
@@ -417,6 +428,7 @@ namespace Kerbal_Construction_Time
                 if (GUILayout.Button("Cancel Edits"))
                 {
                     KCT_GameStates.EditorShipEditingMode = false;
+
                     InputLockManager.RemoveControlLock("KCTEditExit");
                     InputLockManager.RemoveControlLock("KCTEditLoad");
                     InputLockManager.RemoveControlLock("KCTEditNew");
@@ -429,7 +441,7 @@ namespace Kerbal_Construction_Time
                 if (GUILayout.Button("Simulate"))
                 {
                     simulationConfigPosition.height = 1;
-                    EditorLogic.fetch.Lock(true, false, true, "KCTGUILock");
+                    EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
                     showSimConfig = true;
                     KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                 }
@@ -541,6 +553,17 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                 GUI.DragWindow();
+
+            /*if (Event.current.type == EventType.Repaint && editorWindowPosition.Contains(Event.current.mousePosition))
+            {
+                //Mouseover event
+                EditorLogic.fetch.Lock(true, true, true, "KCTEditorLock");
+            }
+            else
+            {
+                //Mouse away
+                EditorLogic.fetch.Unlock("KCTEditorLock");
+            }*/
         }
 
         public static void DrawSOIAlertWindow(int windowID)
@@ -1233,6 +1256,19 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                 GUI.DragWindow();
+            /*
+            if (Event.current.type == EventType.Repaint && buildListWindowPosition.Contains(Event.current.mousePosition))
+            {
+                //Mouseover event
+                if (InputLockManager.IsUnlocked(ControlTypes.KSC_ALL))
+                    InputLockManager.SetControlLock(ControlTypes.KSC_ALL, "KCTKSCLock");
+            }
+            else
+            {
+                //Mouse away
+                if (InputLockManager.GetControlLock("KCTKSCLock") != ControlTypes.None && InputLockManager.IsLocked(ControlTypes.KSC_ALL))
+                    InputLockManager.RemoveControlLock("KCTKSCLock");
+            }*/
         }
 
         private static bool IsCrewable(List<Part> ship)
@@ -1916,13 +1952,13 @@ namespace Kerbal_Construction_Time
                 showBLPlus = false;
                 ResetBLWindow();
             }
-            if (GUILayout.Button("Edit"))
+            /*if (GUILayout.Button("Edit")) //Disabled until I can figure out why it pisses off the Contracts app
             {
                 showBLPlus = false;
                 editorWindowPosition.height = 1;
                 string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
                 b.shipNode.Save(tempFile);
-                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE); 
+               // GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE); 
                 KCT_GameStates.editedVessel = b;
                 KCT_GameStates.EditorShipEditingMode = true;
 
@@ -1939,7 +1975,7 @@ namespace Kerbal_Construction_Time
                     HighLogic.LoadScene(GameScenes.EDITOR);
                 else if (b.type == KCT_BuildListVessel.ListType.SPH)
                     HighLogic.LoadScene(GameScenes.SPH);
-            }
+            }*/
             if (GUILayout.Button("Rename"))
             {
                 centralWindowPosition.width = Screen.width / 8;

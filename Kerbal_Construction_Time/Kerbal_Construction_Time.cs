@@ -294,7 +294,7 @@ namespace Kerbal_Construction_Time
                 }
                 if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
                 {
-                    EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
+                    //EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
                     KCT_GameStates.delayStart = false;
                     string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
                     EditorLogic.LoadShipFromFile(tempFile);
@@ -360,7 +360,7 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public static bool moved = false, revertToLaunchSaver = false;
+        public static bool moved = false;
         public void FixedUpdate()
         {
             if (!KCT_GameStates.settings.enabledForSave)
@@ -425,13 +425,15 @@ namespace Kerbal_Construction_Time
                     {
                         KCT_GUI.hideAll();
 
-                        if (!revertToLaunchSaver && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
+                        if (FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
                         {
-                            //Add the cost of the ship to the funds so it can be removed again by KSP
-                            KCT_Utilities.AddFunds(KCT_GameStates.launchedVessel.cost);
-                            KCT_GameStates.launchedVessel.RemoveFromBuildList();
-                            FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
-                            revertToLaunchSaver = true;
+                            bool removed = KCT_GameStates.launchedVessel.RemoveFromBuildList();
+                            if (removed) //Only do these when the vessel is first removed from the list
+                            {
+                                //Add the cost of the ship to the funds so it can be removed again by KSP
+                                KCT_Utilities.AddFunds(KCT_GameStates.launchedVessel.cost);
+                                FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
+                            } 
                         }
 
                         List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
