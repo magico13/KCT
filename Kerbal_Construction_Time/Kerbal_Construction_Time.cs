@@ -260,11 +260,18 @@ namespace Kerbal_Construction_Time
             }
             //End code for persistence.sfs
 
-            if (KCT_GUI.PrimarilyDisabled && InputLockManager.GetControlLock("KCTLaunchLock") == ControlTypes.EDITOR_LAUNCH)
-                InputLockManager.RemoveControlLock("KCTLaunchLock");
+            if (KCT_GUI.PrimarilyDisabled)
+            {
+                if (InputLockManager.GetControlLock("KCTLaunchLock") == ControlTypes.EDITOR_LAUNCH)
+                    InputLockManager.RemoveControlLock("KCTLaunchLock");
+            }
 
             if (!KCT_GameStates.settings.enabledForSave)
+            {
+                if (InputLockManager.GetControlLock("KCTKSCLock") == ControlTypes.KSC_FACILITIES)
+                    InputLockManager.RemoveControlLock("KCTKSCLock");
                 return;
+            }
 
             //Begin primary mod functions
             if (!KCT_Events.instance.eventAdded)
@@ -417,6 +424,13 @@ namespace Kerbal_Construction_Time
                     {
                         TimeWarp.SetRate(0, false);
                         KCT_GameStates.warpInitiated = false;
+                    }
+                    else if (ikctItem != null && (KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRate != 0 &&  (!ikctItem.IsComplete()))
+                    {
+                        if ((10 * TimeWarp.deltaTime) > Math.Max((ikctItem.GetTimeLeft()), 0) && TimeWarp.CurrentRate > 1.0f)
+                        {
+                            TimeWarp.SetRate(TimeWarp.CurrentRateIndex-1, true);
+                        }
                     }
                 }
                 if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated) //Non-simulated flights
