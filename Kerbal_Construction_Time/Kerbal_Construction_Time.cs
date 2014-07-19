@@ -194,11 +194,17 @@ namespace Kerbal_Construction_Time
             }
         }
 
+        
+
         public void OnDestroy()//more toolbar stuff
         {
             if (KCT_GameStates.kctToolbarButton != null)
             {
                 KCT_GameStates.kctToolbarButton.Destroy();
+            }
+            if (KCT_Events.instance.KCTButtonStock != null)
+            {
+                ApplicationLauncher.Instance.RemoveModApplication(KCT_Events.instance.KCTButtonStock);
             }
         }
 

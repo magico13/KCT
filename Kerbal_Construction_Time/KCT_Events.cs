@@ -29,9 +29,29 @@ namespace Kerbal_Construction_Time
             GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
             GameEvents.onVesselSOIChanged.Add(SOIChangeEvent);
             GameEvents.OnTechnologyResearched.Add(TechUnlockEvent);
+            if (!ToolbarManager.ToolbarAvailable)
+                GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
 
             eventAdded = true;
         }
+
+        public ApplicationLauncherButton KCTButtonStock = null;
+        public void OnGUIAppLauncherReady()
+        {
+                if (ApplicationLauncher.Ready) //Add Stock button
+                {
+                    KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
+                        KCT_GUI.onClick,
+                        KCT_GUI.onClick,
+                        DummyVoid, //TODO: List next ship here?
+                        DummyVoid,
+                        DummyVoid,
+                        DummyVoid,
+                        ApplicationLauncher.AppScenes.ALWAYS,
+                        GameDatabase.Instance.GetTexture("KerbalConstructionTime/icons/KCT_on", false));
+                }
+        }
+        void DummyVoid() { }
 
         public void TechUnlockEvent(GameEvents.HostTargetAction<RDTech, RDTech.OperationResult> ev)
         {
@@ -231,10 +251,15 @@ namespace Kerbal_Construction_Time
                         //Debug.Log("[KCT] " + p.partInfo.name);
                         KCT_Utilities.AddPartToInventory(p.partInfo.name);
                     }
-                    if (!KCT_Utilities.StageRecoveryAddonActive) //Delegate funds handling to Stage Recovery if it's present
-                        KCT_Utilities.AddFunds(KCT_Utilities.GetRecoveryValueForParachutes(v.protoVessel));
-                    else
-                        Debug.Log("[KCT] Delegating Funds recovery to StageRecovery Addon");
+
+                    if (KCT_Utilities.StageRecoveryAddonActive || KCT_Utilities.DebRefundAddonActive) //Delegate funds handling to Stage Recovery or DebRefund if it's present
+                    {
+                        Debug.Log("[KCT] Delegating Funds recovery to another addon.");
+                    }
+                    else  //Otherwise do it ourselves
+                        KCT_Utilities.AddFunds(KCT_Utilities.GetRecoveryValueForChuteLanding(v.protoVessel));
+                    
+                        
                 }
             }
         }

@@ -807,11 +807,13 @@ namespace Kerbal_Construction_Time
             return spentPoints;
         }
 
-        public static float GetRecoveryValueForParachutes(ProtoVessel pv)
+        public static float GetRecoveryValueForChuteLanding(ProtoVessel pv)
         {
+            bool probeCoreAttached = false;
+
             double distanceFromKSC = SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(pv.latitude, pv.longitude));
             double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
-            float recoveryPercent = 0.75f * Mathf.Lerp(0.98f, 0.1f, (float)(distanceFromKSC / maxDist));
+            float recoveryPercent = KCT_GameStates.settings.RecoveryModifier * Mathf.Lerp(0.98f, 0.1f, (float)(distanceFromKSC / maxDist));
             float totalReturn = 0;
             foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
             {
@@ -835,7 +837,23 @@ namespace Kerbal_Construction_Time
                 .SelectMany(t => t)
                 .FirstOrDefault(t => t.FullName == "StageRecovery.StageRecovery");
 
-                return (SR != null);
+                if (SR != null) return true;
+
+                return false;
+            }
+        }
+
+        public static bool DebRefundAddonActive
+        {
+            get
+            {
+                 Type DR = AssemblyLoader.loadedAssemblies
+                 .Select(a => a.assembly.GetExportedTypes())
+                 .SelectMany(t => t)
+                 .FirstOrDefault(t => t.FullName == "DebRefund.DebRefundManager");
+                 if (DR != null) return true;
+
+                return false;
             }
         }
     }

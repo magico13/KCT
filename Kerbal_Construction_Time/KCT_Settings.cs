@@ -18,6 +18,7 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool InstantTechUnlock;
         [Persistent] public bool DisableBuildTime;
         [Persistent] public bool CheckForUpdates;
+        [Persistent] public float RecoveryModifier;
         public bool enabledForSave=true;
         //[Persistent] public bool AutoRevertOnCrash;
         //[Persistent] public bool Use6HourDays;
@@ -35,6 +36,7 @@ namespace Kerbal_Construction_Time
             InstantTechUnlock = false;
             DisableBuildTime = false;
             CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
+            RecoveryModifier = 0.75f;
            // AutoRevertOnCrash = true;
             //Use6HourDays = GameSettings.KERBIN_TIME;
         }
@@ -45,6 +47,9 @@ namespace Kerbal_Construction_Time
             {
                 ConfigNode cnToLoad = ConfigNode.Load(filePath);
                 ConfigNode.LoadObjectFromConfig(this, cnToLoad);
+
+                if (RecoveryModifier < 0) RecoveryModifier = 0;
+                if (RecoveryModifier > 1) RecoveryModifier = 1;
             }
         }
 

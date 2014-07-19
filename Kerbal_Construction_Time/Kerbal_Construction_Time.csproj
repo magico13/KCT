@@ -37,6 +37,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
     <Reference Include="MissionLibrary">
       <HintPath>..\MissionLibrary.dll</HintPath>
     </Reference>

@@ -44,14 +44,15 @@ namespace Kerbal_Construction_Time
         {
             if (validScenes.Contains(HighLogic.LoadedScene)) //&& KCT_GameStates.settings.enabledForSave)//!(HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && !KCT_GameStates.settings.SandboxEnabled))
             {
-                if (!ToolbarManager.ToolbarAvailable && GUI.Button(iconPosition, "KCT", GUI.skin.button))
+                /*if (!ToolbarManager.ToolbarAvailable && GUI.Button(iconPosition, "KCT", GUI.skin.button))
                 {
                     onClick();
-                }
-                else if (ToolbarManager.ToolbarAvailable)
+                }*/
+                if (ToolbarManager.ToolbarAvailable)
                 {
                     KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture(); //Set texture, allowing for flashing of icon.
                 }
+
 
                 if (showSettings)
                     settingsPosition = GUILayout.Window(8955, settingsPosition, KCT_GUI.DrawSettings, "KCT Settings", windowStyle);
@@ -932,28 +933,6 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
         }
 
-        public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit;
-        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates;
-        private static void ShowSettings()
-        {
-            settingSelected = 0;
-            newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
-            newBuildEffect = KCT_GameStates.timeSettings.BuildEffect.ToString();
-            newInvEffect = KCT_GameStates.timeSettings.InventoryEffect.ToString();
-            enabledForSave = KCT_GameStates.settings.enabledForSave;
-            enableAllBodies = KCT_GameStates.settings.EnableAllBodies;
-            newTimeWarp = KCT_GameStates.settings.MaxTimeWarp.ToString();
-            forceStopWarp = KCT_GameStates.settings.ForceStopWarp;
-            newSandboxUpgrades = KCT_GameStates.settings.SandboxUpgrades.ToString();
-            newUpgradeCount = KCT_GameStates.TotalUpgradePoints.ToString();
-            newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
-            instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
-            disableBuildTimes = KCT_GameStates.settings.DisableBuildTime;
-            checkForUpdates = KCT_GameStates.settings.CheckForUpdates;
-            settingsPosition.height = 1;
-            showSettings = !showSettings;
-        }
-
         public static void ResetBLWindow()
         {
             buildListWindowPosition.height = 1;
@@ -1665,6 +1644,30 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
         }
 
+        public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier;
+        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates;
+        private static void ShowSettings()
+        {
+            settingSelected = 0;
+            newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
+            newBuildEffect = KCT_GameStates.timeSettings.BuildEffect.ToString();
+            newInvEffect = KCT_GameStates.timeSettings.InventoryEffect.ToString();
+            enabledForSave = KCT_GameStates.settings.enabledForSave;
+            enableAllBodies = KCT_GameStates.settings.EnableAllBodies;
+            newTimeWarp = KCT_GameStates.settings.MaxTimeWarp.ToString();
+            forceStopWarp = KCT_GameStates.settings.ForceStopWarp;
+            newSandboxUpgrades = KCT_GameStates.settings.SandboxUpgrades.ToString();
+            newUpgradeCount = KCT_GameStates.TotalUpgradePoints.ToString();
+            newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
+            instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
+            disableBuildTimes = KCT_GameStates.settings.DisableBuildTime;
+            checkForUpdates = KCT_GameStates.settings.CheckForUpdates;
+            newRecoveryModifier = (KCT_GameStates.settings.RecoveryModifier*100).ToString();
+            settingsPosition.height = 1;
+            showSettings = !showSettings;
+        }
+
+
         private static int settingSelected = 0;
         private static void DrawSettings(int windowID)
         {
@@ -1726,6 +1729,10 @@ namespace Kerbal_Construction_Time
                 newSandboxUpgrades = GUILayout.TextField(newSandboxUpgrades, 3, GUILayout.Width(40));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
+                GUILayout.Label("Funds Recovery Mod", GUILayout.Width(width1));
+                newRecoveryModifier = GUILayout.TextField(newRecoveryModifier, 4, GUILayout.Width(40));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
                 GUILayout.Label("Auto Check For Updates", GUILayout.Width(width1));
                 checkForUpdates = GUILayout.Toggle(checkForUpdates, checkForUpdates ? " Enabled" : " Disabled");
                 if (GUILayout.Button("Check"))
@@ -1775,6 +1782,7 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.InstantTechUnlock = instantTechUnlock;
                 KCT_GameStates.settings.SandboxUpgrades = int.Parse(newSandboxUpgrades);
                 KCT_GameStates.settings.DisableBuildTime = disableBuildTimes;
+                KCT_GameStates.settings.RecoveryModifier = Math.Min(1, Math.Max(float.Parse(newRecoveryModifier) / 100f, 0));
                 KCT_GameStates.settings.CheckForUpdates = checkForUpdates;
                 KCT_GameStates.settings.Save();
 
