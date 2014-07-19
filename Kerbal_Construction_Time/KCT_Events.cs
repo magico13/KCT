@@ -25,10 +25,10 @@ namespace Kerbal_Construction_Time
             }
             GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
 
-            if (!KCT_Utilities.DebRefundAddonActive)
+          //  if (!KCT_Utilities.DebRefundAddonActive)
                 GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
-            else
-                Debug.Log("[KCT] Defering stage recovery to DebRefund. It will just provide me with part names.");
+          //  else
+          //      Debug.Log("[KCT] Defering stage recovery to DebRefund. It will just provide me with part names.");
             
             GameEvents.onLaunch.Add(vesselLaunchEvent);
             GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
@@ -129,7 +129,8 @@ namespace Kerbal_Construction_Time
 
         public void launchScreenOpenEvent(GameEvents.VesselSpawnInfo v)
         {
-            KCT_GameStates.flightSimulated = true;
+            if (!KCT_GameStates.settings.DisableBuildTime)
+                KCT_GameStates.flightSimulated = true;
         }
 
         public void vesselLaunchEvent(EventReport e)
@@ -199,36 +200,34 @@ namespace Kerbal_Construction_Time
                     if (ModuleNames.Contains("RealChuteModule"))
                     {
                         Debug.Log("[KCT] Found realchute module on " + p.partInfo.name);
-                        PartModule realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule").moduleRef;//p.partRef.Modules["RealChuteModule"];
-                        Type rCType = realChute.GetType();
-                        if ((object)realChute != null)
+                        //PartModule realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule").moduleRef;//p.partRef.Modules["RealChuteModule"];
+                        ProtoPartModuleSnapshot realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule");
+                      /*  Type rCType = realChute.moduleRef.GetType();
+                        Debug.Log(rCType.ToString());*/
+                        if ((object)realChute != null) //Some of this was adopted from DebRefund, as Vendan's method of handling multiple parachutes is better than what I had.
                         {
-                            System.Reflection.MemberInfo chuteModule = rCType.GetMember("parachutes")[0];
-                            object chutes = KCT_Utilities.GetMemberInfoValue(chuteModule, realChute);
-                            Type chuteType = chutes.GetType().GetGenericArguments()[0];
-                            var pList = (IList)chutes;
-
-                            System.Reflection.MemberInfo member = chuteType.GetMember("deployedArea")[0];
-                            float area = (float)KCT_Utilities.GetMemberInfoValue(member, pList[0]);
-                           // Debug.Log("Chute area: " + area);
-
-                            member = chuteType.GetMember("material")[0];
-                            string mat = (string)KCT_Utilities.GetMemberInfoValue(member, pList[0]);
-                           // Debug.Log("Material is " + mat);
-
                             Type matLibraryType = AssemblyLoader.loadedAssemblies
                                 .SelectMany(a => a.assembly.GetExportedTypes())
                                 .SingleOrDefault(t => t.FullName == "RealChute.Libraries.MaterialsLibrary");
 
-                            System.Reflection.MethodInfo matMethod = matLibraryType.GetMethod("GetMaterial", new Type[] { mat.GetType() });
-                            object MatLibraryInstance = matLibraryType.GetProperty("instance").GetValue(null, null);
-                            object materialObject = matMethod.Invoke(MatLibraryInstance, new object[] { mat });
+                            ConfigNode[] parchutes = realChute.moduleValues.GetNodes("PARACHUTE");
+                            foreach (ConfigNode chute in parchutes)
+                            {
+                                float area = float.Parse(chute.GetValue("deployedDiameter"));
+                                area = (float)(Math.Pow(area / 2, 2) * Math.PI);
+                                Debug.Log(area);
+                                string mat = chute.GetValue("material");
+                                Debug.Log(mat);
+                                System.Reflection.MethodInfo matMethod = matLibraryType.GetMethod("GetMaterial", new Type[] { mat.GetType() });
+                                object MatLibraryInstance = matLibraryType.GetProperty("instance").GetValue(null, null);
+                                object materialObject = matMethod.Invoke(MatLibraryInstance, new object[] { mat });
+                                float dragC = (float)KCT_Utilities.GetMemberInfoValue(materialObject.GetType().GetMember("dragCoefficient")[0], materialObject);
+                                Debug.Log(dragC);
+                                totalDrag += (1 * 100 * dragC * area / 2000f);
 
-                            float dragC = (float)KCT_Utilities.GetMemberInfoValue(materialObject.GetType().GetMember("dragCoefficient")[0], materialObject);
-                           // Debug.Log("dragC: " + dragC);
+                            }
                             isParachute = true;
                             realChuteInUse = true;
-                            totalDrag += (1 * 100 * dragC * area / 2000f);
                         }
                     }
                     if (!isParachute)
@@ -260,9 +259,9 @@ namespace Kerbal_Construction_Time
                         //Debug.Log("[KCT] " + p.partInfo.name);
                         KCT_Utilities.AddPartToInventory(p.partInfo.name);
                         if (!PartsRecovered.ContainsKey(p.partInfo.name))
-                            PartsRecovered.Add(p.partInfo.name, 1);
+                            PartsRecovered.Add(p.partInfo.title, 1);
                         else
-                            ++PartsRecovered[p.partInfo.name];
+                            ++PartsRecovered[p.partInfo.title];
                     }
 
                     Message.AppendLine("Vessel name: "+v.vesselName);

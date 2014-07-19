@@ -457,8 +457,8 @@ namespace Kerbal_Construction_Time
 
         public static void AddPartToInventory(String name, float damage) //For Vendan and DebRefund
         {
-            Debug.Log("[KCT] Adding part '" + name + "' with damage '" + damage + "'.");
-            AddPartToInventory(name); //Eventually I'd like to not return some of the parts based on the damage value.
+            Debug.Log("[KCT] Received part '" + name + "' with damage '" + damage + "'.");
+            //AddPartToInventory(name); //Eventually I'd like to not return some of the parts based on the damage value.
         }
 
         public static void AddPartToInventory(Part part)
