@@ -150,6 +150,11 @@ namespace Kerbal_Construction_Time
 
         public void vesselDestroyEvent(Vessel v)
         {
+            Dictionary<string, int> PartsRecovered = new Dictionary<string, int>();
+            float FundsRecovered = 0;
+            StringBuilder Message = new StringBuilder();
+
+
             if (FlightGlobals.fetch == null)
                 return;
 
@@ -250,16 +255,42 @@ namespace Kerbal_Construction_Time
                     {
                         //Debug.Log("[KCT] " + p.partInfo.name);
                         KCT_Utilities.AddPartToInventory(p.partInfo.name);
+                        if (!PartsRecovered.ContainsKey(p.partInfo.name))
+                            PartsRecovered.Add(p.partInfo.name, 1);
+                        else
+                            ++PartsRecovered[p.partInfo.name];
                     }
 
-                    if (KCT_Utilities.StageRecoveryAddonActive || KCT_Utilities.DebRefundAddonActive) //Delegate funds handling to Stage Recovery or DebRefund if it's present
+                    Message.AppendLine("Vessel name: "+v.vesselName);
+                    Message.AppendLine("Parts recovered: ");
+                    for (int i = 0; i < PartsRecovered.Count; i++ )
                     {
-                        Debug.Log("[KCT] Delegating Funds recovery to another addon.");
+                        Message.AppendLine(PartsRecovered.Values.ElementAt(i) + "x " + PartsRecovered.Keys.ElementAt(i));
                     }
-                    else  //Otherwise do it ourselves
-                        KCT_Utilities.AddFunds(KCT_Utilities.GetRecoveryValueForChuteLanding(v.protoVessel));
-                    
-                        
+
+                    if (KCT_Utilities.CurrentGameIsCareer())
+                    {
+                        if (KCT_Utilities.StageRecoveryAddonActive || KCT_Utilities.DebRefundAddonActive) //Delegate funds handling to Stage Recovery or DebRefund if it's present
+                        {
+                            Debug.Log("[KCT] Delegating Funds recovery to another addon.");
+                        }
+                        else  //Otherwise do it ourselves
+                        {
+                            FundsRecovered = KCT_Utilities.GetRecoveryValueForChuteLanding(v.protoVessel);
+                            KCT_Utilities.AddFunds(FundsRecovered);
+                            Message.AppendLine("Funds recovered: " + FundsRecovered);
+                        }
+                    }
+                    Message.AppendLine("\nAdditional information:");
+                    if (!realChuteInUse)
+                    {
+                        Message.AppendLine("Stock module used. Terminal velocity (<10 needed): " + Vt);
+                    }
+                    else
+                    {
+                        Message.AppendLine("RealChute module used. Drag to Mass ratio (>8 needed): " + totalDrag / totalMass);
+                    }
+                    KCT_Utilities.DisplayMessage("Stage Recovered", Message, MessageSystemButton.MessageButtonColor.BLUE, MessageSystemButton.ButtonIcons.MESSAGE);
                 }
             }
         }

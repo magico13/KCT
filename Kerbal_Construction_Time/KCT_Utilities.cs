@@ -451,9 +451,14 @@ namespace Kerbal_Construction_Time
                 }
             }
             KCT_GUI.ResetBLWindow();
-            MessageSystem.Message m = new MessageSystem.Message("Vessel Complete!", Message.ToString(), MessageSystemButton.MessageButtonColor.GREEN, MessageSystemButton.ButtonIcons.COMPLETE);
-            MessageSystem.Instance.AddMessage(m);
+            DisplayMessage("Vessel Complete!", Message, MessageSystemButton.MessageButtonColor.GREEN, MessageSystemButton.ButtonIcons.COMPLETE);
+        }
 
+
+        public static void AddPartToInventory(String name, float damage) //For Vendan and DebRefund
+        {
+            Debug.Log("[KCT] Adding part '" + name + "' with damage '" + damage + "'.");
+            AddPartToInventory(name); //Eventually I'd like to not return some of the parts based on the damage value.
         }
 
         public static void AddPartToInventory(Part part)
@@ -810,10 +815,18 @@ namespace Kerbal_Construction_Time
         public static float GetRecoveryValueForChuteLanding(ProtoVessel pv)
         {
             bool probeCoreAttached = false;
-
+            foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
+            {
+                if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && ((ModuleCommand)module.moduleRef).minimumCrew == 0)) != null)
+                {
+                    Debug.Log("[KCT] Probe Core found!");
+                    probeCoreAttached = true;
+                }
+            }
+            float RecoveryMod = probeCoreAttached ? 1.0f : KCT_GameStates.settings.RecoveryModifier;
             double distanceFromKSC = SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(pv.latitude, pv.longitude));
             double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
-            float recoveryPercent = KCT_GameStates.settings.RecoveryModifier * Mathf.Lerp(0.98f, 0.1f, (float)(distanceFromKSC / maxDist));
+            float recoveryPercent = RecoveryMod * Mathf.Lerp(0.98f, 0.1f, (float)(distanceFromKSC / maxDist));
             float totalReturn = 0;
             foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
             {
@@ -855,6 +868,12 @@ namespace Kerbal_Construction_Time
 
                 return false;
             }
+        }
+
+        public static void DisplayMessage(String title, StringBuilder text, MessageSystemButton.MessageButtonColor color, MessageSystemButton.ButtonIcons icon)
+        {
+            MessageSystem.Message m = new MessageSystem.Message(title, text.ToString(), color, icon);
+            MessageSystem.Instance.AddMessage(m);
         }
     }
 }
