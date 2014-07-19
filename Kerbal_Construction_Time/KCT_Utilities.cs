@@ -388,18 +388,27 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.warpInitiated = false;
             }
 
+            StringBuilder Message = new StringBuilder();
+            Message.AppendLine("The following vessel is complete:");
             KCT_BuildListVessel vessel = null;
             if (ListIdentifier == 0) //VAB list
             {
                 vessel = KCT_GameStates.VABList[index];
                 KCT_GameStates.VABList.RemoveAt(index);
                 KCT_GameStates.VABWarehouse.Add(vessel);
+                
+                Message.AppendLine(vessel.shipName);
+                Message.AppendLine("Please check the VAB Storage to launch it.");
+            
             }
             else if (ListIdentifier == 1)//SPH list
             {
                 vessel = KCT_GameStates.SPHList[index];
                 KCT_GameStates.SPHList.RemoveAt(index);
                 KCT_GameStates.SPHWarehouse.Add(vessel);
+
+                Message.AppendLine(vessel.shipName);
+                Message.AppendLine("Please check the SPH Storage to launch it.");
             }
 
             //Assign science based on science rate
@@ -426,7 +435,7 @@ namespace Kerbal_Construction_Time
             foreach (KCT_BuildListVessel blv in KCT_GameStates.VABList)
             {
                 List<string> ship = blv.GetPartNames();
-                double newTime = KCT_Utilities.GetBuildTime(ship, true, blv.InventoryParts); //Don't use the part inventory when determining the time
+                double newTime = KCT_Utilities.GetBuildTime(ship, true, blv.InventoryParts); //Use only the parts that were originally used when recalculating
                 if (newTime < blv.buildPoints)
                 {
                     blv.buildPoints = blv.buildPoints - ((blv.buildPoints - newTime) * (100 - blv.ProgressPercent())/100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
@@ -442,6 +451,9 @@ namespace Kerbal_Construction_Time
                 }
             }
             KCT_GUI.ResetBLWindow();
+            MessageSystem.Message m = new MessageSystem.Message("Vessel Complete!", Message.ToString(), MessageSystemButton.MessageButtonColor.GREEN, MessageSystemButton.ButtonIcons.COMPLETE);
+            MessageSystem.Instance.AddMessage(m);
+
         }
 
         public static void AddPartToInventory(Part part)

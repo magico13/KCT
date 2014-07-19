@@ -36,6 +36,9 @@ namespace Kerbal_Construction_Time
         private static Rect bLPlusPosition = new Rect(1, 1 / 2, 150, 1);
         private static GUIStyle windowStyle = new GUIStyle(HighLogic.Skin.window);
 
+        private static bool isKSCLocked = false, isEditorLocked = false;
+
+
         private static List<GameScenes> validScenes = new List<GameScenes> { GameScenes.FLIGHT, GameScenes.EDITOR, GameScenes.SPH, GameScenes.SPACECENTER, GameScenes.TRACKSTATION };
         public static void SetGUIPositions(GUI.WindowFunction OnWindow)
         {
@@ -98,20 +101,66 @@ namespace Kerbal_Construction_Time
                     unlockEditor = false;
                 }
 
+
+                //Disable KSC things when certain windows are shown.
                 if (showFirstRun || showRename || showUpgradeWindow || showSettings || showCrewSelect || showShipRoster)
                 {
-                    if (InputLockManager.IsUnlocked(ControlTypes.KSC_FACILITIES))
+                    if (!isKSCLocked)
+                    {
                         InputLockManager.SetControlLock(ControlTypes.KSC_FACILITIES, "KCTKSCLock");
+                        isKSCLocked = true;
+                    }
                 }
-                else
+                else if (!showBuildList)
                 {
-                    if (InputLockManager.GetControlLock("KCTKSCLock") != ControlTypes.None && InputLockManager.IsLocked(ControlTypes.KSC_FACILITIES))
+                    if (isKSCLocked)
+                    {
                         InputLockManager.RemoveControlLock("KCTKSCLock");
+                        isKSCLocked = false;
+                    }
                 }
             }
         }
 
         public static bool PrimarilyDisabled { get { return (!KCT_GameStates.settings.enabledForSave || KCT_GameStates.settings.DisableBuildTime); } }
+
+        private static void CheckKSCLock()
+        {
+            //On mouseover code for build list inspired by Engineer's editor mousover code
+            Vector2 mousePos = Input.mousePosition;
+            mousePos.y = Screen.height - mousePos.y;
+            if (showBuildList && HighLogic.LoadedScene == GameScenes.SPACECENTER && buildListWindowPosition.Contains(mousePos) && !isKSCLocked)
+            {
+                InputLockManager.SetControlLock(ControlTypes.KSC_FACILITIES, "KCTKSCLock");
+                isKSCLocked = true;
+                //Debug.Log("[KCT] KSC Locked");
+            }
+            else if (showBuildList && HighLogic.LoadedScene == GameScenes.SPACECENTER && !buildListWindowPosition.Contains(mousePos) && isKSCLocked)
+            {
+                InputLockManager.RemoveControlLock("KCTKSCLock");
+                isKSCLocked = false;
+                //Debug.Log("[KCT] KSC UnLocked");
+            }
+        }
+
+        private static void CheckEditorLock()
+        {
+            //On mouseover code for editor inspired by Engineer's editor mousover code
+            Vector2 mousePos = Input.mousePosition;
+            mousePos.y = Screen.height - mousePos.y;
+            if ((showEditorGUI && editorWindowPosition.Contains(mousePos)) && !isEditorLocked)
+            {
+                EditorLogic.fetch.Lock(true, false, true, "KCTEditorMouseLock");
+                isEditorLocked = true;
+                //Debug.Log("[KCT] KSC Locked");
+            }
+            else if (!(showEditorGUI && editorWindowPosition.Contains(mousePos)) && isEditorLocked)
+            {
+                EditorLogic.fetch.Unlock("KCTEditorMouseLock");
+                isEditorLocked = false;
+                //Debug.Log("[KCT] KSC UnLocked");
+            }
+        }
 
         public static void onClick()
         {
@@ -554,6 +603,8 @@ namespace Kerbal_Construction_Time
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                 GUI.DragWindow();
 
+            CheckEditorLock();
+
             /*if (Event.current.type == EventType.Repaint && editorWindowPosition.Contains(Event.current.mousePosition))
             {
                 //Mouseover event
@@ -655,6 +706,8 @@ namespace Kerbal_Construction_Time
             GUILayout.EndHorizontal();
             
             GUILayout.EndVertical();
+
+            CheckEditorLock();
         }
 
         public static void DrawBodyChooser(int windowID)
@@ -691,6 +744,8 @@ namespace Kerbal_Construction_Time
             //centralWindowPosition.center.Set(Screen.width / 2f, Screen.height / 2f);
             centralWindowPosition.y = (Screen.height-centralWindowPosition.height) / 2;
             GUILayout.EndVertical();
+
+            CheckEditorLock();
         }
 
         public static void DrawLaunchAlert(int windowID)
@@ -1256,6 +1311,10 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                 GUI.DragWindow();
+
+
+            CheckKSCLock();
+
             /*
             if (Event.current.type == EventType.Repaint && buildListWindowPosition.Contains(Event.current.mousePosition))
             {
