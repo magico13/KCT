@@ -151,7 +151,7 @@ namespace Kerbal_Construction_Time
         public void vesselDestroyEvent(Vessel v)
         {
             Dictionary<string, int> PartsRecovered = new Dictionary<string, int>();
-            float FundsRecovered = 0;
+            float FundsRecovered = 0, KSCDistance = 0, RecoveryPercent = 0;
             StringBuilder Message = new StringBuilder();
 
 
@@ -276,12 +276,40 @@ namespace Kerbal_Construction_Time
                         }
                         else  //Otherwise do it ourselves
                         {
-                            FundsRecovered = KCT_Utilities.GetRecoveryValueForChuteLanding(v.protoVessel);
+                            bool probeCoreAttached = false;
+                            foreach (ProtoPartSnapshot pps in v.protoVessel.protoPartSnapshots)
+                            {
+                                if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && ((ModuleCommand)module.moduleRef).minimumCrew == 0)) != null)
+                                {
+                                    Debug.Log("[KCT] Probe Core found!");
+                                    probeCoreAttached = true;
+                                }
+                            }
+                            float RecoveryMod = probeCoreAttached ? 1.0f : KCT_GameStates.settings.RecoveryModifier;
+                            KSCDistance = (float)SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(v.protoVessel.latitude, v.protoVessel.longitude));
+                            double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
+                            RecoveryPercent = RecoveryMod * Mathf.Lerp(0.98f, 0.1f, (float)(KSCDistance / maxDist));
+                            float totalReturn = 0;
+                            foreach (ProtoPartSnapshot pps in v.protoVessel.protoPartSnapshots)
+                            {
+                                float dryCost, fuelCost;
+                                totalReturn += ShipConstruction.GetPartCosts(pps, pps.partInfo, out dryCost, out fuelCost);
+                            }
+                            float totalBeforeModifier = (float)Math.Round(totalReturn, 2);
+                            totalReturn *= RecoveryPercent;
+                            FundsRecovered = (float)Math.Round(totalReturn, 2);
+                            Debug.Log("[KCT] Vessel being recovered by KCT. Percent returned: " + 100 * RecoveryPercent + "%. Distance from KSC: " + Math.Round(KSCDistance / 1000, 2) + " km");
+                            Debug.Log("[KCT] Funds being returned: " + FundsRecovered + "/" + totalBeforeModifier);
+
+                            Message.AppendLine("Funds recovered: " + FundsRecovered + "("+Math.Round(RecoveryPercent*100, 1)+"%)");
                             KCT_Utilities.AddFunds(FundsRecovered);
-                            Message.AppendLine("Funds recovered: " + FundsRecovered);
+                            /*FundsRecovered = KCT_Utilities.GetRecoveryValueForChuteLanding(v.protoVessel);
+                            
+                            */
                         }
                     }
                     Message.AppendLine("\nAdditional information:");
+                    Message.AppendLine("Distance from KSC: " + Math.Round(KSCDistance/1000, 2)+" km");
                     if (!realChuteInUse)
                     {
                         Message.AppendLine("Stock module used. Terminal velocity (<10 needed): " + Vt);
