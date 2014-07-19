@@ -24,7 +24,12 @@ namespace Kerbal_Construction_Time
                 GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
             }
             GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
-            GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
+
+            if (!KCT_Utilities.DebRefundAddonActive)
+                GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
+            else
+                Debug.Log("[KCT] Defering stage recovery to DebRefund. It will just provide me with part names.");
+            
             GameEvents.onLaunch.Add(vesselLaunchEvent);
             GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
             GameEvents.onVesselSOIChanged.Add(SOIChangeEvent);
@@ -153,7 +158,6 @@ namespace Kerbal_Construction_Time
             Dictionary<string, int> PartsRecovered = new Dictionary<string, int>();
             float FundsRecovered = 0, KSCDistance = 0, RecoveryPercent = 0;
             StringBuilder Message = new StringBuilder();
-
 
             if (FlightGlobals.fetch == null)
                 return;
