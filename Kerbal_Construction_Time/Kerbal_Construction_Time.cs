@@ -275,7 +275,7 @@ namespace Kerbal_Construction_Time
             if (!KCT_Events.instance.eventAdded)
             {
                 if (KCT_GameStates.settings.CheckForUpdates) //Check for updates
-                    KCT_UpdateChecker.CheckForUpdate(false);
+                    KCT_UpdateChecker.CheckForUpdate(false, KCT_GameStates.settings.VersionSpecific);
 
                 KCT_Events.instance.addEvents();
             }

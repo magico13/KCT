@@ -17,7 +17,7 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool ForceStopWarp;
         [Persistent] public bool InstantTechUnlock;
         [Persistent] public bool DisableBuildTime;
-        [Persistent] public bool CheckForUpdates;
+        [Persistent] public bool CheckForUpdates, VersionSpecific;
         [Persistent] public float RecoveryModifier;
         public bool enabledForSave=true;
         //[Persistent] public bool AutoRevertOnCrash;
@@ -36,6 +36,7 @@ namespace Kerbal_Construction_Time
             InstantTechUnlock = false;
             DisableBuildTime = false;
             CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
+            VersionSpecific = false;
             RecoveryModifier = 0.75f;
            // AutoRevertOnCrash = true;
             //Use6HourDays = GameSettings.KERBIN_TIME;

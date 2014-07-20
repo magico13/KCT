@@ -1645,7 +1645,7 @@ namespace Kerbal_Construction_Time
         }
 
         public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier;
-        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates;
+        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific;
         private static void ShowSettings()
         {
             settingSelected = 0;
@@ -1662,6 +1662,7 @@ namespace Kerbal_Construction_Time
             instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
             disableBuildTimes = KCT_GameStates.settings.DisableBuildTime;
             checkForUpdates = KCT_GameStates.settings.CheckForUpdates;
+            versionSpecific = KCT_GameStates.settings.VersionSpecific;
             newRecoveryModifier = (KCT_GameStates.settings.RecoveryModifier*100).ToString();
             settingsPosition.height = 1;
             showSettings = !showSettings;
@@ -1736,7 +1737,11 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("Auto Check For Updates", GUILayout.Width(width1));
                 checkForUpdates = GUILayout.Toggle(checkForUpdates, checkForUpdates ? " Enabled" : " Disabled");
                 if (GUILayout.Button("Check"))
-                    KCT_UpdateChecker.CheckForUpdate(true);
+                    KCT_UpdateChecker.CheckForUpdate(true, versionSpecific);
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Check Only for this KSP Version?", GUILayout.Width(width1));
+                versionSpecific = GUILayout.Toggle(versionSpecific, versionSpecific ? " Yes" : " No");
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Current: " + KCT_UpdateChecker.CurrentVersion);
@@ -1784,6 +1789,7 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.DisableBuildTime = disableBuildTimes;
                 KCT_GameStates.settings.RecoveryModifier = Math.Min(1, Math.Max(float.Parse(newRecoveryModifier) / 100f, 0));
                 KCT_GameStates.settings.CheckForUpdates = checkForUpdates;
+                KCT_GameStates.settings.VersionSpecific = versionSpecific;
                 KCT_GameStates.settings.Save();
 
                 KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);

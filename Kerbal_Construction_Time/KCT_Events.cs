@@ -131,7 +131,7 @@ namespace Kerbal_Construction_Time
 
         public void launchScreenOpenEvent(GameEvents.VesselSpawnInfo v)
         {
-            if (!KCT_GameStates.settings.DisableBuildTime)
+            if (!KCT_GUI.PrimarilyDisabled)
                 KCT_GameStates.flightSimulated = true;
         }
 
