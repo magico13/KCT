@@ -60,6 +60,7 @@ namespace Kerbal_Construction_Time
 
         public void TechUnlockEvent(GameEvents.HostTargetAction<RDTech, RDTech.OperationResult> ev)
         {
+            if (!KCT_GameStates.settings.enabledForSave) return;
             if (ev.target == RDTech.OperationResult.Successful)
             {
                 KCT_TechItem tech = new KCT_TechItem(ev.host);
@@ -88,6 +89,7 @@ namespace Kerbal_Construction_Time
 
         public void gameSceneEvent(GameScenes scene)
         {
+            if (!KCT_GameStates.settings.enabledForSave) return;
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
             if (validScenes.Contains(scene))
             {
@@ -135,6 +137,7 @@ namespace Kerbal_Construction_Time
 
         public void vesselLaunchEvent(EventReport e)
         {
+            if (!KCT_GameStates.settings.enabledForSave) return;
             if (KCT_GameStates.flightSimulated && KCT_GameStates.settings.SimulationTimeLimit > 0)
             {
                 KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.settings.SimulationTimeLimit);
@@ -143,6 +146,7 @@ namespace Kerbal_Construction_Time
 
         public void vesselRecoverEvent(ProtoVessel v)
         {
+            if (!KCT_GameStates.settings.enabledForSave) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
             {
                 Debug.Log("[KCT] Adding recovered parts to Part Inventory");

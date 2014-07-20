@@ -272,6 +272,14 @@ namespace Kerbal_Construction_Time
                     InputLockManager.RemoveControlLock("KCTLaunchLock");
             }
 
+            if (!KCT_Events.instance.eventAdded)
+            {
+                if (KCT_GameStates.settings.CheckForUpdates) //Check for updates
+                    KCT_UpdateChecker.CheckForUpdate(false);
+
+                KCT_Events.instance.addEvents();
+            }
+
             if (!KCT_GameStates.settings.enabledForSave)
             {
                 if (InputLockManager.GetControlLock("KCTKSCLock") == ControlTypes.KSC_FACILITIES)
@@ -280,13 +288,7 @@ namespace Kerbal_Construction_Time
             }
 
             //Begin primary mod functions
-            if (!KCT_Events.instance.eventAdded)
-            {
-                if (KCT_GameStates.settings.CheckForUpdates) //Check for updates
-                    KCT_UpdateChecker.CheckForUpdate(false);
 
-                KCT_Events.instance.addEvents();
-            }
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             
             if (HighLogic.LoadedSceneIsEditor)
