@@ -25,11 +25,11 @@ namespace Kerbal_Construction_Time
             }
             GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
 
-          //  if (!KCT_Utilities.DebRefundAddonActive)
-                GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
-          //  else
-          //      Debug.Log("[KCT] Defering stage recovery to DebRefund. It will just provide me with part names.");
-            
+            //  if (!KCT_Utilities.DebRefundAddonActive)
+            GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
+            //  else
+            //      Debug.Log("[KCT] Defering stage recovery to DebRefund. It will just provide me with part names.");
+
             GameEvents.onLaunch.Add(vesselLaunchEvent);
             GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
             GameEvents.onVesselSOIChanged.Add(SOIChangeEvent);
@@ -43,18 +43,18 @@ namespace Kerbal_Construction_Time
         public ApplicationLauncherButton KCTButtonStock = null;
         public void OnGUIAppLauncherReady()
         {
-                if (ApplicationLauncher.Ready) //Add Stock button
-                {
-                    KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
-                        KCT_GUI.onClick,
-                        KCT_GUI.onClick,
-                        DummyVoid, //TODO: List next ship here?
-                        DummyVoid,
-                        DummyVoid,
-                        DummyVoid,
-                        ApplicationLauncher.AppScenes.ALWAYS,
-                        GameDatabase.Instance.GetTexture("KerbalConstructionTime/icons/KCT_on", false));
-                }
+            if (ApplicationLauncher.Ready) //Add Stock button
+            {
+                KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
+                    KCT_GUI.onClick,
+                    KCT_GUI.onClick,
+                    DummyVoid, //TODO: List next ship here?
+                    DummyVoid,
+                    DummyVoid,
+                    DummyVoid,
+                    ApplicationLauncher.AppScenes.ALWAYS,
+                    GameDatabase.Instance.GetTexture("KerbalConstructionTime/icons/KCT_on", false));
+            }
         }
         void DummyVoid() { }
 
@@ -202,8 +202,8 @@ namespace Kerbal_Construction_Time
                         Debug.Log("[KCT] Found realchute module on " + p.partInfo.name);
                         //PartModule realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule").moduleRef;//p.partRef.Modules["RealChuteModule"];
                         ProtoPartModuleSnapshot realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule");
-                      /*  Type rCType = realChute.moduleRef.GetType();
-                        Debug.Log(rCType.ToString());*/
+                        /*  Type rCType = realChute.moduleRef.GetType();
+                          Debug.Log(rCType.ToString());*/
                         if ((object)realChute != null) //Some of this was adopted from DebRefund, as Vendan's method of handling multiple parachutes is better than what I had.
                         {
                             Type matLibraryType = AssemblyLoader.loadedAssemblies
@@ -215,14 +215,14 @@ namespace Kerbal_Construction_Time
                             {
                                 float area = float.Parse(chute.GetValue("deployedDiameter"));
                                 area = (float)(Math.Pow(area / 2, 2) * Math.PI);
-                                Debug.Log(area);
+                                //Debug.Log(area);
                                 string mat = chute.GetValue("material");
-                                Debug.Log(mat);
+                                // Debug.Log(mat);
                                 System.Reflection.MethodInfo matMethod = matLibraryType.GetMethod("GetMaterial", new Type[] { mat.GetType() });
                                 object MatLibraryInstance = matLibraryType.GetProperty("instance").GetValue(null, null);
                                 object materialObject = matMethod.Invoke(MatLibraryInstance, new object[] { mat });
                                 float dragC = (float)KCT_Utilities.GetMemberInfoValue(materialObject.GetType().GetMember("dragCoefficient")[0], materialObject);
-                                Debug.Log(dragC);
+                                // Debug.Log(dragC);
                                 totalDrag += (1 * 100 * dragC * area / 2000f);
 
                             }
@@ -264,9 +264,9 @@ namespace Kerbal_Construction_Time
                             ++PartsRecovered[p.partInfo.title];
                     }
 
-                    Message.AppendLine("Vessel name: "+v.vesselName);
+                    Message.AppendLine("Vessel name: " + v.vesselName);
                     Message.AppendLine("Parts recovered: ");
-                    for (int i = 0; i < PartsRecovered.Count; i++ )
+                    for (int i = 0; i < PartsRecovered.Count; i++)
                     {
                         Message.AppendLine(PartsRecovered.Values.ElementAt(i) + "x " + PartsRecovered.Keys.ElementAt(i));
                     }
@@ -286,6 +286,7 @@ namespace Kerbal_Construction_Time
                                 {
                                     Debug.Log("[KCT] Probe Core found!");
                                     probeCoreAttached = true;
+                                    break;
                                 }
                             }
                             float RecoveryMod = probeCoreAttached ? 1.0f : KCT_GameStates.settings.RecoveryModifier;
@@ -304,7 +305,7 @@ namespace Kerbal_Construction_Time
                             Debug.Log("[KCT] Vessel being recovered by KCT. Percent returned: " + 100 * RecoveryPercent + "%. Distance from KSC: " + Math.Round(KSCDistance / 1000, 2) + " km");
                             Debug.Log("[KCT] Funds being returned: " + FundsRecovered + "/" + totalBeforeModifier);
 
-                            Message.AppendLine("Funds recovered: " + FundsRecovered + "("+Math.Round(RecoveryPercent*100, 1)+"%)");
+                            Message.AppendLine("Funds recovered: " + FundsRecovered + "(" + Math.Round(RecoveryPercent * 100, 1) + "%)");
                             KCT_Utilities.AddFunds(FundsRecovered);
                             /*FundsRecovered = KCT_Utilities.GetRecoveryValueForChuteLanding(v.protoVessel);
                             
@@ -312,18 +313,35 @@ namespace Kerbal_Construction_Time
                         }
                     }
                     Message.AppendLine("\nAdditional information:");
-                    Message.AppendLine("Distance from KSC: " + Math.Round(KSCDistance/1000, 2)+" km");
+                    Message.AppendLine("Distance from KSC: " + Math.Round(KSCDistance / 1000, 2) + " km");
                     if (!realChuteInUse)
                     {
-                        Message.AppendLine("Stock module used. Terminal velocity (<10 needed): " + Vt);
+                        Message.AppendLine("Stock module used. Terminal velocity (<10 needed): " + Math.Round(Vt, 2));
                     }
                     else
                     {
-                        Message.AppendLine("RealChute module used. Drag to Mass ratio (>8 needed): " + totalDrag / totalMass);
+                        Message.AppendLine("RealChute module used. Drag to Mass ratio (>8 needed): " + Math.Round(totalDrag / totalMass, 2));
                     }
-                    KCT_Utilities.DisplayMessage("Stage Recovered", Message, MessageSystemButton.MessageButtonColor.BLUE, MessageSystemButton.ButtonIcons.MESSAGE);
+                    if (!(KCT_Utilities.StageRecoveryAddonActive || KCT_Utilities.DebRefundAddonActive) && (KCT_Utilities.CurrentGameIsCareer() || !KCT_GUI.PrimarilyDisabled))
+                        KCT_Utilities.DisplayMessage("Stage Recovered", Message, MessageSystemButton.MessageButtonColor.BLUE, MessageSystemButton.ButtonIcons.MESSAGE);
                 }
             }
         }
     }
 }
+/*
+Copyright (C) 2014  Michael Marvin, Zachary Eck
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
