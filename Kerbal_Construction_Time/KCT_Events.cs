@@ -262,7 +262,7 @@ namespace Kerbal_Construction_Time
                     {
                         //Debug.Log("[KCT] " + p.partInfo.name);
                         KCT_Utilities.AddPartToInventory(p.partInfo.name);
-                        if (!PartsRecovered.ContainsKey(p.partInfo.name))
+                        if (!PartsRecovered.ContainsKey(p.partInfo.title))
                             PartsRecovered.Add(p.partInfo.title, 1);
                         else
                             ++PartsRecovered[p.partInfo.title];

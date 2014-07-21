@@ -104,7 +104,7 @@ namespace Kerbal_Construction_Time
 
 
                 //Disable KSC things when certain windows are shown.
-                if (showFirstRun || showRename || showUpgradeWindow || showSettings || showCrewSelect || showShipRoster)
+                if (showFirstRun || showRename || showUpgradeWindow || showSettings || showCrewSelect || showShipRoster || showClearLaunch)
                 {
                     if (!isKSCLocked)
                     {
@@ -130,16 +130,22 @@ namespace Kerbal_Construction_Time
             //On mouseover code for build list inspired by Engineer's editor mousover code
             Vector2 mousePos = Input.mousePosition;
             mousePos.y = Screen.height - mousePos.y;
-            if (showBuildList && HighLogic.LoadedScene == GameScenes.SPACECENTER && buildListWindowPosition.Contains(mousePos) && !isKSCLocked)
+            if (HighLogic.LoadedScene == GameScenes.SPACECENTER && !isKSCLocked)
             {
-                InputLockManager.SetControlLock(ControlTypes.KSC_FACILITIES, "KCTKSCLock");
-                isKSCLocked = true;
+                if ((showBuildList && buildListWindowPosition.Contains(mousePos)) || (showBLPlus && bLPlusPosition.Contains(mousePos)))
+                {
+                    InputLockManager.SetControlLock(ControlTypes.KSC_FACILITIES, "KCTKSCLock");
+                    isKSCLocked = true;
+                }
                 //Debug.Log("[KCT] KSC Locked");
             }
-            else if (showBuildList && HighLogic.LoadedScene == GameScenes.SPACECENTER && !buildListWindowPosition.Contains(mousePos) && isKSCLocked)
+            else if (HighLogic.LoadedScene == GameScenes.SPACECENTER && isKSCLocked)
             {
-                InputLockManager.RemoveControlLock("KCTKSCLock");
-                isKSCLocked = false;
+                if (!(showBuildList && buildListWindowPosition.Contains(mousePos)) && !(showBLPlus && bLPlusPosition.Contains(mousePos)))
+                {
+                    InputLockManager.RemoveControlLock("KCTKSCLock");
+                    isKSCLocked = false;
+                }
                 //Debug.Log("[KCT] KSC UnLocked");
             }
         }
