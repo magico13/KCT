@@ -2132,6 +2132,7 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             GUILayout.Label("Welcome to KCT! It is advised that you spend your " + KCT_GameStates.TotalUpgradePoints + " upgrades to increase the build rate in the building you will primarily be using.");
             GUILayout.Label("Please see the getting started guide included in the download or available from the forum for more information!");
+            GUILayout.Label("\nNote: 0.24 introduced a bug that causes time to freeze while hovering over the Build List with the mouse cursor! Just move the cursor off of the window and time will resume.");
             if (GUILayout.Button("Spend Upgrades"))
             {
                 showFirstRun = false;

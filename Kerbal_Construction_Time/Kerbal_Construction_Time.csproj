@@ -71,6 +71,7 @@
     <Compile Include="Kerbal_Construction_Time.cs" />
     <Compile Include="MCEWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StageRecoveryWrapper.cs" />
     <Compile Include="ToolbarWrapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -101,6 +101,19 @@ namespace Kerbal_Construction_Time
             return newInv;
         }
 
+        public static List<String> PartDictToList(Dictionary<String, int> dict)
+        {
+            List<String> ret = new List<string>();
+            for (int i = 0; i < dict.Count; i++)
+            {
+                for (int j=0; j<dict.Values.ElementAt(i); j++)
+                {
+                    ret.Add(dict.Keys.ElementAt(i));
+                }
+            }
+            return ret;
+        }
+
         public static AvailablePart GetAvailablePartByName(string partName)
         {
             AvailablePart ret = new AvailablePart();

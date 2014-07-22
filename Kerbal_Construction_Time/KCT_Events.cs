@@ -25,10 +25,13 @@ namespace Kerbal_Construction_Time
             }
             GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
 
-            //  if (!KCT_Utilities.DebRefundAddonActive)
-            GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
-            //  else
-            //      Debug.Log("[KCT] Defering stage recovery to DebRefund. It will just provide me with part names.");
+            if (!StageRecoveryWrapper.StageRecoveryAvailable)
+                GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
+            else
+            {
+                Debug.Log("[KCT] Deferring stage recovery to StageRecovery. It will just provide me with part names.");
+                StageRecoveryWrapper.AddRecoverySuccessEvent(StageRecoverySuccessEvent);
+            }
 
             GameEvents.onLaunch.Add(vesselLaunchEvent);
             GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
@@ -38,6 +41,14 @@ namespace Kerbal_Construction_Time
                 GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
 
             eventAdded = true;
+        }
+
+        private void StageRecoverySuccessEvent(Vessel v, Dictionary<string, int> recovered)
+        {
+            Debug.Log("[KCT] Recovery Success Event triggered. Adding parts to inventory.");
+            List<string> parts = KCT_Utilities.PartDictToList(recovered);
+            foreach (string name in parts)
+                KCT_Utilities.AddPartToInventory(name);
         }
 
         public ApplicationLauncherButton KCTButtonStock = null;
@@ -74,7 +85,7 @@ namespace Kerbal_Construction_Time
                     if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime)
                     {
                         KCT_GameStates.TechList.Add(tech);
-                        message = new ScreenMessage("[KCT] Node will unlock in " + tech.TimeLeft / 86400 + " days.", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                        message = new ScreenMessage("[KCT] Node will unlock in " + KCT_Utilities.GetFormattedTime(tech.TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
                         ScreenMessages.PostScreenMessage(message, true);
                     }
                 }
