@@ -64,7 +64,7 @@ namespace Kerbal_Construction_Time
             // Even if you don't lock down functionality, you should return true if your users 
             // can expect a future update to be available.
             //
-            if (Versioning.version_major == 0 && Versioning.version_minor == 24 && Versioning.Revision == 0) //Works only for 0.24.0
+            if (Versioning.version_major == 0 && Versioning.version_minor == 24) //Works only for 0.24
             {
                 return true;
             }
