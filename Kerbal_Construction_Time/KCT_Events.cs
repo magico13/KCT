@@ -54,7 +54,8 @@ namespace Kerbal_Construction_Time
         public ApplicationLauncherButton KCTButtonStock = null;
         public void OnGUIAppLauncherReady()
         {
-            if (ApplicationLauncher.Ready) //Add Stock button
+            bool vis;
+            if (ApplicationLauncher.Ready && (KCTButtonStock == null || !ApplicationLauncher.Instance.Contains(KCTButtonStock, out vis))) //Add Stock button
             {
                 KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
                     KCT_GUI.onClick,
@@ -337,8 +338,12 @@ namespace Kerbal_Construction_Time
                     {
                         Message.AppendLine("RealChute module used. Drag to Mass ratio (>8 needed): " + Math.Round(totalDrag / totalMass, 2));
                     }
-                    if (!(KCT_Utilities.StageRecoveryAddonActive || KCT_Utilities.DebRefundAddonActive) && (KCT_Utilities.CurrentGameIsCareer() || !KCT_GUI.PrimarilyDisabled))
+                    if (!(KCT_Utilities.StageRecoveryAddonActive || KCT_Utilities.DebRefundAddonActive) &&
+                        (KCT_Utilities.CurrentGameIsCareer() || !KCT_GUI.PrimarilyDisabled) &&
+                        !(KCT_GameStates.settings.DisableAllMessages || KCT_GameStates.settings.DisableRecoveryMessages))
+                    {
                         KCT_Utilities.DisplayMessage("Stage Recovered", Message, MessageSystemButton.MessageButtonColor.BLUE, MessageSystemButton.ButtonIcons.MESSAGE);
+                    }
                 }
             }
         }

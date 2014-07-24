@@ -38,6 +38,8 @@ namespace Kerbal_Construction_Time
         public static bool EditorShipEditingMode = false, buildSimulatedVessel = false;
         public static bool firstStart = true;
 
+        public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
+
 
         public static CelestialBody simulationBody;
         public static bool simulateInOrbit = false;

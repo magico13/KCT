@@ -17,6 +17,8 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool ForceStopWarp;
         [Persistent] public bool InstantTechUnlock;
         [Persistent] public bool DisableBuildTime;
+        [Persistent] public bool DisableRecoveryMessages;
+        [Persistent] public bool DisableAllMessages;
         [Persistent] public bool CheckForUpdates, VersionSpecific;
         [Persistent] public float RecoveryModifier;
         public bool enabledForSave=true;
@@ -35,6 +37,8 @@ namespace Kerbal_Construction_Time
             SandboxUpgrades = 45;
             InstantTechUnlock = false;
             DisableBuildTime = false;
+            DisableRecoveryMessages = false;
+            DisableAllMessages = false;
             CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
             VersionSpecific = false;
             RecoveryModifier = 0.75f;

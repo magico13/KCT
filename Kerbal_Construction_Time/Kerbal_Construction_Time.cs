@@ -304,15 +304,15 @@ namespace Kerbal_Construction_Time
                 }
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
-                    KCT_GUI.showEditorGUI = true;
+                    KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[1];
                     InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
                 }
                 if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
                 {
                     //EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
                     KCT_GameStates.delayStart = false;
-                    string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
-                    EditorLogic.LoadShipFromFile(tempFile);
+                    //string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
+                    //EditorLogic.LoadShipFromFile(tempFile);
                     EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
                 }
             }
@@ -320,6 +320,7 @@ namespace Kerbal_Construction_Time
             {
                 KCT_GUI.hideAll();
                 KCT_GameStates.reset();
+                KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
                 if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
                 {
                     KCT_GameStates.TotalUpgradePoints = KCT_GameStates.settings.SandboxUpgrades;

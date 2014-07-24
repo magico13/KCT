@@ -217,6 +217,7 @@ namespace Kerbal_Construction_Time
             else if ((HighLogic.LoadedScene == GameScenes.EDITOR) || (HighLogic.LoadedScene == GameScenes.SPH) && !PrimarilyDisabled)
             {
                 showEditorGUI = !showEditorGUI;
+                KCT_GameStates.showWindows[1] = showEditorGUI;
             }
             else if ((HighLogic.LoadedScene == GameScenes.SPACECENTER) || (HighLogic.LoadedScene == GameScenes.TRACKSTATION) && !PrimarilyDisabled)
             {
@@ -224,6 +225,7 @@ namespace Kerbal_Construction_Time
                 showBuildList = !showBuildList;
                 showBLPlus = false;
                 listWindow = -1;
+                KCT_GameStates.showWindows[0] = showBuildList;
             }
         }
 
@@ -453,6 +455,8 @@ namespace Kerbal_Construction_Time
                 if (GUILayout.Button("Save Edits"))
                 {
                     KCT_Utilities.AddFunds(ship.cost);
+                    ship.RemoveFromBuildList();
+
                     KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(KCT_Utilities.PartListToDict(ship.InventoryParts));//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                     newShip.progress = newProgress;
                     //newShip.buildPoints = buildTime;
@@ -466,8 +470,7 @@ namespace Kerbal_Construction_Time
                     }
                     foreach (string s in ship.InventoryParts) //Add the remaining old parts to the overall inventory
                         KCT_Utilities.AddPartToInventory(s);
-
-                    ship.RemoveFromBuildList();
+                    
 
 
                     //KCT_Utilities.AddVesselToBuildList(newShip);
@@ -478,6 +481,7 @@ namespace Kerbal_Construction_Time
                     InputLockManager.RemoveControlLock("KCTEditExit");
                     InputLockManager.RemoveControlLock("KCTEditLoad");
                     InputLockManager.RemoveControlLock("KCTEditNew");
+                    EditorLogic.fetch.Unlock("KCTEditorMouseLock");
                     Debug.Log("[KCT] Edits saved.");
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
@@ -488,6 +492,7 @@ namespace Kerbal_Construction_Time
                     InputLockManager.RemoveControlLock("KCTEditExit");
                     InputLockManager.RemoveControlLock("KCTEditLoad");
                     InputLockManager.RemoveControlLock("KCTEditNew");
+                    EditorLogic.fetch.Unlock("KCTEditorMouseLock");
                     Debug.Log("[KCT] Edits cancelled.");
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
@@ -1651,7 +1656,7 @@ namespace Kerbal_Construction_Time
         }
 
         public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier;
-        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific;
+        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs;
         private static void ShowSettings()
         {
             settingSelected = 0;
@@ -1670,6 +1675,8 @@ namespace Kerbal_Construction_Time
             checkForUpdates = KCT_GameStates.settings.CheckForUpdates;
             versionSpecific = KCT_GameStates.settings.VersionSpecific;
             newRecoveryModifier = (KCT_GameStates.settings.RecoveryModifier*100).ToString();
+            disableRecMsgs = KCT_GameStates.settings.DisableRecoveryMessages;
+            disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
             settingsPosition.height = 1;
             showSettings = !showSettings;
         }
@@ -1740,6 +1747,15 @@ namespace Kerbal_Construction_Time
                 newRecoveryModifier = GUILayout.TextField(newRecoveryModifier, 4, GUILayout.Width(40));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
+                GUILayout.Label("Disable Recovery Messages?", GUILayout.Width(width1));
+                disableRecMsgs = GUILayout.Toggle(disableRecMsgs, disableRecMsgs ? " Disabled" : " Enabled", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Disable All Messages?", GUILayout.Width(width1));
+                disableAllMsgs = GUILayout.Toggle(disableAllMsgs, disableAllMsgs ? " Disabled" : " Enabled", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
                 GUILayout.Label("Auto Check For Updates", GUILayout.Width(width1));
                 checkForUpdates = GUILayout.Toggle(checkForUpdates, checkForUpdates ? " Enabled" : " Disabled");
                 if (GUILayout.Button("Check"))
@@ -1796,6 +1812,8 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.RecoveryModifier = Math.Min(1, Math.Max(float.Parse(newRecoveryModifier) / 100f, 0));
                 KCT_GameStates.settings.CheckForUpdates = checkForUpdates;
                 KCT_GameStates.settings.VersionSpecific = versionSpecific;
+                KCT_GameStates.settings.DisableRecoveryMessages = disableRecMsgs;
+                KCT_GameStates.settings.DisableAllMessages = disableAllMsgs;
                 KCT_GameStates.settings.Save();
 
                 KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);
@@ -2031,15 +2049,16 @@ namespace Kerbal_Construction_Time
                 showBLPlus = false;
                 ResetBLWindow();
             }
-            /*if (GUILayout.Button("Edit")) //Disabled until I can figure out why it pisses off the Contracts app
+            if (GUILayout.Button("Edit"))
             {
                 showBLPlus = false;
                 editorWindowPosition.height = 1;
                 string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
                 b.shipNode.Save(tempFile);
-               // GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE); 
+                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE); 
                 KCT_GameStates.editedVessel = b;
                 KCT_GameStates.EditorShipEditingMode = true;
+                KCT_GameStates.delayStart = true;
 
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_EXIT, "KCTEditExit");
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_LOAD, "KCTEditLoad");
@@ -2048,13 +2067,8 @@ namespace Kerbal_Construction_Time
                 foreach (string s in b.InventoryParts)
                     KCT_Utilities.AddPartToInventory(s);
 
-                KCT_GameStates.delayStart = true;
-
-                if (b.type == KCT_BuildListVessel.ListType.VAB)
-                    HighLogic.LoadScene(GameScenes.EDITOR);
-                else if (b.type == KCT_BuildListVessel.ListType.SPH)
-                    HighLogic.LoadScene(GameScenes.SPH);
-            }*/
+                EditorDriver.StartAndLoadVessel(tempFile);
+            }
             if (GUILayout.Button("Rename"))
             {
                 centralWindowPosition.width = Screen.width / 8;
@@ -2132,7 +2146,11 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             GUILayout.Label("Welcome to KCT! It is advised that you spend your " + KCT_GameStates.TotalUpgradePoints + " upgrades to increase the build rate in the building you will primarily be using.");
             GUILayout.Label("Please see the getting started guide included in the download or available from the forum for more information!");
-            GUILayout.Label("\nNote: 0.24 introduced a bug that causes time to freeze while hovering over the Build List with the mouse cursor! Just move the cursor off of the window and time will resume.");
+            if (KCT_GameStates.settings.CheckForUpdates)
+                GUILayout.Label("Due to your settings, automatic update checking is enabled. You can disable it in the Settings menu!");
+            else
+                GUILayout.Label("Due to your settings, automatic update checking is disabled. You can enable it in the Settings menu!");
+            GUILayout.Label("\nNote: 0.24 introduced a bug that causes time to freeze while hovering over the Build List with the mouse cursor. Just move the cursor off of the window and time will resume.");
             if (GUILayout.Button("Spend Upgrades"))
             {
                 showFirstRun = false;

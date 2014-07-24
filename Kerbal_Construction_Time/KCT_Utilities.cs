@@ -464,7 +464,8 @@ namespace Kerbal_Construction_Time
                 }
             }
             KCT_GUI.ResetBLWindow();
-            DisplayMessage("Vessel Complete!", Message, MessageSystemButton.MessageButtonColor.GREEN, MessageSystemButton.ButtonIcons.COMPLETE);
+            if (!KCT_GameStates.settings.DisableAllMessages)
+                DisplayMessage("Vessel Complete!", Message, MessageSystemButton.MessageButtonColor.GREEN, MessageSystemButton.ButtonIcons.COMPLETE);
         }
 
 
