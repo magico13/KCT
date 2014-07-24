@@ -274,9 +274,6 @@ namespace Kerbal_Construction_Time
 
             if (!KCT_Events.instance.eventAdded)
             {
-                if (KCT_GameStates.settings.CheckForUpdates) //Check for updates
-                    KCT_UpdateChecker.CheckForUpdate(false, KCT_GameStates.settings.VersionSpecific);
-
                 KCT_Events.instance.addEvents();
             }
 
@@ -377,10 +374,17 @@ namespace Kerbal_Construction_Time
         }
 
         public static bool moved = false;
+        private static bool updateChecked = false;
         public void FixedUpdate()
         {
             if (!KCT_GameStates.settings.enabledForSave)
                 return;
+
+            if (!updateChecked && KCT_GameStates.delayStart)
+            {
+                if (KCT_GameStates.settings.CheckForUpdates && !KCT_GameStates.firstStart) //Check for updates
+                    KCT_UpdateChecker.CheckForUpdate(false, KCT_GameStates.settings.VersionSpecific);
+            }
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
