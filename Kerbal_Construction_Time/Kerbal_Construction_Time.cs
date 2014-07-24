@@ -384,6 +384,7 @@ namespace Kerbal_Construction_Time
             {
                 if (KCT_GameStates.settings.CheckForUpdates && !KCT_GameStates.firstStart) //Check for updates
                     KCT_UpdateChecker.CheckForUpdate(false, KCT_GameStates.settings.VersionSpecific);
+                updateChecked = true;
             }
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
