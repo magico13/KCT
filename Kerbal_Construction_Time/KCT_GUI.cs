@@ -2170,6 +2170,8 @@ namespace Kerbal_Construction_Time
                 showFirstRun = false;
                 centralWindowPosition.height = 1;
                 centralWindowPosition.width = 150;
+                if (KCT_GameStates.settings.CheckForUpdates)
+                    KCT_UpdateChecker.CheckForUpdate(true, KCT_GameStates.settings.VersionSpecific);
             }
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
