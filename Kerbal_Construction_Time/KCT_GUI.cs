@@ -712,7 +712,7 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("Cost: " + cost);
 
             GUILayout.BeginHorizontal();
-            if ( (KCT_Utilities.CurrentGameIsCareer() && Funding.Instance.Funds >= cost) && GUILayout.Button("Simulate"))
+            if ( ((KCT_Utilities.CurrentGameIsCareer() && Funding.Instance.Funds >= cost) || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
             {
                 if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
                     KCT_GameStates.simulateInOrbit = true;

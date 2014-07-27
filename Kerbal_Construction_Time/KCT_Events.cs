@@ -128,6 +128,10 @@ namespace Kerbal_Construction_Time
                 KCT_Utilities.disableSimulationLocks();
                 InputLockManager.RemoveControlLock("KCTLaunchLock");
             }
+            if (HighLogic.LoadedSceneIsEditor)
+            {
+                EditorLogic.fetch.Unlock("KCTEditorMouseLock");
+            }
         }
 
         public void SOIChangeEvent(GameEvents.HostedFromToAction<Vessel, CelestialBody> ev)
