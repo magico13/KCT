@@ -152,7 +152,7 @@ namespace Kerbal_Construction_Time
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (KCT_GameStates.flightSimulated && KCT_GameStates.settings.SimulationTimeLimit > 0)
             {
-                KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.settings.SimulationTimeLimit);
+                KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
             }
         }
 

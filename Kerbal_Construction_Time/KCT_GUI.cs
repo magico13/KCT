@@ -10,7 +10,7 @@ namespace Kerbal_Construction_Time
     {
         public static bool showMainGUI, showEditorGUI, showSOIAlert, showLaunchAlert, showSimulationCompleteEditor, showSimulationWindow, showTimeRemaining, 
             showSimulationCompleteFlight, showBuildList, showClearLaunch, showShipRoster, showCrewSelect, showSettings, showSimConfig, showBodyChooser, showUpgradeWindow,
-            showBLPlus, showRename, showFirstRun;
+            showBLPlus, showRename, showFirstRun, showSimLengthChooser;
 
         private static bool unlockEditor;
 
@@ -95,6 +95,8 @@ namespace Kerbal_Construction_Time
                     centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawRenameWindow, "Rename", windowStyle);
                 if (showFirstRun)
                     centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawFirstRun, "Kerbal Construction Time", windowStyle);
+                if (showSimLengthChooser)
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimLengthChooser, "Time Limit", windowStyle);
 
                 if (unlockEditor)
                 {
@@ -250,6 +252,7 @@ namespace Kerbal_Construction_Time
             showBLPlus = false;
             showRename = false;
             showFirstRun = false;
+            showSimLengthChooser = false;
         }
 
         public static void DrawGUIs(int windowID)
@@ -284,6 +287,8 @@ namespace Kerbal_Construction_Time
                 DrawRenameWindow(windowID);
             if (showFirstRun)
                 DrawFirstRun(windowID);
+            if (showSimLengthChooser)
+                DrawSimLengthChooser(windowID);
         }
 
         public static void DrawMainGUI(int windowID) //Deprecated to all hell now I think
@@ -643,7 +648,7 @@ namespace Kerbal_Construction_Time
                 GUI.DragWindow();
         }
 
-        private static string orbitAltString="", orbitIncString="";
+        private static string orbitAltString = "", orbitIncString = "", simLength = "0";
         public static void DrawSimulationConfigure(int windowID)
         {
             GUILayout.BeginVertical();
@@ -671,31 +676,55 @@ namespace Kerbal_Construction_Time
             if (KCT_GameStates.simulationBody.bodyName != "Kerbin" || (KCT_GameStates.simulationBody.bodyName == "Kerbin" && KCT_GameStates.simulateInOrbit))
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Orbit Altitude: ");
+                GUILayout.Label("Orbit Altitude (km): ");
                 orbitAltString = GUILayout.TextField(orbitAltString, GUILayout.Width(100));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Min: " + KCT_GameStates.simulationBody.maxAtmosphereAltitude);
-                GUILayout.Label("Max: " + Math.Floor(KCT_GameStates.simulationBody.sphereOfInfluence));
+                GUILayout.Label("Min: " + KCT_GameStates.simulationBody.maxAtmosphereAltitude/1000);
+                GUILayout.Label("Max: " + Math.Floor(KCT_GameStates.simulationBody.sphereOfInfluence)/1000);
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Inclination: ");
                 orbitIncString = GUILayout.TextField(orbitIncString, GUILayout.Width(50));
                 GUILayout.EndHorizontal();
+
+                if (!KCT_GameStates.simulateInOrbit) KCT_GameStates.simulateInOrbit = true;
             }
+            
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Simulate"))
+            GUILayout.Label("Simulation Length: ");
+            GUILayout.Label(simLength);
+            if (GUILayout.Button("Select", GUILayout.ExpandWidth(false)))
+            {
+                //show body chooser
+                showSimConfig = false;
+                showSimLengthChooser = true;
+                centralWindowPosition.height = 1;
+                simulationConfigPosition.height = 1;
+            }
+            GUILayout.EndHorizontal();
+
+
+            //simLength = GUILayout.TextField(simLength);
+            
+            float cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 13);
+            GUILayout.Label("Cost: " + cost);
+
+            GUILayout.BeginHorizontal();
+            if ( (KCT_Utilities.CurrentGameIsCareer() && Funding.Instance.Funds >= cost) && GUILayout.Button("Simulate"))
             {
                 if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
                     KCT_GameStates.simulateInOrbit = true;
+
+                KCT_GameStates.simulationTimeLimit = 3600 * double.Parse(simLength);
 
                 if (KCT_GameStates.simulateInOrbit)
                 {
                     if (!double.TryParse(orbitAltString, out KCT_GameStates.simOrbitAltitude))
                         KCT_GameStates.simOrbitAltitude = KCT_GameStates.simulationBody.maxAtmosphereAltitude + 1000;
                     else
-                        KCT_GameStates.simOrbitAltitude = Math.Min(Math.Max(KCT_GameStates.simOrbitAltitude, KCT_GameStates.simulationBody.maxAtmosphereAltitude), KCT_GameStates.simulationBody.sphereOfInfluence);
+                        KCT_GameStates.simOrbitAltitude = Math.Min(Math.Max(1000 * KCT_GameStates.simOrbitAltitude, KCT_GameStates.simulationBody.maxAtmosphereAltitude), KCT_GameStates.simulationBody.sphereOfInfluence);
 
                     if (!double.TryParse(orbitIncString, out KCT_GameStates.simInclination))
                         KCT_GameStates.simInclination = 0;
@@ -705,9 +734,10 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
                 unlockEditor = true;
-                EditorLogic.fetch.launchVessel();
                 showSimConfig = false;
                 centralWindowPosition.height = 1;
+                KCT_Utilities.SpendFunds(cost);
+                EditorLogic.fetch.launchVessel();
             }
             if (GUILayout.Button("Cancel"))
             {
@@ -758,6 +788,25 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
 
             CheckEditorLock();
+        }
+
+        public static void DrawSimLengthChooser(int windowID)
+        {
+            GUILayout.BeginVertical();
+            GUILayout.Label("Hours (cost multiplier)");
+            foreach (String len in KCT_Utilities.TimeMultipliers.Keys)
+            {
+                if (GUILayout.Button(len+" (x"+KCT_Utilities.TimeMultipliers[len]+")"))
+                {
+                    simLength = len;
+                    showSimLengthChooser = false;
+                    showSimConfig = true;
+                    centralWindowPosition.height = 1;
+                    centralWindowPosition.y = (Screen.height - 50) / 2;
+                }
+            }
+            centralWindowPosition.y = (Screen.height - centralWindowPosition.height) / 2;
+            GUILayout.EndVertical();
         }
 
         public static void DrawLaunchAlert(int windowID)
@@ -830,44 +879,61 @@ namespace Kerbal_Construction_Time
         public static void DrawSimulationCompleteFlight(int windowID)
         {
             GUILayout.BeginVertical();
-           /* if (GUILayout.Button("Build")) //Doesn't work until I can add it to the build list no problem
+            if (GUILayout.Button("Build"))
             {
-                KCT_GameStates.flightSimulated = false;
-                KCT_Utilities.disableSimulationLocks();
-                //FlightDriver.RevertToLaunch();
-                if (FlightDriver.LaunchSiteName == "LaunchPad")
-                    FlightDriver.RevertToPrelaunch(GameScenes.EDITOR);
-                else
-                    FlightDriver.RevertToPrelaunch(GameScenes.SPH);
-                
-            }*/
+                KCT_GameStates.buildSimulatedVessel = true;
+                Debug.Log("[KCT] Ship added from simulation.");
+                var message = new ScreenMessage("[KCT] Ship will be added upon simulation completion!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                ScreenMessages.PostScreenMessage(message, true);
 
-            if (GUILayout.Button("Restart Simulation"))
+                KCT_GameStates.simulationReason = "USER";
+                Debug.Log("[KCT] Simulation complete: USER");
+                KCT_Utilities.disableSimulationLocks();
+                KCT_GameStates.flightSimulated = false;
+                KCT_GameStates.simulationEndTime = 0;
+                centralWindowPosition.height = 1;
+
+                if (FlightDriver.CanRevertToPrelaunch)
+                {
+                    if (FlightDriver.LaunchSiteName == "LaunchPad")
+                        FlightDriver.RevertToPrelaunch(GameScenes.EDITOR);
+                    else if (FlightDriver.LaunchSiteName == "Runway")
+                        FlightDriver.RevertToPrelaunch(GameScenes.SPH);
+                }
+                else
+                {
+                    HighLogic.LoadScene(GameScenes.SPACECENTER);
+                }
+            }
+
+            if (FlightDriver.CanRevertToPostInit && GUILayout.Button("Restart Simulation"))
             {
                 Kerbal_Construction_Time.moved = false;
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
                 KCT_GameStates.simulationEndTime = 0;
-               // if (MCEWrapper.MCEAvailable) //Support for MCE
-               //     MCEWrapper.IloadMCEbackup();
                 FlightDriver.RevertToLaunch();
                 centralWindowPosition.height = 1;
             }
 
-            if (GUILayout.Button("Revert to Editor"))
+            if (FlightDriver.CanRevertToPrelaunch && GUILayout.Button("Revert to Editor"))
             {
                 KCT_GameStates.simulationReason = "USER";
                 Debug.Log("[KCT] Simulation complete: " + "USER");
                 KCT_Utilities.disableSimulationLocks();
                 KCT_GameStates.flightSimulated = false;
                 KCT_GameStates.simulationEndTime = 0;
-               // if (MCEWrapper.MCEAvailable) //Support for MCE
-               //     MCEWrapper.IloadMCEbackup();
                 if (FlightDriver.LaunchSiteName == "LaunchPad")
                     FlightDriver.RevertToPrelaunch(GameScenes.EDITOR);
                 else if (FlightDriver.LaunchSiteName == "Runway")
                     FlightDriver.RevertToPrelaunch(GameScenes.SPH);
                 centralWindowPosition.height = 1;
+            }
+            if (GUILayout.Button("Go to Space Center"))
+            {
+                KCT_GameStates.flightSimulated = false;
+                KCT_Utilities.disableSimulationLocks();
+                HighLogic.LoadScene(GameScenes.SPACECENTER);
             }
             GUILayout.EndVertical();
         }
@@ -896,13 +962,7 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("The flight scene is exited");
             GUILayout.Label(" ");
             GUILayout.Label("All progress is lost in a simulation.");
-            //GUILayout.Label("Note: If you want to build this ship, press the Build button in the editor.");
-            /*if (GUILayout.Button("End Simulation"))
-            {
-                showSimulationCompleteFlight = true;
-                showSimulationWindow = false;
-            }*/
-            if (GUILayout.Button("Build It!"))  //Huge issue with this: the persistence is reset upon exit, nullifying additions.
+            if (GUILayout.Button("Build It!"))
             {
                 KCT_GameStates.buildSimulatedVessel = true;
                 Debug.Log("[KCT] Ship added from simulation.");
@@ -1822,6 +1882,7 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.timeSettings.Save();
                 showSettings = false;
                 if (!PrimarilyDisabled) showBuildList = true;
+                if (!enabledForSave) InputLockManager.RemoveControlLock("KCTKSCLock");
             }
             if (GUILayout.Button("Cancel"))
             {
@@ -1853,6 +1914,21 @@ namespace Kerbal_Construction_Time
                     if (ResearchAndDevelopment.Instance.Science >= 250.0F)
                     {
                         ResearchAndDevelopment.Instance.Science -= 250.0F;
+                        ++KCT_GameStates.TotalUpgradePoints;
+                    }
+                }
+                GUILayout.EndHorizontal();
+            }
+
+            if (KCT_Utilities.CurrentGameIsCareer())
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Buy Point: ");
+                if (GUILayout.Button("250,000 Funds", GUILayout.ExpandWidth(false)))
+                {
+                    if (Funding.Instance.Funds >= 250000)
+                    {
+                        KCT_Utilities.SpendFunds(250000);
                         ++KCT_GameStates.TotalUpgradePoints;
                     }
                 }

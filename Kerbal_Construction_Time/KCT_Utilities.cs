@@ -586,6 +586,7 @@ namespace Kerbal_Construction_Time
             string saveFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/persistent.sfs";
             KCT_Utilities.disableSimulationLocks();
             KCT_GameStates.flightSimulated = false;
+            Kerbal_Construction_Time.moved = false;
             KCT_GameStates.simulationEndTime = 0;
             Debug.Log("[KCT] Swapping persistent.sfs with simulation backup file.");
             if (MCEWrapper.MCEAvailable)
@@ -595,6 +596,58 @@ namespace Kerbal_Construction_Time
             }
             System.IO.File.Copy(backupFile, saveFile, true);
             System.IO.File.Delete(backupFile);
+        }
+
+
+        public static Dictionary<string, float> TimeMultipliers = new Dictionary<string, float>()
+        {
+            {"0", 13},
+            {"0.25", 1},
+            {"0.5", 1.5f},
+            {"1", 2},
+            {"2", 3},
+            {"6", 4},
+            {"12", 5},
+            {"24", 6},
+            {"48", 7},
+            {"168", 8},
+            {"672", 9},
+            {"8760", 10},
+            {"43800", 11},
+            {"87600", 12},
+        };
+
+        public static float CostOfSimulation(CelestialBody orbitBody, string simulationLength)
+        {
+            float timeMultiplier = 13;
+            if (TimeMultipliers.ContainsKey(simulationLength))
+                 timeMultiplier = TimeMultipliers[simulationLength];
+
+            if (orbitBody == Planetarium.fetch.Sun)
+                return 10000 * timeMultiplier;
+
+            float atmosphereMult = orbitBody.atmosphere ? 1.5f : 1f;
+            bool isMoon = orbitBody.referenceBody != Planetarium.fetch.Sun;
+            CelestialBody Parent = orbitBody;
+            while (Parent.referenceBody != Planetarium.fetch.Sun)
+            {
+                Parent = Parent.referenceBody;
+            }
+            
+            CelestialBody Kerbin = GetBodyByName("Kerbin");
+
+            double orbitRatio = 1;
+            if (Parent.orbit.semiMajorAxis >= Kerbin.orbit.semiMajorAxis)
+                orbitRatio = Parent.orbit.semiMajorAxis / Kerbin.orbit.semiMajorAxis;
+            else
+                orbitRatio = Kerbin.orbit.semiMajorAxis / Parent.orbit.semiMajorAxis;
+
+            double cost = Math.Pow(orbitRatio,2) * 1000 * (Parent.atmosphere ? 1.25 : 1);
+            if (isMoon)
+                cost *= atmosphereMult * 1.25;
+
+            cost *= timeMultiplier;
+            return (float)cost;
         }
 
         public static double SpendFunds(double toSpend)

@@ -499,6 +499,10 @@ namespace Kerbal_Construction_Time
                         FlightDriver.SetPause(true);
                         KCT_GUI.showSimulationCompleteFlight = true;
                     }
+                    if (FlightGlobals.ActiveVessel.situation != Vessel.Situations.PRELAUNCH && KCT_GameStates.simulationEndTime == 0 && KCT_GameStates.simulationTimeLimit > 0)
+                    {
+                        KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + KCT_GameStates.simulationTimeLimit; //Just in case the event doesn't fire
+                    }
                 }
                 if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
                 {
