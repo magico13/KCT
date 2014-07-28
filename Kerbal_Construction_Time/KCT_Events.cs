@@ -317,13 +317,13 @@ namespace Kerbal_Construction_Time
                             foreach (ProtoPartSnapshot pps in v.protoVessel.protoPartSnapshots)
                             {
                                 float dryCost, fuelCost;
-                                totalReturn += ShipConstruction.GetPartCosts(pps, pps.partInfo, out dryCost, out fuelCost);
+                                totalReturn += Math.Max(ShipConstruction.GetPartCosts(pps, pps.partInfo, out dryCost, out fuelCost), 0);
                             }
-                            float totalBeforeModifier = (float)Math.Round(totalReturn, 2);
+                            float totalBeforeModifier = totalReturn;
                             totalReturn *= RecoveryPercent;
-                            FundsRecovered = (float)Math.Round(totalReturn, 2);
+                            FundsRecovered = totalReturn;
                             Debug.Log("[KCT] Vessel being recovered by KCT. Percent returned: " + 100 * RecoveryPercent + "%. Distance from KSC: " + Math.Round(KSCDistance / 1000, 2) + " km");
-                            Debug.Log("[KCT] Funds being returned: " + FundsRecovered + "/" + totalBeforeModifier);
+                            Debug.Log("[KCT] Funds being returned: " + Math.Round(totalReturn, 2) + "/" + Math.Round(totalBeforeModifier, 2));
 
                             Message.AppendLine("Funds recovered: " + FundsRecovered + "(" + Math.Round(RecoveryPercent * 100, 1) + "%)");
                             KCT_Utilities.AddFunds(FundsRecovered);
