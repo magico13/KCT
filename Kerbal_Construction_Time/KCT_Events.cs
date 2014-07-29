@@ -191,7 +191,7 @@ namespace Kerbal_Construction_Time
                 //double totalArea = 0;
                 bool realChuteInUse = false;
 
-                float totalDrag = 0;
+                float RCParameter = 0;
 
                 if (!v.packed) //adopted from mission controller. Not sure why they have to be packed
                     foreach (Part p in v.Parts)
@@ -233,8 +233,8 @@ namespace Kerbal_Construction_Time
                             ConfigNode[] parchutes = realChute.moduleValues.GetNodes("PARACHUTE");
                             foreach (ConfigNode chute in parchutes)
                             {
-                                float area = float.Parse(chute.GetValue("deployedDiameter"));
-                                area = (float)(Math.Pow(area / 2, 2) * Math.PI);
+                                float diameter = float.Parse(chute.GetValue("deployedDiameter"));
+                                //area = (float)(Math.Pow(area / 2, 2) * Math.PI);
                                 //Debug.Log(area);
                                 string mat = chute.GetValue("material");
                                 // Debug.Log(mat);
@@ -243,7 +243,8 @@ namespace Kerbal_Construction_Time
                                 object materialObject = matMethod.Invoke(MatLibraryInstance, new object[] { mat });
                                 float dragC = (float)KCT_Utilities.GetMemberInfoValue(materialObject.GetType().GetMember("dragCoefficient")[0], materialObject);
                                 // Debug.Log(dragC);
-                                totalDrag += (1 * 100 * dragC * area / 2000f);
+                                //totalDrag += (1 * 100 * dragC * area / 2000f);
+                                RCParameter += dragC * (float)Math.Pow(diameter, 2);
 
                             }
                             isParachute = true;
@@ -252,24 +253,23 @@ namespace Kerbal_Construction_Time
                     }
                     if (!isParachute)
                     {
-                        dragCoeff += p.mass * 0.2;
+                        if (p.partRef != null)
+                            dragCoeff += p.mass * p.partRef.maximum_drag;
+                        else
+                            dragCoeff += p.mass * 0.2;
                     }
                 }
-                double Vt = 9999;
+                double Vt = double.MaxValue;
                 if (!realChuteInUse)
                 {
                     dragCoeff = dragCoeff / (totalMass);
-                    Vt = Math.Sqrt(250 * 6.674e-11 * 5.2915793e22 / (((600000) ^ 2) * 1.22309485 * dragCoeff)) / 1000; //Not sure if this is right, but it seems to be close enough.
+                    Vt = Math.Sqrt((250 * 6.674E-11 * 5.2915793E22) / (3.6E11 * 1.22309485 * dragCoeff));
                     Debug.Log("[KCT] Using Stock Module! Drag: " + dragCoeff + " Vt: " + Vt);
                 }
                 else
                 {
-                    Debug.Log("[KCT] Using RealChute Module! Drag/Mass ratio: " + (totalDrag / totalMass));
-                    //Debug.Log("[KCT] " + v.atmDensity);
-                    if ((totalDrag / totalMass) >= 8) //Once again, not sure if this is right, but it seems possibly correct from limited testing.
-                    {
-                        Vt = 0;
-                    }
+                    Vt = (800 * totalMass * 9.8) / (1.223 * Math.PI) * Math.Pow(RCParameter, -1); //This should work perfect for multiple identical chutes and gives an approximation for multiple differing chutes
+                    Debug.Log("[SR] Using RealChute Module! Vt: " + Vt);
                 }
                 if (Vt < 10.0)
                 {
@@ -336,11 +336,11 @@ namespace Kerbal_Construction_Time
                     Message.AppendLine("Distance from KSC: " + Math.Round(KSCDistance / 1000, 2) + " km");
                     if (!realChuteInUse)
                     {
-                        Message.AppendLine("Stock module used. Terminal velocity (<10 needed): " + Math.Round(Vt, 2));
+                        Message.AppendLine("Stock module used. Terminal velocity (less than 10 needed): " + Math.Round(Vt, 2));
                     }
                     else
                     {
-                        Message.AppendLine("RealChute module used. Drag to Mass ratio (>8 needed): " + Math.Round(totalDrag / totalMass, 2));
+                        Message.AppendLine("RealChute module used. Terminal velocity (less than 10 needed): " + Math.Round(Vt, 2));
                     }
                     if (!(KCT_Utilities.StageRecoveryAddonActive || KCT_Utilities.DebRefundAddonActive) &&
                         (KCT_Utilities.CurrentGameIsCareer() || !KCT_GUI.PrimarilyDisabled) &&

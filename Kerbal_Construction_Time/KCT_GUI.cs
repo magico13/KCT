@@ -271,7 +271,7 @@ namespace Kerbal_Construction_Time
                 DrawSimulationCompleteFlight(windowID);
             if (showSimulationWindow)
                 DrawSimulationWindow(windowID);
-            if (showTimeRemaining && KCT_GameStates.settings.SimulationTimeLimit > 0)
+            if (showTimeRemaining && KCT_GameStates.simulationTimeLimit > 0)
                 DrawSimulationTimeWindow(windowID);
             if (showBuildList)
                 DrawBuildListWindow(windowID);
@@ -736,7 +736,8 @@ namespace Kerbal_Construction_Time
                 unlockEditor = true;
                 showSimConfig = false;
                 centralWindowPosition.height = 1;
-                KCT_Utilities.SpendFunds(cost);
+                if (!KCT_GameStates.settings.NoCostSimulations)
+                    KCT_Utilities.SpendFunds(cost);
                 EditorLogic.fetch.launchVessel();
             }
             if (GUILayout.Button("Cancel"))

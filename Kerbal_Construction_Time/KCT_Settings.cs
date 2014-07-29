@@ -10,7 +10,6 @@ namespace Kerbal_Construction_Time
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Config.txt";
         //[Persistent] public double BuildTimeModifier;
         [Persistent] public bool SandboxEnabled;
-        [Persistent] public double SimulationTimeLimit;
         [Persistent] public int MaxTimeWarp;
         [Persistent] public int SandboxUpgrades;
         [Persistent] public bool EnableAllBodies;
@@ -21,6 +20,7 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool DisableAllMessages;
         [Persistent] public bool CheckForUpdates, VersionSpecific;
         [Persistent] public float RecoveryModifier;
+        [Persistent] public bool NoCostSimulations;
         public bool enabledForSave=true;
         //[Persistent] public bool AutoRevertOnCrash;
         //[Persistent] public bool Use6HourDays;
@@ -30,7 +30,6 @@ namespace Kerbal_Construction_Time
         {
            // BuildTimeModifier = 1.0;
             SandboxEnabled = true;
-            SimulationTimeLimit = 7200;
             MaxTimeWarp = TimeWarp.fetch.warpRates.Count() - 1;
             EnableAllBodies = false;
             ForceStopWarp = false;
@@ -42,6 +41,7 @@ namespace Kerbal_Construction_Time
             CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
             VersionSpecific = false;
             RecoveryModifier = 0.75f;
+            NoCostSimulations = false;
            // AutoRevertOnCrash = true;
             //Use6HourDays = GameSettings.KERBIN_TIME;
         }
