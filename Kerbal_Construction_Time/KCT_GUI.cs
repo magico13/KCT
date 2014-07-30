@@ -73,7 +73,7 @@ namespace Kerbal_Construction_Time
                     centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimulationCompleteFlight, "Simulation Complete!", windowStyle);
                 if (showSimulationWindow)
                     simulationWindowPosition = GUILayout.Window(8950, simulationWindowPosition, KCT_GUI.DrawSimulationWindow, "KCT Simulation", windowStyle);
-                if (showTimeRemaining && KCT_GameStates.settings.SimulationTimeLimit > 0)
+                if (showTimeRemaining && KCT_GameStates.simulationTimeLimit > 0)
                     timeRemainingPosition = GUILayout.Window(8951, timeRemainingPosition, KCT_GUI.DrawSimulationTimeWindow, "Time left:", windowStyle);
                 if (showBuildList)
                     buildListWindowPosition = GUILayout.Window(8950, buildListWindowPosition, KCT_GUI.DrawBuildListWindow, "Build List", windowStyle);

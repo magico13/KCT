@@ -154,7 +154,7 @@ namespace Kerbal_Construction_Time
         public void vesselLaunchEvent(EventReport e)
         {
             if (!KCT_GameStates.settings.enabledForSave) return;
-            if (KCT_GameStates.flightSimulated && KCT_GameStates.settings.SimulationTimeLimit > 0)
+            if (KCT_GameStates.flightSimulated && KCT_GameStates.simulationTimeLimit > 0)
             {
                 KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
             }
