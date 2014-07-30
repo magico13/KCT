@@ -12,16 +12,23 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool SandboxEnabled;
         [Persistent] public int MaxTimeWarp;
         [Persistent] public int SandboxUpgrades;
-        [Persistent] public bool EnableAllBodies;
         [Persistent] public bool ForceStopWarp;
-        [Persistent] public bool InstantTechUnlock;
-        [Persistent] public bool DisableBuildTime;
         [Persistent] public bool DisableRecoveryMessages;
         [Persistent] public bool DisableAllMessages;
         [Persistent] public bool CheckForUpdates, VersionSpecific;
-        [Persistent] public float RecoveryModifier;
-        [Persistent] public bool NoCostSimulations;
-        public bool enabledForSave=true;
+        [Persistent] public float RecoveryModifierDefault;
+        [Persistent] public bool NoCostSimulationsDefault;
+        [Persistent] public bool InstantTechUnlockDefault;
+        [Persistent] public bool DisableBuildTimeDefault;
+        [Persistent] public bool EnableAllBodiesDefault;
+
+        //Game specific settings
+        public bool enabledForSave = true;
+        public float RecoveryModifier;
+        public bool NoCostSimulations;
+        public bool InstantTechUnlock;
+        public bool DisableBuildTime;
+        public bool EnableAllBodies;
         //[Persistent] public bool AutoRevertOnCrash;
         //[Persistent] public bool Use6HourDays;
 
@@ -31,17 +38,20 @@ namespace Kerbal_Construction_Time
            // BuildTimeModifier = 1.0;
             SandboxEnabled = true;
             MaxTimeWarp = TimeWarp.fetch.warpRates.Count() - 1;
-            EnableAllBodies = false;
+            
             ForceStopWarp = false;
             SandboxUpgrades = 45;
-            InstantTechUnlock = false;
-            DisableBuildTime = false;
             DisableRecoveryMessages = false;
             DisableAllMessages = false;
             CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
             VersionSpecific = false;
-            RecoveryModifier = 0.75f;
-            NoCostSimulations = false;
+
+            RecoveryModifierDefault = 0.75f;
+            NoCostSimulationsDefault = false;
+            InstantTechUnlockDefault = false;
+            DisableBuildTimeDefault = false;
+            EnableAllBodiesDefault = false;
+
            // AutoRevertOnCrash = true;
             //Use6HourDays = GameSettings.KERBIN_TIME;
         }
@@ -53,8 +63,17 @@ namespace Kerbal_Construction_Time
                 ConfigNode cnToLoad = ConfigNode.Load(filePath);
                 ConfigNode.LoadObjectFromConfig(this, cnToLoad);
 
-                if (RecoveryModifier < 0) RecoveryModifier = 0;
-                if (RecoveryModifier > 1) RecoveryModifier = 1;
+                if (RecoveryModifierDefault < 0) RecoveryModifierDefault = 0;
+                if (RecoveryModifierDefault > 1) RecoveryModifierDefault = 1;
+
+                if (KCT_GameStates.firstStart)
+                {
+                    RecoveryModifier = RecoveryModifierDefault;
+                    NoCostSimulations = NoCostSimulationsDefault;
+                    InstantTechUnlock = InstantTechUnlockDefault;
+                    DisableBuildTime = DisableBuildTimeDefault;
+                    EnableAllBodies = EnableAllBodiesDefault;
+                }
             }
         }
 

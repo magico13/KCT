@@ -94,6 +94,14 @@ namespace Kerbal_Construction_Time
     public class KCT_DataStorage : ConfigNodeStorage
     {
         [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && KCT_GameStates.settings.SandboxEnabled));
+        [Persistent] public float RecoveryModifier = 0.75f;
+        [Persistent] public bool NoCostSimulations = false;
+        [Persistent] public bool DisableBuildTime = false;
+        [Persistent] public bool InstantTechUnlock = false;
+        [Persistent] public bool EnableAllBodies = false;
+
+
+
         [Persistent] bool firstStart = true;
         [Persistent] List<int> VABUpgrades = new List<int>() {0};
         [Persistent] List<int> SPHUpgrades = new List<int>() {0};
@@ -107,12 +115,12 @@ namespace Kerbal_Construction_Time
         {
             KCT_GameStates.PartTracker = ListToDict(PartTracker);
             KCT_GameStates.PartInventory = ListToDict(PartInventory);
-            KCT_GameStates.settings.enabledForSave = enabledForSave;
             KCT_GameStates.BodiesVisited = BodiesVisited;
             KCT_GameStates.VABUpgrades = VABUpgrades;
             KCT_GameStates.SPHUpgrades = SPHUpgrades;
             KCT_GameStates.RDUpgrades = RDUpgrades;
             KCT_GameStates.TotalUpgradePoints = TotalUpgradePoints;
+            SetSettings();
             //Fix for change to number of upgrades at start.
             if (firstStart)
             {
@@ -136,6 +144,27 @@ namespace Kerbal_Construction_Time
             RDUpgrades = KCT_GameStates.RDUpgrades;
             TotalUpgradePoints = KCT_GameStates.TotalUpgradePoints;
             firstStart = KCT_GameStates.firstStart;
+            GetSettings();
+        }
+
+        private void SetSettings()
+        {
+            KCT_GameStates.settings.enabledForSave = enabledForSave;
+            KCT_GameStates.settings.RecoveryModifier = RecoveryModifier;
+            KCT_GameStates.settings.NoCostSimulations = NoCostSimulations;
+            KCT_GameStates.settings.DisableBuildTime = DisableBuildTime;
+            KCT_GameStates.settings.InstantTechUnlock = InstantTechUnlock;
+            KCT_GameStates.settings.EnableAllBodies = EnableAllBodies;
+        }
+
+        private void GetSettings()
+        {
+            enabledForSave = KCT_GameStates.settings.enabledForSave;
+            RecoveryModifier = KCT_GameStates.settings.RecoveryModifier;
+            NoCostSimulations = KCT_GameStates.settings.NoCostSimulations;
+            DisableBuildTime = KCT_GameStates.settings.DisableBuildTime;
+            InstantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
+            EnableAllBodies = KCT_GameStates.settings.EnableAllBodies;
         }
 
         private bool VesselIsInWorld(Guid id)

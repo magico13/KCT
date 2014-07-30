@@ -1717,7 +1717,10 @@ namespace Kerbal_Construction_Time
         }
 
         public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier;
-        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs;
+        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, freeSims;
+
+        public static string newRecoveryModDefault;
+        public static bool disableBuildTimesDefault, instantTechUnlockDefault, enableAllBodiesDefault, freeSimsDefault;
         private static void ShowSettings()
         {
             settingSelected = 0;
@@ -1730,7 +1733,7 @@ namespace Kerbal_Construction_Time
             forceStopWarp = KCT_GameStates.settings.ForceStopWarp;
             newSandboxUpgrades = KCT_GameStates.settings.SandboxUpgrades.ToString();
             newUpgradeCount = KCT_GameStates.TotalUpgradePoints.ToString();
-            newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
+            //newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
             instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
             disableBuildTimes = KCT_GameStates.settings.DisableBuildTime;
             checkForUpdates = KCT_GameStates.settings.CheckForUpdates;
@@ -1738,6 +1741,14 @@ namespace Kerbal_Construction_Time
             newRecoveryModifier = (KCT_GameStates.settings.RecoveryModifier*100).ToString();
             disableRecMsgs = KCT_GameStates.settings.DisableRecoveryMessages;
             disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
+            freeSims = KCT_GameStates.settings.NoCostSimulations;
+
+            disableBuildTimesDefault = KCT_GameStates.settings.DisableBuildTimeDefault;
+            instantTechUnlockDefault = KCT_GameStates.settings.InstantTechUnlockDefault;
+            enableAllBodiesDefault = KCT_GameStates.settings.EnableAllBodiesDefault;
+            freeSimsDefault = KCT_GameStates.settings.NoCostSimulationsDefault;
+            newRecoveryModDefault = KCT_GameStates.settings.RecoveryModifierDefault.ToString();
+
             settingsPosition.height = 1;
             showSettings = !showSettings;
         }
@@ -1750,7 +1761,7 @@ namespace Kerbal_Construction_Time
             int width2 = 100;
             int lastSetting = settingSelected;
             GUILayout.BeginVertical();
-            settingSelected = GUILayout.Toolbar(settingSelected, new string[] { "Game", "Global", "Time" });
+            settingSelected = GUILayout.Toolbar(settingSelected, new string[] { "Game", "Global", "Time", "Defaults" });
             if (lastSetting != settingSelected) settingsPosition.height = 1;
             if (settingSelected == 0)
             {
@@ -1766,11 +1777,6 @@ namespace Kerbal_Construction_Time
                     newUpgradeCount = GUILayout.TextField(newUpgradeCount, 3, GUILayout.Width(50));
                     GUILayout.EndHorizontal();
                 }
-            }
-            //GUILayout.Label("");
-            if (settingSelected == 1)
-            {
-                GUILayout.Label("Global Settings");
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Build Times Enabled?", GUILayout.Width(width1));
                 disableBuildTimes = !GUILayout.Toggle(!disableBuildTimes, !disableBuildTimes ? " Enabled" : " Disabled", GUILayout.Width(width2));
@@ -1780,6 +1786,23 @@ namespace Kerbal_Construction_Time
                 instantTechUnlock = GUILayout.Toggle(instantTechUnlock, instantTechUnlock ? " Enabled" : " Disabled", GUILayout.Width(width2));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
+                GUILayout.Label("Override Body Tracker?", GUILayout.Width(width1));
+                enableAllBodies = GUILayout.Toggle(enableAllBodies, enableAllBodies ? " Overridden" : " Normal", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Funds Recovery Mod", GUILayout.Width(width1));
+                newRecoveryModifier = GUILayout.TextField(newRecoveryModifier, 4, GUILayout.Width(40));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Free Simulations", GUILayout.Width(width1));
+                freeSims = GUILayout.Toggle(freeSims, freeSims ? " Free" : " Not Free", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+            }
+            //GUILayout.Label("");
+            if (settingSelected == 1)
+            {
+                GUILayout.Label("Global Settings");
+                GUILayout.BeginHorizontal();
                 GUILayout.Label("Max TimeWarp", GUILayout.Width(width1));
                 //string newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
                 int warpIndex = 0;
@@ -1788,24 +1811,8 @@ namespace Kerbal_Construction_Time
                 newTimeWarp = GUILayout.TextField(newTimeWarp, 1, GUILayout.Width(20));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Simulation Time Limit", GUILayout.Width(width1));
-                newTimeLimit = GUILayout.TextField(newTimeLimit, GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Override Body Tracker?", GUILayout.Width(width1));
-                enableAllBodies = GUILayout.Toggle(enableAllBodies, enableAllBodies ? " Overridden" : " Normal", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
                 GUILayout.Label("Force Stop Timewarp on Complete?", GUILayout.Width(width1));
                 forceStopWarp = GUILayout.Toggle(forceStopWarp, forceStopWarp ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Upgrades for New Sandbox", GUILayout.Width(width1));
-                newSandboxUpgrades = GUILayout.TextField(newSandboxUpgrades, 3, GUILayout.Width(40));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Funds Recovery Mod", GUILayout.Width(width1));
-                newRecoveryModifier = GUILayout.TextField(newRecoveryModifier, 4, GUILayout.Width(40));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Disable Recovery Messages?", GUILayout.Width(width1));
@@ -1815,7 +1822,6 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("Disable All Messages?", GUILayout.Width(width1));
                 disableAllMsgs = GUILayout.Toggle(disableAllMsgs, disableAllMsgs ? " Disabled" : " Enabled", GUILayout.Width(width2));
                 GUILayout.EndHorizontal();
-
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Auto Check For Updates", GUILayout.Width(width1));
                 checkForUpdates = GUILayout.Toggle(checkForUpdates, checkForUpdates ? " Enabled" : " Disabled");
@@ -1855,6 +1861,34 @@ namespace Kerbal_Construction_Time
                 newInvEffect = GUILayout.TextField(newInvEffect, 10, GUILayout.Width(100));
                 GUILayout.EndHorizontal();
             }
+            if (settingSelected == 3)
+            {
+                GUILayout.Label("Game Settings Defaults");
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Build Times Enabled?", GUILayout.Width(width1));
+                disableBuildTimesDefault = !GUILayout.Toggle(!disableBuildTimesDefault, !disableBuildTimesDefault ? " Enabled" : " Disabled", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Instant Tech Unlock", GUILayout.Width(width1));
+                instantTechUnlockDefault = GUILayout.Toggle(instantTechUnlockDefault, instantTechUnlockDefault ? " Enabled" : " Disabled", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Override Body Tracker?", GUILayout.Width(width1));
+                enableAllBodiesDefault = GUILayout.Toggle(enableAllBodiesDefault, enableAllBodiesDefault ? " Overridden" : " Normal", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Funds Recovery Mod", GUILayout.Width(width1));
+                newRecoveryModDefault = GUILayout.TextField(newRecoveryModDefault, 4, GUILayout.Width(40));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Free Simulations", GUILayout.Width(width1));
+                freeSimsDefault = GUILayout.Toggle(freeSimsDefault, freeSimsDefault ? " Free" : " Not Free", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Upgrades for New Sandbox", GUILayout.Width(width1));
+                newSandboxUpgrades = GUILayout.TextField(newSandboxUpgrades, 3, GUILayout.Width(40));
+                GUILayout.EndHorizontal();
+            }
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Save"))
             {
@@ -1862,9 +1896,7 @@ namespace Kerbal_Construction_Time
                     KCT_Utilities.DisableModFunctionality();
                 KCT_GameStates.settings.enabledForSave = enabledForSave;
                 KCT_GameStates.TotalUpgradePoints = int.Parse(newUpgradeCount);
-
                 KCT_GameStates.settings.MaxTimeWarp = Math.Min(TimeWarp.fetch.warpRates.Count()-1, Math.Max(0, int.Parse(newTimeWarp)));
-                KCT_GameStates.settings.SimulationTimeLimit = Math.Max(double.Parse(newTimeLimit), 0);
                 KCT_GameStates.settings.EnableAllBodies = enableAllBodies;
                 KCT_GameStates.settings.ForceStopWarp = forceStopWarp;
                 KCT_GameStates.settings.InstantTechUnlock = instantTechUnlock;
@@ -1875,6 +1907,14 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.VersionSpecific = versionSpecific;
                 KCT_GameStates.settings.DisableRecoveryMessages = disableRecMsgs;
                 KCT_GameStates.settings.DisableAllMessages = disableAllMsgs;
+                KCT_GameStates.settings.NoCostSimulations = freeSims;
+
+                KCT_GameStates.settings.DisableBuildTimeDefault = disableBuildTimesDefault;
+                KCT_GameStates.settings.InstantTechUnlockDefault = instantTechUnlockDefault;
+                KCT_GameStates.settings.EnableAllBodiesDefault = enableAllBodiesDefault;
+                KCT_GameStates.settings.NoCostSimulationsDefault = freeSimsDefault;
+                KCT_GameStates.settings.RecoveryModifierDefault = Math.Min(1, Math.Max(float.Parse(newRecoveryModDefault) / 100f, 0));
+
                 KCT_GameStates.settings.Save();
 
                 KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);
