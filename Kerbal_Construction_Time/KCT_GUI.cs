@@ -2213,7 +2213,7 @@ namespace Kerbal_Construction_Time
             {
                 KCT_Utilities.AddVesselToBuildList(b.NewCopy(true), b.InventoryParts.Count > 0);
             }
-            if (GUILayout.Button("Warp To"))
+            if (listWindow < 2 && GUILayout.Button("Warp To"))
             {
                 KCT_GameStates.targetedItem = b;
                 KCT_GameStates.canWarp = true;
