@@ -43,12 +43,27 @@ namespace Kerbal_Construction_Time
             eventAdded = true;
         }
 
-        private void StageRecoverySuccessEvent(Vessel v, Dictionary<string, int> recovered)
+        private void StageRecoverySuccessEvent(Vessel v, float[] infoArray, string reason)
         {
-            Debug.Log("[KCT] Recovery Success Event triggered. Adding parts to inventory.");
-            List<string> parts = KCT_Utilities.PartDictToList(recovered);
-            foreach (string name in parts)
-                KCT_Utilities.AddPartToInventory(name);
+            Debug.Log("[KCT] Recovery Success Event triggered.");
+            float damage = 0;
+            if (infoArray.Length == 3)
+                damage = infoArray[0];
+            else
+                Debug.Log("[KCT] Malformed infoArray received!");
+            System.Random rand = new System.Random();
+            //Debug.Log("[KCT] dmg:" + damage);
+            //Debug.Log("[KCT] vessel parts count: " + v.protoVessel.protoPartSnapshots.Count);
+            //List<Part> parts = v.parts;
+            foreach (ProtoPartSnapshot part in v.protoVessel.protoPartSnapshots)
+            {
+                float random = (float)rand.NextDouble();
+                //Debug.Log("[KCT] rand:" + random + " dmg:" + damage);
+                if (random < damage)
+                    KCT_Utilities.AddPartToInventory(part.partInfo.name);
+                else
+                    Debug.Log("[KCT] Part "+part.partInfo.name+" was too damaged to be used anymore and was scrapped!");
+            }
         }
 
         public ApplicationLauncherButton KCTButtonStock = null;

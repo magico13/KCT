@@ -37,6 +37,7 @@ namespace Kerbal_Construction_Time
         public static IButton kctToolbarButton;
         public static bool EditorShipEditingMode = false, buildSimulatedVessel = false;
         public static bool firstStart = true;
+        public static IKCTBuildItem targetedItem = null;
 
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
 

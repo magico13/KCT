@@ -395,9 +395,9 @@ namespace Kerbal_Construction_Time
                 startedFlashing = DateTime.Now; //Set the time to start flashing
             }
 
-            if ((KCT_GameStates.warpInitiated || KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRateIndex != 0)
+            if (KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRateIndex != 0)
             {
-                TimeWarp.SetRate(0, true); //Turn off timewarp when a ship finishes. Fix for it not stopping on finish.
+                TimeWarp.SetRate(0, true);
                 KCT_GameStates.warpInitiated = false;
             }
 
@@ -833,9 +833,17 @@ namespace Kerbal_Construction_Time
         {
             //KCT_BuildListVessel ship = KCT_Utilities.NextShipToFinish();
             IKCTBuildItem ship = KCT_Utilities.NextThingToFinish();
+            RampUpWarp(ship);
+        }
+
+        public static void RampUpWarp(IKCTBuildItem item)
+        {
             int lastRateIndex = TimeWarp.CurrentRateIndex;
             int newRate = TimeWarp.CurrentRateIndex + 1;
-            while ((ship.GetTimeLeft() > 15*TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex < KCT_GameStates.settings.MaxTimeWarp) && (lastRateIndex < newRate))
+            double timeLeft = item.GetTimeLeft();
+            if (double.IsPositiveInfinity(timeLeft))
+                timeLeft = KCT_Utilities.NextThingToFinish().GetTimeLeft();
+            while ((timeLeft > 15 * TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex < KCT_GameStates.settings.MaxTimeWarp) && (lastRateIndex < newRate))
             {
                 lastRateIndex = TimeWarp.CurrentRateIndex;
                 TimeWarp.SetRate(lastRateIndex + 1, true);

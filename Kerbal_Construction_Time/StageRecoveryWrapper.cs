@@ -43,8 +43,9 @@ namespace Kerbal_Construction_Time
         /***************/
 
         /* Adds a listener to the Recovery Success Event. When a vessel is recovered by StageRecovery the method will 
-         * be invoked with the Vessel and a Dictionary containing part names and quantities */
-        public static void AddRecoverySuccessEvent(Action<Vessel, Dictionary<string, int>> method)
+         * be invoked with the Vessel; an array of floats representing the percent returned after damage, funds returned,
+         * and science returned; and a string representing the reason for failure (SUCCESS, SPEED, or BURNUP)*/
+        public static void AddRecoverySuccessEvent(Action<Vessel, float[], string> method)
         {
             object successList = GetMemberInfoValue(SRType.GetMember("RecoverySuccessEvent")[0], Instance);
             System.Reflection.MethodInfo addMethod = successList.GetType().GetMethod("Add");
@@ -52,7 +53,7 @@ namespace Kerbal_Construction_Time
         }
 
         /* Removes a listener from the Recovery Success Event */
-        public static void RemoveRecoverySuccessEvent(Action<Vessel, Dictionary<string, int>> method)
+        public static void RemoveRecoverySuccessEvent(Action<Vessel, float[], string> method)
         {
             object successList = GetMemberInfoValue(SRType.GetMember("RecoverySuccessEvent")[0], Instance);
             System.Reflection.MethodInfo removeMethod = successList.GetType().GetMethod("Remove");
@@ -60,8 +61,9 @@ namespace Kerbal_Construction_Time
         }
 
         /* Adds a listener to the Recovery Failure Event. When a vessel fails to be recovered, the method will be invoked 
-         * with the Vessel and a Dictionary containing part names and quantities */
-        public static void AddRecoveryFailureEvent(Action<Vessel, Dictionary<string, int>> method)
+         * with the Vessel; an array of floats representing the percent returned after damage, funds returned,
+         * and science returned; and a string representing the reason for failure (SUCCESS, SPEED, or BURNUP)*/
+        public static void AddRecoveryFailureEvent(Action<Vessel, float[], string> method)
         {
             object failList = GetMemberInfoValue(SRType.GetMember("RecoveryFailureEvent")[0], Instance);
             System.Reflection.MethodInfo addMethod = failList.GetType().GetMethod("Add");
@@ -69,7 +71,7 @@ namespace Kerbal_Construction_Time
         }
 
         /* Removes a listener from the Recovery Failure Event */
-        public static void RemoveRecoveryFailureEvent(Action<Vessel, Dictionary<string, int>> method)
+        public static void RemoveRecoveryFailureEvent(Action<Vessel, float[], string> method)
         {
             object failList = GetMemberInfoValue(SRType.GetMember("RecoveryFailureEvent")[0], Instance);
             System.Reflection.MethodInfo removeMethod = failList.GetType().GetMethod("Remove");

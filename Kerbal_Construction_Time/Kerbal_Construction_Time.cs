@@ -402,7 +402,7 @@ namespace Kerbal_Construction_Time
                 if (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated)
                 {
                     IKCTBuildItem ikctItem = KCT_Utilities.NextThingToFinish();
-
+                    if (KCT_GameStates.targetedItem == null && ikctItem != null) KCT_GameStates.targetedItem = ikctItem;
                     if (KCT_GameStates.canWarp && ikctItem != null && !ikctItem.IsComplete())
                     {
                         int warpRate = TimeWarp.CurrentRateIndex;
@@ -420,7 +420,7 @@ namespace Kerbal_Construction_Time
                         }
                         else
                         {
-                            if ((10 * TimeWarp.deltaTime) > Math.Max((ikctItem.GetTimeLeft()), 0) && TimeWarp.CurrentRate > 1.0f)
+                            if (ikctItem == KCT_GameStates.targetedItem && (10 * TimeWarp.deltaTime) > Math.Max((ikctItem.GetTimeLeft()), 0) && TimeWarp.CurrentRate > 1.0f)
                             {
                                 TimeWarp.SetRate(--warpRate, true);
                             }
@@ -434,7 +434,7 @@ namespace Kerbal_Construction_Time
                         }
 
                     }
-                    else if (ikctItem != null && (KCT_GameStates.warpInitiated || KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRate != 0 && (ikctItem.GetTimeLeft()) < (TimeWarp.deltaTime*2) && (!ikctItem.IsComplete())) //Still warp down even if we don't control the clock
+                    else if (ikctItem != null && ikctItem == KCT_GameStates.targetedItem && (KCT_GameStates.warpInitiated || KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRate != 0 && (ikctItem.GetTimeLeft()) < (TimeWarp.deltaTime * 2) && (!ikctItem.IsComplete())) //Still warp down even if we don't control the clock
                     {
                         TimeWarp.SetRate(0, false);
                         KCT_GameStates.warpInitiated = false;
