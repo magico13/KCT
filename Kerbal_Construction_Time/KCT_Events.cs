@@ -283,7 +283,7 @@ namespace Kerbal_Construction_Time
                 }
                 else
                 {
-                    Vt = (800 * totalMass * 9.8) / (1.223 * Math.PI) * Math.Pow(RCParameter, -1); //This should work perfect for multiple identical chutes and gives an approximation for multiple differing chutes
+                    Vt = Math.Sqrt((8000 * totalMass * 9.8) / (1.223 * Math.PI) * Math.Pow(RCParameter, -1)); //This should work perfect for multiple identical chutes and gives an approximation for multiple differing chutes
                     Debug.Log("[SR] Using RealChute Module! Vt: " + Vt);
                 }
                 if (Vt < 10.0)

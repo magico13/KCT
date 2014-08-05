@@ -589,11 +589,6 @@ namespace Kerbal_Construction_Time
             Kerbal_Construction_Time.moved = false;
             KCT_GameStates.simulationEndTime = 0;
             Debug.Log("[KCT] Swapping persistent.sfs with simulation backup file.");
-            if (MCEWrapper.MCEAvailable)
-            {
-                Debug.Log("[KCT] Loading MCE backup file.");
-                MCEWrapper.IloadMCEbackup();
-            }
             System.IO.File.Copy(backupFile, saveFile, true);
             System.IO.File.Delete(backupFile);
         }
