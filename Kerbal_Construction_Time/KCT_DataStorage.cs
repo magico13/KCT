@@ -99,6 +99,7 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool DisableBuildTime = false;
         [Persistent] public bool InstantTechUnlock = false;
         [Persistent] public bool EnableAllBodies = false;
+        [Persistent] public bool Reconditioning = false;
 
 
 
@@ -155,6 +156,7 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.settings.DisableBuildTime = DisableBuildTime;
             KCT_GameStates.settings.InstantTechUnlock = InstantTechUnlock;
             KCT_GameStates.settings.EnableAllBodies = EnableAllBodies;
+            KCT_GameStates.settings.Reconditioning = Reconditioning;
         }
 
         private void GetSettings()
@@ -165,6 +167,7 @@ namespace Kerbal_Construction_Time
             DisableBuildTime = KCT_GameStates.settings.DisableBuildTime;
             InstantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
             EnableAllBodies = KCT_GameStates.settings.EnableAllBodies;
+            Reconditioning = KCT_GameStates.settings.Reconditioning;
         }
 
         private bool VesselIsInWorld(Guid id)

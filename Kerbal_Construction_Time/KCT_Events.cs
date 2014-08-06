@@ -173,6 +173,11 @@ namespace Kerbal_Construction_Time
             {
                 KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
             }
+            if (!KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning && KCT_GameStates.LaunchPadReconditioning == null)
+            {
+                double BP = FlightGlobals.ActiveVessel.GetTotalMass() * 8640; //1 day per 10 tons
+                KCT_GameStates.LaunchPadReconditioning = new KCT_Reconditioning(BP);
+            }
         }
 
         public void vesselRecoverEvent(ProtoVessel v)

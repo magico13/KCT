@@ -21,6 +21,7 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool InstantTechUnlockDefault;
         [Persistent] public bool DisableBuildTimeDefault;
         [Persistent] public bool EnableAllBodiesDefault;
+        [Persistent] public bool ReconditioningDefault;
 
         //Game specific settings
         public bool enabledForSave = true;
@@ -29,6 +30,7 @@ namespace Kerbal_Construction_Time
         public bool InstantTechUnlock;
         public bool DisableBuildTime;
         public bool EnableAllBodies;
+        public bool Reconditioning;
         //[Persistent] public bool AutoRevertOnCrash;
         //[Persistent] public bool Use6HourDays;
 
@@ -51,6 +53,7 @@ namespace Kerbal_Construction_Time
             InstantTechUnlockDefault = false;
             DisableBuildTimeDefault = false;
             EnableAllBodiesDefault = false;
+            ReconditioningDefault = true;
 
            // AutoRevertOnCrash = true;
             //Use6HourDays = GameSettings.KERBIN_TIME;
@@ -73,6 +76,7 @@ namespace Kerbal_Construction_Time
                     InstantTechUnlock = InstantTechUnlockDefault;
                     DisableBuildTime = DisableBuildTimeDefault;
                     EnableAllBodies = EnableAllBodiesDefault;
+                    Reconditioning = ReconditioningDefault;
                 }
             }
         }

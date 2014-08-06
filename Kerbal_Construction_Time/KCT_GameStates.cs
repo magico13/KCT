@@ -39,6 +39,8 @@ namespace Kerbal_Construction_Time
         public static bool firstStart = true;
         public static IKCTBuildItem targetedItem = null;
 
+        public static KCT_Reconditioning LaunchPadReconditioning;
+
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
 
 

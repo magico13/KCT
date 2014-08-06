@@ -707,11 +707,12 @@ namespace Kerbal_Construction_Time
 
 
             //simLength = GUILayout.TextField(simLength);
-            
+            float nullFloat;
             float cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 13);
+            cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nullFloat) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
             GUILayout.Label("Cost: " + cost);
 
-            float nullFloat;
+            
             GUILayout.BeginHorizontal();
             if (((KCT_Utilities.CurrentGameIsCareer() && Funding.Instance.Funds >= (cost + EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nullFloat))) || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
             {
@@ -1042,6 +1043,11 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label("Tech");
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
                 }
+                else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.Reconditioning)
+                {
+                    GUILayout.Label("Reconditioning");
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
+                }
                 
                 
                 if (TimeWarp.CurrentRateIndex == 0 && GUILayout.Button("Warp to" + System.Environment.NewLine + "Complete"))
@@ -1110,6 +1116,16 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("BP:", GUILayout.Width(width1 / 2));
                 GUILayout.Space((butW + 4) * 3);
                 GUILayout.EndHorizontal();
+                if (KCT_GameStates.LaunchPadReconditioning != null)
+                {
+                    GUILayout.BeginHorizontal();
+                    IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning;
+                    GUILayout.Label(item.GetItemName());
+                    GUILayout.Label(KCT_GameStates.LaunchPadReconditioning.progress.ToString(), GUILayout.Width(width1 / 2));
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(item.GetTimeLeft()), GUILayout.Width(width2));
+                    GUILayout.Label(KCT_GameStates.LaunchPadReconditioning.BP.ToString(), GUILayout.Width(width1 / 2));
+                    GUILayout.EndHorizontal();
+                }
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((buildList.Count) * 25 + 10, Screen.height / 1.4F)));
                 for (int i = 0; i < buildList.Count; i++)
                 {
@@ -1228,39 +1244,48 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label(b.shipName);
                     if (GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                     {
-                        KCT_GameStates.launchedVessel = b;
-                        if (ShipAssembly.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
+                        if (KCT_GameStates.LaunchPadReconditioning != null)
                         {
-                           // buildList.RemoveAt(i);
-                            if (!IsCrewable(b.ExtractedParts))
-                                b.Launch();
-                            else
-                            {
-                                showBuildList = false;
-                                centralWindowPosition.height = 1;
-                                KCT_GameStates.launchedCrew.Clear();
-                                //KCT_GameStates.launchedCrew.Add(FirstCrewable(b.ExtractedParts).uid, HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, true).GetAllCrew(true));
-                                partNames = KCT_GameStates.launchedVessel.GetPartNames();
-                                parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                                pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
-                                //if (KCT_GameStates.launchedCrew.Count != partNames.Count)
-                                {
-                                    KCT_GameStates.launchedCrew = new List<CrewedPart>();
-                                    foreach (PseudoPart pp in pseudoParts)
-                                        KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
-                                }
-                                //KCT_GameStates.launchedCrew[FirstCrewable(parts)] = HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, false).GetAllCrew(true);
-                               /* List<ProtoCrewMember> firstCrew = HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, false).GetAllCrew(true);
-                                int firstCrewablePartCapacity = parts[FirstCrewable(parts)].CrewCapacity;
-                                KCT_GameStates.launchedCrew[FirstCrewable(parts)] = firstCrew.GetRange(0, firstCrewablePartCapacity);*/
-
-                                showShipRoster = true;
-                            }
+                            //can't launch now
+                            ScreenMessage message = new ScreenMessage("[KCT] LaunchPad is being reconditioned. It will be finished in " + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                            ScreenMessages.PostScreenMessage(message, true);
                         }
                         else
                         {
-                            showBuildList = false;
-                            showClearLaunch = true;
+                            KCT_GameStates.launchedVessel = b;
+                            if (ShipAssembly.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
+                            {
+                                // buildList.RemoveAt(i);
+                                if (!IsCrewable(b.ExtractedParts))
+                                    b.Launch();
+                                else
+                                {
+                                    showBuildList = false;
+                                    centralWindowPosition.height = 1;
+                                    KCT_GameStates.launchedCrew.Clear();
+                                    //KCT_GameStates.launchedCrew.Add(FirstCrewable(b.ExtractedParts).uid, HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, true).GetAllCrew(true));
+                                    partNames = KCT_GameStates.launchedVessel.GetPartNames();
+                                    parts = KCT_GameStates.launchedVessel.ExtractedParts;
+                                    pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
+                                    //if (KCT_GameStates.launchedCrew.Count != partNames.Count)
+                                    {
+                                        KCT_GameStates.launchedCrew = new List<CrewedPart>();
+                                        foreach (PseudoPart pp in pseudoParts)
+                                            KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
+                                    }
+                                    //KCT_GameStates.launchedCrew[FirstCrewable(parts)] = HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, false).GetAllCrew(true);
+                                    /* List<ProtoCrewMember> firstCrew = HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, false).GetAllCrew(true);
+                                     int firstCrewablePartCapacity = parts[FirstCrewable(parts)].CrewCapacity;
+                                     KCT_GameStates.launchedCrew[FirstCrewable(parts)] = firstCrew.GetRange(0, firstCrewablePartCapacity);*/
+
+                                    showShipRoster = true;
+                                }
+                            }
+                            else
+                            {
+                                showBuildList = false;
+                                showClearLaunch = true;
+                            }
                         }
                     }
                     if (GUILayout.Button("*", GUILayout.Width(butW)))

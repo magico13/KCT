@@ -328,6 +328,14 @@ namespace Kerbal_Construction_Time
                         KCT_GameStates.TechList.Remove(tech);
                     }
                 }
+
+                if (KCT_GameStates.LaunchPadReconditioning != null)
+                {
+                    IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning;
+                    KCT_GameStates.LaunchPadReconditioning.progress += (item.GetBuildRate() * (UT - lastUT));
+                    if (item.IsComplete())
+                        KCT_GameStates.LaunchPadReconditioning = null;
+                }
                 
                /* foreach (KCTVessel kctV in KCT_GameStates.vesselList)
                 {
@@ -557,19 +565,11 @@ namespace Kerbal_Construction_Time
         {
             InputLockManager.SetControlLock(ControlTypes.QUICKSAVE, "KCTLockSimQS");
             InputLockManager.SetControlLock(ControlTypes.QUICKLOAD, "KCTLockSimQL");
-            //InputLockManager.SetControlLock(ControlTypes.VESSEL_SWITCHING, "KCTLockSimVS");
-          //  InputLockManager.SetControlLock(ControlTypes.PAUSE, "KCTLockSimPause");
-           // InputLockManager.SetControlLock(ControlTypes.EVA_INPUT, "KCTLockSimEVA");
-         //   KCT_GameStates.flightSimulated = true;
         }
         public static void disableSimulationLocks()
         {
             InputLockManager.RemoveControlLock("KCTLockSimQS");
             InputLockManager.RemoveControlLock("KCTLockSimQL");
-            //InputLockManager.RemoveControlLock("KCTLockSimVS");
-         //   InputLockManager.RemoveControlLock("KCTLockSimPause");
-           // InputLockManager.RemoveControlLock("KCTLockSimEVA");
-          //  KCT_GameStates.flightSimulated = false;
         }
 
         public static void MakeSimulationSave()
@@ -767,6 +767,16 @@ namespace Kerbal_Construction_Time
                     shortestTime = time;
                 }
             }
+            if (KCT_GameStates.LaunchPadReconditioning != null)
+            {
+                IKCTBuildItem blv = (IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning;
+                double time = blv.GetTimeLeft();
+                if (time < shortestTime)
+                {
+                    thing = blv;
+                    shortestTime = time;
+                }
+            }
             return thing;
         }
 
@@ -792,35 +802,6 @@ namespace Kerbal_Construction_Time
                     shortestTime = time;
                 }
             }
-  /*          if (KCT_GameStates.VABList.Count > 0)
-            {
-                KCT_BuildListVessel vab = KCT_GameStates.VABList[0];
-                if (KCT_GameStates.SPHList.Count > 0)
-                {
-                    KCT_BuildListVessel sph = KCT_GameStates.SPHList[0];
-                    if (vab.buildPoints - vab.progress < sph.buildPoints - sph.progress)
-                    {
-                        ship = vab;
-                    }
-                    else
-                    {
-                        ship = sph;
-                    }
-                }
-                else
-                    ship = vab;
-            }
-            else
-            {
-                if (KCT_GameStates.SPHList.Count > 0)
-                {
-                    ship = KCT_GameStates.SPHList[0];
-                }
-                else
-                {
-                    ship = null;
-                }
-            }*/
             return ship;
         }
 
