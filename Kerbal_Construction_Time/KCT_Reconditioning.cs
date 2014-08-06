@@ -10,11 +10,24 @@ namespace Kerbal_Construction_Time
         [Persistent] private string name;
         [Persistent] public double BP, progress;
 
+
+        public KCT_Reconditioning()
+        {
+            name = "LaunchPad Reconditioning";
+            progress = 0;
+            BP = 0;
+        }
+
         public KCT_Reconditioning(double buildPoints)
         {
             name = "LaunchPad Reconditioning";
             BP = buildPoints;
             progress = 0;
+        }
+
+        public double ProgressPercent()
+        {
+            return Math.Round(100 * (progress / BP), 2);
         }
 
         string IKCTBuildItem.GetItemName()

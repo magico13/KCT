@@ -1121,9 +1121,10 @@ namespace Kerbal_Construction_Time
                     GUILayout.BeginHorizontal();
                     IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning;
                     GUILayout.Label(item.GetItemName());
-                    GUILayout.Label(KCT_GameStates.LaunchPadReconditioning.progress.ToString(), GUILayout.Width(width1 / 2));
+                    GUILayout.Label(KCT_GameStates.LaunchPadReconditioning.ProgressPercent().ToString()+"%", GUILayout.Width(width1 / 2));
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(item.GetTimeLeft()), GUILayout.Width(width2));
-                    GUILayout.Label(KCT_GameStates.LaunchPadReconditioning.BP.ToString(), GUILayout.Width(width1 / 2));
+                    GUILayout.Label(Math.Round(KCT_GameStates.LaunchPadReconditioning.BP, 2).ToString(), GUILayout.Width(width1 / 2));
+                    GUILayout.Space((butW + 4) * 3);
                     GUILayout.EndHorizontal();
                 }
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((buildList.Count) * 25 + 10, Screen.height / 1.4F)));
@@ -1247,7 +1248,7 @@ namespace Kerbal_Construction_Time
                         if (KCT_GameStates.LaunchPadReconditioning != null)
                         {
                             //can't launch now
-                            ScreenMessage message = new ScreenMessage("[KCT] LaunchPad is being reconditioned. It will be finished in " + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                            ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in " + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
                             ScreenMessages.PostScreenMessage(message, true);
                         }
                         else
@@ -1752,10 +1753,10 @@ namespace Kerbal_Construction_Time
         }
 
         public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier;
-        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, freeSims;
+        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, freeSims, recon;
 
         public static string newRecoveryModDefault;
-        public static bool disableBuildTimesDefault, instantTechUnlockDefault, enableAllBodiesDefault, freeSimsDefault;
+        public static bool disableBuildTimesDefault, instantTechUnlockDefault, enableAllBodiesDefault, freeSimsDefault, reconDefault;
         private static void ShowSettings()
         {
             settingSelected = 0;
@@ -1777,12 +1778,14 @@ namespace Kerbal_Construction_Time
             disableRecMsgs = KCT_GameStates.settings.DisableRecoveryMessages;
             disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
             freeSims = KCT_GameStates.settings.NoCostSimulations;
+            recon = KCT_GameStates.settings.Reconditioning;
 
             disableBuildTimesDefault = KCT_GameStates.settings.DisableBuildTimeDefault;
             instantTechUnlockDefault = KCT_GameStates.settings.InstantTechUnlockDefault;
             enableAllBodiesDefault = KCT_GameStates.settings.EnableAllBodiesDefault;
             freeSimsDefault = KCT_GameStates.settings.NoCostSimulationsDefault;
             newRecoveryModDefault = (KCT_GameStates.settings.RecoveryModifierDefault*100).ToString();
+            reconDefault = KCT_GameStates.settings.ReconditioningDefault;
 
             settingsPosition.height = 1;
             showSettings = !showSettings;
@@ -1835,6 +1838,10 @@ namespace Kerbal_Construction_Time
                     freeSims = GUILayout.Toggle(freeSims, freeSims ? " Free" : " Not Free", GUILayout.Width(width2));
                     GUILayout.EndHorizontal();
                 }
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Reconditioning", GUILayout.Width(width1));
+                recon = GUILayout.Toggle(recon, recon ? " Enabled" : " Disabled", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
             }
             //GUILayout.Label("");
             if (settingSelected == 1)
@@ -1926,6 +1933,10 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("Upgrades for New Sandbox", GUILayout.Width(width1));
                 newSandboxUpgrades = GUILayout.TextField(newSandboxUpgrades, 3, GUILayout.Width(40));
                 GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Reconditioning", GUILayout.Width(width1));
+                reconDefault = GUILayout.Toggle(reconDefault, reconDefault ? " Enabled" : " Disabled", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
             }
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Save"))
@@ -1946,12 +1957,14 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.DisableRecoveryMessages = disableRecMsgs;
                 KCT_GameStates.settings.DisableAllMessages = disableAllMsgs;
                 KCT_GameStates.settings.NoCostSimulations = freeSims;
+                KCT_GameStates.settings.Reconditioning = recon;
 
                 KCT_GameStates.settings.DisableBuildTimeDefault = disableBuildTimesDefault;
                 KCT_GameStates.settings.InstantTechUnlockDefault = instantTechUnlockDefault;
                 KCT_GameStates.settings.EnableAllBodiesDefault = enableAllBodiesDefault;
                 KCT_GameStates.settings.NoCostSimulationsDefault = freeSimsDefault;
                 KCT_GameStates.settings.RecoveryModifierDefault = Math.Min(1, Math.Max(float.Parse(newRecoveryModDefault) / 100f, 0));
+                KCT_GameStates.settings.ReconditioningDefault = reconDefault;
 
                 KCT_GameStates.settings.Save();
 

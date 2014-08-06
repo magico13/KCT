@@ -7,29 +7,6 @@ namespace Kerbal_Construction_Time
     public abstract class ConfigNodeStorage : IPersistenceLoad, IPersistenceSave
     {
         public ConfigNodeStorage() { }
-        
-        
-    /*    public void Load()
-        {
-            if (System.IO.File.Exists(filePath))
-            {
-                ConfigNode cnToLoad = ConfigNode.Load(filePath);
-                ConfigNode cnUnwrapped = cnToLoad.GetNode(this.GetType().Name);
-                ConfigNode.LoadObjectFromConfig(this, cnUnwrapped);
-            }
-        }
-        public void Save()
-        {
-         //   ConfigNode cnToSave = this.AsConfigNode();
-            //Wrap it in a node with a name of the class
-         //   ConfigNode cnSaveWrapper = new ConfigNode(this.GetType().Name);
-         //   cnSaveWrapper.AddNode(cnToSave);
-            //Save it to the file
-         //   cnSaveWrapper.Save(filePath);
-            ConfigNode cnTemp = ConfigNode.CreateConfigFromObject(this, new ConfigNode());
-            cnTemp.Save(filePath);
-        }*/
-
 
         void IPersistenceLoad.PersistenceLoad()
         {
@@ -99,7 +76,7 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool DisableBuildTime = false;
         [Persistent] public bool InstantTechUnlock = false;
         [Persistent] public bool EnableAllBodies = false;
-        [Persistent] public bool Reconditioning = false;
+        [Persistent] public bool Reconditioning = true;
 
 
 

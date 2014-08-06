@@ -333,19 +333,22 @@ namespace Kerbal_Construction_Time
                 {
                     IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning;
                     KCT_GameStates.LaunchPadReconditioning.progress += (item.GetBuildRate() * (UT - lastUT));
-                    if (item.IsComplete())
+                    if (item.IsComplete() || !KCT_GameStates.settings.Reconditioning)
                         KCT_GameStates.LaunchPadReconditioning = null;
                 }
-                
-               /* foreach (KCTVessel kctV in KCT_GameStates.vesselList)
-                {
-                    if (kctV.building)
-                    {
-                        kctV.progress += buildRate * (UT - lastUT);
-                    }
-                }*/
             }
             lastUT = UT;
+        }
+
+        public static float GetTotalVesselCost(ProtoVessel vessel)
+        {
+            float total = 0;
+            foreach (ProtoPartSnapshot part in vessel.protoPartSnapshots)
+            {
+                float dry, wet;
+                total += ShipConstruction.GetPartCosts(part, part.partInfo, out dry, out wet);
+            }
+            return total;
         }
 
         private static DateTime startedFlashing;

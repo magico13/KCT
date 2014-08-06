@@ -64,6 +64,8 @@ namespace Kerbal_Construction_Time
             VABUpgrades = new List<int>() {0};
             SPHUpgrades = new List<int>() {0};
             RDUpgrades = new List<int>() {0, 0};
+            LaunchPadReconditioning = null;
+            targetedItem = null;
 
             VABList = new List<KCT_BuildListVessel>();
             VABWarehouse = new List<KCT_BuildListVessel>();

@@ -33,7 +33,8 @@ namespace Kerbal_Construction_Time
                 StageRecoveryWrapper.AddRecoverySuccessEvent(StageRecoverySuccessEvent);
             }
 
-            GameEvents.onLaunch.Add(vesselLaunchEvent);
+            //GameEvents.onLaunch.Add(vesselSituationChange);
+            GameEvents.onVesselSituationChange.Add(vesselSituationChange);
             GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
             GameEvents.onVesselSOIChanged.Add(SOIChangeEvent);
             GameEvents.OnTechnologyResearched.Add(TechUnlockEvent);
@@ -166,17 +167,21 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.flightSimulated = true;
         }
 
-        public void vesselLaunchEvent(EventReport e)
+        public void vesselSituationChange(GameEvents.HostedFromToAction<Vessel, Vessel.Situations> ev)
         {
-            if (!KCT_GameStates.settings.enabledForSave) return;
-            if (KCT_GameStates.flightSimulated && KCT_GameStates.simulationTimeLimit > 0)
+            if (ev.from == Vessel.Situations.PRELAUNCH && ev.host == FlightGlobals.ActiveVessel)
             {
-                KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
-            }
-            if (!KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning && KCT_GameStates.LaunchPadReconditioning == null)
-            {
-                double BP = FlightGlobals.ActiveVessel.GetTotalMass() * 8640; //1 day per 10 tons
-                KCT_GameStates.LaunchPadReconditioning = new KCT_Reconditioning(BP);
+                if (!KCT_GameStates.settings.enabledForSave) return;
+                if (KCT_GameStates.flightSimulated && KCT_GameStates.simulationTimeLimit > 0)
+                {
+                    KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
+                }
+                if (!KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning && KCT_GameStates.LaunchPadReconditioning == null)
+                {
+                    Debug.Log("[KCT] Launch event is go!");
+                    double BP = FlightGlobals.ActiveVessel.GetTotalMass() * 8640 * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 10 tons * overall multiplier
+                    KCT_GameStates.LaunchPadReconditioning = new KCT_Reconditioning(BP);
+                }
             }
         }
 
