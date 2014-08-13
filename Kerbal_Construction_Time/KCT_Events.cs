@@ -178,9 +178,7 @@ namespace Kerbal_Construction_Time
                 }
                 if (!KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning && KCT_GameStates.LaunchPadReconditioning == null)
                 {
-                    Debug.Log("[KCT] Launch event is go!");
-                    double BP = FlightGlobals.ActiveVessel.GetTotalMass() * 8640 * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 10 tons * overall multiplier
-                    KCT_GameStates.LaunchPadReconditioning = new KCT_Reconditioning(BP);
+                    KCT_GameStates.LaunchPadReconditioning = new KCT_Reconditioning(ev.host);
                 }
             }
         }
@@ -199,6 +197,18 @@ namespace Kerbal_Construction_Time
             }
         }
 
+
+        private float GetResourceMass(List<ProtoPartResourceSnapshot> resources)
+        {
+            double mass = 0;
+            foreach (ProtoPartResourceSnapshot resource in resources)
+            {
+                ConfigNode RCN = resource.resourceValues;
+                double amount = double.Parse(RCN.GetValue("amount"));
+                mass += amount * resource.resourceRef.info.density;
+            }
+            return (float)mass;
+        }
         public void vesselDestroyEvent(Vessel v)
         {
             Dictionary<string, int> PartsRecovered = new Dictionary<string, int>();
@@ -234,6 +244,7 @@ namespace Kerbal_Construction_Time
                         ModuleNames.Add(ppms.moduleName);
                     }
                     totalMass += p.mass;
+                    totalMass += GetResourceMass(p.resources);
                     bool isParachute = false;
                     if (ModuleNames.Contains("ModuleParachute"))
                     {

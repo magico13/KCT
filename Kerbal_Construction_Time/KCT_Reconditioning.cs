@@ -18,10 +18,10 @@ namespace Kerbal_Construction_Time
             BP = 0;
         }
 
-        public KCT_Reconditioning(double buildPoints)
+        public KCT_Reconditioning(Vessel vessel)
         {
+            BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 25 tons (default) * overall multiplier
             name = "LaunchPad Reconditioning";
-            BP = buildPoints;
             progress = 0;
         }
 

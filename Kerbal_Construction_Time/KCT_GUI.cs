@@ -714,7 +714,8 @@ namespace Kerbal_Construction_Time
 
             
             GUILayout.BeginHorizontal();
-            if (((KCT_Utilities.CurrentGameIsCareer() && Funding.Instance.Funds >= (cost + EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nullFloat))) || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
+            if (((KCT_Utilities.CurrentGameIsCareer() && (Funding.Instance.Funds >= (cost + EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nullFloat)) || KCT_GameStates.settings.NoCostSimulations))
+                || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
             {
                 if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
                     KCT_GameStates.simulateInOrbit = true;
@@ -1278,7 +1279,7 @@ namespace Kerbal_Construction_Time
                                     /* List<ProtoCrewMember> firstCrew = HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, false).GetAllCrew(true);
                                      int firstCrewablePartCapacity = parts[FirstCrewable(parts)].CrewCapacity;
                                      KCT_GameStates.launchedCrew[FirstCrewable(parts)] = firstCrew.GetRange(0, firstCrewablePartCapacity);*/
-
+                                    CrewFirstAvailable();
                                     showShipRoster = true;
                                 }
                             }
@@ -1337,7 +1338,7 @@ namespace Kerbal_Construction_Time
                                /* List<ProtoCrewMember> firstCrew = HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, false).GetAllCrew(true);
                                 int firstCrewablePartCapacity = parts[FirstCrewable(parts)].CrewCapacity;
                                 KCT_GameStates.launchedCrew[FirstCrewable(parts)] = firstCrew.GetRange(0, firstCrewablePartCapacity);*/
-                                
+                                CrewFirstAvailable();
                                 showShipRoster = true;
                             }
                         }
@@ -1479,9 +1480,15 @@ namespace Kerbal_Construction_Time
         private static List<String> partNames;
         private static List<PseudoPart> pseudoParts;
         private static List<Part> parts;
+        private static bool randomCrew, autoHire;
         public static void DrawShipRoster(int windowID)
         {
+            System.Random rand = new System.Random();
             GUILayout.BeginVertical(GUILayout.ExpandHeight(true), GUILayout.MaxHeight(Screen.height/2));
+            GUILayout.BeginHorizontal();
+            randomCrew = GUILayout.Toggle(randomCrew, " Randomize Filling");
+            autoHire = GUILayout.Toggle(autoHire, " Auto-Hire Applicants");
+            GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Fill All"))
             {
@@ -1499,16 +1506,68 @@ namespace Kerbal_Construction_Time
                             {
                                 if (CrewAvailable().Count > 0)
                                 {
-                                    ProtoCrewMember crewMember = CrewAvailable()[0];
+                                    int index = randomCrew ? new System.Random().Next(CrewAvailable().Count) : 0;
+                                    ProtoCrewMember crewMember = CrewAvailable()[index];
                                     if (crewMember != null) KCT_GameStates.launchedCrew[j].crewList.Add(crewMember);
+                                }
+                                else if (autoHire)
+                                {
+                                    if (HighLogic.CurrentGame.CrewRoster.Applicants.Count() == 0)
+                                        HighLogic.CurrentGame.CrewRoster.GetNextApplicant();
+                                    int index = randomCrew ? rand.Next(HighLogic.CurrentGame.CrewRoster.Applicants.Count() - 1) : 0;
+                                    ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(index);
+                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
+                                    List<ProtoCrewMember> activeCrew;
+                                    activeCrew = KCT_GameStates.launchedCrew[j].crewList;
+                                    if (activeCrew.Count > i)
+                                    {
+                                        activeCrew.Insert(i, hired);
+                                        if (activeCrew[i + 1] == null)
+                                            activeCrew.RemoveAt(i + 1);
+                                    }
+                                    else
+                                    {
+                                        for (int k = activeCrew.Count; k < i; k++)
+                                        {
+                                            activeCrew.Insert(k, null);
+                                        }
+                                        activeCrew.Insert(i, hired);
+                                    }
+                                    KCT_GameStates.launchedCrew[j].crewList = activeCrew;
                                 }
                             }
                             else if (KCT_GameStates.launchedCrew[j].crewList[i] == null)
                             {
                                 if (CrewAvailable().Count > 0)
                                 {
-                                    ProtoCrewMember crewMember = CrewAvailable()[0];
+                                    int index = randomCrew ? new System.Random().Next(CrewAvailable().Count) : 0;
+                                    ProtoCrewMember crewMember = CrewAvailable()[index];
                                     if (crewMember != null) KCT_GameStates.launchedCrew[j].crewList[i] = crewMember;
+                                }
+                                else if (autoHire)
+                                {
+                                    if (HighLogic.CurrentGame.CrewRoster.Applicants.Count() == 0)
+                                        HighLogic.CurrentGame.CrewRoster.GetNextApplicant();
+                                    int index = randomCrew ? rand.Next(HighLogic.CurrentGame.CrewRoster.Applicants.Count() - 1) : 0;
+                                    ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(index);
+                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
+                                    List<ProtoCrewMember> activeCrew;
+                                    activeCrew = KCT_GameStates.launchedCrew[j].crewList;
+                                    if (activeCrew.Count > i)
+                                    {
+                                        activeCrew.Insert(i, hired);
+                                        if (activeCrew[i + 1] == null)
+                                            activeCrew.RemoveAt(i + 1);
+                                    }
+                                    else
+                                    {
+                                        for (int k = activeCrew.Count; k < i; k++)
+                                        {
+                                            activeCrew.Insert(k, null);
+                                        }
+                                        activeCrew.Insert(i, hired);
+                                    }
+                                    KCT_GameStates.launchedCrew[j].crewList = activeCrew;
                                 }
                             }
                         }
@@ -1551,15 +1610,67 @@ namespace Kerbal_Construction_Time
                             {
                                 if (CrewAvailable().Count > 0)
                                 {
-                                    ProtoCrewMember crewMember = CrewAvailable()[0];
+                                    int index = randomCrew ? new System.Random().Next(CrewAvailable().Count) : 0;
+                                    ProtoCrewMember crewMember = CrewAvailable()[index];
                                     if (crewMember != null) KCT_GameStates.launchedCrew[j].crewList.Add(crewMember);
+                                }
+                                else if (autoHire)
+                                {
+                                    if (HighLogic.CurrentGame.CrewRoster.Applicants.Count() == 0)
+                                        HighLogic.CurrentGame.CrewRoster.GetNextApplicant();
+                                    int index = randomCrew ? rand.Next(HighLogic.CurrentGame.CrewRoster.Applicants.Count() - 1) : 0;
+                                    ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(index);
+                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
+                                    List<ProtoCrewMember> activeCrew;
+                                    activeCrew = KCT_GameStates.launchedCrew[j].crewList;
+                                    if (activeCrew.Count > i)
+                                    {
+                                        activeCrew.Insert(i, hired);
+                                        if (activeCrew[i + 1] == null)
+                                            activeCrew.RemoveAt(i + 1);
+                                    }
+                                    else
+                                    {
+                                        for (int k = activeCrew.Count; k < i; k++)
+                                        {
+                                            activeCrew.Insert(k, null);
+                                        }
+                                        activeCrew.Insert(i, hired);
+                                    }
+                                    KCT_GameStates.launchedCrew[j].crewList = activeCrew;
                                 }
                             }
                             else if (KCT_GameStates.launchedCrew[j].crewList[i] == null)
                             {
                                 if (CrewAvailable().Count > 0)
                                 {
-                                    KCT_GameStates.launchedCrew[j].crewList[i] = CrewAvailable()[0];
+                                    int index = randomCrew ? new System.Random().Next(CrewAvailable().Count) : 0;
+                                    KCT_GameStates.launchedCrew[j].crewList[i] = CrewAvailable()[index];
+                                }
+                                else if (autoHire)
+                                {
+                                    if (HighLogic.CurrentGame.CrewRoster.Applicants.Count() == 0)
+                                        HighLogic.CurrentGame.CrewRoster.GetNextApplicant();
+                                    int index = randomCrew ? rand.Next(HighLogic.CurrentGame.CrewRoster.Applicants.Count() - 1) : 0;
+                                    ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(index);
+                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
+                                    List<ProtoCrewMember> activeCrew;
+                                    activeCrew = KCT_GameStates.launchedCrew[j].crewList;
+                                    if (activeCrew.Count > i)
+                                    {
+                                        activeCrew.Insert(i, hired);
+                                        if (activeCrew[i + 1] == null)
+                                            activeCrew.RemoveAt(i + 1);
+                                    }
+                                    else
+                                    {
+                                        for (int k = activeCrew.Count; k < i; k++)
+                                        {
+                                            activeCrew.Insert(k, null);
+                                        }
+                                        activeCrew.Insert(i, hired);
+                                    }
+                                    KCT_GameStates.launchedCrew[j].crewList = activeCrew;
                                 }
                             }
                         }
@@ -1594,9 +1705,10 @@ namespace Kerbal_Construction_Time
                                 indexToCrew = i;
                                 crewListWindowPosition.height = 1;
                             }
-                            if (CrewAvailable().Count == 0 && GUILayout.Button("Hire Random", GUILayout.Width(120)))
+                            if (CrewAvailable().Count == 0 && GUILayout.Button("Hire New", GUILayout.Width(120)))
                             {
-                                ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(0);
+                                int index = randomCrew ? rand.Next(HighLogic.CurrentGame.CrewRoster.Applicants.Count() - 1) : 0;
+                                ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(index);
                                 //hired.rosterStatus = ProtoCrewMember.RosterStatus.AVAILABLE;
                                 //HighLogic.CurrentGame.CrewRoster.AddCrewMember(hired);
                                 HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
@@ -1641,6 +1753,37 @@ namespace Kerbal_Construction_Time
             }
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
+        }
+
+        public static void CrewFirstAvailable()
+        {
+            int partIndex = FirstCrewable(parts);
+            if (partIndex > -1)
+            {
+                Part p = parts[partIndex];
+                if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.uid) == null)
+                    KCT_GameStates.launchedCrew.Add(new CrewedPart(p.uid, new List<ProtoCrewMember>()));
+                for (int i = 0; i < p.CrewCapacity; i++)
+                {
+                    if (KCT_GameStates.launchedCrew[partIndex].crewList.Count <= i)
+                    {
+                        if (CrewAvailable().Count > 0)
+                        {
+                            int index = randomCrew ? new System.Random().Next(CrewAvailable().Count) : 0;
+                            ProtoCrewMember crewMember = CrewAvailable()[index];
+                            if (crewMember != null) KCT_GameStates.launchedCrew[partIndex].crewList.Add(crewMember);
+                        }
+                    }
+                    else if (KCT_GameStates.launchedCrew[partIndex].crewList[i] == null)
+                    {
+                        if (CrewAvailable().Count > 0)
+                        {
+                            int index = randomCrew ? new System.Random().Next(CrewAvailable().Count) : 0;
+                            KCT_GameStates.launchedCrew[partIndex].crewList[i] = CrewAvailable()[index];
+                        }
+                    }
+                }
+            }
         }
 
         private static List<ProtoCrewMember> CrewAvailable()
@@ -1752,7 +1895,7 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
         }
 
-        public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier;
+        public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier, newReconEffect;
         public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, freeSims, recon;
 
         public static string newRecoveryModDefault;
@@ -1763,6 +1906,7 @@ namespace Kerbal_Construction_Time
             newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
             newBuildEffect = KCT_GameStates.timeSettings.BuildEffect.ToString();
             newInvEffect = KCT_GameStates.timeSettings.InventoryEffect.ToString();
+            newReconEffect = (86400 / KCT_GameStates.timeSettings.ReconditioningEffect).ToString();
             enabledForSave = KCT_GameStates.settings.enabledForSave;
             enableAllBodies = KCT_GameStates.settings.EnableAllBodies;
             newTimeWarp = KCT_GameStates.settings.MaxTimeWarp.ToString();
@@ -1779,6 +1923,7 @@ namespace Kerbal_Construction_Time
             disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
             freeSims = KCT_GameStates.settings.NoCostSimulations;
             recon = KCT_GameStates.settings.Reconditioning;
+            
 
             disableBuildTimesDefault = KCT_GameStates.settings.DisableBuildTimeDefault;
             instantTechUnlockDefault = KCT_GameStates.settings.InstantTechUnlockDefault;
@@ -1905,6 +2050,16 @@ namespace Kerbal_Construction_Time
                 //string newInvEffect = KCT_GameStates.timeSettings.InventoryEffect.ToString();
                 newInvEffect = GUILayout.TextField(newInvEffect, 10, GUILayout.Width(100));
                 GUILayout.EndHorizontal();
+
+                GUILayout.Label("LaunchPad Reconditioning:");
+                GUILayout.BeginHorizontal();
+                double mult;
+                if (!double.TryParse(newMultiplier, out mult)) mult = KCT_GameStates.timeSettings.OverallMultiplier;
+                double days = mult * (GameSettings.KERBIN_TIME ? 4 : 1);
+                GUILayout.Label(days + " day(s) per ");
+                newReconEffect = GUILayout.TextField(newReconEffect, 10, GUILayout.Width(100));
+                GUILayout.Label(" tons.");
+                GUILayout.EndHorizontal();
             }
             if (settingSelected == 3)
             {
@@ -1971,6 +2126,9 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);
                 KCT_GameStates.timeSettings.BuildEffect = double.Parse(newBuildEffect);
                 KCT_GameStates.timeSettings.InventoryEffect = double.Parse(newInvEffect);
+                double reconTime = double.Parse(newReconEffect);
+                reconTime = (86400 / reconTime);
+                KCT_GameStates.timeSettings.ReconditioningEffect = reconTime;
                 KCT_GameStates.timeSettings.Save();
                 showSettings = false;
                 if (!PrimarilyDisabled) showBuildList = true;

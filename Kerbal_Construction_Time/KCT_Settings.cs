@@ -31,6 +31,7 @@ namespace Kerbal_Construction_Time
         public bool DisableBuildTime;
         public bool EnableAllBodies;
         public bool Reconditioning;
+        
         //[Persistent] public bool AutoRevertOnCrash;
         //[Persistent] public bool Use6HourDays;
 
@@ -91,13 +92,14 @@ namespace Kerbal_Construction_Time
     public class KCT_TimeSettings
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_TimeSettings.txt";
-        [Persistent] public double OverallMultiplier, BuildEffect, InventoryEffect;
+        [Persistent] public double OverallMultiplier, BuildEffect, InventoryEffect, ReconditioningEffect;
         
         public KCT_TimeSettings()
         {
             OverallMultiplier = 1.0;
             BuildEffect = 1.0;
             InventoryEffect = 100.0;
+            ReconditioningEffect = 3456;
         }
 
         public void Load()
