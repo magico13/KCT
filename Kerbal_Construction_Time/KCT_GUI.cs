@@ -2390,8 +2390,8 @@ namespace Kerbal_Construction_Time
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_LOAD, "KCTEditLoad");
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_NEW, "KCTEditNew");
 
-                foreach (string s in b.InventoryParts)
-                    KCT_Utilities.AddPartToInventory(s);
+               /* foreach (string s in b.InventoryParts)
+                    KCT_Utilities.AddPartToInventory(s);*/ //Adding the parts back is handled in the editor
 
                 EditorDriver.StartAndLoadVessel(tempFile);
             }
