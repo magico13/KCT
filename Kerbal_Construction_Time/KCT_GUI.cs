@@ -707,14 +707,16 @@ namespace Kerbal_Construction_Time
 
 
             //simLength = GUILayout.TextField(simLength);
-            float nullFloat;
+            float nullFloat, nF2;
             float cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 13);
             cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nullFloat) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
             GUILayout.Label("Cost: " + cost);
 
+            if (KCT_GameStates.settings.NoCostSimulations)
+                cost = 0;
             
             GUILayout.BeginHorizontal();
-            if (((KCT_Utilities.CurrentGameIsCareer() && (Funding.Instance.Funds >= (cost + EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nullFloat)) || KCT_GameStates.settings.NoCostSimulations))
+            if (((KCT_Utilities.CurrentGameIsCareer() && (Funding.Instance.Funds >= (cost + EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2))))
                 || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
             {
                 if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
