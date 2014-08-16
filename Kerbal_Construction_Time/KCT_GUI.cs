@@ -1453,13 +1453,10 @@ namespace Kerbal_Construction_Time
                     partNames = KCT_GameStates.launchedVessel.GetPartNames();
                     pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
                     parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                    if (KCT_GameStates.launchedCrew.Count != partNames.Count)
-                    {
-                        KCT_GameStates.launchedCrew = new List<CrewedPart>();
-                        foreach (PseudoPart pp in pseudoParts)
-                            KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
-                    }
-                    //KCT_GameStates.launchedCrew[FirstCrewable(parts)] = HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(KCT_GameStates.launchedVessel.shipNode, true).GetAllCrew(true);
+                    KCT_GameStates.launchedCrew = new List<CrewedPart>();
+                    foreach (PseudoPart pp in pseudoParts)
+                        KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
+                    CrewFirstAvailable();
                     showShipRoster = true;
                 }
                 //KCT_GameStates.launchedVessel.Launch();

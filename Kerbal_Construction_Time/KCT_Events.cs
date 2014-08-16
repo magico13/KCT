@@ -176,7 +176,7 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
                 }
-                if (!KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning && KCT_GameStates.LaunchPadReconditioning == null)
+                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning && KCT_GameStates.LaunchPadReconditioning == null)
                 {
                     KCT_GameStates.LaunchPadReconditioning = new KCT_Reconditioning(ev.host);
                 }
