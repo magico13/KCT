@@ -205,7 +205,9 @@ namespace Kerbal_Construction_Time
             {
                 ConfigNode RCN = resource.resourceValues;
                 double amount = double.Parse(RCN.GetValue("amount"));
-                mass += amount * resource.resourceRef.info.density;
+                PartResourceDefinition RD = new PartResourceDefinition(resource.resourceName);
+                mass += amount * RD.density;
+                Debug.Log(resource.resourceName + ":" + mass);
             }
             return (float)mass;
         }
@@ -234,6 +236,7 @@ namespace Kerbal_Construction_Time
 
                 if (v.protoVessel == null)
                     return;
+                Debug.Log("[KCT] Attempting to recover vessel.");
                 foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
                 {
                     //Debug.Log("[KCT] Has part " + p.partName + ", mass " + p.mass);
@@ -305,7 +308,7 @@ namespace Kerbal_Construction_Time
                 else
                 {
                     Vt = Math.Sqrt((8000 * totalMass * 9.8) / (1.223 * Math.PI) * Math.Pow(RCParameter, -1)); //This should work perfect for multiple identical chutes and gives an approximation for multiple differing chutes
-                    Debug.Log("[SR] Using RealChute Module! Vt: " + Vt);
+                    Debug.Log("[KCT] Using RealChute Module! Vt: " + Vt);
                 }
                 if (Vt < 10.0)
                 {
