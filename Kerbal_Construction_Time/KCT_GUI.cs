@@ -347,7 +347,7 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             if (!KCT_GameStates.EditorShipEditingMode) //Build mode
             {
-                double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.parts, true, useInventory);
+                double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.SaveShip().GetNodes("PART").ToList(), true, useInventory);
                 KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
                 GUILayout.Label("Total Build Points (BP):", GUILayout.ExpandHeight(true));
                 GUILayout.Label(buildTime.ToString(), GUILayout.ExpandHeight(true));
@@ -414,8 +414,8 @@ namespace Kerbal_Construction_Time
                 }
 
                 KCT_BuildListVessel ship = KCT_GameStates.editedVessel;
-                double origBP = ship.isFinished ? KCT_Utilities.GetBuildTime(ship.GetPartNames(), true, ship.InventoryParts) : ship.buildPoints; //If the ship is finished, recalculate times. Else, use predefined times.
-                double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.parts, true, ship.InventoryParts);
+                double origBP = ship.isFinished ? KCT_Utilities.GetBuildTime(ship.ExtractedPartNodes, true, ship.InventoryParts) : ship.buildPoints; //If the ship is finished, recalculate times. Else, use predefined times.
+                double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.SaveShip().GetNodes("PART").ToList(), true, ship.InventoryParts);
                 double difference = Math.Abs(buildTime - origBP);
                 double progress;
                 if (ship.isFinished) progress = origBP;
@@ -554,9 +554,9 @@ namespace Kerbal_Construction_Time
                     string name = KCT_GameStates.PartInventory.Keys.ElementAt(i);
                     foreach (AvailablePart p in PartLoader.LoadedPartsList)
                     {
-                        if (p.name == name)
+                        if (p.name == name.Split(',')[0])
                         {
-                            name = p.title;
+                            name = p.title + "," + name.Split(',')[1];
                             category = p.category;
                             if (p.category == CategoryCurrent && !activeList.Keys.Contains(name))
                                 activeList.Add(name, KCT_GameStates.PartInventory.Values.ElementAt(i));
@@ -602,9 +602,11 @@ namespace Kerbal_Construction_Time
                     if (useInventory)
                     {
                         String name = activeList.Keys.ElementAt(i);
-                        for (int j = 0; j < EditorLogic.fetch.ship.parts.Count; j++)
+                        for (int j = 0; j < EditorLogic.fetch.ship.SaveShip().GetNodes("PART").Length; j++)
+                        //foreach (ConfigNode part in EditorLogic.fetch.ship.SaveShip().GetNodes("PART"))
                         {
-                            if (EditorLogic.fetch.ship.parts[j].partInfo.title == name)
+                            string tweakscale = KCT_Utilities.GetTweakScaleSize(EditorLogic.fetch.ship.SaveShip().GetNodes("PART")[j]);
+                            if ((EditorLogic.fetch.ship.parts[j].partInfo.title+tweakscale) == name)
                                 ++inUse;
                         }
                     }
@@ -1268,7 +1270,7 @@ namespace Kerbal_Construction_Time
                                     centralWindowPosition.height = 1;
                                     KCT_GameStates.launchedCrew.Clear();
                                     //KCT_GameStates.launchedCrew.Add(FirstCrewable(b.ExtractedParts).uid, HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, true).GetAllCrew(true));
-                                    partNames = KCT_GameStates.launchedVessel.GetPartNames();
+                                    //partNames = KCT_GameStates.launchedVessel.GetPartNames();
                                     parts = KCT_GameStates.launchedVessel.ExtractedParts;
                                     pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
                                     //if (KCT_GameStates.launchedCrew.Count != partNames.Count)
@@ -1328,7 +1330,7 @@ namespace Kerbal_Construction_Time
                                 centralWindowPosition.height = 1;
                                 KCT_GameStates.launchedCrew.Clear();
                                 //KCT_GameStates.launchedCrew.Add(FirstCrewable(b.GetShip().parts).uid, HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(b.shipNode, true).GetAllCrew(true));
-                                partNames = KCT_GameStates.launchedVessel.GetPartNames();
+                                //partNames = KCT_GameStates.launchedVessel.GetPartNames();
                                 parts = KCT_GameStates.launchedVessel.ExtractedParts;
                                 pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
                                 //if (KCT_GameStates.launchedCrew.Count != partNames.Count)
@@ -1452,7 +1454,7 @@ namespace Kerbal_Construction_Time
                 {
                     showClearLaunch = false;
                     centralWindowPosition.height = 1;
-                    partNames = KCT_GameStates.launchedVessel.GetPartNames();
+                    //partNames = KCT_GameStates.launchedVessel.GetPartNames();
                     pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
                     parts = KCT_GameStates.launchedVessel.ExtractedParts;
                     KCT_GameStates.launchedCrew = new List<CrewedPart>();
@@ -1476,7 +1478,7 @@ namespace Kerbal_Construction_Time
 
         private static int partIndexToCrew;
         private static int indexToCrew;
-        private static List<String> partNames;
+        //private static List<String> partNames;
         private static List<PseudoPart> pseudoParts;
         private static List<Part> parts;
         private static bool randomCrew, autoHire;
@@ -1492,7 +1494,7 @@ namespace Kerbal_Construction_Time
             if (GUILayout.Button("Fill All"))
             {
                 //foreach (AvailablePart p in KCT_GameStates.launchedVessel.GetPartNames())
-                for (int j = 0; j < partNames.Count; j++)
+                for (int j = 0; j < parts.Count; j++)
                 {
                     Part p = parts[j];//KCT_Utilities.GetAvailablePartByName(KCT_GameStates.launchedVessel.GetPartNames()[j]).partPrefab;
                     if (p.CrewCapacity > 0)
@@ -1591,7 +1593,7 @@ namespace Kerbal_Construction_Time
                 }
             }
             scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(numberItems * 25 + 10), GUILayout.MaxHeight(Screen.height / 2));
-            for (int j = 0; j < partNames.Count; j++)
+            for (int j = 0; j < parts.Count; j++)
             {
                 //Part p = KCT_Utilities.GetAvailablePartByName(KCT_GameStates.launchedVessel.GetPartNames()[j]).partPrefab;
                 Part p = parts[j];
@@ -2339,34 +2341,34 @@ namespace Kerbal_Construction_Time
                 Debug.Log("[KCT] Scrapping " + b.shipName);
                 if (listWindow < 2)
                 {
-                    List<AvailablePart> parts = b.ExtractedAvParts;
+                    List<ConfigNode> parts = b.ExtractedPartNodes;
                     float totalCost = 0;
-                    foreach (AvailablePart p in parts)
-                        totalCost += p.cost;
+                    foreach (ConfigNode p in parts)
+                        totalCost += KCT_Utilities.GetPartCostFromNode(p);
                     if (b.InventoryParts != null)
                     {
                         foreach (String s in b.InventoryParts)
                         {
-                            AvailablePart aP = parts.Find(a => a.name == s);
-                            totalCost -= aP.cost;
+                            ConfigNode aP = parts.Find(a => (KCT_Utilities.PartNameFromNode(a)+KCT_Utilities.GetTweakScaleSize(a)) == s);
+                            totalCost -= KCT_Utilities.GetPartCostFromNode(aP);
                             parts.Remove(aP);
                             KCT_Utilities.AddPartToInventory(s);
                         }
                         totalCost = (int) (totalCost * b.ProgressPercent() / 100);
                         float sum = 0;
-                        while (parts.Find(a => a.cost < (totalCost-sum)) != null)
+                        while (parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum)) != null)
                         {
-                            AvailablePart aP = parts.Find(a => a.cost < (totalCost - sum));
-                            sum += aP.cost;
+                            ConfigNode aP = parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum));
+                            sum += KCT_Utilities.GetPartCostFromNode(aP);
                             parts.Remove(aP);
-                            KCT_Utilities.AddPartToInventory(aP.name);
+                            KCT_Utilities.AddPartToInventory(aP);
                         }
                     }
                     buildList.RemoveAt(IndexSelected);
                 }
                 else
                 {
-                    foreach (string p in b.GetPartNames())
+                    foreach (ConfigNode p in b.ExtractedPartNodes)
                         KCT_Utilities.AddPartToInventory(p);
                     buildList.RemoveAt(IndexSelected);
                 }

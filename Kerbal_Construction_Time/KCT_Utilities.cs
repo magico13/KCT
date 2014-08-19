@@ -87,7 +87,7 @@ namespace Kerbal_Construction_Time
             return newInv;
         }
 
-        public static Dictionary<String, int> PartListToDict(List<Part> list)
+       /* public static Dictionary<String, int> PartListToDict(List<Part> list)
         {
             Dictionary<String, int> newInv = new Dictionary<String, int>();
             foreach (Part p in list)
@@ -99,7 +99,7 @@ namespace Kerbal_Construction_Time
                     newInv.Add(s, 1);
             }
             return newInv;
-        }
+        }*/
 
         public static List<String> PartDictToList(Dictionary<String, int> dict)
         {
@@ -116,24 +116,23 @@ namespace Kerbal_Construction_Time
 
         public static AvailablePart GetAvailablePartByName(string partName)
         {
-            AvailablePart ret = new AvailablePart();
             foreach (AvailablePart a in PartLoader.LoadedPartsList)
             {
                 if (a.name == partName)
-                    ret = a;
+                    return a;
             }
-            return ret;
+            return null;
         }
 
-        public static double GetBuildTime(List<string> partNames, bool useTracker, bool useInventory)
+       /* public static double GetBuildTime(List<string> partNames, bool useTracker, bool useInventory)
         {
             List<AvailablePart> parts = new List<AvailablePart>();
             foreach (string s in partNames)
                 parts.Add(GetAvailablePartByName(s));
             return GetBuildTime(parts, useTracker, useInventory);
-        }
+        }*/
 
-        public static double GetBuildTime(List<AvailablePart> parts, bool useTracker, bool useInventory)
+        public static double GetBuildTime(List<ConfigNode> parts, bool useTracker, bool useInventory)
         {
             Dictionary<String, int> dict = new Dictionary<string, int>();
             if (useInventory) dict = KCT_GameStates.PartInventory;
@@ -142,86 +141,114 @@ namespace Kerbal_Construction_Time
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, List<String> inventory)
         {
-            List<AvailablePart> aParts = new List<AvailablePart>();
+            List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
-                aParts.Add(p.partInfo);
+            {
+                ConfigNode partNode = new ConfigNode();
+                p.protoPartSnapshot.Save(partNode);
+                aParts.Add(partNode);
+            }
             return GetBuildTime(aParts, useTracker, PartListToDict(inventory));
         }
 
-        public static double GetBuildTime(List<String> parts, bool useTracker, List<String> inventory)
+        /*public static double GetBuildTime(List<String> parts, bool useTracker, List<String> inventory)
         {
             List<AvailablePart> aParts = new List<AvailablePart>();
             foreach (String s in parts)
                 aParts.Add(GetAvailablePartByName(s));
             return GetBuildTime(aParts, useTracker, PartListToDict(inventory));
-        }
+        }*/
 
-        public static double GetBuildTime(List<AvailablePart> parts, bool useTracker, List<String> inventory)
+        public static double GetBuildTime(List<ConfigNode> parts, bool useTracker, List<String> inventory)
         {
             return GetBuildTime(parts, useTracker, PartListToDict(inventory));
         }
 
         public static double GetBuildTime(List<Part> parts)
         {
-            List<AvailablePart> aParts = new List<AvailablePart>();
+            List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
-                aParts.Add(p.partInfo);
+            {
+                ConfigNode partNode = new ConfigNode();
+                p.protoPartSnapshot.Save(partNode);
+                aParts.Add(partNode);
+            }
             return GetBuildTime(aParts, true, true);
         }
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, bool useInventory)
         {
-            List<AvailablePart> aParts = new List<AvailablePart>();
+            List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
-                aParts.Add(p.partInfo);
+            {
+                ConfigNode partNode = new ConfigNode();
+                Debug.Log("[KCT] Created node");
+                if (p.protoPartSnapshot == null)
+                    Debug.Log("snapshot is null");
+                p.protoPartSnapshot.Save(partNode);
+                Debug.Log("[KCT] Saved part to node");
+                aParts.Add(partNode);
+                Debug.Log("[KCT] Added node");
+            }
             return GetBuildTime(aParts, useTracker, useInventory);
         }
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, Dictionary<String, int> inventory)
         {
-            List<AvailablePart> aParts = new List<AvailablePart>();
+            List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
-                aParts.Add(p.partInfo);
+            {
+                ConfigNode partNode = new ConfigNode();
+                p.protoPartSnapshot.Save(partNode);
+                aParts.Add(partNode);
+            }
             return GetBuildTime(aParts, useTracker, inventory);
         }
 
-        public static double GetBuildTime(List<AvailablePart> parts, bool useTracker, Dictionary<String, int> inventory)
+        public static double GetBuildTime(List<ConfigNode> parts, bool useTracker, Dictionary<String, int> inventory)
         {
             Dictionary<String, int> invCopy = new Dictionary<string,int>();//KCT_GameStates.PartInventory;
             for (int i=0; i<inventory.Count; i++)
             {
                 invCopy.Add(inventory.Keys.ElementAt(i), inventory.Values.ElementAt(i));
             }
-
             double totalEffectiveCost = 0;
-            foreach (AvailablePart p in parts)
+            foreach (ConfigNode p in parts)
             {
+                String name = PartNameFromNode(p) + GetTweakScaleSize(p);
                 double effectiveCost = 0;
-                String name = p.name;
+                double cost = GetPartCostFromNode(p);
                 if (inventory.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
                 {
                     // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
                     if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
-                        effectiveCost = Math.Min(p.cost / (KCT_GameStates.timeSettings.InventoryEffect + (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1))), p.cost);
+                        effectiveCost = Math.Min(cost / (KCT_GameStates.timeSettings.InventoryEffect + (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1))), cost);
                     else // Otherwise the cost is just the normal cost divided by the inventory effect
-                        effectiveCost = p.cost / KCT_GameStates.timeSettings.InventoryEffect;
+                        effectiveCost = cost / KCT_GameStates.timeSettings.InventoryEffect;
                     --invCopy[name];
                     if (invCopy[name] == 0)
                         invCopy.Remove(name);
                 }
                 else if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name)) // The more the part is used, the faster it gets to build
                 {
-                    effectiveCost = Math.Min(p.cost / (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1)), p.cost);
+                    effectiveCost = Math.Min(cost / (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1)), cost);
                 }
                 else // If the part has never been used, it takes the maximal time
                 {
-                    effectiveCost = p.cost;
+                    effectiveCost = cost;
                 }
 
                 totalEffectiveCost += effectiveCost;
             }
 
             return Math.Sqrt(totalEffectiveCost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
+        }
+
+        public static string PartNameFromNode(ConfigNode part)
+        {
+            string name = part.GetValue("part");
+            name = name.Split('_')[0];
+            return name;
         }
 
         public static double GetBuildRate(int index, KCT_BuildListVessel.ListType type)
@@ -351,6 +378,54 @@ namespace Kerbal_Construction_Time
             return total;
         }
 
+        public static float GetTotalVesselCost(ConfigNode vessel)
+        {
+            float total = 0;
+            foreach (ConfigNode part in vessel.GetNodes("PART"))
+            {
+                total += GetPartCostFromNode(part);
+            }
+            return total;
+        }
+
+        public static float GetPartCostFromNode(ConfigNode part)
+        {
+            string name = PartNameFromNode(part);
+            float dry, wet;
+            float total = ShipConstruction.GetPartCosts(part, GetAvailablePartByName(name), out dry, out wet);
+            return total;
+        }
+
+        public static string GetTweakScaleSize(ProtoPartSnapshot part)
+        {
+            string partSize = "";
+            ProtoPartModuleSnapshot tweakscale = part.modules.Find(mod => mod.moduleName == "TweakScale");
+            if (tweakscale != null)
+            {
+                ConfigNode tsCN = tweakscale.moduleValues;
+                string defaultScale = tsCN.GetValue("defaultScale");
+                string currentScale = tsCN.GetValue("currentScale");
+                if (!defaultScale.Equals(currentScale))
+                    partSize = "," + currentScale;
+            }
+            return partSize;
+        }
+
+        public static string GetTweakScaleSize(ConfigNode part)
+        {
+            string partSize = "";
+            ConfigNode[] Modules = part.GetNodes("MODULE");
+            if (Modules.First(mod => mod.GetValue("name") == "TweakScale") != null)
+            {
+                ConfigNode tsCN = Modules.First(mod => mod.GetValue("name") == "TweakScale");
+                string defaultScale = tsCN.GetValue("defaultScale");
+                string currentScale = tsCN.GetValue("currentScale");
+                if (!defaultScale.Equals(currentScale))
+                    partSize = "," + currentScale;
+            }
+            return partSize;
+        }
+
         private static DateTime startedFlashing;
         public static String GetButtonTexture()
         {
@@ -443,12 +518,12 @@ namespace Kerbal_Construction_Time
             if (!vessel.cannotEarnScience)
             {
                 List<string> trackedParts = new List<string>();
-                foreach (string p in vessel.GetPartNames())
+                foreach (ConfigNode p in vessel.ExtractedPartNodes)
                 {
-                    if (!trackedParts.Contains(p))
+                    if (!trackedParts.Contains(PartNameFromNode(p)+GetTweakScaleSize(p)))
                     {
-                        AddPartToTracker(p);
-                        trackedParts.Add(p);
+                        AddPartToTracker(PartNameFromNode(p) + GetTweakScaleSize(p));
+                        trackedParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p));
                     }
                 }
             }
@@ -458,8 +533,7 @@ namespace Kerbal_Construction_Time
 
             foreach (KCT_BuildListVessel blv in KCT_GameStates.VABList)
             {
-                List<string> ship = blv.GetPartNames();
-                double newTime = KCT_Utilities.GetBuildTime(ship, true, blv.InventoryParts); //Use only the parts that were originally used when recalculating
+                double newTime = KCT_Utilities.GetBuildTime(blv.ExtractedPartNodes, true, blv.InventoryParts); //Use only the parts that were originally used when recalculating
                 if (newTime < blv.buildPoints)
                 {
                     blv.buildPoints = blv.buildPoints - ((blv.buildPoints - newTime) * (100 - blv.ProgressPercent())/100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
@@ -467,8 +541,7 @@ namespace Kerbal_Construction_Time
             }
             foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHList)
             {
-                List<string> ship = blv.GetPartNames();
-                double newTime = KCT_Utilities.GetBuildTime(ship, true, blv.InventoryParts);
+                double newTime = KCT_Utilities.GetBuildTime(blv.ExtractedPartNodes, true, blv.InventoryParts);
                 if (newTime < blv.buildPoints)
                 {
                     blv.buildPoints = blv.buildPoints - ((blv.buildPoints - newTime) * (100 - blv.ProgressPercent()) / 100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
@@ -480,15 +553,15 @@ namespace Kerbal_Construction_Time
         }
 
 
-        public static void AddPartToInventory(String name, float damage) //For Vendan and DebRefund
-        {
-            Debug.Log("[KCT] Received part '" + name + "' with damage '" + damage + "'.");
-            //AddPartToInventory(name); //Eventually I'd like to not return some of the parts based on the damage value.
-        }
-
         public static void AddPartToInventory(Part part)
         {
-            AddPartToInventory(part.partInfo.name);
+            string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
+            string nameToStore = part.partInfo.name + tweakscale;
+            AddPartToInventory(nameToStore);
+        }
+        public static void AddPartToInventory(ConfigNode part)
+        {
+            AddPartToInventory(PartNameFromNode(part) + GetTweakScaleSize(part));
         }
         public static void AddPartToInventory(String name)
         {
@@ -506,11 +579,23 @@ namespace Kerbal_Construction_Time
 
         public static bool RemovePartFromInventory(Part part)
         {
-            return RemovePartFromInventory(part.partInfo.name);
+            string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
+            string nameToStore = part.partInfo.name + tweakscale;
+            return RemovePartFromInventory(nameToStore);
         }
         public static bool RemovePartFromInventory(Part part, Dictionary<String, int> inventory)
         {
-            return RemovePartFromInventory(part.partInfo.name, inventory);
+            string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
+            string nameToStore = part.partInfo.name + tweakscale;
+            return RemovePartFromInventory(nameToStore, inventory);
+        }
+        public static bool RemovePartFromInventory(ConfigNode part)
+        {
+            return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part));
+        }
+        public static bool RemovePartFromInventory(ConfigNode part, Dictionary<String, int> inventory)
+        {
+            return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part), inventory);
         }
         public static bool RemovePartFromInventory(String name)
         {
@@ -533,7 +618,9 @@ namespace Kerbal_Construction_Time
 
         public static void AddPartToTracker(Part part)
         {
-            AddPartToTracker(part.partInfo.name);
+            string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
+            string nameToStore = part.partInfo.name + tweakscale;
+            AddPartToTracker(nameToStore);
         }
         public static void AddPartToTracker(String name)
         {
@@ -550,7 +637,9 @@ namespace Kerbal_Construction_Time
 
         public static void RemovePartFromTracker(Part part)
         {
-            RemovePartFromTracker(part.partInfo.name);
+            string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
+            string nameToStore = part.partInfo.name + tweakscale;
+            RemovePartFromTracker(nameToStore);
         }
         public static void RemovePartFromTracker(String name)
         {
@@ -674,7 +763,7 @@ namespace Kerbal_Construction_Time
 
         public static KCT_BuildListVessel AddVesselToBuildList(bool useInventory)
         {
-            KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.Parts, true, useInventory), EditorLogic.FlagURL);
+            KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.SaveShip().GetNodes("PART").ToList(), true, useInventory), EditorLogic.FlagURL);
             blv.shipName = EditorLogic.fetch.shipNameField.Text;
             Dictionary<String, int> inventory = new Dictionary<string,int>();
             if (useInventory)
@@ -684,7 +773,7 @@ namespace Kerbal_Construction_Time
 
         public static KCT_BuildListVessel AddVesselToBuildList(Dictionary<String, int> inventory)
         {
-            KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.Parts, true, inventory), EditorLogic.FlagURL);
+            KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.SaveShip().GetNodes("PART").ToList(), true, inventory), EditorLogic.FlagURL);
             blv.shipName = EditorLogic.fetch.shipNameField.Text;
             return AddVesselToBuildList(blv, inventory);
         }
@@ -726,10 +815,10 @@ namespace Kerbal_Construction_Time
             }
             if (inventory.Count > 0)
             {
-                foreach (string p in blv.GetPartNames())
+                foreach (ConfigNode p in blv.ExtractedPartNodes)
                 {
                     if (KCT_Utilities.RemovePartFromInventory(p, inventory))
-                        blv.InventoryParts.Add(p);
+                        blv.InventoryParts.Add(PartNameFromNode(p)+GetTweakScaleSize(p));
                 }
             }
             Debug.Log("[KCT] Added " + blv.shipName + " to " + type + " build list. Cost: "+blv.cost);

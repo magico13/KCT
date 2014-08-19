@@ -317,27 +317,28 @@ namespace Kerbal_Construction_Time
             {
                 KCT_GUI.hideAll();
                 KCT_GameStates.reset();
-                KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
+                if (!KCT_GUI.PrimarilyDisabled)
+                    KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
                 if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
                 {
                     KCT_GameStates.TotalUpgradePoints = KCT_GameStates.settings.SandboxUpgrades;
                 }
             }
 
-            if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated) //Now that vessel switching is enabled, this all won't work properly
-            {
-                /*if (FlightGlobals.ActiveVessel.situation != Vessel.Situations.PRELAUNCH)
-                {
-                    KCT_GameStates.flightSimulated = false; //If you open, then close the launch window, then go to another flight it won't lock controls
-                    //However, if you go to a launch already on the pad through the window, you will have controls locked :/
-                    KCT_Utilities.disableSimulationLocks();
-                }
-                else
-                {
-                    KCT_Utilities.enableSimulationLocks();
-                    moved = false;
-                }*/
-            }
+            /* if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated) //Now that vessel switching is enabled, this all won't work properly
+             {
+                 if (FlightGlobals.ActiveVessel.situation != Vessel.Situations.PRELAUNCH)
+                 {
+                     KCT_GameStates.flightSimulated = false; //If you open, then close the launch window, then go to another flight it won't lock controls
+                     //However, if you go to a launch already on the pad through the window, you will have controls locked :/
+                     KCT_Utilities.disableSimulationLocks();
+                 }
+                 else
+                 {
+                     KCT_Utilities.enableSimulationLocks();
+                     moved = false;
+                 }
+             }*/
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH
                         && FlightGlobals.ActiveVessel.GetCrewCount() == 0 && KCT_GameStates.launchedCrew.Count > 0)
@@ -377,15 +378,15 @@ namespace Kerbal_Construction_Time
         private static bool updateChecked = false;
         public void FixedUpdate()
         {
-            if (!KCT_GameStates.settings.enabledForSave)
-                return;
-
             if (!updateChecked && KCT_GameStates.delayStart)
             {
                 if (KCT_GameStates.settings.CheckForUpdates && !KCT_GameStates.firstStart) //Check for updates
                     KCT_UpdateChecker.CheckForUpdate(false, KCT_GameStates.settings.VersionSpecific);
                 updateChecked = true;
             }
+
+            if (KCT_GUI.PrimarilyDisabled)
+                return;
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
@@ -394,7 +395,7 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_GameStates.buildSimulatedVessel = false;
                     KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
-                    toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.GetPartNames(), true, KCT_GUI.useInventory);
+                    toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.ExtractedPartNodes, true, KCT_GUI.useInventory);
                     KCT_Utilities.AddVesselToBuildList(toBuild, KCT_GUI.useInventory);
                 }
 

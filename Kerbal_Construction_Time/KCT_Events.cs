@@ -29,7 +29,7 @@ namespace Kerbal_Construction_Time
                 GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
             else
             {
-                Debug.Log("[KCT] Deferring stage recovery to StageRecovery. It will just provide me with part names.");
+                Debug.Log("[KCT] Deferring stage recovery to StageRecovery.");
                 StageRecoveryWrapper.AddRecoverySuccessEvent(StageRecoverySuccessEvent);
             }
 
@@ -61,9 +61,13 @@ namespace Kerbal_Construction_Time
                 float random = (float)rand.NextDouble();
                 //Debug.Log("[KCT] rand:" + random + " dmg:" + damage);
                 if (random < damage)
-                    KCT_Utilities.AddPartToInventory(part.partInfo.name);
+                {
+                    ConfigNode node = new ConfigNode();
+                    part.Save(node);
+                    KCT_Utilities.AddPartToInventory(node);
+                }
                 else
-                    Debug.Log("[KCT] Part "+part.partInfo.name+" was too damaged to be used anymore and was scrapped!");
+                    Debug.Log("[KCT] Part " + part.partInfo.name + " was too damaged to be used anymore and was scrapped!");
             }
         }
 
@@ -192,7 +196,9 @@ namespace Kerbal_Construction_Time
                 foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
                 {
                     //Debug.Log(p.partInfo.name);
-                    KCT_Utilities.AddPartToInventory(p.partInfo.name);
+                    ConfigNode part = new ConfigNode();
+                    p.Save(part);
+                    KCT_Utilities.AddPartToInventory(part);
                 }
             }
         }
@@ -205,9 +211,9 @@ namespace Kerbal_Construction_Time
             {
                 ConfigNode RCN = resource.resourceValues;
                 double amount = double.Parse(RCN.GetValue("amount"));
-                PartResourceDefinition RD = new PartResourceDefinition(resource.resourceName);
+                PartResourceDefinition RD = PartResourceLibrary.Instance.GetDefinition(resource.resourceName);
                 mass += amount * RD.density;
-                Debug.Log(resource.resourceName + ":" + mass);
+                //Debug.Log(resource.resourceName + ":" + mass);
             }
             return (float)mass;
         }
@@ -316,7 +322,9 @@ namespace Kerbal_Construction_Time
                     foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
                     {
                         //Debug.Log("[KCT] " + p.partInfo.name);
-                        KCT_Utilities.AddPartToInventory(p.partInfo.name);
+                        ConfigNode part = new ConfigNode();
+                        p.Save(part);
+                        KCT_Utilities.AddPartToInventory(part);
                         if (!PartsRecovered.ContainsKey(p.partInfo.title))
                             PartsRecovered.Add(p.partInfo.title, 1);
                         else

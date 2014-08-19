@@ -56,14 +56,11 @@ namespace Kerbal_Construction_Time
                 return temp;
             } 
         }
-        public List<AvailablePart> ExtractedAvParts
+        public List<ConfigNode> ExtractedPartNodes
         {
             get
             {
-                List<AvailablePart> temp = new List<AvailablePart>();
-                foreach (string s in this.GetPartNames())
-                    temp.Add(KCT_Utilities.GetAvailablePartByName(s));
-                return temp;
+                return this.shipNode.GetNodes("PART").ToList();
             }
         }
         public bool isFinished { get { return progress >= buildPoints; } }
@@ -115,7 +112,7 @@ namespace Kerbal_Construction_Time
             ret.id = Guid.NewGuid();
             if (RecalcTime)
             {
-                ret.buildPoints = KCT_Utilities.GetBuildTime(ret.GetPartNames(), true, this.InventoryParts.Count > 0);
+                ret.buildPoints = KCT_Utilities.GetBuildTime(ret.ExtractedPartNodes, true, this.InventoryParts.Count > 0);
             }
             return ret;
         }
@@ -217,7 +214,7 @@ namespace Kerbal_Construction_Time
             return removed;
         }
 
-        public List<String> GetPartNames()
+       /* public List<String> GetPartNames()
         {
             List<String> retList = new List<String>();
             ConfigNode[] partNodes = shipNode.GetNodes("PART");
@@ -234,7 +231,7 @@ namespace Kerbal_Construction_Time
                 //Debug.Log("[KCT] " + pName);
             }
             return retList;
-        }
+        }*/
 
         public List<PseudoPart> GetPseudoParts()
         {
