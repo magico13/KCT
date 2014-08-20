@@ -62,12 +62,11 @@ namespace Kerbal_Construction_Time
                 //Debug.Log("[KCT] rand:" + random + " dmg:" + damage);
                 if (random < damage)
                 {
-                    ConfigNode node = new ConfigNode();
-                    part.Save(node);
-                    KCT_Utilities.AddPartToInventory(node);
+                    string name = part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part);
+                    KCT_Utilities.AddPartToInventory(name);
                 }
                 else
-                    Debug.Log("[KCT] Part " + part.partInfo.name + " was too damaged to be used anymore and was scrapped!");
+                    Debug.Log("[KCT] Part " + part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part) + " was too damaged to be used anymore and was scrapped!");
             }
         }
 
