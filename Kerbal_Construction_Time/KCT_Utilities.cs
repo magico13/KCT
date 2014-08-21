@@ -182,13 +182,8 @@ namespace Kerbal_Construction_Time
             foreach (Part p in parts)
             {
                 ConfigNode partNode = new ConfigNode();
-                Debug.Log("[KCT] Created node");
-                if (p.protoPartSnapshot == null)
-                    Debug.Log("snapshot is null");
                 p.protoPartSnapshot.Save(partNode);
-                Debug.Log("[KCT] Saved part to node");
                 aParts.Add(partNode);
-                Debug.Log("[KCT] Added node");
             }
             return GetBuildTime(aParts, useTracker, useInventory);
         }
@@ -414,14 +409,17 @@ namespace Kerbal_Construction_Time
         public static string GetTweakScaleSize(ConfigNode part)
         {
             string partSize = "";
-            ConfigNode[] Modules = part.GetNodes("MODULE");
-            if (Modules.First(mod => mod.GetValue("name") == "TweakScale") != null)
+            if (part.HasNode("MODULE"))
             {
-                ConfigNode tsCN = Modules.First(mod => mod.GetValue("name") == "TweakScale");
-                string defaultScale = tsCN.GetValue("defaultScale");
-                string currentScale = tsCN.GetValue("currentScale");
-                if (!defaultScale.Equals(currentScale))
-                    partSize = "," + currentScale;
+                ConfigNode[] Modules = part.GetNodes("MODULE");
+                if (Modules.Length > 0 && Modules.FirstOrDefault(mod => mod.GetValue("name") == "TweakScale") != null)
+                {
+                    ConfigNode tsCN = Modules.First(mod => mod.GetValue("name") == "TweakScale");
+                    string defaultScale = tsCN.GetValue("defaultScale");
+                    string currentScale = tsCN.GetValue("currentScale");
+                    if (!defaultScale.Equals(currentScale))
+                        partSize = "," + currentScale;
+                }
             }
             return partSize;
         }
@@ -1017,6 +1015,14 @@ namespace Kerbal_Construction_Time
         {
             MessageSystem.Message m = new MessageSystem.Message(title, text.ToString(), color, icon);
             MessageSystem.Instance.AddMessage(m);
+        }
+
+        public static void RecalculateEditorBuildTime(ShipConstruct ship)
+        {
+            if (!KCT_GameStates.EditorShipEditingMode)
+                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(ship.SaveShip().GetNodes("PART").ToList(), true, KCT_GUI.useInventory);
+            else
+                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(ship.SaveShip().GetNodes("PART").ToList(), true, KCT_GameStates.editedVessel.InventoryParts);
         }
     }
 }

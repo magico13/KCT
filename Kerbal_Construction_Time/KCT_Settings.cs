@@ -22,6 +22,8 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool DisableBuildTimeDefault;
         [Persistent] public bool EnableAllBodiesDefault;
         [Persistent] public bool ReconditioningDefault;
+        [Persistent] public bool Debug;
+        [Persistent] public bool OverrideLaunchButton;
 
         //Game specific settings
         public bool enabledForSave = true;
@@ -48,6 +50,8 @@ namespace Kerbal_Construction_Time
             DisableAllMessages = false;
             CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
             VersionSpecific = false;
+            Debug = false;
+            OverrideLaunchButton = true;
 
             RecoveryModifierDefault = 0.75f;
             NoCostSimulationsDefault = false;

@@ -38,6 +38,7 @@ namespace Kerbal_Construction_Time
         public static bool EditorShipEditingMode = false, buildSimulatedVessel = false;
         public static bool firstStart = true;
         public static IKCTBuildItem targetedItem = null;
+        public static double EditorBuildTime = 0;
 
         public static KCT_Reconditioning LaunchPadReconditioning;
 

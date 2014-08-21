@@ -302,7 +302,12 @@ namespace Kerbal_Construction_Time
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
                     KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[1];
-                    InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+                    //InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+                    if (KCT_GameStates.settings.OverrideLaunchButton)
+                    {
+                        EditorLogic.fetch.launchBtn.methodToInvoke = "ShowLaunchAlert";
+                        EditorLogic.fetch.launchBtn.scriptWithMethodToInvoke = this;
+                    }
                 }
                 if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
                 {
@@ -579,6 +584,17 @@ namespace Kerbal_Construction_Time
                 }
             }
             return false;
+        }
+
+        public void ShowLaunchAlert()
+        {
+            if (KCT_GUI.PrimarilyDisabled)
+                EditorLogic.fetch.launchVessel();
+            else
+            {
+                KCT_GUI.showLaunchAlert = true;
+                EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
+            }
         }
     }
 }

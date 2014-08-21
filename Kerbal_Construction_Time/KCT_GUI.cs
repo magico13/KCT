@@ -347,7 +347,7 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             if (!KCT_GameStates.EditorShipEditingMode) //Build mode
             {
-                double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.SaveShip().GetNodes("PART").ToList(), true, useInventory);
+                double buildTime = KCT_GameStates.EditorBuildTime;
                 KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
                 GUILayout.Label("Total Build Points (BP):", GUILayout.ExpandHeight(true));
                 GUILayout.Label(buildTime.ToString(), GUILayout.ExpandHeight(true));
@@ -379,24 +379,29 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label("Invalid Build Rate");
                 }
 
+                bool useHolder = useInventory;
                 useInventory = GUILayout.Toggle(useInventory, " Use parts from inventory?");
+                if (useInventory != useHolder) KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
 
-                GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Build"))
+                if (!KCT_GameStates.settings.OverrideLaunchButton)
                 {
-                    //KCT_GameStates.flightSimulated = false;
-                    //KCT_Utilities.disableSimulationLocks();
-                    KCT_Utilities.AddVesselToBuildList(useInventory);
-                    //showLaunchAlert = true;
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button("Build"))
+                    {
+                        //KCT_GameStates.flightSimulated = false;
+                        //KCT_Utilities.disableSimulationLocks();
+                        KCT_Utilities.AddVesselToBuildList(useInventory);
+                        //showLaunchAlert = true;
+                    }
+                    if (GUILayout.Button("Simulate"))
+                    {
+                        simulationConfigPosition.height = 1;
+                        EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
+                        showSimConfig = true;
+                        KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
+                    }
+                    GUILayout.EndHorizontal();
                 }
-                if (GUILayout.Button("Simulate"))
-                {
-                    simulationConfigPosition.height = 1;
-                    EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
-                    showSimConfig = true;
-                    KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
-                }
-                GUILayout.EndHorizontal();
                 if (GUILayout.Button("Part Inventory"))
                 {
                     showInventory = !showInventory;
@@ -415,7 +420,7 @@ namespace Kerbal_Construction_Time
 
                 KCT_BuildListVessel ship = KCT_GameStates.editedVessel;
                 double origBP = ship.isFinished ? KCT_Utilities.GetBuildTime(ship.ExtractedPartNodes, true, ship.InventoryParts) : ship.buildPoints; //If the ship is finished, recalculate times. Else, use predefined times.
-                double buildTime = KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.SaveShip().GetNodes("PART").ToList(), true, ship.InventoryParts);
+                double buildTime = KCT_GameStates.EditorBuildTime;
                 double difference = Math.Abs(buildTime - origBP);
                 double progress;
                 if (ship.isFinished) progress = origBP;
@@ -554,9 +559,13 @@ namespace Kerbal_Construction_Time
                     string name = KCT_GameStates.PartInventory.Keys.ElementAt(i);
                     foreach (AvailablePart p in PartLoader.LoadedPartsList)
                     {
-                        if (p.name == name.Split(',')[0])
+                        string baseName = name.Split(',').Length == 1 ? name : name.Split(',')[0];
+                        if (p.name == baseName)
                         {
-                            name = p.title + "," + name.Split(',')[1];
+                            string tweakscale = "";
+                            if (name.Split(',').Length == 2)
+                                tweakscale = "," + name.Split(',')[1];
+                            name = p.title + tweakscale;
                             category = p.category;
                             if (p.category == CategoryCurrent && !activeList.Keys.Contains(name))
                                 activeList.Add(name, KCT_GameStates.PartInventory.Values.ElementAt(i));
@@ -596,16 +605,17 @@ namespace Kerbal_Construction_Time
 
                 GUILayout.BeginVertical();
                 GUILayout.Label("In use:", GUILayout.ExpandHeight(true));
+                ConfigNode[] parts = EditorLogic.fetch.ship.SaveShip().GetNodes("PART");
                 for (int i = 0; i < activeList.Count; i++)
                 {
                     int inUse = 0;
                     if (useInventory)
                     {
                         String name = activeList.Keys.ElementAt(i);
-                        for (int j = 0; j < EditorLogic.fetch.ship.SaveShip().GetNodes("PART").Length; j++)
+                        for (int j = 0; j < parts.Length; j++)
                         //foreach (ConfigNode part in EditorLogic.fetch.ship.SaveShip().GetNodes("PART"))
                         {
-                            string tweakscale = KCT_Utilities.GetTweakScaleSize(EditorLogic.fetch.ship.SaveShip().GetNodes("PART")[j]);
+                            string tweakscale = KCT_Utilities.GetTweakScaleSize(parts[j]);
                             if ((EditorLogic.fetch.ship.parts[j].partInfo.title+tweakscale) == name)
                                 ++inUse;
                         }
@@ -623,17 +633,6 @@ namespace Kerbal_Construction_Time
                 GUI.DragWindow();
 
             CheckEditorLock();
-
-            /*if (Event.current.type == EventType.Repaint && editorWindowPosition.Contains(Event.current.mousePosition))
-            {
-                //Mouseover event
-                EditorLogic.fetch.Lock(true, true, true, "KCTEditorLock");
-            }
-            else
-            {
-                //Mouse away
-                EditorLogic.fetch.Unlock("KCTEditorLock");
-            }*/
         }
 
         public static void DrawSOIAlertWindow(int windowID)
@@ -822,25 +821,20 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             if (GUILayout.Button("Add to Build List"))
             {
-                KCT_GameStates.flightSimulated = false;
-                KCT_Utilities.disableSimulationLocks();
-                KCT_Utilities.AddVesselToBuildList();
-                showLaunchAlert = false;
-                centralWindowPosition.height = 1;
+                KCT_Utilities.AddVesselToBuildList(useInventory);
             }
             if (GUILayout.Button("Simulate Launch"))
             {
-                /*KCT_GameStates.flightSimulated = true;
-                KCT_Utilities.enableSimulationLocks();
-                EditorLogic.fetch.launchVessel();*/
-                showLaunchAlert = false;
+                simulationConfigPosition.height = 1;
                 showSimConfig = true;
-                centralWindowPosition.height = 1;
+                KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
+                KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL);
             }
             if (GUILayout.Button("Cancel"))
             {
                 showLaunchAlert = false;
                 centralWindowPosition.height = 1;
+                EditorLogic.fetch.Unlock("KCTGUILock");
             }
             GUILayout.EndVertical();
 
@@ -1897,7 +1891,8 @@ namespace Kerbal_Construction_Time
         }
 
         public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier, newReconEffect;
-        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, freeSims, recon;
+        public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, 
+            freeSims, recon, debug, overrideLaunchBtn;
 
         public static string newRecoveryModDefault;
         public static bool disableBuildTimesDefault, instantTechUnlockDefault, enableAllBodiesDefault, freeSimsDefault, reconDefault;
@@ -1924,6 +1919,8 @@ namespace Kerbal_Construction_Time
             disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
             freeSims = KCT_GameStates.settings.NoCostSimulations;
             recon = KCT_GameStates.settings.Reconditioning;
+            debug = KCT_GameStates.settings.Debug;
+            overrideLaunchBtn = KCT_GameStates.settings.OverrideLaunchButton;
             
 
             disableBuildTimesDefault = KCT_GameStates.settings.DisableBuildTimeDefault;
@@ -2012,6 +2009,14 @@ namespace Kerbal_Construction_Time
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("All Messages", GUILayout.Width(width1));
                 disableAllMsgs = !GUILayout.Toggle(!disableAllMsgs, !disableAllMsgs ? " Enabled" : " Disabled", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Override Launch Button", GUILayout.Width(width1));
+                overrideLaunchBtn = GUILayout.Toggle(overrideLaunchBtn, overrideLaunchBtn ? " Enabled" : " Disabled", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Enable Debugging", GUILayout.Width(width1));
+                debug = GUILayout.Toggle(debug, debug ? " Enabled" : " Disabled", GUILayout.Width(width2));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Auto Check For Updates", GUILayout.Width(width1));
@@ -2114,6 +2119,8 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.DisableAllMessages = disableAllMsgs;
                 KCT_GameStates.settings.NoCostSimulations = freeSims;
                 KCT_GameStates.settings.Reconditioning = recon;
+                KCT_GameStates.settings.OverrideLaunchButton = overrideLaunchBtn;
+                KCT_GameStates.settings.Debug = debug;
 
                 KCT_GameStates.settings.DisableBuildTimeDefault = disableBuildTimesDefault;
                 KCT_GameStates.settings.InstantTechUnlockDefault = instantTechUnlockDefault;

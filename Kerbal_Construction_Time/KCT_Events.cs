@@ -40,7 +40,8 @@ namespace Kerbal_Construction_Time
             GameEvents.OnTechnologyResearched.Add(TechUnlockEvent);
             if (!ToolbarManager.ToolbarAvailable)
                 GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
-
+            GameEvents.onEditorShipModified.Add(ShipModifiedEvent);
+            
             eventAdded = true;
         }
 
@@ -68,6 +69,11 @@ namespace Kerbal_Construction_Time
                 else
                     Debug.Log("[KCT] Part " + part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part) + " was too damaged to be used anymore and was scrapped!");
             }
+        }
+
+        private void ShipModifiedEvent(ShipConstruct vessel)
+        {
+            KCT_Utilities.RecalculateEditorBuildTime(vessel);
         }
 
         public ApplicationLauncherButton KCTButtonStock = null;
@@ -195,9 +201,8 @@ namespace Kerbal_Construction_Time
                 foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
                 {
                     //Debug.Log(p.partInfo.name);
-                    ConfigNode part = new ConfigNode();
-                    p.Save(part);
-                    KCT_Utilities.AddPartToInventory(part);
+                    string name = p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p);
+                    KCT_Utilities.AddPartToInventory(name);
                 }
             }
         }
@@ -257,8 +262,18 @@ namespace Kerbal_Construction_Time
                     if (ModuleNames.Contains("ModuleParachute"))
                     {
                         Debug.Log("[KCT] Found parachute module on " + p.partInfo.name);
-                        ModuleParachute mp = (ModuleParachute)p.modules.First(mod => mod.moduleName == "ModuleParachute").moduleRef;
-                        dragCoeff += p.mass * mp.fullyDeployedDrag;
+                        //Find the ModuleParachute (find it in the module list by checking for a module with the name ModuleParachute)
+                        ProtoPartModuleSnapshot ppms = p.modules.First(mod => mod.moduleName == "ModuleParachute");
+                        float drag = 500;
+                        if (ppms.moduleRef != null)
+                        {
+                            ModuleParachute mp = (ModuleParachute)ppms.moduleRef;
+                            mp.Load(ppms.moduleValues);
+                            drag = mp.fullyDeployedDrag;
+                        }
+                        //Add the part mass times the fully deployed drag (typically 500) to the dragCoeff variable (you'll see why later)
+                        dragCoeff += p.mass * drag;
+                        //This is most definitely a parachute part
                         isParachute = true;
                     }
                     if (ModuleNames.Contains("RealChuteModule"))
