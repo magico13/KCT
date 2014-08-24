@@ -342,6 +342,7 @@ namespace Kerbal_Construction_Time
         private static int currentCategoryInt = -1;
         private static string buildRateForDisplay;
         private static int rateIndexHolder = 0;
+        public static Dictionary<string, int> PartsInUse = new Dictionary<string, int>();
         private static void DrawEditorGUI(int windowID)
         {
             GUILayout.BeginVertical();
@@ -350,13 +351,11 @@ namespace Kerbal_Construction_Time
                 double buildTime = KCT_GameStates.EditorBuildTime;
                 KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
                 GUILayout.Label("Total Build Points (BP):", GUILayout.ExpandHeight(true));
-                GUILayout.Label(buildTime.ToString(), GUILayout.ExpandHeight(true));
+                GUILayout.Label(Math.Round(buildTime, 2).ToString(), GUILayout.ExpandHeight(true));
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Build Time at ");
-                //+ KCT_Utilities.GetBuildRate(0, type) + " BP/s:", 
                 if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type).ToString();
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
-                //double.TryParse(tempString, out buildRateForDisplay);
                 GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
                 if (type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB();
@@ -429,10 +428,8 @@ namespace Kerbal_Construction_Time
                 KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Build Time at ");
-                //+ KCT_Utilities.GetBuildRate(0, type) + " BP/s:", 
                 if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type).ToString();
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
-                //double.TryParse(tempString, out buildRateForDisplay);
                 GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
                 if (ship.type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB();
@@ -455,21 +452,44 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label("Invalid Build Rate");
                 }
 
-                //useInventory = GUILayout.Toggle(useInventory, " Use parts from inventory?");
+                bool oldInv = useInventory;
+                useInventory = GUILayout.Toggle(useInventory, " Pull new parts from inventory?");
+                if (oldInv != useInventory) KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
 
-                //GUILayout.Label("Difference: " + Math.Round(Math.Abs(difference), 2)+" BP");
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Save Edits"))
                 {
                     KCT_Utilities.AddFunds(ship.cost);
                     ship.RemoveFromBuildList();
 
-                    KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(KCT_Utilities.PartListToDict(ship.InventoryParts));//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
+                    List<string> partsForInventory = new List<string>();
+                    if (KCT_GUI.useInventory)
+                    {
+                        List<string> newParts = new List<string>(KCT_Utilities.PartDictToList(KCT_GUI.PartsInUse));
+                        List<string> theInventory = new List<string>(KCT_Utilities.PartDictToList(KCT_GameStates.PartInventory));
+                        foreach (string s in KCT_Utilities.PartDictToList(KCT_GameStates.EditedVesselParts))
+                            if (newParts.Contains(s))
+                                newParts.Remove(s);
+
+                        foreach (string s in newParts)
+                        {
+                            if (theInventory.Contains(s))
+                            {
+                                theInventory.Remove(s);
+                                partsForInventory.Add(s);
+                            }
+                        }
+                    }
+                    foreach (string s in ship.InventoryParts)
+                        partsForInventory.Add(s);
+
+
+                    KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(KCT_Utilities.PartListToDict(partsForInventory));//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                     newShip.progress = newProgress;
-                    //newShip.buildPoints = buildTime;
                     KCTDebug.Log("Finished? " + ship.isFinished);
                     if (ship.isFinished)
                         newShip.cannotEarnScience = true;
+
                     foreach (string s in newShip.InventoryParts) //Compare the old inventory parts and the new one, removing the new ones from the old
                     {
                         if (ship.InventoryParts.Contains(s))
@@ -478,9 +498,6 @@ namespace Kerbal_Construction_Time
                     foreach (string s in ship.InventoryParts) //Add the remaining old parts to the overall inventory
                         KCT_Utilities.AddPartToInventory(s);
                     
-
-
-                    //KCT_Utilities.AddVesselToBuildList(newShip);
                     GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE); 
 
                     KCT_GameStates.EditorShipEditingMode = false;
@@ -488,6 +505,7 @@ namespace Kerbal_Construction_Time
                     InputLockManager.RemoveControlLock("KCTEditExit");
                     InputLockManager.RemoveControlLock("KCTEditLoad");
                     InputLockManager.RemoveControlLock("KCTEditNew");
+                    InputLockManager.RemoveControlLock("KCTEditLaunch");
                     EditorLogic.fetch.Unlock("KCTEditorMouseLock");
                     KCTDebug.Log("Edits saved.");
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
@@ -499,12 +517,12 @@ namespace Kerbal_Construction_Time
                     InputLockManager.RemoveControlLock("KCTEditExit");
                     InputLockManager.RemoveControlLock("KCTEditLoad");
                     InputLockManager.RemoveControlLock("KCTEditNew");
+                    InputLockManager.RemoveControlLock("KCTEditLaunch");
                     EditorLogic.fetch.Unlock("KCTEditorMouseLock");
                     KCTDebug.Log("Edits cancelled.");
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
                 GUILayout.EndHorizontal();
-                //GUILayout.Label("");
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Simulate"))
                 {
@@ -513,12 +531,6 @@ namespace Kerbal_Construction_Time
                     showSimConfig = true;
                     KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                 }
-                /*if (GUILayout.Button("Part Inventory"))
-                {
-                    showInventory = !showInventory;
-                    editorWindowPosition.width = 275;
-                    editorWindowPosition.height = 1;
-                }*/
                 GUILayout.EndHorizontal();
             }
 
@@ -528,15 +540,7 @@ namespace Kerbal_Construction_Time
                 List<string> categories = new List<string> { "Pods", "Prop.", "Ctl.", "Struct.", "Aero", "Util.", "Sci." };
                 int lastCat = currentCategoryInt;
                 currentCategoryInt = GUILayout.Toolbar(currentCategoryInt, categories.ToArray(), GUILayout.ExpandWidth(false));
-                if (GUI.changed)
-                {
-                    editorWindowPosition.height = 1;
-                    if (lastCat == currentCategoryInt)
-                    {
-                        currentCategoryInt = -1;
-                    }
-                }
-                Dictionary<String, int> activeList = new Dictionary<string, int>();
+                
                 PartCategories CategoryCurrent = PartCategories.none;
                 switch (currentCategoryInt)
                 {
@@ -550,77 +554,38 @@ namespace Kerbal_Construction_Time
                     default: CategoryCurrent = PartCategories.none; break;
                 }
 
-                for (int i = 0; i < KCT_GameStates.PartInventory.Count; i++)
+                if (GUI.changed)
                 {
-                    PartCategories category = PartCategories.none;
-                    string name = KCT_GameStates.PartInventory.Keys.ElementAt(i);
-                    foreach (AvailablePart p in PartLoader.LoadedPartsList)
+                    editorWindowPosition.height = 1;
+                    if (lastCat == currentCategoryInt)
                     {
-                        string baseName = name.Split(',').Length == 1 ? name : name.Split(',')[0];
-                        if (p.name == baseName)
-                        {
-                            string tweakscale = "";
-                            if (name.Split(',').Length == 2)
-                                tweakscale = "," + name.Split(',')[1];
-                            name = p.title + tweakscale;
-                            category = p.category;
-                            if (p.category == CategoryCurrent && !activeList.Keys.Contains(name))
-                                activeList.Add(name, KCT_GameStates.PartInventory.Values.ElementAt(i));
-                            break;
-                        }
+                        currentCategoryInt = -1;
+                    }
+                    else
+                    {
+                        InventoryCategoryChanged(CategoryCurrent);
                     }
                 }
-                /*GUILayout.BeginHorizontal();
-                foreach (string cat in categories)
-                {
-                    if (GUILayout.Button(cat))
-                    {
-                        currentCategoryString = cat;
-                        editorWindowPosition.height = 135;
-                    }
-                }
-                GUILayout.EndHorizontal();*/
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((activeList.Count + 1) * 30, Screen.height / 1.4F))); //
+
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((InventoryForCategory.Count + 1) * 30, Screen.height / 1.4F))); //
+                GUILayout.BeginVertical();
+
+                float windowWidth = editorWindowPosition.width;
                 GUILayout.BeginHorizontal();
-
-                GUILayout.BeginVertical();
-                GUILayout.Label("Name:", GUILayout.ExpandHeight(true));
-                for (int i=0; i<activeList.Count; i++)
-                {
-                    string name = activeList.Keys.ElementAt(i);
-                    GUILayout.Label(name, GUILayout.ExpandHeight(true));   
-                }
-                GUILayout.EndVertical();
-                
-                GUILayout.BeginVertical();
-                GUILayout.Label("Available:", GUILayout.ExpandHeight(true));
-                for (int i = 0; i < activeList.Count; i++)
-                {
-                    GUILayout.Label(activeList.Values.ElementAt(i).ToString(), GUILayout.ExpandHeight(true));
-                }
-                GUILayout.EndVertical();
-
-                GUILayout.BeginVertical();
-                GUILayout.Label("In use:", GUILayout.ExpandHeight(true));
-                ConfigNode[] parts = EditorLogic.fetch.ship.SaveShip().GetNodes("PART");
-                for (int i = 0; i < activeList.Count; i++)
-                {
-                    int inUse = 0;
-                    if (useInventory)
-                    {
-                        String name = activeList.Keys.ElementAt(i);
-                        for (int j = 0; j < parts.Length; j++)
-                        //foreach (ConfigNode part in EditorLogic.fetch.ship.SaveShip().GetNodes("PART"))
-                        {
-                            string tweakscale = KCT_Utilities.GetTweakScaleSize(parts[j]);
-                            if ((EditorLogic.fetch.ship.parts[j].partInfo.title+tweakscale) == name)
-                                ++inUse;
-                        }
-                    }
-                    GUILayout.Label(inUse.ToString(), GUILayout.ExpandHeight(true));
-                }
-                GUILayout.EndVertical();
+                GUILayout.Label("Name:");
+                GUILayout.Label("Available:", GUILayout.Width(windowWidth / 7));
+                GUILayout.Label("In use:", GUILayout.Width(windowWidth / 7));
                 GUILayout.EndHorizontal();
+                foreach (KeyValuePair<string, int> entry in InventoryForCategory)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(InventoryCommonNames[entry.Key]);
+                    GUILayout.Label(entry.Value.ToString(), GUILayout.Width(windowWidth / 7));
+                    int inUse = PartsInUse.ContainsKey(entry.Key) ? PartsInUse[entry.Key] : 0;
+                    GUILayout.Label(inUse.ToString(), GUILayout.Width(windowWidth / 7));
+                    GUILayout.EndHorizontal();
+                }
+                GUILayout.EndVertical();
                 GUILayout.EndScrollView();
             }
             
@@ -630,6 +595,32 @@ namespace Kerbal_Construction_Time
                 GUI.DragWindow();
 
             CheckEditorLock();
+        }
+
+        private static Dictionary<string, int> InventoryForCategory = new Dictionary<string, int>();
+        private static Dictionary<string, string> InventoryCommonNames = new Dictionary<string, string>();
+        private static void InventoryCategoryChanged(PartCategories category)
+        {
+            InventoryForCategory.Clear();
+            InventoryCommonNames.Clear();
+            foreach (KeyValuePair<string, int> entry in KCT_GameStates.PartInventory)
+            {
+                string name = entry.Key;
+                string baseName = name.Split(',').Length == 1 ? name : name.Split(',')[0];
+                AvailablePart aPart = KCT_Utilities.GetAvailablePartByName(baseName);
+                if (aPart != null && aPart.category == category)
+                {
+                    string tweakscale = "";
+                    if (name.Split(',').Length == 2)
+                        tweakscale = "," + name.Split(',')[1];
+                    name = aPart.title + tweakscale + "m";
+                    if (!InventoryForCategory.ContainsKey(baseName))
+                    {
+                        InventoryForCategory.Add(entry.Key, entry.Value);
+                        InventoryCommonNames.Add(entry.Key, name);
+                    }
+                }
+            }
         }
 
         public static void DrawSOIAlertWindow(int windowID)
@@ -2385,9 +2376,17 @@ namespace Kerbal_Construction_Time
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_EXIT, "KCTEditExit");
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_LOAD, "KCTEditLoad");
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_NEW, "KCTEditNew");
+                InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTEditLaunch");
 
-               /* foreach (string s in b.InventoryParts)
-                    KCT_Utilities.AddPartToInventory(s);*/ //Adding the parts back is handled in the editor
+                KCT_GameStates.EditedVesselParts.Clear();
+                foreach (ConfigNode node in b.ExtractedPartNodes)
+                {
+                    string name = KCT_Utilities.PartNameFromNode(node) + KCT_Utilities.GetTweakScaleSize(node);
+                    if (!KCT_GameStates.EditedVesselParts.ContainsKey(name))
+                        KCT_GameStates.EditedVesselParts.Add(name, 1);
+                    else
+                        ++KCT_GameStates.EditedVesselParts[name];
+                }
 
                 EditorDriver.StartAndLoadVessel(tempFile);
             }

@@ -39,6 +39,7 @@ namespace Kerbal_Construction_Time
         public static bool firstStart = true;
         public static IKCTBuildItem targetedItem = null;
         public static double EditorBuildTime = 0;
+        public static Dictionary<string, int> EditedVesselParts = new Dictionary<string, int>();
 
         public static KCT_Reconditioning LaunchPadReconditioning;
 

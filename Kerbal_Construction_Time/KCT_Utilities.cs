@@ -1017,10 +1017,47 @@ namespace Kerbal_Construction_Time
 
         public static void RecalculateEditorBuildTime(ShipConstruct ship)
         {
+            List<ConfigNode> partNodes = ship.SaveShip().GetNodes("PART").ToList();
+            KCT_GUI.PartsInUse.Clear();
+            if (KCT_GUI.useInventory)
+            {
+                foreach (ConfigNode part in partNodes)
+                {
+                    string name = PartNameFromNode(part) + GetTweakScaleSize(part);
+                    if (!KCT_GUI.PartsInUse.ContainsKey(name))
+                        KCT_GUI.PartsInUse.Add(name, 1);
+                    else
+                        ++KCT_GUI.PartsInUse[name];
+                }
+            }
+
             if (!KCT_GameStates.EditorShipEditingMode)
-                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(ship.SaveShip().GetNodes("PART").ToList(), true, KCT_GUI.useInventory);
+                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(partNodes, true, KCT_GUI.useInventory);
             else
-                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(ship.SaveShip().GetNodes("PART").ToList(), true, KCT_GameStates.editedVessel.InventoryParts);
+            {
+                List<string> partsForInventory = new List<string>();
+                if (KCT_GUI.useInventory)
+                {
+                    List<string> newParts = new List<string>(PartDictToList(KCT_GUI.PartsInUse));
+                    List<string> theInventory = new List<string>(PartDictToList(KCT_GameStates.PartInventory));
+                    foreach (string s in PartDictToList(KCT_GameStates.EditedVesselParts))
+                        if (newParts.Contains(s))
+                            newParts.Remove(s);
+
+                    foreach (string s in newParts)
+                    {
+                        if (theInventory.Contains(s))
+                        {
+                            theInventory.Remove(s);
+                            partsForInventory.Add(s);
+                        }
+                    }
+                }
+                foreach (string s in KCT_GameStates.editedVessel.InventoryParts)
+                    partsForInventory.Add(s);
+
+                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(partNodes, true, partsForInventory);
+            }
         }
     }
 }
