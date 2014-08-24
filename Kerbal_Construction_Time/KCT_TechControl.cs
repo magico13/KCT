@@ -24,9 +24,9 @@ namespace Kerbal_Construction_Time
             progress = 0;
             protoNode = ResearchAndDevelopment.Instance.GetTechState(techID);
 
-            Debug.Log("[KCT] techID = " + techID);
-            Debug.Log("[KCT] BuildRate = " + BuildRate);
-            Debug.Log("[KCT] TimeLeft = " + TimeLeft);
+            KCTDebug.Log("techID = " + techID);
+            KCTDebug.Log("BuildRate = " + BuildRate);
+            KCTDebug.Log("TimeLeft = " + TimeLeft);
         }
         
         public KCT_TechItem(string ID, string name, double prog, int sci)
@@ -118,8 +118,6 @@ namespace Kerbal_Construction_Time
             foreach (KCT_TechItem tech in KCT_GameStates.TechList)
             {
                 KCT_TechStorageItem tSI = new KCT_TechStorageItem();
-                //this.techNode =
-               // tech.protoNode.Save(techNode);
                 techBuildList.Add(tSI.FromTechItem(tech));
             }
         }
@@ -131,7 +129,6 @@ namespace Kerbal_Construction_Time
             foreach (KCT_TechStorageItem tSI in this.techBuildList)
             {
                 KCT_TechItem tI = tSI.ToTechItem();
-               // tI.protoNode = new ProtoTechNode(techNode);
                 KCT_GameStates.TechList.Add(tI);
             }
         }

@@ -19,17 +19,14 @@ namespace Kerbal_Construction_Time
 
         public void addEvents()
         {
-            if (!KCT_GameStates.settings.DisableBuildTime)
-            {
-                GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
-            }
+            GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
             GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
 
             if (!StageRecoveryWrapper.StageRecoveryAvailable)
                 GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
             else
             {
-                Debug.Log("[KCT] Deferring stage recovery to StageRecovery.");
+                KCTDebug.Log("Deferring stage recovery to StageRecovery.");
                 StageRecoveryWrapper.AddRecoverySuccessEvent(StageRecoverySuccessEvent);
             }
 
@@ -47,27 +44,28 @@ namespace Kerbal_Construction_Time
 
         private void StageRecoverySuccessEvent(Vessel v, float[] infoArray, string reason)
         {
-            Debug.Log("[KCT] Recovery Success Event triggered.");
+            if (!KCT_GameStates.settings.enabledForSave) return;
+            KCTDebug.Log("Recovery Success Event triggered.");
             float damage = 0;
             if (infoArray.Length == 3)
                 damage = infoArray[0];
             else
-                Debug.Log("[KCT] Malformed infoArray received!");
+                KCTDebug.Log("Malformed infoArray received!");
             System.Random rand = new System.Random();
-            //Debug.Log("[KCT] dmg:" + damage);
-            //Debug.Log("[KCT] vessel parts count: " + v.protoVessel.protoPartSnapshots.Count);
+            //KCTDebug.Log("dmg:" + damage);
+            //KCTDebug.Log("vessel parts count: " + v.protoVessel.protoPartSnapshots.Count);
             //List<Part> parts = v.parts;
             foreach (ProtoPartSnapshot part in v.protoVessel.protoPartSnapshots)
             {
                 float random = (float)rand.NextDouble();
-                //Debug.Log("[KCT] rand:" + random + " dmg:" + damage);
+                //KCTDebug.Log("rand:" + random + " dmg:" + damage);
                 if (random < damage)
                 {
                     string name = part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part);
                     KCT_Utilities.AddPartToInventory(name);
                 }
                 else
-                    Debug.Log("[KCT] Part " + part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part) + " was too damaged to be used anymore and was scrapped!");
+                    KCTDebug.Log("Part " + part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part) + " was too damaged to be used anymore and was scrapped!");
             }
         }
 
@@ -197,10 +195,9 @@ namespace Kerbal_Construction_Time
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
             {
-                Debug.Log("[KCT] Adding recovered parts to Part Inventory");
+                KCTDebug.Log("Adding recovered parts to Part Inventory");
                 foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
                 {
-                    //Debug.Log(p.partInfo.name);
                     string name = p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p);
                     KCT_Utilities.AddPartToInventory(name);
                 }
@@ -217,12 +214,12 @@ namespace Kerbal_Construction_Time
                 double amount = double.Parse(RCN.GetValue("amount"));
                 PartResourceDefinition RD = PartResourceLibrary.Instance.GetDefinition(resource.resourceName);
                 mass += amount * RD.density;
-                //Debug.Log(resource.resourceName + ":" + mass);
             }
             return (float)mass;
         }
         public void vesselDestroyEvent(Vessel v)
         {
+            if (!KCT_GameStates.settings.enabledForSave) return;
             Dictionary<string, int> PartsRecovered = new Dictionary<string, int>();
             float FundsRecovered = 0, KSCDistance = 0, RecoveryPercent = 0;
             StringBuilder Message = new StringBuilder();
@@ -235,21 +232,20 @@ namespace Kerbal_Construction_Time
             {
                 double totalMass = 0;
                 double dragCoeff = 0;
-                //double totalArea = 0;
                 bool realChuteInUse = false;
 
                 float RCParameter = 0;
 
-                if (!v.packed) //adopted from mission controller. Not sure why they have to be packed
+                if (!v.packed) //adopted from mission controller.
                     foreach (Part p in v.Parts)
                         p.Pack();
 
                 if (v.protoVessel == null)
                     return;
-                Debug.Log("[KCT] Attempting to recover vessel.");
+                KCTDebug.Log("Attempting to recover vessel.");
                 foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
                 {
-                    //Debug.Log("[KCT] Has part " + p.partName + ", mass " + p.mass);
+                    //KCTDebug.Log("Has part " + p.partName + ", mass " + p.mass);
                     List<string> ModuleNames = new List<string>();
                     foreach (ProtoPartModuleSnapshot ppms in p.modules)
                     {
@@ -261,7 +257,7 @@ namespace Kerbal_Construction_Time
                     bool isParachute = false;
                     if (ModuleNames.Contains("ModuleParachute"))
                     {
-                        Debug.Log("[KCT] Found parachute module on " + p.partInfo.name);
+                        KCTDebug.Log("Found parachute module on " + p.partInfo.name);
                         //Find the ModuleParachute (find it in the module list by checking for a module with the name ModuleParachute)
                         ProtoPartModuleSnapshot ppms = p.modules.First(mod => mod.moduleName == "ModuleParachute");
                         float drag = 500;
@@ -278,11 +274,8 @@ namespace Kerbal_Construction_Time
                     }
                     if (ModuleNames.Contains("RealChuteModule"))
                     {
-                        Debug.Log("[KCT] Found realchute module on " + p.partInfo.name);
-                        //PartModule realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule").moduleRef;//p.partRef.Modules["RealChuteModule"];
+                        KCTDebug.Log("Found realchute module on " + p.partInfo.name);
                         ProtoPartModuleSnapshot realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule");
-                        /*  Type rCType = realChute.moduleRef.GetType();
-                          Debug.Log(rCType.ToString());*/
                         if ((object)realChute != null) //Some of this was adopted from DebRefund, as Vendan's method of handling multiple parachutes is better than what I had.
                         {
                             Type matLibraryType = AssemblyLoader.loadedAssemblies
@@ -293,16 +286,12 @@ namespace Kerbal_Construction_Time
                             foreach (ConfigNode chute in parchutes)
                             {
                                 float diameter = float.Parse(chute.GetValue("deployedDiameter"));
-                                //area = (float)(Math.Pow(area / 2, 2) * Math.PI);
-                                //Debug.Log(area);
                                 string mat = chute.GetValue("material");
-                                // Debug.Log(mat);
                                 System.Reflection.MethodInfo matMethod = matLibraryType.GetMethod("GetMaterial", new Type[] { mat.GetType() });
                                 object MatLibraryInstance = matLibraryType.GetProperty("instance").GetValue(null, null);
                                 object materialObject = matMethod.Invoke(MatLibraryInstance, new object[] { mat });
                                 float dragC = (float)KCT_Utilities.GetMemberInfoValue(materialObject.GetType().GetMember("dragCoefficient")[0], materialObject);
-                                // Debug.Log(dragC);
-                                //totalDrag += (1 * 100 * dragC * area / 2000f);
+
                                 RCParameter += dragC * (float)Math.Pow(diameter, 2);
 
                             }
@@ -323,22 +312,19 @@ namespace Kerbal_Construction_Time
                 {
                     dragCoeff = dragCoeff / (totalMass);
                     Vt = Math.Sqrt((250 * 6.674E-11 * 5.2915793E22) / (3.6E11 * 1.22309485 * dragCoeff));
-                    Debug.Log("[KCT] Using Stock Module! Drag: " + dragCoeff + " Vt: " + Vt);
+                    KCTDebug.Log("Using Stock Module! Drag: " + dragCoeff + " Vt: " + Vt);
                 }
                 else
                 {
                     Vt = Math.Sqrt((8000 * totalMass * 9.8) / (1.223 * Math.PI) * Math.Pow(RCParameter, -1)); //This should work perfect for multiple identical chutes and gives an approximation for multiple differing chutes
-                    Debug.Log("[KCT] Using RealChute Module! Vt: " + Vt);
+                    KCTDebug.Log("Using RealChute Module! Vt: " + Vt);
                 }
                 if (Vt < 10.0)
                 {
-                    Debug.Log("[KCT] Recovered parts from " + v.vesselName);
+                    KCTDebug.Log("Recovered parts from " + v.vesselName);
                     foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
                     {
-                        //Debug.Log("[KCT] " + p.partInfo.name);
-                        ConfigNode part = new ConfigNode();
-                        p.Save(part);
-                        KCT_Utilities.AddPartToInventory(part);
+                        KCT_Utilities.AddPartToInventory(p.partInfo.name+KCT_Utilities.GetTweakScaleSize(p));
                         if (!PartsRecovered.ContainsKey(p.partInfo.title))
                             PartsRecovered.Add(p.partInfo.title, 1);
                         else
@@ -356,7 +342,7 @@ namespace Kerbal_Construction_Time
                     {
                         if (KCT_Utilities.StageRecoveryAddonActive || KCT_Utilities.DebRefundAddonActive) //Delegate funds handling to Stage Recovery or DebRefund if it's present
                         {
-                            Debug.Log("[KCT] Delegating Funds recovery to another addon.");
+                            KCTDebug.Log("Delegating Funds recovery to another addon.");
                         }
                         else  //Otherwise do it ourselves
                         {
@@ -365,7 +351,7 @@ namespace Kerbal_Construction_Time
                             {
                                 if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && ((ModuleCommand)module.moduleRef).minimumCrew == 0)) != null)
                                 {
-                                    Debug.Log("[KCT] Probe Core found!");
+                                    KCTDebug.Log("Probe Core found!");
                                     probeCoreAttached = true;
                                     break;
                                 }
@@ -383,14 +369,11 @@ namespace Kerbal_Construction_Time
                             float totalBeforeModifier = totalReturn;
                             totalReturn *= RecoveryPercent;
                             FundsRecovered = totalReturn;
-                            Debug.Log("[KCT] Vessel being recovered by KCT. Percent returned: " + 100 * RecoveryPercent + "%. Distance from KSC: " + Math.Round(KSCDistance / 1000, 2) + " km");
-                            Debug.Log("[KCT] Funds being returned: " + Math.Round(totalReturn, 2) + "/" + Math.Round(totalBeforeModifier, 2));
+                            KCTDebug.Log("Vessel being recovered by KCT. Percent returned: " + 100 * RecoveryPercent + "%. Distance from KSC: " + Math.Round(KSCDistance / 1000, 2) + " km");
+                            KCTDebug.Log("Funds being returned: " + Math.Round(totalReturn, 2) + "/" + Math.Round(totalBeforeModifier, 2));
 
                             Message.AppendLine("Funds recovered: " + FundsRecovered + "(" + Math.Round(RecoveryPercent * 100, 1) + "%)");
                             KCT_Utilities.AddFunds(FundsRecovered);
-                            /*FundsRecovered = KCT_Utilities.GetRecoveryValueForChuteLanding(v.protoVessel);
-                            
-                            */
                         }
                     }
                     Message.AppendLine("\nAdditional information:");

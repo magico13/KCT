@@ -8,8 +8,6 @@ namespace Kerbal_Construction_Time
 {
     static class KCT_Utilities
     {
-
-      //  public static double BuildTimeModifier = 1.0;
         /// <summary>
         /// Formats a string from a time value into days, hours, minutes, and seconds.
         /// </summary>
@@ -527,7 +525,7 @@ namespace Kerbal_Construction_Time
             }
 
             string stor = ListIdentifier == 0 ? "VAB" : "SPH";
-            Debug.Log("[KCT] Moved vessel " + vessel.shipName + " to " + stor +" storage.");
+            KCTDebug.Log("Moved vessel " + vessel.shipName + " to " + stor +" storage.");
 
             foreach (KCT_BuildListVessel blv in KCT_GameStates.VABList)
             {
@@ -571,7 +569,7 @@ namespace Kerbal_Construction_Time
             {
                 KCT_GameStates.PartInventory.Add(name, 1);
             }
-         //   Debug.Log("[KCT] Added "+name+" to part inventory");
+         //   KCTDebug.Log("Added "+name+" to part inventory");
         }
 
 
@@ -609,7 +607,7 @@ namespace Kerbal_Construction_Time
                     inventory.Remove(name);
                 }
                 return true;
-            //    Debug.Log("[KCT] Removed " + name + " from part inventory");
+            //    KCTDebug.Log("Removed " + name + " from part inventory");
             }
             return false;
         }
@@ -630,7 +628,7 @@ namespace Kerbal_Construction_Time
             {
                 KCT_GameStates.PartTracker.Add(name, 1);
             }
-         //   Debug.Log("[KCT] Added "+name+" to part tracker");
+         //   KCTDebug.Log("Added "+name+" to part tracker");
         }
 
         public static void RemovePartFromTracker(Part part)
@@ -646,7 +644,7 @@ namespace Kerbal_Construction_Time
                 --KCT_GameStates.PartTracker[name];
                 if (KCT_GameStates.PartTracker[name] == 0)
                     KCT_GameStates.PartTracker.Remove(name);
-            //    Debug.Log("[KCT] Removed "+name+" from part tracker");
+            //    KCTDebug.Log("Removed "+name+" from part tracker");
             }
         }
 
@@ -666,7 +664,7 @@ namespace Kerbal_Construction_Time
         {
             string backupFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs";
             string saveFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/persistent.sfs";
-            Debug.Log("[KCT] Making simulation backup file.");
+            KCTDebug.Log("Making simulation backup file.");
             System.IO.File.Copy(saveFile, backupFile, true);
         }
 
@@ -678,7 +676,7 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.flightSimulated = false;
             Kerbal_Construction_Time.moved = false;
             KCT_GameStates.simulationEndTime = 0;
-            Debug.Log("[KCT] Swapping persistent.sfs with simulation backup file.");
+            KCTDebug.Log("Swapping persistent.sfs with simulation backup file.");
             System.IO.File.Copy(backupFile, saveFile, true);
             System.IO.File.Delete(backupFile);
         }
@@ -739,7 +737,7 @@ namespace Kerbal_Construction_Time
         {
             if (!CurrentGameIsCareer())
                 return 0;
-            Debug.Log("[KCT] Removing funds: " + toSpend + ", New total: " + (Funding.Instance.Funds - toSpend));
+            KCTDebug.Log("Removing funds: " + toSpend + ", New total: " + (Funding.Instance.Funds - toSpend));
             if (toSpend < Funding.Instance.Funds)
                 return (Funding.Instance.Funds -= toSpend);
             else
@@ -750,7 +748,7 @@ namespace Kerbal_Construction_Time
         {
             if (!CurrentGameIsCareer())
                 return 0;
-            Debug.Log("[KCT] Adding funds: " + toAdd + ", New total: " + (Funding.Instance.Funds + toAdd));
+            KCTDebug.Log("Adding funds: " + toAdd + ", New total: " + (Funding.Instance.Funds + toAdd));
             return (Funding.Instance.Funds += toAdd);
         }
 
@@ -793,8 +791,8 @@ namespace Kerbal_Construction_Time
                 double newFunds = SpendFunds(totalCost);
                 if (prevFunds == newFunds)
                 {
-                    Debug.Log("[KCT] Tried to add " + blv.shipName + " to build list but not enough funds.");
-                    Debug.Log("[KCT] Vessel cost: " + blv.cost + ", Current funds: " + newFunds);
+                    KCTDebug.Log("Tried to add " + blv.shipName + " to build list but not enough funds.");
+                    KCTDebug.Log("Vessel cost: " + blv.cost + ", Current funds: " + newFunds);
                     var msg = new ScreenMessage("Not Enough Funds To Build!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     ScreenMessages.PostScreenMessage(msg, true);
                     return blv;
@@ -819,8 +817,8 @@ namespace Kerbal_Construction_Time
                         blv.InventoryParts.Add(PartNameFromNode(p)+GetTweakScaleSize(p));
                 }
             }
-            Debug.Log("[KCT] Added " + blv.shipName + " to " + type + " build list. Cost: "+blv.cost);
-            //Debug.Log("[KCT] Cost Breakdown (total, parts, fuel): " + blv.totalCost + ", " + blv.dryCost + ", " + blv.fuelCost);
+            KCTDebug.Log("Added " + blv.shipName + " to " + type + " build list. Cost: "+blv.cost);
+            //KCTDebug.Log("Cost Breakdown (total, parts, fuel): " + blv.totalCost + ", " + blv.dryCost + ", " + blv.fuelCost);
             var message = new ScreenMessage("[KCT] Added " + blv.shipName + " to " + type + " build list.", 4.0f, ScreenMessageStyle.UPPER_CENTER);
             ScreenMessages.PostScreenMessage(message, true);
             return blv;
@@ -960,7 +958,7 @@ namespace Kerbal_Construction_Time
             {
                 if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && ((ModuleCommand)module.moduleRef).minimumCrew == 0)) != null)
                 {
-                    Debug.Log("[KCT] Probe Core found!");
+                    KCTDebug.Log("Probe Core found!");
                     probeCoreAttached = true;
                 }
             }
@@ -977,8 +975,8 @@ namespace Kerbal_Construction_Time
             float totalBeforeReturn = (float)Math.Round(totalReturn, 2);
             totalReturn *= recoveryPercent;
             totalReturn = (float)Math.Round(totalReturn, 2);
-            Debug.Log("[KCT] Vessel being recovered by KCT. Percent returned: " + 100 * recoveryPercent + "%. Distance from KSC: " + Math.Round(distanceFromKSC/1000, 2) + " km");
-            Debug.Log("[KCT] Funds being returned: " + totalReturn + "/" + totalBeforeReturn);
+            KCTDebug.Log("Vessel being recovered by KCT. Percent returned: " + 100 * recoveryPercent + "%. Distance from KSC: " + Math.Round(distanceFromKSC/1000, 2) + " km");
+            KCTDebug.Log("Funds being returned: " + totalReturn + "/" + totalBeforeReturn);
             return totalReturn;
         }
 

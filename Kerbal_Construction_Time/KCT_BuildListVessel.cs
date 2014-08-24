@@ -19,19 +19,6 @@ namespace Kerbal_Construction_Time
         public Guid id;
         public bool cannotEarnScience;
         public float cost = 0;
-        /*public float dryCost {get {return totalCost - fuelCost;}}
-        public float totalCost
-        {
-            get
-            {
-                float total = 0;
-                foreach (AvailablePart a in ExtractedAvParts)
-                    total += a.cost;
-                return total;
-            }
-        }
-        public float fuelCost = 0;*/
-
         public double buildRate { get { return KCT_Utilities.GetBuildRate(this); } }
         public double timeLeft
         {
@@ -126,7 +113,6 @@ namespace Kerbal_Construction_Time
             else if (shipNode != null) //Otherwise load the ship from the ConfigNode
             {
                 ship.LoadShip(shipNode);
-                //ConfigNode.LoadObjectFromConfig(ship, shipNode);
             }
             return ship;
         }
@@ -159,15 +145,15 @@ namespace Kerbal_Construction_Time
                     removed = KCT_GameStates.VABList.Remove(this);
                 typeName="VAB";
             }
-            Debug.Log("[KCT] Removing " + shipName + " from "+ typeName +" storage/list.");
+            KCTDebug.Log("Removing " + shipName + " from "+ typeName +" storage/list.");
             if (!removed)
             {
-                Debug.Log("[KCT] Failed to remove ship from list! Performing direct comparison of ids...");
+                KCTDebug.Log("Failed to remove ship from list! Performing direct comparison of ids...");
                 foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHWarehouse)
                 {
                     if (blv.id == this.id)
                     {
-                        Debug.Log("[KCT] Ship found in SPH storage. Removing...");
+                        KCTDebug.Log("Ship found in SPH storage. Removing...");
                         removed = KCT_GameStates.SPHWarehouse.Remove(blv);
                         break;
                     }
@@ -178,7 +164,7 @@ namespace Kerbal_Construction_Time
                     {
                         if (blv.id == this.id)
                         {
-                            Debug.Log("[KCT] Ship found in VAB storage. Removing...");
+                            KCTDebug.Log("Ship found in VAB storage. Removing...");
                             removed = KCT_GameStates.VABWarehouse.Remove(blv);
                             break;
                         }
@@ -190,7 +176,7 @@ namespace Kerbal_Construction_Time
                     {
                         if (blv.id == this.id)
                         {
-                            Debug.Log("[KCT] Ship found in VAB List. Removing...");
+                            KCTDebug.Log("Ship found in VAB List. Removing...");
                             removed = KCT_GameStates.VABList.Remove(blv);
                             break;
                         }
@@ -202,42 +188,23 @@ namespace Kerbal_Construction_Time
                     {
                         if (blv.id == this.id)
                         {
-                            Debug.Log("[KCT] Ship found in SPH list. Removing...");
+                            KCTDebug.Log("Ship found in SPH list. Removing...");
                             removed = KCT_GameStates.SPHList.Remove(blv);
                             break;
                         }
                     }
                 }
             }
-            if (removed) Debug.Log("[KCT] Sucessfully removed ship from storage.");
-            else Debug.Log("[KCT] Still couldn't remove ship!");
+            if (removed) KCTDebug.Log("Sucessfully removed ship from storage.");
+            else KCTDebug.Log("Still couldn't remove ship!");
             return removed;
         }
-
-       /* public List<String> GetPartNames()
-        {
-            List<String> retList = new List<String>();
-            ConfigNode[] partNodes = shipNode.GetNodes("PART");
-           // Debug.Log("[KCT] partNodes count: " + partNodes.Length);
-
-            foreach (ConfigNode CN in partNodes)
-            {
-                FakePart p = new FakePart();
-                ConfigNode.LoadObjectFromConfig(p, CN);
-                string pName = "";
-                for (int i = 0; i < p.part.Split('_').Length-1; i++ )
-                    pName += p.part.Split('_')[i];
-                retList.Add(pName);
-                //Debug.Log("[KCT] " + pName);
-            }
-            return retList;
-        }*/
 
         public List<PseudoPart> GetPseudoParts()
         {
             List<PseudoPart> retList = new List<PseudoPart>();
             ConfigNode[] partNodes = shipNode.GetNodes("PART");
-            // Debug.Log("[KCT] partNodes count: " + partNodes.Length);
+            // KCTDebug.Log("partNodes count: " + partNodes.Length);
 
             foreach (ConfigNode CN in partNodes)
             {
@@ -249,7 +216,6 @@ namespace Kerbal_Construction_Time
                     pName += split[i];
                 PseudoPart returnPart = new PseudoPart(pName, split[split.Length - 1]);
                 retList.Add(returnPart);
-                //Debug.Log("[KCT] " + pName);
             }
             return retList;
         }

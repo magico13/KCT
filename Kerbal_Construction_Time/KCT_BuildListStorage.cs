@@ -22,13 +22,11 @@ namespace Kerbal_Construction_Time
 
         public override void OnDecodeFromConfigNode()
         {
-            //if (HighLogic.LoadedScene == GameScenes.SPACECENTER) //With the new system of loading, these are unnecessary.
-            {
-                KCT_GameStates.VABList.Clear();
-                KCT_GameStates.SPHList.Clear();
-                KCT_GameStates.VABWarehouse.Clear();
-                KCT_GameStates.SPHWarehouse.Clear();
-            }
+            KCT_GameStates.VABList.Clear();
+            KCT_GameStates.SPHList.Clear();
+            KCT_GameStates.VABWarehouse.Clear();
+            KCT_GameStates.SPHWarehouse.Clear();
+
             foreach (BuildListItem b in VABBuildList)
             {
                 KCT_BuildListVessel blv = b.ToBuildListVessel();
@@ -66,7 +64,7 @@ namespace Kerbal_Construction_Time
             {
                 if (b.shipNode == null)
                 {
-                    Debug.Log("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN VABList");
+                    Debug.LogError("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN VABList");
                     continue;
                 }
                 BuildListItem bls = new BuildListItem();
@@ -77,7 +75,7 @@ namespace Kerbal_Construction_Time
             {
                 if (b.shipNode == null)
                 {
-                    Debug.Log("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN SPHList");
+                    Debug.LogError("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN SPHList");
                     continue;
                 }
                 BuildListItem bls = new BuildListItem();
@@ -88,7 +86,7 @@ namespace Kerbal_Construction_Time
             {
                 if (b.shipNode == null)
                 {
-                    Debug.Log("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN VABWarehouse");
+                    Debug.LogError("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN VABWarehouse");
                     continue;
                 }
                 BuildListItem bls = new BuildListItem();
@@ -99,7 +97,7 @@ namespace Kerbal_Construction_Time
             {
                 if (b.shipNode == null)
                 {
-                    Debug.Log("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN SPHWarehouse");
+                    Debug.LogError("[KCT] WARNING! DATA LOSS EVENT ON " + b.shipName + " IN SPHWarehouse");
                     continue;
                 }
                 BuildListItem bls = new BuildListItem();
@@ -107,20 +105,6 @@ namespace Kerbal_Construction_Time
                 SPHWarehouse.Add(bls);
             }
             LPRecon = KCT_GameStates.LaunchPadReconditioning;
-        }
-
-        private int ListContains(KCT_BuildListVessel blv, List<KCT_BuildListVessel> list)
-        {
-            for (int i=0; i<list.Count; i++)
-            {
-                if (blv.id == list[i].id)
-                {
-                  //  Debug.Log("[KCT] Ship found");
-                    return i;
-                }
-            }
-           // Debug.Log("[KCT] Ship not found");
-            return -1;
         }
 
         public class BuildListItem

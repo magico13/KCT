@@ -42,7 +42,7 @@ namespace Kerbal_Construction_Time
         public override void OnSave(ConfigNode node)
         {
             Boolean error = false;
-            Debug.Log("[KCT] Writing to persistence.");
+            KCTDebug.Log("Writing to persistence.");
             base.OnSave(node);
             KCT_DataStorage kctVS = new KCT_DataStorage();
             KCT_BuildListStorage bls = new KCT_BuildListStorage();
@@ -53,7 +53,7 @@ namespace Kerbal_Construction_Time
 
             for (int i=0; i<KCT_GameStates.VABList.Count; i++)
             {
-                Debug.Log("[KCT]: VAB"+i);
+                KCTDebug.Log("VAB"+i);
                 ConfigNode CN = new ConfigNode();
                 if (KCT_GameStates.VABList[i].shipNode != null)
                 {
@@ -62,13 +62,13 @@ namespace Kerbal_Construction_Time
                 }
                 else
                 {
-                    Debug.Log("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE VAB" + i);
+                    Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE VAB" + i);
                     error = true;
                 }
             }
             for (int i = 0; i < KCT_GameStates.SPHList.Count; i++)
             {
-                Debug.Log("[KCT]: SPH" + i);
+                KCTDebug.Log("SPH" + i);
                 ConfigNode CN = new ConfigNode();
                 if (KCT_GameStates.SPHList[i].shipNode != null)
                 {
@@ -77,13 +77,13 @@ namespace Kerbal_Construction_Time
                 }
                 else
                 {
-                    Debug.Log("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE SPH" + i);
+                    Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE SPH" + i);
                     error = true;
                 }
             }
             for (int i = 0; i < KCT_GameStates.VABWarehouse.Count; i++)
             {
-                Debug.Log("[KCT]: VABWH" + i);
+                KCTDebug.Log("VABWH" + i);
                 ConfigNode CN = new ConfigNode();
                 if (KCT_GameStates.VABWarehouse[i].shipNode != null)
                 {
@@ -92,13 +92,13 @@ namespace Kerbal_Construction_Time
                 }
                 else
                 {
-                    Debug.Log("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE VABWH" + i);
+                    Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE VABWH" + i);
                     error = true;
                 }
             }
             for (int i = 0; i < KCT_GameStates.SPHWarehouse.Count; i++)
             {
-                Debug.Log("[KCT]: SPHWH" + i);
+                KCTDebug.Log("SPHWH" + i);
                 ConfigNode CN = new ConfigNode();
                 if (KCT_GameStates.SPHWarehouse[i].shipNode != null)
                 {
@@ -107,13 +107,13 @@ namespace Kerbal_Construction_Time
                 }
                 else
                 {
-                    Debug.Log("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE SPHWH" + i);
+                    Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE SPHWH" + i);
                     error = true;
                 }
             }
             for (int i=0; i< KCT_GameStates.TechList.Count; i++)
             {
-                Debug.Log("[KCT]: Tech" + i);
+                KCTDebug.Log("Tech" + i);
                 ConfigNode CN = new ConfigNode("Tech"+i);
                 if (KCT_GameStates.TechList[i].protoNode != null)
                 {
@@ -122,7 +122,7 @@ namespace Kerbal_Construction_Time
                 }
                 else
                 {
-                    Debug.Log("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE Tech" + i);
+                    Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE Tech" + i);
                     error = true;
                 }
             }
@@ -134,7 +134,7 @@ namespace Kerbal_Construction_Time
         }
         public override void OnLoad(ConfigNode node)
         {
-            Debug.Log("[KCT] Reading from persistence.");
+            KCTDebug.Log("Reading from persistence.");
             base.OnLoad(node);
             KCT_DataStorage kctVS = new KCT_DataStorage();
             KCT_BuildListStorage bls = new KCT_BuildListStorage();
@@ -182,7 +182,7 @@ namespace Kerbal_Construction_Time
         {
             if (ToolbarManager.ToolbarAvailable)
             {
-                Debug.Log("[KCT] Adding Toolbar Button");
+                KCTDebug.Log("Adding Toolbar Button");
                 KCT_GameStates.kctToolbarButton = ToolbarManager.Instance.add("Kerbal_Construction_Time", "MainButton");
                 if (!KCT_GameStates.settings.enabledForSave) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
                 KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
@@ -251,7 +251,6 @@ namespace Kerbal_Construction_Time
             }
             else
             {
-                //Debug.Log("[KCT] Scenario is not null.");
                 if (!scenario.targetScenes.Contains(GameScenes.SPACECENTER))
                     scenario.targetScenes.Add(GameScenes.SPACECENTER);
                 if (!scenario.targetScenes.Contains(GameScenes.FLIGHT))
@@ -302,19 +301,18 @@ namespace Kerbal_Construction_Time
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
                     KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[1];
-                    //InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+                   
                     if (KCT_GameStates.settings.OverrideLaunchButton)
                     {
                         EditorLogic.fetch.launchBtn.methodToInvoke = "ShowLaunchAlert";
                         EditorLogic.fetch.launchBtn.scriptWithMethodToInvoke = this;
                     }
+                    else
+                        InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
                 }
                 if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
                 {
-                    //EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
                     KCT_GameStates.delayStart = false;
-                    //string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
-                    //EditorLogic.LoadShipFromFile(tempFile);
                     EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
                 }
             }
@@ -323,27 +321,15 @@ namespace Kerbal_Construction_Time
                 KCT_GUI.hideAll();
                 KCT_GameStates.reset();
                 if (!KCT_GUI.PrimarilyDisabled)
+                {
                     KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
+                    KCT_GUI.ResetBLWindow();
+                }
                 if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
                 {
                     KCT_GameStates.TotalUpgradePoints = KCT_GameStates.settings.SandboxUpgrades;
                 }
             }
-
-            /* if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated) //Now that vessel switching is enabled, this all won't work properly
-             {
-                 if (FlightGlobals.ActiveVessel.situation != Vessel.Situations.PRELAUNCH)
-                 {
-                     KCT_GameStates.flightSimulated = false; //If you open, then close the launch window, then go to another flight it won't lock controls
-                     //However, if you go to a launch already on the pad through the window, you will have controls locked :/
-                     KCT_Utilities.disableSimulationLocks();
-                 }
-                 else
-                 {
-                     KCT_Utilities.enableSimulationLocks();
-                     moved = false;
-                 }
-             }*/
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH
                         && FlightGlobals.ActiveVessel.GetCrewCount() == 0 && KCT_GameStates.launchedCrew.Count > 0)
@@ -366,7 +352,7 @@ namespace Kerbal_Construction_Time
                                     if (rosterCrew.name == crewMember.name)
                                         finalCrewMember = rosterCrew;
                                 }
-                                Debug.Log("[KCT] Assigning " + finalCrewMember.name + " to " + p.partInfo.name);
+                                KCTDebug.Log("Assigning " + finalCrewMember.name + " to " + p.partInfo.name);
                                 p.AddCrewmemberAt(finalCrewMember, crewList.IndexOf(crewMember));
                                 finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Assigned;
                                 if (finalCrewMember.seat != null)
@@ -485,7 +471,7 @@ namespace Kerbal_Construction_Time
                 {
                     if (KCT_GameStates.delayStart)
                     {
-                        Debug.Log("[KCT] Simulation started");
+                        KCTDebug.Log("Simulation started");
                         KCT_GUI.hideAll();
                         KCT_GUI.showSimulationWindow = true;
                         KCT_GUI.showTimeRemaining = true;
@@ -514,15 +500,12 @@ namespace Kerbal_Construction_Time
                 {
                     if (KCT_GameStates.delayStart)
                     {
-                        /*foreach (KCT_BuildListVessel b in KCT_GameStates.VABList)
-                            b.GetPartNames();*/
-
                         if (KCT_Utilities.CurrentGameHasScience() && KCT_GameStates.TotalUpgradePoints == 0)
                         {
                             ConfigNode CN = new ConfigNode();
                             ResearchAndDevelopment.Instance.snapshot.Save(CN);
                             ConfigNode[] techNodes = CN.GetNodes("Tech");
-                            Debug.Log("[KCT] technodes length: " + techNodes.Length);
+                            KCTDebug.Log("technodes length: " + techNodes.Length);
                             KCT_GameStates.TotalUpgradePoints = techNodes.Length + 14;
                         }
 
@@ -542,7 +525,7 @@ namespace Kerbal_Construction_Time
                         KCT_GameStates.delayStart = false;
                         if (KCT_GameStates.EditorShipEditingMode)
                         {
-                            Debug.Log("[KCT] Editing " + KCT_GameStates.editedVessel.shipName);
+                            KCTDebug.Log("Editing " + KCT_GameStates.editedVessel.shipName);
                             EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
                         }
                     }
@@ -561,7 +544,7 @@ namespace Kerbal_Construction_Time
         {
             foreach (Vessel v in FlightGlobals.Vessels)
             {
-                if (KCT_GameStates.VesselTypesForSOI.Contains(v.vesselType))// && SOITransitions.Contains(v.orbit.patchEndTransition))
+                if (KCT_GameStates.VesselTypesForSOI.Contains(v.vesselType))
                 {
                     if (v != FlightGlobals.ActiveVessel)
                     {

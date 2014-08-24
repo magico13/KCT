@@ -14,8 +14,6 @@ namespace Kerbal_Construction_Time
         public static Boolean CheckForUpdate(bool ForceCheck, bool versionSpecific)
         {
             string updateSite = versionSpecific ? "http://magico13.net/KCT/latest-0-24-0" : "http://magico13.net/KCT/latest";
-            //System.Version current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            //CurrentVersion = current.ToString();
             if (ForceCheck || WebVersion == "")
             {
                 Debug.Log("[KCT] Checking for updates...");
@@ -23,7 +21,6 @@ namespace Kerbal_Construction_Time
                 while (!www.isDone) { }
 
                 WebVersion = www.text.Trim();
-                //Debug.Log("[KCT] Current version: " + CurrentVersion);
                 Debug.Log("[KCT] Received version: " + WebVersion);
                 
                 if (WebVersion == "")
@@ -31,7 +28,7 @@ namespace Kerbal_Construction_Time
                 else
                 {
                     System.Version webV = new System.Version(WebVersion);
-                    UpdateFound = (new System.Version(CurrentVersion).CompareTo(webV) < 0);//CompareVersions(WebVersion, CurrentVersion);
+                    UpdateFound = (new System.Version(CurrentVersion).CompareTo(webV) < 0);
                 }
             }
             if (UpdateFound)
@@ -40,28 +37,6 @@ namespace Kerbal_Construction_Time
                 Debug.Log("[KCT] No new updates. Current: " + CurrentVersion);
             return UpdateFound;
         }
-
-        public static Boolean CompareVersions(string v1, string v2)
-        {
-            String[] v1Split = v1.Split('.');
-            String[] v2Split = v2.Split('.');
-            if (v1Split.Length != v2Split.Length && v1Split.Length != 4)
-            {
-                Debug.Log("[KCT] Version numbers not comparable!");
-                return false;
-            }
-            if (int.Parse(v1Split[0]) > int.Parse(v2Split[0]))
-                return true;
-            else if (int.Parse(v1Split[1]) > int.Parse(v2Split[1]))
-                return true;
-            else if (int.Parse(v1Split[2]) > int.Parse(v2Split[2]))
-                return true;
-            else if (int.Parse(v1Split[3]) > int.Parse(v2Split[3]))
-                return true;
-
-            return false;
-        }
-
     }
 }
 /*
