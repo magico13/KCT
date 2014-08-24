@@ -172,7 +172,7 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.TechList[i].protoNode = new ProtoTechNode(node.GetNode("Tech" + i));
             }
 
-            KCT_GameStates.delayStart = true;
+            Kerbal_Construction_Time.DelayedStart();
         }
     }
 
@@ -369,28 +369,12 @@ namespace Kerbal_Construction_Time
         private static bool updateChecked = false;
         public void FixedUpdate()
         {
-            if (!updateChecked && KCT_GameStates.delayStart)
-            {
-                if (KCT_GameStates.settings.CheckForUpdates && !KCT_GameStates.firstStart) //Check for updates
-                    KCT_UpdateChecker.CheckForUpdate(false, KCT_GameStates.settings.VersionSpecific);
-                updateChecked = true;
-            }
-
             if (KCT_GUI.PrimarilyDisabled)
                 return;
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
-                if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.buildSimulatedVessel && KCT_GameStates.delayStart)
-                {
-                    KCT_GameStates.buildSimulatedVessel = false;
-                    KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
-                    toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.ExtractedPartNodes, true, KCT_GUI.useInventory);
-                    KCT_Utilities.AddVesselToBuildList(toBuild, KCT_GUI.useInventory);
-                }
-
-
                 if (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated)
                 {
                     IKCTBuildItem ikctItem = KCT_Utilities.NextThingToFinish();
@@ -439,51 +423,31 @@ namespace Kerbal_Construction_Time
                         }
                     }
                 }
-                if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated) //Non-simulated flights
-                {
-                    if (KCT_GameStates.delayStart)
-                    {
-                        KCT_GUI.hideAll();
 
-                        if (FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
-                        {
-                            bool removed = KCT_GameStates.launchedVessel.RemoveFromBuildList();
-                            if (removed) //Only do these when the vessel is first removed from the list
-                            {
-                                //Add the cost of the ship to the funds so it can be removed again by KSP
-                                KCT_Utilities.AddFunds(KCT_Utilities.GetTotalVesselCost(FlightGlobals.ActiveVessel.protoVessel));
-                                FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
-                            } 
-                        }
-
-                        List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
-                        if (!invalidTypes.Contains(FlightGlobals.ActiveVessel.vesselType) && !KCT_GameStates.BodiesVisited.Contains(FlightGlobals.ActiveVessel.mainBody.bodyName))
-                        {
-                            KCT_GameStates.BodiesVisited.Add(FlightGlobals.ActiveVessel.mainBody.bodyName);
-                            var message = new ScreenMessage("[KCT] New simulation body unlocked: " + FlightGlobals.ActiveVessel.mainBody.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                            ScreenMessages.PostScreenMessage(message, true);
-                        }
-                        
-                        KCT_GameStates.delayStart = false;
-                    }
-                }
-                else if (HighLogic.LoadedScene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Simulated flights
+                if (HighLogic.LoadedScene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Simulated flights
                 {
-                    if (KCT_GameStates.delayStart)
-                    {
-                        KCTDebug.Log("Simulation started");
-                        KCT_GUI.hideAll();
-                        KCT_GUI.showSimulationWindow = true;
-                        KCT_GUI.showTimeRemaining = true;
-                        
-                        KCT_GameStates.delayStart=false;
-                    }
                     if (FlightGlobals.ActiveVessel.loaded && !FlightGlobals.ActiveVessel.packed && !moved)
                     {
-                        moved = true;
-                        if (KCT_GameStates.simulateInOrbit)
+                        //moved = true;
+                        int secondsForMove = 3;
+                        if (KCT_GameStates.simulateInOrbit && loadDeferTime == DateTime.MaxValue)
+                        {
+                            loadDeferTime = DateTime.Now;
+                        }
+                        else if (KCT_GameStates.simulateInOrbit && DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0)
                         {
                             KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simOrbitAltitude, KCT_GameStates.simInclination);
+                            moved = true;
+                            loadDeferTime = DateTime.MaxValue;
+                        }
+                        else if (!KCT_GameStates.simulateInOrbit)
+                            moved = true;
+
+                        if (KCT_GameStates.simulateInOrbit && lastSeconds != (loadDeferTime.AddSeconds(secondsForMove) - DateTime.Now).Seconds)
+                        {
+                            double remaining = (loadDeferTime.AddSeconds(secondsForMove) - DateTime.Now).TotalSeconds;
+                            ScreenMessages.PostScreenMessage("[KCT] Moving vessel in " + Math.Round(remaining) + " seconds", (float)(remaining - Math.Floor(remaining)), ScreenMessageStyle.UPPER_CENTER);
+                            lastSeconds = (int)remaining;
                         }
                     }
                     if (KCT_GameStates.simulationEndTime > 0 && KCT_GameStates.UT >= KCT_GameStates.simulationEndTime)
@@ -496,40 +460,6 @@ namespace Kerbal_Construction_Time
                         KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + KCT_GameStates.simulationTimeLimit; //Just in case the event doesn't fire
                     }
                 }
-                if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
-                {
-                    if (KCT_GameStates.delayStart)
-                    {
-                        if (KCT_Utilities.CurrentGameHasScience() && KCT_GameStates.TotalUpgradePoints == 0)
-                        {
-                            ConfigNode CN = new ConfigNode();
-                            ResearchAndDevelopment.Instance.snapshot.Save(CN);
-                            ConfigNode[] techNodes = CN.GetNodes("Tech");
-                            KCTDebug.Log("technodes length: " + techNodes.Length);
-                            KCT_GameStates.TotalUpgradePoints = techNodes.Length + 14;
-                        }
-
-                        if (KCT_GameStates.firstStart)
-                        {
-                            KCT_GUI.showFirstRun = true;
-                        }
-
-                        KCT_GameStates.firstStart = false;
-                        KCT_GameStates.delayStart = false;
-                    }
-                }
-                if (HighLogic.LoadedSceneIsEditor)
-                {
-                    if (KCT_GameStates.delayStart)
-                    {
-                        KCT_GameStates.delayStart = false;
-                        if (KCT_GameStates.EditorShipEditingMode)
-                        {
-                            KCTDebug.Log("Editing " + KCT_GameStates.editedVessel.shipName);
-                            EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
-                        }
-                    }
-                }
                 KCT_Utilities.ProgressBuildTime();
             }
             catch (IndexOutOfRangeException e)
@@ -538,6 +468,82 @@ namespace Kerbal_Construction_Time
                 print(e.StackTrace);
             }
 
+        }
+        private static DateTime loadDeferTime = DateTime.MaxValue;
+        private static int lastSeconds = 0;
+
+        public static void DelayedStart()
+        {
+            if (!updateChecked)
+            {
+                if (KCT_GameStates.settings.CheckForUpdates && !KCT_GameStates.firstStart) //Check for updates
+                    KCT_UpdateChecker.CheckForUpdate(false, KCT_GameStates.settings.VersionSpecific);
+                updateChecked = true;
+            }
+
+            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.buildSimulatedVessel)
+            {
+                KCT_GameStates.buildSimulatedVessel = false;
+                KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
+                toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.ExtractedPartNodes, true, KCT_GUI.useInventory);
+                KCT_Utilities.AddVesselToBuildList(toBuild, KCT_GUI.useInventory);
+            }
+
+            if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
+            {
+                KCT_GUI.hideAll();
+                if (FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
+                {
+                    bool removed = KCT_GameStates.launchedVessel.RemoveFromBuildList();
+                    if (removed) //Only do these when the vessel is first removed from the list
+                    {
+                        //Add the cost of the ship to the funds so it can be removed again by KSP
+                        KCT_Utilities.AddFunds(KCT_Utilities.GetTotalVesselCost(FlightGlobals.ActiveVessel.protoVessel));
+                        FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
+                    }
+                }
+
+                List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
+                if (!invalidTypes.Contains(FlightGlobals.ActiveVessel.vesselType) && !KCT_GameStates.BodiesVisited.Contains(FlightGlobals.ActiveVessel.mainBody.bodyName))
+                {
+                    KCT_GameStates.BodiesVisited.Add(FlightGlobals.ActiveVessel.mainBody.bodyName);
+                    var message = new ScreenMessage("[KCT] New simulation body unlocked: " + FlightGlobals.ActiveVessel.mainBody.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage(message, true);
+                    KCTDebug.Log("Unlocked sim body: " + FlightGlobals.ActiveVessel.mainBody.bodyName);
+                }
+            }
+            if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
+            {
+                KCTDebug.Log("Simulation started");
+                KCT_GUI.hideAll();
+                KCT_GUI.showSimulationWindow = true;
+                KCT_GUI.showTimeRemaining = true;
+            }
+            if (HighLogic.LoadedSceneIsEditor)
+            {
+                if (KCT_GameStates.EditorShipEditingMode)
+                {
+                    KCTDebug.Log("Editing " + KCT_GameStates.editedVessel.shipName);
+                    EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
+                }
+            }
+            if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
+            {
+                if (KCT_Utilities.CurrentGameHasScience() && KCT_GameStates.TotalUpgradePoints == 0)
+                {
+                    ConfigNode CN = new ConfigNode();
+                    ResearchAndDevelopment.Instance.snapshot.Save(CN);
+                    ConfigNode[] techNodes = CN.GetNodes("Tech");
+                    KCTDebug.Log("technodes length: " + techNodes.Length);
+                    KCT_GameStates.TotalUpgradePoints = techNodes.Length + 14;
+                }
+                if (KCT_GameStates.firstStart)
+                {
+                    KCTDebug.Log("Showing first start.");
+                    KCT_GUI.showFirstRun = true;
+                }
+                KCT_GameStates.firstStart = false;
+            }
         }
 
         public bool SOIAlert()

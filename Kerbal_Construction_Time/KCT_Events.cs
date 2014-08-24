@@ -243,69 +243,77 @@ namespace Kerbal_Construction_Time
                 if (v.protoVessel == null)
                     return;
                 KCTDebug.Log("Attempting to recover vessel.");
-                foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
+                try
                 {
-                    //KCTDebug.Log("Has part " + p.partName + ", mass " + p.mass);
-                    List<string> ModuleNames = new List<string>();
-                    foreach (ProtoPartModuleSnapshot ppms in p.modules)
+                    foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
                     {
-                        //Debug.Log(ppms.moduleName);
-                        ModuleNames.Add(ppms.moduleName);
-                    }
-                    totalMass += p.mass;
-                    totalMass += GetResourceMass(p.resources);
-                    bool isParachute = false;
-                    if (ModuleNames.Contains("ModuleParachute"))
-                    {
-                        KCTDebug.Log("Found parachute module on " + p.partInfo.name);
-                        //Find the ModuleParachute (find it in the module list by checking for a module with the name ModuleParachute)
-                        ProtoPartModuleSnapshot ppms = p.modules.First(mod => mod.moduleName == "ModuleParachute");
-                        float drag = 500;
-                        if (ppms.moduleRef != null)
+                        //KCTDebug.Log("Has part " + p.partName + ", mass " + p.mass);
+                        List<string> ModuleNames = new List<string>();
+                        foreach (ProtoPartModuleSnapshot ppms in p.modules)
                         {
-                            ModuleParachute mp = (ModuleParachute)ppms.moduleRef;
-                            mp.Load(ppms.moduleValues);
-                            drag = mp.fullyDeployedDrag;
+                            //Debug.Log(ppms.moduleName);
+                            ModuleNames.Add(ppms.moduleName);
                         }
-                        //Add the part mass times the fully deployed drag (typically 500) to the dragCoeff variable (you'll see why later)
-                        dragCoeff += p.mass * drag;
-                        //This is most definitely a parachute part
-                        isParachute = true;
-                    }
-                    if (ModuleNames.Contains("RealChuteModule"))
-                    {
-                        KCTDebug.Log("Found realchute module on " + p.partInfo.name);
-                        ProtoPartModuleSnapshot realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule");
-                        if ((object)realChute != null) //Some of this was adopted from DebRefund, as Vendan's method of handling multiple parachutes is better than what I had.
+                        totalMass += p.mass;
+                        totalMass += GetResourceMass(p.resources);
+                        bool isParachute = false;
+                        if (ModuleNames.Contains("ModuleParachute"))
                         {
-                            Type matLibraryType = AssemblyLoader.loadedAssemblies
-                                .SelectMany(a => a.assembly.GetExportedTypes())
-                                .SingleOrDefault(t => t.FullName == "RealChute.Libraries.MaterialsLibrary");
-
-                            ConfigNode[] parchutes = realChute.moduleValues.GetNodes("PARACHUTE");
-                            foreach (ConfigNode chute in parchutes)
+                            KCTDebug.Log("Found parachute module on " + p.partInfo.name);
+                            //Find the ModuleParachute (find it in the module list by checking for a module with the name ModuleParachute)
+                            ProtoPartModuleSnapshot ppms = p.modules.First(mod => mod.moduleName == "ModuleParachute");
+                            float drag = 500;
+                            if (ppms.moduleRef != null)
                             {
-                                float diameter = float.Parse(chute.GetValue("deployedDiameter"));
-                                string mat = chute.GetValue("material");
-                                System.Reflection.MethodInfo matMethod = matLibraryType.GetMethod("GetMaterial", new Type[] { mat.GetType() });
-                                object MatLibraryInstance = matLibraryType.GetProperty("instance").GetValue(null, null);
-                                object materialObject = matMethod.Invoke(MatLibraryInstance, new object[] { mat });
-                                float dragC = (float)KCT_Utilities.GetMemberInfoValue(materialObject.GetType().GetMember("dragCoefficient")[0], materialObject);
-
-                                RCParameter += dragC * (float)Math.Pow(diameter, 2);
-
+                                ModuleParachute mp = (ModuleParachute)ppms.moduleRef;
+                                mp.Load(ppms.moduleValues);
+                                drag = mp.fullyDeployedDrag;
                             }
+                            //Add the part mass times the fully deployed drag (typically 500) to the dragCoeff variable (you'll see why later)
+                            dragCoeff += p.mass * drag;
+                            //This is most definitely a parachute part
                             isParachute = true;
-                            realChuteInUse = true;
+                        }
+                        if (ModuleNames.Contains("RealChuteModule"))
+                        {
+                            KCTDebug.Log("Found realchute module on " + p.partInfo.name);
+                            ProtoPartModuleSnapshot realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule");
+                            if ((object)realChute != null) //Some of this was adopted from DebRefund, as Vendan's method of handling multiple parachutes is better than what I had.
+                            {
+                                Type matLibraryType = AssemblyLoader.loadedAssemblies
+                                    .SelectMany(a => a.assembly.GetExportedTypes())
+                                    .SingleOrDefault(t => t.FullName == "RealChute.Libraries.MaterialsLibrary");
+
+                                ConfigNode[] parchutes = realChute.moduleValues.GetNodes("PARACHUTE");
+                                foreach (ConfigNode chute in parchutes)
+                                {
+                                    float diameter = float.Parse(chute.GetValue("deployedDiameter"));
+                                    string mat = chute.GetValue("material");
+                                    System.Reflection.MethodInfo matMethod = matLibraryType.GetMethod("GetMaterial", new Type[] { mat.GetType() });
+                                    object MatLibraryInstance = matLibraryType.GetProperty("instance").GetValue(null, null);
+                                    object materialObject = matMethod.Invoke(MatLibraryInstance, new object[] { mat });
+                                    float dragC = (float)KCT_Utilities.GetMemberInfoValue(materialObject.GetType().GetMember("dragCoefficient")[0], materialObject);
+
+                                    RCParameter += dragC * (float)Math.Pow(diameter, 2);
+
+                                }
+                                isParachute = true;
+                                realChuteInUse = true;
+                            }
+                        }
+                        if (!isParachute)
+                        {
+                            if (p.partRef != null)
+                                dragCoeff += p.mass * p.partRef.maximum_drag;
+                            else
+                                dragCoeff += p.mass * 0.2;
                         }
                     }
-                    if (!isParachute)
-                    {
-                        if (p.partRef != null)
-                            dragCoeff += p.mass * p.partRef.maximum_drag;
-                        else
-                            dragCoeff += p.mass * 0.2;
-                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError("[KCT] Error while attempting to recover vessel.");
+                    Debug.LogException(e);
                 }
                 double Vt = double.MaxValue;
                 if (!realChuteInUse)
