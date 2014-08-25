@@ -560,11 +560,9 @@ namespace Kerbal_Construction_Time
                     if (lastCat == currentCategoryInt)
                     {
                         currentCategoryInt = -1;
+                        CategoryCurrent = PartCategories.none;
                     }
-                    else
-                    {
-                        InventoryCategoryChanged(CategoryCurrent);
-                    }
+                    InventoryCategoryChanged(CategoryCurrent);
                 }
 
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((InventoryForCategory.Count + 1) * 30, Screen.height / 1.4F))); //
@@ -613,8 +611,8 @@ namespace Kerbal_Construction_Time
                     string tweakscale = "";
                     if (name.Split(',').Length == 2)
                         tweakscale = "," + name.Split(',')[1];
-                    name = aPart.title + tweakscale + "m";
-                    if (!InventoryForCategory.ContainsKey(baseName))
+                    name = aPart.title + tweakscale;
+                    if (!InventoryForCategory.ContainsKey(entry.Key))
                     {
                         InventoryForCategory.Add(entry.Key, entry.Value);
                         InventoryCommonNames.Add(entry.Key, name);
@@ -694,6 +692,8 @@ namespace Kerbal_Construction_Time
             }
             GUILayout.EndHorizontal();
 
+            if (KCT_GameStates.simulateInOrbit)
+                KCT_GameStates.delayMove = GUILayout.Toggle(KCT_GameStates.delayMove, " Delay move to orbit");
 
             //simLength = GUILayout.TextField(simLength);
             float nullFloat, nF2;
@@ -1792,14 +1792,16 @@ namespace Kerbal_Construction_Time
             GUILayout.Label("Courage:");
             foreach (ProtoCrewMember crew in availableCrew)
             {
-                GUILayout.Label(crew.courage.ToString(), GUILayout.Height(25));
+                GUILayout.HorizontalSlider(crew.courage, 0, 1, HighLogic.Skin.horizontalSlider, HighLogic.Skin.horizontalSliderThumb, GUILayout.Height(25));
+                //GUILayout.Label(crew.courage.ToString(), GUILayout.Height(25));
             }
             GUILayout.EndVertical();
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
             GUILayout.Label("Stupidity:");
             foreach (ProtoCrewMember crew in availableCrew)
             {
-                GUILayout.Label(crew.stupidity.ToString(), GUILayout.Height(25));
+                GUILayout.HorizontalSlider(crew.stupidity, 0, 1, HighLogic.Skin.horizontalSlider, HighLogic.Skin.horizontalSliderThumb, GUILayout.Height(25));
+                //GUILayout.Label(crew.stupidity.ToString(), GUILayout.Height(25));
             }
             GUILayout.EndVertical();
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true));

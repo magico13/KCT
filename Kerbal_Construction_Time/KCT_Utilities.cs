@@ -569,7 +569,7 @@ namespace Kerbal_Construction_Time
             {
                 KCT_GameStates.PartInventory.Add(name, 1);
             }
-         //   KCTDebug.Log("Added "+name+" to part inventory");
+            KCTDebug.Log("Added "+name+" to part inventory");
         }
 
 
@@ -607,7 +607,7 @@ namespace Kerbal_Construction_Time
                     inventory.Remove(name);
                 }
                 return true;
-            //    KCTDebug.Log("Removed " + name + " from part inventory");
+                KCTDebug.Log("Removed " + name + " from part inventory");
             }
             return false;
         }
@@ -1017,6 +1017,7 @@ namespace Kerbal_Construction_Time
 
         public static void RecalculateEditorBuildTime(ShipConstruct ship)
         {
+            KCTDebug.Log("Recalculating build time");
             List<ConfigNode> partNodes = ship.SaveShip().GetNodes("PART").ToList();
             KCT_GUI.PartsInUse.Clear();
             if (KCT_GUI.useInventory)

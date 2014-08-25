@@ -14,7 +14,7 @@ namespace Kerbal_Construction_Time
         public static Dictionary<string, string> vesselDict = new Dictionary<string, string>();
         public static List<VesselType> VesselTypesForSOI = new List<VesselType>() { VesselType.Base, VesselType.Lander, VesselType.Probe, VesselType.Ship, VesselType.Station };
         public static List<Orbit.PatchTransitionType> SOITransitions = new List<Orbit.PatchTransitionType> { Orbit.PatchTransitionType.ENCOUNTER, Orbit.PatchTransitionType.ESCAPE };
-        public static bool delayStart = false;
+        public static bool delayStart = false, delayMove = false;
         public static Dictionary<String, int> PartTracker = new Dictionary<string, int>();
         public static Dictionary<String, int> PartInventory = new Dictionary<string, int>();
         public static bool flightSimulated = false;

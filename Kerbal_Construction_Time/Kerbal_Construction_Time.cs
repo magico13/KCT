@@ -434,7 +434,7 @@ namespace Kerbal_Construction_Time
                         {
                             loadDeferTime = DateTime.Now;
                         }
-                        else if (KCT_GameStates.simulateInOrbit && DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0)
+                        else if (KCT_GameStates.simulateInOrbit && (DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0 || !KCT_GameStates.delayMove))
                         {
                             KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simOrbitAltitude, KCT_GameStates.simInclination);
                             moved = true;

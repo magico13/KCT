@@ -52,20 +52,16 @@ namespace Kerbal_Construction_Time
             else
                 KCTDebug.Log("Malformed infoArray received!");
             System.Random rand = new System.Random();
-            //KCTDebug.Log("dmg:" + damage);
-            //KCTDebug.Log("vessel parts count: " + v.protoVessel.protoPartSnapshots.Count);
-            //List<Part> parts = v.parts;
             foreach (ProtoPartSnapshot part in v.protoVessel.protoPartSnapshots)
             {
                 float random = (float)rand.NextDouble();
-                //KCTDebug.Log("rand:" + random + " dmg:" + damage);
+                string name = part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part);
                 if (random < damage)
-                {
-                    string name = part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part);
+                {    
                     KCT_Utilities.AddPartToInventory(name);
                 }
                 else
-                    KCTDebug.Log("Part " + part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part) + " was too damaged to be used anymore and was scrapped!");
+                    Debug.Log("[KCT] Part " + name + " was too damaged to be used anymore and was scrapped!");
             }
         }
 
