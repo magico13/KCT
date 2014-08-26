@@ -206,6 +206,8 @@ namespace Kerbal_Construction_Time
             {
                 ApplicationLauncher.Instance.RemoveModApplication(KCT_Events.instance.KCTButtonStock);
             }
+
+            KCT_GUI.guiDataSaver.Save();
         }
 
         public void Awake()
@@ -286,7 +288,9 @@ namespace Kerbal_Construction_Time
             //Begin primary mod functions
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
-            
+
+            KCT_GUI.guiDataSaver.Load();
+
             if (HighLogic.LoadedSceneIsEditor)
             {
                 if (KCT_GUI.showSimulationCompleteEditor)
@@ -487,6 +491,12 @@ namespace Kerbal_Construction_Time
                 KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
                 toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.ExtractedPartNodes, true, KCT_GUI.useInventory);
                 KCT_Utilities.AddVesselToBuildList(toBuild, KCT_GUI.useInventory);
+            }
+
+            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.FundsToChargeAtSimEnd != 0)
+            {
+                KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd);
+                KCT_GameStates.FundsToChargeAtSimEnd = 0;
             }
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)

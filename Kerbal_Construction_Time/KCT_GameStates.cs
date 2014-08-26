@@ -30,6 +30,7 @@ namespace Kerbal_Construction_Time
         public static List<int> VABUpgrades = new List<int>() {0};
         public static List<int> SPHUpgrades = new List<int>() {0};
         public static List<int> RDUpgrades = new List<int>() {0, 0};
+        public static List<int> PurchasedUpgrades = new List<int>() { 0, 0 };
         public static int TotalUpgradePoints = 0;
         public static KCT_BuildListVessel launchedVessel, editedVessel;
         //public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
@@ -40,7 +41,7 @@ namespace Kerbal_Construction_Time
         public static IKCTBuildItem targetedItem = null;
         public static double EditorBuildTime = 0;
         public static Dictionary<string, int> EditedVesselParts = new Dictionary<string, int>();
-
+        
         public static KCT_Reconditioning LaunchPadReconditioning;
 
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
@@ -50,11 +51,11 @@ namespace Kerbal_Construction_Time
         public static bool simulateInOrbit = false;
         public static double simOrbitAltitude = 0, simInclination = 0;
         public static List<String> BodiesVisited = new List<string> {"Kerbin"};
+        public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0;
 
         public static void reset()
         {
             //firstStart = true;
-            TechList = new List<KCT_TechItem>();
             PartTracker = new Dictionary<string, int>();
             PartInventory = new Dictionary<string, int>();
             flightSimulated = false;
@@ -66,6 +67,7 @@ namespace Kerbal_Construction_Time
             VABUpgrades = new List<int>() {0};
             SPHUpgrades = new List<int>() {0};
             RDUpgrades = new List<int>() {0, 0};
+            PurchasedUpgrades = new List<int>() { 0, 0 };
             LaunchPadReconditioning = null;
             targetedItem = null;
 
@@ -73,6 +75,7 @@ namespace Kerbal_Construction_Time
             VABWarehouse = new List<KCT_BuildListVessel>();
             SPHList = new List<KCT_BuildListVessel>();
             SPHWarehouse = new List<KCT_BuildListVessel>();
+            TechList = new List<KCT_TechItem>();
         }
 
     }

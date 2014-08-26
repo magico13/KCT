@@ -12,13 +12,15 @@ namespace Kerbal_Construction_Time
             showSimulationCompleteFlight, showBuildList, showClearLaunch, showShipRoster, showCrewSelect, showSettings, showSimConfig, showBodyChooser, showUpgradeWindow,
             showBLPlus, showRename, showFirstRun, showSimLengthChooser;
 
+        public static GUIDataSaver guiDataSaver = new GUIDataSaver();
+
         private static bool unlockEditor;
 
         private static Vector2 scrollPos;
 
         private static Rect iconPosition = new Rect(Screen.width / 4, Screen.height - 30, 50, 30);//110
         private static Rect mainWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 350, 200);
-        private static Rect editorWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 275, 135);
+        public static Rect editorWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 275, 135);
         private static Rect SOIAlertPosition = new Rect(Screen.width / 3, Screen.height / 3, 250, 100);
 
         private static Rect centralWindowPosition = new Rect((Screen.width - 150) / 2, (Screen.height - 50) / 2, 150, 50);
@@ -28,7 +30,7 @@ namespace Kerbal_Construction_Time
         //private static Rect simulationCompleteFlightPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
         private static Rect simulationWindowPosition = new Rect((Screen.width - 250) / 2, (Screen.height - 250) / 2, 250, 250);
         private static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
-        private static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 460, 1);
+        public static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 460, 1);
         private static Rect crewListWindowPosition = new Rect((3*Screen.width/8), (Screen.height / 4), Screen.width / 4, 1);
         private static Rect settingsPosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 300, 1);
         private static Rect upgradePosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 240, 1);
@@ -731,7 +733,10 @@ namespace Kerbal_Construction_Time
                 showSimConfig = false;
                 centralWindowPosition.height = 1;
                 if (!KCT_GameStates.settings.NoCostSimulations)
+                {
                     KCT_Utilities.SpendFunds(cost);
+                    KCT_GameStates.SimulationCost = cost;
+                }
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL);
                 EditorLogic.fetch.launchVessel();
@@ -897,6 +902,22 @@ namespace Kerbal_Construction_Time
                 {
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
+            }
+
+            if ((KCT_GameStates.settings.NoCostSimulations || Funding.Instance.Funds >= (KCT_GameStates.SimulationCost*1.1))
+                && GUILayout.Button("Purchase Additional Time\n" + (KCT_GameStates.settings.NoCostSimulations ? "Free" : (KCT_GameStates.SimulationCost * 1.1).ToString() + " funds")))
+            {
+                showSimulationCompleteFlight = false;
+                if (!KCT_GameStates.settings.NoCostSimulations)
+                {
+                    KCT_GameStates.FundsToChargeAtSimEnd += KCT_GameStates.SimulationCost * 1.1F;
+                    KCT_Utilities.SpendFunds(KCT_GameStates.SimulationCost * 1.1F);
+                }
+                KCT_GameStates.simulationEndTime += KCT_GameStates.simulationTimeLimit;
+                //KCT_GameStates.simulationTimeLimit *= 2;
+                KCT_GameStates.SimulationCost *= 1.1F;
+                FlightDriver.SetPause(false);
+                centralWindowPosition.height = 1;
             }
 
             if (FlightDriver.CanRevertToPostInit && GUILayout.Button("Restart Simulation"))
@@ -2145,13 +2166,14 @@ namespace Kerbal_Construction_Time
 
             if (KCT_Utilities.CurrentGameHasScience())
             {
+                int cost = (int)Math.Min(Math.Pow(2, KCT_GameStates.PurchasedUpgrades[0]+2), 512);
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Buy Point: ");
-                if (GUILayout.Button("250 Sci", GUILayout.ExpandWidth(false)))
+                if (GUILayout.Button(cost + " Sci", GUILayout.ExpandWidth(false)))
                 {
-                    if (ResearchAndDevelopment.Instance.Science >= 250.0F)
+                    if (ResearchAndDevelopment.Instance.Science >= cost)
                     {
-                        ResearchAndDevelopment.Instance.Science -= 250.0F;
+                        ResearchAndDevelopment.Instance.Science -= cost;
                         ++KCT_GameStates.TotalUpgradePoints;
                     }
                 }
@@ -2160,13 +2182,14 @@ namespace Kerbal_Construction_Time
 
             if (KCT_Utilities.CurrentGameIsCareer())
             {
+                double cost = Math.Min(Math.Pow(2, KCT_GameStates.PurchasedUpgrades[1]+4), 1024) * 1000;
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Buy Point: ");
-                if (GUILayout.Button("500,000 Funds", GUILayout.ExpandWidth(false)))
+                if (GUILayout.Button(cost + " Funds", GUILayout.ExpandWidth(false)))
                 {
-                    if (Funding.Instance.Funds >= 500000)
+                    if (Funding.Instance.Funds >= cost)
                     {
-                        KCT_Utilities.SpendFunds(500000);
+                        KCT_Utilities.SpendFunds(cost);
                         ++KCT_GameStates.TotalUpgradePoints;
                     }
                 }
@@ -2507,6 +2530,53 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                 GUI.DragWindow();
+        }
+    }
+
+    public class GUIPosition
+    {
+        [Persistent] public string guiName;
+        [Persistent] public float xPos, yPos;
+        [Persistent] public bool visible;
+
+        public GUIPosition() { }
+        public GUIPosition(string name, float x, float y, bool vis)
+        {
+            guiName = name;
+            xPos = x;
+            yPos = y;
+            visible = vis;
+        }
+    }
+
+    public class GUIDataSaver
+    {
+        protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Windows.txt";
+        [Persistent] GUIPosition editorPositionSaved, buildListPositionSaved;
+        public void Save()
+        {
+            buildListPositionSaved = new GUIPosition("buildList", KCT_GUI.buildListWindowPosition.x, KCT_GUI.buildListWindowPosition.y, KCT_GameStates.showWindows[0]);
+            editorPositionSaved = new GUIPosition("editor", KCT_GUI.editorWindowPosition.x, KCT_GUI.editorWindowPosition.y, KCT_GameStates.showWindows[1]);
+
+            ConfigNode cnTemp = ConfigNode.CreateConfigFromObject(this, new ConfigNode());
+            cnTemp.Save(filePath);
+        }
+
+        public void Load()
+        {
+            if (!System.IO.File.Exists(filePath))
+                return;
+
+            ConfigNode cnToLoad = ConfigNode.Load(filePath);
+            ConfigNode.LoadObjectFromConfig(this, cnToLoad);
+
+            KCT_GUI.buildListWindowPosition.x = buildListPositionSaved.xPos;
+            KCT_GUI.buildListWindowPosition.y = buildListPositionSaved.yPos;
+            KCT_GameStates.showWindows[0] = buildListPositionSaved.visible;
+
+            KCT_GUI.editorWindowPosition.x = editorPositionSaved.xPos;
+            KCT_GUI.editorWindowPosition.y = editorPositionSaved.yPos;
+            KCT_GameStates.showWindows[1] = editorPositionSaved.visible;
         }
     }
 }
