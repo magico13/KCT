@@ -52,16 +52,32 @@ namespace Kerbal_Construction_Time
             else
                 KCTDebug.Log("Malformed infoArray received!");
             System.Random rand = new System.Random();
+            Dictionary<string, int> destroyed = new Dictionary<string,int>();
             foreach (ProtoPartSnapshot part in v.protoVessel.protoPartSnapshots)
             {
                 float random = (float)rand.NextDouble();
                 string name = part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part);
                 if (random < damage)
-                {    
+                {
                     KCT_Utilities.AddPartToInventory(name);
                 }
                 else
+                {
+                    string commonName = part.partInfo.title + KCT_Utilities.GetTweakScaleSize(part);
                     Debug.Log("[KCT] Part " + name + " was too damaged to be used anymore and was scrapped!");
+                    if (!destroyed.ContainsKey(commonName))
+                        destroyed.Add(commonName, 1);
+                    else
+                        ++destroyed[commonName];
+                }
+            }
+
+            if (destroyed.Count > 0 && !KCT_GameStates.settings.DisableAllMessages)
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.AppendLine("The following parts were too damaged to be reused and were scrapped:");
+                foreach (KeyValuePair<string, int> entry in destroyed) msg.AppendLine(entry.Value+" x "+entry.Key);
+                KCT_Utilities.DisplayMessage("KCT: Parts Scrapped", msg, MessageSystemButton.MessageButtonColor.ORANGE, MessageSystemButton.ButtonIcons.ALERT);
             }
         }
 

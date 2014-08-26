@@ -29,7 +29,7 @@ namespace Kerbal_Construction_Time
         //private static Rect simulationCompleteEditorPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
         //private static Rect simulationCompleteFlightPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
         private static Rect simulationWindowPosition = new Rect((Screen.width - 250) / 2, (Screen.height - 250) / 2, 250, 250);
-        private static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
+        public static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
         public static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 460, 1);
         private static Rect crewListWindowPosition = new Rect((3*Screen.width/8), (Screen.height / 4), Screen.width / 4, 1);
         private static Rect settingsPosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 300, 1);
@@ -2175,6 +2175,7 @@ namespace Kerbal_Construction_Time
                     {
                         ResearchAndDevelopment.Instance.Science -= cost;
                         ++KCT_GameStates.TotalUpgradePoints;
+                        ++KCT_GameStates.PurchasedUpgrades[0];
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -2191,6 +2192,7 @@ namespace Kerbal_Construction_Time
                     {
                         KCT_Utilities.SpendFunds(cost);
                         ++KCT_GameStates.TotalUpgradePoints;
+                        ++KCT_GameStates.PurchasedUpgrades[1];
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -2552,11 +2554,12 @@ namespace Kerbal_Construction_Time
     public class GUIDataSaver
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Windows.txt";
-        [Persistent] GUIPosition editorPositionSaved, buildListPositionSaved;
+        [Persistent] GUIPosition editorPositionSaved, buildListPositionSaved, timeLimitPositionSaved;
         public void Save()
         {
             buildListPositionSaved = new GUIPosition("buildList", KCT_GUI.buildListWindowPosition.x, KCT_GUI.buildListWindowPosition.y, KCT_GameStates.showWindows[0]);
             editorPositionSaved = new GUIPosition("editor", KCT_GUI.editorWindowPosition.x, KCT_GUI.editorWindowPosition.y, KCT_GameStates.showWindows[1]);
+            timeLimitPositionSaved = new GUIPosition("timeLimit", KCT_GUI.timeRemainingPosition.x, KCT_GUI.timeRemainingPosition.y, KCT_GUI.showTimeRemaining);
 
             ConfigNode cnTemp = ConfigNode.CreateConfigFromObject(this, new ConfigNode());
             cnTemp.Save(filePath);
@@ -2577,6 +2580,10 @@ namespace Kerbal_Construction_Time
             KCT_GUI.editorWindowPosition.x = editorPositionSaved.xPos;
             KCT_GUI.editorWindowPosition.y = editorPositionSaved.yPos;
             KCT_GameStates.showWindows[1] = editorPositionSaved.visible;
+
+            KCT_GUI.timeRemainingPosition.x = timeLimitPositionSaved.xPos;
+            KCT_GUI.timeRemainingPosition.y = timeLimitPositionSaved.yPos;
+            //We don't care about it's visibility. That's determined separately.
         }
     }
 }

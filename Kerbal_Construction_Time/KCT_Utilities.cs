@@ -200,11 +200,11 @@ namespace Kerbal_Construction_Time
 
         public static double GetBuildTime(List<ConfigNode> parts, bool useTracker, Dictionary<String, int> inventory)
         {
-            Dictionary<String, int> invCopy = new Dictionary<string,int>();//KCT_GameStates.PartInventory;
-            for (int i=0; i<inventory.Count; i++)
+            Dictionary<String, int> invCopy = new Dictionary<string,int>(inventory);//KCT_GameStates.PartInventory;
+            /*for (int i=0; i<inventory.Count; i++)
             {
                 invCopy.Add(inventory.Keys.ElementAt(i), inventory.Values.ElementAt(i));
-            }
+            }*/
             double totalEffectiveCost = 0;
             foreach (ConfigNode p in parts)
             {
