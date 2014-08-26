@@ -31,10 +31,10 @@ namespace Kerbal_Construction_Time
         private static Rect simulationWindowPosition = new Rect((Screen.width - 250) / 2, (Screen.height - 250) / 2, 250, 250);
         public static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
         public static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 460, 1);
-        private static Rect crewListWindowPosition = new Rect((3*Screen.width/8), (Screen.height / 4), Screen.width / 4, 1);
+        private static Rect crewListWindowPosition = new Rect((Screen.width-360)/2, (Screen.height / 4), 360, 1);
         private static Rect settingsPosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 300, 1);
         private static Rect upgradePosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 240, 1);
-        private static Rect simulationConfigPosition = new Rect((Screen.width / 2)-120, (Screen.height / 4), 240, 1);
+        private static Rect simulationConfigPosition = new Rect((Screen.width / 2)-150, (Screen.height / 4), 300, 1);
         private static Rect bLPlusPosition = new Rect(1, 1 / 2, 150, 1);
         private static GUIStyle windowStyle = new GUIStyle(HighLogic.Skin.window);
 
@@ -637,7 +637,7 @@ namespace Kerbal_Construction_Time
                 GUI.DragWindow();
         }
 
-        private static string orbitAltString = "", orbitIncString = "", simLength = "0";
+        private static string orbitAltString = "", orbitIncString = "", simLength = "0.25";
         public static void DrawSimulationConfigure(int windowID)
         {
             GUILayout.BeginVertical();
@@ -683,7 +683,7 @@ namespace Kerbal_Construction_Time
             
             GUILayout.BeginHorizontal();
             GUILayout.Label("Simulation Length: ");
-            GUILayout.Label(simLength);
+            GUILayout.Label(KCT_Utilities.GetColonFormattedTime(float.Parse(simLength) * 3600));
             if (GUILayout.Button("Select", GUILayout.ExpandWidth(false)))
             {
                 //show body chooser
@@ -714,6 +714,7 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.simulateInOrbit = true;
 
                 KCT_GameStates.simulationTimeLimit = 3600 * double.Parse(simLength);
+                KCT_GameStates.simulationDefaultTimeLimit = KCT_GameStates.simulationTimeLimit;
 
                 if (KCT_GameStates.simulateInOrbit)
                 {
@@ -795,10 +796,12 @@ namespace Kerbal_Construction_Time
         public static void DrawSimLengthChooser(int windowID)
         {
             GUILayout.BeginVertical();
-            GUILayout.Label("Hours (cost multiplier)");
+            GUILayout.Label("Time (cost multiplier)");
             foreach (String len in KCT_Utilities.TimeMultipliers.Keys)
             {
-                if (GUILayout.Button(len+" (x"+KCT_Utilities.TimeMultipliers[len]+")"))
+                float time = float.Parse(len) * 3600;
+                string formatted = KCT_Utilities.GetColonFormattedTime(time);
+                if (GUILayout.Button(formatted+" (x"+KCT_Utilities.TimeMultipliers[len]+")"))
                 {
                     simLength = len;
                     showSimLengthChooser = false;
@@ -814,13 +817,13 @@ namespace Kerbal_Construction_Time
         public static void DrawLaunchAlert(int windowID)
         {
             GUILayout.BeginVertical();
-            if (GUILayout.Button("Add to Build List"))
+            if (GUILayout.Button("Build Vessel"))
             {
                 KCT_Utilities.AddVesselToBuildList(useInventory);
                 showLaunchAlert = false;
                 unlockEditor = true;
             }
-            if (GUILayout.Button("Simulate Launch"))
+            if (GUILayout.Button("Simulate Vessel"))
             {
                 simulationConfigPosition.height = 1;
                 showLaunchAlert = false;
@@ -905,7 +908,7 @@ namespace Kerbal_Construction_Time
             }
 
             if ((KCT_GameStates.settings.NoCostSimulations || Funding.Instance.Funds >= (KCT_GameStates.SimulationCost*1.1))
-                && GUILayout.Button("Purchase Additional Time\n" + (KCT_GameStates.settings.NoCostSimulations ? "Free" : (KCT_GameStates.SimulationCost * 1.1).ToString() + " funds")))
+                && GUILayout.Button("Purchase Additional Time\n" + (KCT_GameStates.settings.NoCostSimulations ? "Free" : Math.Round(KCT_GameStates.SimulationCost * 1.1).ToString() + " funds")))
             {
                 showSimulationCompleteFlight = false;
                 if (!KCT_GameStates.settings.NoCostSimulations)
@@ -913,10 +916,11 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.FundsToChargeAtSimEnd += KCT_GameStates.SimulationCost * 1.1F;
                     KCT_Utilities.SpendFunds(KCT_GameStates.SimulationCost * 1.1F);
                 }
-                KCT_GameStates.simulationEndTime += KCT_GameStates.simulationTimeLimit;
-                //KCT_GameStates.simulationTimeLimit *= 2;
+                KCT_GameStates.simulationEndTime += KCT_GameStates.simulationDefaultTimeLimit;
+                KCT_GameStates.simulationTimeLimit += KCT_GameStates.simulationDefaultTimeLimit;
                 KCT_GameStates.SimulationCost *= 1.1F;
                 FlightDriver.SetPause(false);
+                TimeWarp.SetRate(0, true);
                 centralWindowPosition.height = 1;
             }
 
@@ -948,6 +952,7 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.flightSimulated = false;
                 KCT_Utilities.disableSimulationLocks();
                 HighLogic.LoadScene(GameScenes.SPACECENTER);
+                centralWindowPosition.height = 1;
             }
             GUILayout.EndVertical();
         }
@@ -1801,7 +1806,55 @@ namespace Kerbal_Construction_Time
             List<ProtoCrewMember> availableCrew = CrewAvailable();
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.MaxHeight(Screen.height / 2));
             scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(availableCrew.Count * 28 + 35), GUILayout.MaxHeight(Screen.height / 2));
+
+            float cWidth = 80;
+
             GUILayout.BeginHorizontal();
+            GUILayout.Label("Name:");
+            GUILayout.Label("Courage:", GUILayout.Width(cWidth));
+            GUILayout.Label("Stupidity:", GUILayout.Width(cWidth));
+            //GUILayout.Space(cWidth/2);
+            GUILayout.EndHorizontal();
+
+            foreach (ProtoCrewMember crew in availableCrew)
+            {
+                GUILayout.BeginHorizontal();
+                //GUILayout.Label(crew.name);
+                if (GUILayout.Button(crew.name))
+                {
+                    List<ProtoCrewMember> activeCrew;
+                    activeCrew = KCT_GameStates.launchedCrew[partIndexToCrew].crewList;
+                    if (activeCrew.Count > indexToCrew)
+                    {
+                        activeCrew.Insert(indexToCrew, crew);
+                        if (activeCrew[indexToCrew + 1] == null)
+                            activeCrew.RemoveAt(indexToCrew + 1);
+                    }
+                    else
+                    {
+                        for (int i = activeCrew.Count; i < indexToCrew; i++)
+                        {
+                            activeCrew.Insert(i, null);
+                        }
+                        activeCrew.Insert(indexToCrew, crew);
+                    }
+                    availableCrew.Remove(crew);
+                    KCT_GameStates.launchedCrew[partIndexToCrew].crewList = activeCrew;
+                    showCrewSelect = false;
+                    showShipRoster = true;
+                    crewListWindowPosition.height = 1;
+                    break;
+                }
+                GUILayout.HorizontalSlider(crew.courage, 0, 1, HighLogic.Skin.horizontalSlider, HighLogic.Skin.horizontalSliderThumb, GUILayout.Width(cWidth));
+                GUILayout.HorizontalSlider(crew.stupidity, 0, 1, HighLogic.Skin.horizontalSlider, HighLogic.Skin.horizontalSliderThumb, GUILayout.Width(cWidth));
+                
+
+
+                GUILayout.EndHorizontal();
+            }
+
+
+           /* GUILayout.BeginHorizontal();
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
             GUILayout.Label("Name:");
             foreach (ProtoCrewMember crew in availableCrew) 
@@ -1824,8 +1877,8 @@ namespace Kerbal_Construction_Time
                 GUILayout.HorizontalSlider(crew.stupidity, 0, 1, HighLogic.Skin.horizontalSlider, HighLogic.Skin.horizontalSliderThumb, GUILayout.Height(25));
                 //GUILayout.Label(crew.stupidity.ToString(), GUILayout.Height(25));
             }
-            GUILayout.EndVertical();
-            GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+            GUILayout.EndVertical();*/
+           /* GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
             GUILayout.Label("");
             foreach (ProtoCrewMember crew in availableCrew)
             {
@@ -1866,7 +1919,7 @@ namespace Kerbal_Construction_Time
                             activeCrew.Insert(indexToCrew, crew);
                         }
                         KCT_GameStates.launchedCrew.Add(partToCrew.uid, activeCrew);
-                    }*/
+                    }
                     showCrewSelect = false;
                     showShipRoster = true;
                     crewListWindowPosition.height = 1;
@@ -1874,7 +1927,7 @@ namespace Kerbal_Construction_Time
                 }
             }
             GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
+            GUILayout.EndHorizontal();*/
             GUILayout.EndScrollView();
             if (GUILayout.Button("Cancel"))
             {
