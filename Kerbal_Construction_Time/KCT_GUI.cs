@@ -68,7 +68,7 @@ namespace Kerbal_Construction_Time
                 if (showSOIAlert)
                     SOIAlertPosition = GUILayout.Window(8951, SOIAlertPosition, KCT_GUI.DrawSOIAlertWindow, "SOI Change", windowStyle);
                 if (showLaunchAlert)
-                    centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawLaunchAlert, "Build or Simulate?", windowStyle);
+                    centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawLaunchAlert, "KCT", windowStyle);
                 if (showSimulationCompleteEditor)
                     centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawSimulationCompleteEditor, "Simulation Complete!", windowStyle);
                 if (showSimulationCompleteFlight)
@@ -1039,13 +1039,13 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             //List next vessel to finish
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Next vessel:");
+            GUILayout.Label("Next:");
             IKCTBuildItem buildItem = KCT_Utilities.NextThingToFinish();
             if (buildItem != null)
             {
                 //KCT_BuildListVessel ship = (KCT_BuildListVessel)buildItem;
                 GUILayout.Label(buildItem.GetItemName());
-                if (buildItem.GetListType() == KCT_BuildListVessel.ListType.VAB)
+                if (buildItem.GetListType() == KCT_BuildListVessel.ListType.VAB || buildItem.GetListType() == KCT_BuildListVessel.ListType.Reconditioning)
                 {
                     GUILayout.Label("VAB");
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
@@ -1060,12 +1060,6 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label("Tech");
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
                 }
-                else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.Reconditioning)
-                {
-                    GUILayout.Label("Reconditioning");
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
-                }
-                
                 
                 if (TimeWarp.CurrentRateIndex == 0 && GUILayout.Button("Warp to" + System.Environment.NewLine + "Complete"))
                 {
@@ -2472,8 +2466,8 @@ namespace Kerbal_Construction_Time
             }
             if (GUILayout.Button("Rename"))
             {
-                centralWindowPosition.width = Screen.width / 8;
-                centralWindowPosition.xMin = (Screen.width - centralWindowPosition.width) / 2;
+                centralWindowPosition.width = 360;
+                centralWindowPosition.x = (Screen.width - 360) / 2;
                 centralWindowPosition.height = 1;
                 showBuildList = false;
                 showBLPlus = false;
@@ -2503,9 +2497,9 @@ namespace Kerbal_Construction_Time
         private static string newName = "";
         public static void DrawRenameWindow(int windowID)
         {
-            if (centralWindowPosition.yMin != (Screen.height - centralWindowPosition.height) / 2)
+            if (centralWindowPosition.y != (Screen.height - centralWindowPosition.height) / 2)
             {
-                centralWindowPosition.yMin = (Screen.height - centralWindowPosition.height) / 2;
+                centralWindowPosition.y = (Screen.height - centralWindowPosition.height) / 2;
                 centralWindowPosition.height = 1;
             }
             GUILayout.BeginVertical();
@@ -2532,13 +2526,13 @@ namespace Kerbal_Construction_Time
                 //b.getShip().shipDescription = newDesc;
                 showRename = false;
                 centralWindowPosition.width = 150;
-                centralWindowPosition.xMin = (Screen.width - 150) / 2;
+                centralWindowPosition.x = (Screen.width - 150) / 2;
                 showBuildList = true;
             }
             if (GUILayout.Button("Cancel"))
             {
                 centralWindowPosition.width = 150;
-                centralWindowPosition.xMin = (Screen.width - 150) / 2;
+                centralWindowPosition.x = (Screen.width - 150) / 2;
                 showRename = false;
                 showBuildList = true;
             }
@@ -2553,7 +2547,7 @@ namespace Kerbal_Construction_Time
                 centralWindowPosition.Set((Screen.width - 450) / 2, (Screen.height - 200) / 2, 450, 200);
             }
             GUILayout.BeginVertical();
-            GUILayout.Label("Welcome to KCT! It is advised that you spend your " + KCT_GameStates.TotalUpgradePoints + " upgrades to increase the build rate in the building you will primarily be using.");
+            GUILayout.Label("Welcome to KCT! It is advised that you spend your " + (KCT_GameStates.TotalUpgradePoints-KCT_Utilities.TotalSpentUpgrades()) + " upgrades to increase the build rate in the building you will primarily be using.");
             GUILayout.Label("Please see the getting started guide included in the download or available from the forum for more information!");
             if (KCT_GameStates.settings.CheckForUpdates)
                 GUILayout.Label("Due to your settings, automatic update checking is enabled. You can disable it in the Settings menu!");
@@ -2574,7 +2568,7 @@ namespace Kerbal_Construction_Time
                 centralWindowPosition.width = 150;
                 ShowSettings();
             }
-            if (GUILayout.Button("Not Now"))
+            if (GUILayout.Button("Close"))
             {
                 showFirstRun = false;
                 centralWindowPosition.height = 1;

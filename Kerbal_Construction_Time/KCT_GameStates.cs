@@ -21,7 +21,7 @@ namespace Kerbal_Construction_Time
         public static String simulationReason;
         public static KCT_Settings settings = new KCT_Settings();
         public static KCT_TimeSettings timeSettings = new KCT_TimeSettings();
-        public static double simulationEndTime = 0, simulationTimeLimit = 0, simulationDefaultTimeLimit;
+        public static double simulationEndTime = 0, simulationTimeLimit = 0, simulationDefaultTimeLimit = 0;
         public static List<KCT_BuildListVessel> VABList = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();

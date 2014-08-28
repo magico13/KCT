@@ -52,6 +52,8 @@ namespace Kerbal_Construction_Time
             VersionSpecific = false;
             Debug = false;
             OverrideLaunchButton = true;
+            RecoveryModifier = 0.75F;
+            Reconditioning = true;
 
             RecoveryModifierDefault = 0.75f;
             NoCostSimulationsDefault = false;
