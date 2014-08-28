@@ -390,13 +390,26 @@ namespace Kerbal_Construction_Time
                     if (GUILayout.Button("Build"))
                     {
                         KCT_Utilities.AddVesselToBuildList(useInventory);
+                        PartCategories CategoryCurrent = PartCategories.none;
+                        switch (currentCategoryInt)
+                        {
+                            case 0: CategoryCurrent = PartCategories.Pods; break;
+                            case 1: CategoryCurrent = PartCategories.Propulsion; break;
+                            case 2: CategoryCurrent = PartCategories.Control; break;
+                            case 3: CategoryCurrent = PartCategories.Structural; break;
+                            case 4: CategoryCurrent = PartCategories.Aero; break;
+                            case 5: CategoryCurrent = PartCategories.Utility; break;
+                            case 6: CategoryCurrent = PartCategories.Science; break;
+                            default: CategoryCurrent = PartCategories.none; break;
+                        }
+                        InventoryCategoryChanged(CategoryCurrent);
+                        KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                     }
                     if (GUILayout.Button("Simulate"))
                     {
                         simulationConfigPosition.height = 1;
                         EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
                         showSimConfig = true;
-                        KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                     }
                     GUILayout.EndHorizontal();
                 }
@@ -820,6 +833,20 @@ namespace Kerbal_Construction_Time
             if (GUILayout.Button("Build Vessel"))
             {
                 KCT_Utilities.AddVesselToBuildList(useInventory);
+                PartCategories CategoryCurrent = PartCategories.none;
+                switch (currentCategoryInt)
+                {
+                    case 0: CategoryCurrent = PartCategories.Pods; break;
+                    case 1: CategoryCurrent = PartCategories.Propulsion; break;
+                    case 2: CategoryCurrent = PartCategories.Control; break;
+                    case 3: CategoryCurrent = PartCategories.Structural; break;
+                    case 4: CategoryCurrent = PartCategories.Aero; break;
+                    case 5: CategoryCurrent = PartCategories.Utility; break;
+                    case 6: CategoryCurrent = PartCategories.Science; break;
+                    default: CategoryCurrent = PartCategories.none; break;
+                }
+                InventoryCategoryChanged(CategoryCurrent);
+                KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 showLaunchAlert = false;
                 unlockEditor = true;
             }
@@ -2505,8 +2532,6 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             GUILayout.Label("Name:");
             newName = GUILayout.TextField(newName);
-            //GUILayout.Label("Description:");
-            //newDesc = GUILayout.TextArea(newDesc);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Save"))
             {
@@ -2521,9 +2546,6 @@ namespace Kerbal_Construction_Time
                 }
                 KCT_BuildListVessel b = buildList[IndexSelected];
                 b.shipName = newName; //Change the name from our point of view
-               // b.GetShip().shipName = newName; //Change the name in the actual ship
-               // b.shipNode = b.GetShip().SaveShip(); //Save the change to the ship config node
-                //b.getShip().shipDescription = newDesc;
                 showRename = false;
                 centralWindowPosition.width = 150;
                 centralWindowPosition.x = (Screen.width - 150) / 2;
