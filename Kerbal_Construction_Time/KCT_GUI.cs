@@ -2136,8 +2136,8 @@ namespace Kerbal_Construction_Time
                 GUILayout.BeginHorizontal();
                 double mult;
                 if (!double.TryParse(newMultiplier, out mult)) mult = KCT_GameStates.timeSettings.OverallMultiplier;
-                double days = mult * (GameSettings.KERBIN_TIME ? 4 : 1);
-                GUILayout.Label(days + " day(s) per ");
+                double days = mult * 86400;
+                GUILayout.Label(days + " BP per ");
                 newReconEffect = GUILayout.TextField(newReconEffect, 10, GUILayout.Width(100));
                 GUILayout.Label(" tons.");
                 GUILayout.EndHorizontal();
