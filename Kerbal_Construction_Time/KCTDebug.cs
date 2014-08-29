@@ -12,7 +12,7 @@ namespace Kerbal_Construction_Time
         {
             if (KCT_GameStates.settings.Debug)
             {
-                Debug.Log(message);
+                Debug.Log("[KCT] "+message);
             }
         }
     }
