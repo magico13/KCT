@@ -64,7 +64,7 @@ namespace Kerbal_Construction_Time
                 else
                 {
                     string commonName = part.partInfo.title + KCT_Utilities.GetTweakScaleSize(part);
-                    Debug.Log("[KCT] Part " + name + " was too damaged to be used anymore and was scrapped!");
+                    Debug.Log("[KCT] Part " + commonName + " was too damaged to be used anymore and was scrapped! Chance: "+damage);
                     if (!destroyed.ContainsKey(commonName))
                         destroyed.Add(commonName, 1);
                     else
@@ -77,6 +77,7 @@ namespace Kerbal_Construction_Time
                 StringBuilder msg = new StringBuilder();
                 msg.AppendLine("The following parts were too damaged to be reused and were scrapped:");
                 foreach (KeyValuePair<string, int> entry in destroyed) msg.AppendLine(entry.Value+" x "+entry.Key);
+                msg.AppendLine("\nChance of failure: " + Math.Round(100 * damage) + "%");
                 KCT_Utilities.DisplayMessage("KCT: Parts Scrapped", msg, MessageSystemButton.MessageButtonColor.ORANGE, MessageSystemButton.ButtonIcons.ALERT);
             }
         }
