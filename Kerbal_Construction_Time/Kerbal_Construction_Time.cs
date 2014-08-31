@@ -180,17 +180,21 @@ namespace Kerbal_Construction_Time
     {
         internal Kerbal_Construction_Time()
         {
-            if (ToolbarManager.ToolbarAvailable)
+            if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null)
             {
                 KCTDebug.Log("Adding Toolbar Button");
                 KCT_GameStates.kctToolbarButton = ToolbarManager.Instance.add("Kerbal_Construction_Time", "MainButton");
-                if (!KCT_GameStates.settings.enabledForSave) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
-                KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
-                KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
-                KCT_GameStates.kctToolbarButton.OnClick += ((e) =>
+                if (KCT_GameStates.kctToolbarButton != null)
                 {
-                    KCT_GUI.onClick();
-                });
+                    if (!KCT_GameStates.settings.enabledForSave) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
+                    else KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(new GameScenes[] { GameScenes.SPACECENTER, GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.EDITOR, GameScenes.SPH });
+                    KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
+                    KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
+                    KCT_GameStates.kctToolbarButton.OnClick += ((e) =>
+                    {
+                        KCT_GUI.onClick();
+                    });
+                }
             }
         }
 
@@ -324,11 +328,6 @@ namespace Kerbal_Construction_Time
             {
                 KCT_GUI.hideAll();
                 KCT_GameStates.reset();
-                if (!KCT_GUI.PrimarilyDisabled)
-                {
-                    KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
-                    KCT_GUI.ResetBLWindow();
-                }
                 if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
                 {
                     KCT_GameStates.TotalUpgradePoints = KCT_GameStates.settings.SandboxUpgrades;
@@ -373,13 +372,13 @@ namespace Kerbal_Construction_Time
         private static bool updateChecked = false;
         public void FixedUpdate()
         {
-            if (KCT_GUI.PrimarilyDisabled)
+            if (!KCT_GameStates.settings.enabledForSave)
                 return;
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
-                if (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated)
+                if (!KCT_GUI.PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated))
                 {
                     IKCTBuildItem ikctItem = KCT_Utilities.NextThingToFinish();
                     if (KCT_GameStates.targetedItem == null && ikctItem != null) KCT_GameStates.targetedItem = ikctItem;
@@ -440,6 +439,7 @@ namespace Kerbal_Construction_Time
                         }
                         else if (KCT_GameStates.simulateInOrbit && (!KCT_GameStates.delayMove || DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0))
                         {
+                            KCTDebug.Log("Moving vessel to orbit. " + KCT_GameStates.simulationBody.bodyName + ":" + KCT_GameStates.simOrbitAltitude + ":" + KCT_GameStates.simInclination);
                             KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simOrbitAltitude, KCT_GameStates.simInclination);
                             moved = true;
                             loadDeferTime = DateTime.MaxValue;
@@ -464,7 +464,9 @@ namespace Kerbal_Construction_Time
                         KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + KCT_GameStates.simulationTimeLimit; //Just in case the event doesn't fire
                     }
                 }
-                KCT_Utilities.ProgressBuildTime();
+
+                if (!KCT_GUI.PrimarilyDisabled)
+                    KCT_Utilities.ProgressBuildTime();
             }
             catch (IndexOutOfRangeException e)
             {
@@ -546,6 +548,16 @@ namespace Kerbal_Construction_Time
                     ConfigNode[] techNodes = CN.GetNodes("Tech");
                     KCTDebug.Log("technodes length: " + techNodes.Length);
                     KCT_GameStates.TotalUpgradePoints = techNodes.Length + 14;
+                }
+                if (!KCT_GUI.PrimarilyDisabled)
+                {
+                    KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
+                    KCT_GUI.ResetBLWindow();
+                }
+                else
+                {
+                    KCT_GUI.showBuildList = false;
+                    KCT_GameStates.showWindows[0] = false;
                 }
                 if (KCT_GameStates.firstStart)
                 {
