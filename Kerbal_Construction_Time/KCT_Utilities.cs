@@ -310,7 +310,8 @@ namespace Kerbal_Construction_Time
         public static void ProgressBuildTime()
         {
             UT = Planetarium.GetUniversalTime();
-            if (lastUT < UT && lastUT > 0)
+            double UTDiff = UT - lastUT;
+            if (UTDiff > 0 && UTDiff < (TimeWarp.fetch.warpRates[TimeWarp.fetch.warpRates.Length-1]*2) && lastUT > 0)
             {
                 double buildRate = 0;
                 if (KCT_GameStates.VABList.Count > 0)
@@ -606,8 +607,8 @@ namespace Kerbal_Construction_Time
                 {
                     inventory.Remove(name);
                 }
-                return true;
                 KCTDebug.Log("Removed " + name + " from part inventory");
+                return true;
             }
             return false;
         }

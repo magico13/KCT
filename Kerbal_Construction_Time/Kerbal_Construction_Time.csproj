@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -84,7 +87,7 @@ set GAMEPATH="C:\Program Files (x86)\Steam\SteamApps\common\Kerbal Space Program
 
 echo Gamepath: %25GAMEPATH%25
 set DestPath="%25GAMEPATH%25\GameData\KerbalConstructionTime"
-set Binary="%25GAMEPATH%25\KSP.exe"
+set Binary="%25GAMEPATH%25\KSP_x64.exe"
 
 if not $(ConfigurationName)==Debug goto DEBUGCONFIG
 :DEBUGCONFIG

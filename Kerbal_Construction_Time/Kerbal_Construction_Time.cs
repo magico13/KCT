@@ -178,8 +178,10 @@ namespace Kerbal_Construction_Time
 
     public class Kerbal_Construction_Time : MonoBehaviour
     {
+        public static MonoBehaviour instance;
         internal Kerbal_Construction_Time()
         {
+            instance = this;
             if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null)
             {
                 KCTDebug.Log("Adding Toolbar Button");
@@ -309,14 +311,6 @@ namespace Kerbal_Construction_Time
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
                     KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[1];
-                   
-                    if (KCT_GameStates.settings.OverrideLaunchButton)
-                    {
-                        EditorLogic.fetch.launchBtn.methodToInvoke = "ShowLaunchAlert";
-                        EditorLogic.fetch.launchBtn.scriptWithMethodToInvoke = this;
-                    }
-                    else
-                        InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
                 }
                 if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
                 {
@@ -500,6 +494,11 @@ namespace Kerbal_Construction_Time
                 KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd);
                 KCT_GameStates.FundsToChargeAtSimEnd = 0;
             }
+            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.FundsGivenForVessel != 0)
+            {
+                KCT_Utilities.SpendFunds(KCT_GameStates.FundsGivenForVessel);
+                KCT_GameStates.FundsGivenForVessel = 0;
+            }
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
             {
@@ -537,6 +536,17 @@ namespace Kerbal_Construction_Time
                 {
                     KCTDebug.Log("Editing " + KCT_GameStates.editedVessel.shipName);
                     EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
+                }
+                if (!KCT_GUI.PrimarilyDisabled)
+                {
+                    if (KCT_GameStates.settings.OverrideLaunchButton)
+                    {
+                        KCTDebug.Log("Taking control of launch button");
+                        EditorLogic.fetch.launchBtn.methodToInvoke = "ShowLaunchAlert";
+                        EditorLogic.fetch.launchBtn.scriptWithMethodToInvoke = Kerbal_Construction_Time.instance;
+                    }
+                    else
+                        InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
                 }
             }
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)

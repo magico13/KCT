@@ -720,7 +720,7 @@ namespace Kerbal_Construction_Time
                 cost = 0;
             
             GUILayout.BeginHorizontal();
-            if (((KCT_Utilities.CurrentGameIsCareer() && (Funding.Instance.Funds >= (cost + EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2))))
+            if (((KCT_Utilities.CurrentGameIsCareer() && (Funding.Instance.Funds >= cost))
                 || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
             {
                 if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
@@ -750,6 +750,11 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_Utilities.SpendFunds(cost);
                     KCT_GameStates.SimulationCost = cost;
+                }
+                if (KCT_Utilities.CurrentGameIsCareer())
+                {
+                    KCT_GameStates.FundsGivenForVessel = EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2);
+                    KCT_Utilities.AddFunds(KCT_GameStates.FundsGivenForVessel);
                 }
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL);

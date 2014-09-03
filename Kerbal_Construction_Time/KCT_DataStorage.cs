@@ -78,6 +78,8 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool EnableAllBodies = false;
         [Persistent] public bool Reconditioning = true;
 
+        [Persistent] public float fundsFromSimulation = 0;
+
 
 
         [Persistent] bool firstStart = true;
@@ -100,6 +102,7 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.RDUpgrades = RDUpgrades;
             KCT_GameStates.PurchasedUpgrades = PurchasedUpgrades;
             KCT_GameStates.TotalUpgradePoints = TotalUpgradePoints;
+            KCT_GameStates.FundsGivenForVessel = fundsFromSimulation;
             SetSettings();
             //Fix for change to number of upgrades at start.
             if (firstStart)
@@ -124,6 +127,7 @@ namespace Kerbal_Construction_Time
             RDUpgrades = KCT_GameStates.RDUpgrades;
             PurchasedUpgrades = KCT_GameStates.PurchasedUpgrades;
             TotalUpgradePoints = KCT_GameStates.TotalUpgradePoints;
+            fundsFromSimulation = KCT_GameStates.FundsGivenForVessel;
             firstStart = KCT_GameStates.firstStart;
             GetSettings();
         }

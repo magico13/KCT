@@ -51,7 +51,7 @@ namespace Kerbal_Construction_Time
         public static bool simulateInOrbit = false;
         public static double simOrbitAltitude = 0, simInclination = 0;
         public static List<String> BodiesVisited = new List<string> {"Kerbin"};
-        public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0;
+        public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;
 
         public static void reset()
         {
