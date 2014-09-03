@@ -1237,7 +1237,7 @@ namespace Kerbal_Construction_Time
                     if (b.buildRate > 0)
                         GUILayout.Label(KCT_Utilities.GetColonFormattedTime(b.timeLeft), GUILayout.Width(width2));
                     else
-                        GUILayout.Label("Est: " + KCT_Utilities.GetColonFormattedTime((b.buildPoints - b.progress) / KCT_Utilities.GetBuildRate(0, KCT_BuildListVessel.ListType.VAB)), GUILayout.Width(width2));
+                        GUILayout.Label("Est: " + KCT_Utilities.GetColonFormattedTime((b.buildPoints - b.progress) / KCT_Utilities.GetBuildRate(0, KCT_BuildListVessel.ListType.SPH)), GUILayout.Width(width2));
                     GUILayout.Label(Math.Round(b.buildPoints, 2).ToString(), GUILayout.Width(width1 / 2));
                     if (i > 0 && GUILayout.Button("^", GUILayout.ExpandWidth(false)))
                     {

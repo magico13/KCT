@@ -13,7 +13,11 @@ namespace Kerbal_Construction_Time
         public static String WebVersion = "";
         public static Boolean CheckForUpdate(bool ForceCheck, bool versionSpecific)
         {
+#if DEBUG
+            string updateSite = "http://magico13.net/KCT/latest_beta";
+#else
             string updateSite = versionSpecific ? "http://magico13.net/KCT/latest-0-24-0" : "http://magico13.net/KCT/latest";
+#endif
             if (ForceCheck || WebVersion == "")
             {
                 Debug.Log("[KCT] Checking for updates...");
