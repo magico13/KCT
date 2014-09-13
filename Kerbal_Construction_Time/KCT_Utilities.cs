@@ -231,6 +231,7 @@ namespace Kerbal_Construction_Time
                     effectiveCost = cost;
                 }
 
+                if (effectiveCost < 0) effectiveCost = 0;
                 totalEffectiveCost += effectiveCost;
             }
 

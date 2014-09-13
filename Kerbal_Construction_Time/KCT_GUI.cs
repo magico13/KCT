@@ -28,7 +28,7 @@ namespace Kerbal_Construction_Time
         //private static Rect launchAlertPosition = new Rect((Screen.width-75)/2, (Screen.height-100)/2, 150, 100);
         //private static Rect simulationCompleteEditorPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
         //private static Rect simulationCompleteFlightPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
-        private static Rect simulationWindowPosition = new Rect((Screen.width - 250) / 2, (Screen.height - 250) / 2, 250, 250);
+        private static Rect simulationWindowPosition = new Rect((Screen.width - 250) / 2, (Screen.height - 250) / 2, 250, 1);
         public static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
         public static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 460, 1);
         private static Rect crewListWindowPosition = new Rect((Screen.width-360)/2, (Screen.height / 4), 360, 1);
@@ -36,7 +36,8 @@ namespace Kerbal_Construction_Time
         private static Rect upgradePosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 240, 1);
         private static Rect simulationConfigPosition = new Rect((Screen.width / 2)-150, (Screen.height / 4), 300, 1);
         private static Rect bLPlusPosition = new Rect(1, 1 / 2, 150, 1);
-        private static GUIStyle windowStyle = new GUIStyle(HighLogic.Skin.window);
+
+        private static GUISkin windowSkin;// = HighLogic.Skin;// = new GUIStyle(HighLogic.Skin.window);
 
         private static bool isKSCLocked = false, isEditorLocked = false;
 
@@ -44,6 +45,11 @@ namespace Kerbal_Construction_Time
         private static List<GameScenes> validScenes = new List<GameScenes> { GameScenes.FLIGHT, GameScenes.EDITOR, GameScenes.SPH, GameScenes.SPACECENTER, GameScenes.TRACKSTATION };
         public static void SetGUIPositions(GUI.WindowFunction OnWindow)
         {
+            GUISkin oldSkin = GUI.skin;
+            if (HighLogic.LoadedScene == GameScenes.SPACECENTER && windowSkin == null)
+                windowSkin = GUI.skin;
+            GUI.skin = windowSkin;
+
             if (validScenes.Contains(HighLogic.LoadedScene)) //&& KCT_GameStates.settings.enabledForSave)//!(HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && !KCT_GameStates.settings.SandboxEnabled))
             {
                 /*if (!ToolbarManager.ToolbarAvailable && GUI.Button(iconPosition, "KCT", GUI.skin.button))
@@ -57,48 +63,48 @@ namespace Kerbal_Construction_Time
 
 
                 if (showSettings)
-                    settingsPosition = GUILayout.Window(8955, settingsPosition, KCT_GUI.DrawSettings, "KCT Settings", windowStyle);
+                    settingsPosition = GUILayout.Window(8955, settingsPosition, KCT_GUI.DrawSettings, "KCT Settings", HighLogic.Skin.window);
                 if (!KCT_GameStates.settings.enabledForSave)
                     return;
 
                 if (showMainGUI)
-                    mainWindowPosition = GUILayout.Window(8950, mainWindowPosition, KCT_GUI.DrawMainGUI, "Kerbal Construction Time", windowStyle);
+                    mainWindowPosition = GUILayout.Window(8950, mainWindowPosition, KCT_GUI.DrawMainGUI, "Kerbal Construction Time", HighLogic.Skin.window);
                 if (showEditorGUI)
-                    editorWindowPosition = GUILayout.Window(8950, editorWindowPosition, KCT_GUI.DrawEditorGUI, "Kerbal Construction Time", windowStyle);
+                    editorWindowPosition = GUILayout.Window(8950, editorWindowPosition, KCT_GUI.DrawEditorGUI, "Kerbal Construction Time", HighLogic.Skin.window);
                 if (showSOIAlert)
-                    SOIAlertPosition = GUILayout.Window(8951, SOIAlertPosition, KCT_GUI.DrawSOIAlertWindow, "SOI Change", windowStyle);
+                    SOIAlertPosition = GUILayout.Window(8951, SOIAlertPosition, KCT_GUI.DrawSOIAlertWindow, "SOI Change", HighLogic.Skin.window);
                 if (showLaunchAlert)
-                    centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawLaunchAlert, "KCT", windowStyle);
+                    centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawLaunchAlert, "KCT", HighLogic.Skin.window);
                 if (showSimulationCompleteEditor)
-                    centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawSimulationCompleteEditor, "Simulation Complete!", windowStyle);
+                    centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawSimulationCompleteEditor, "Simulation Complete!", HighLogic.Skin.window);
                 if (showSimulationCompleteFlight)
-                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimulationCompleteFlight, "Simulation Complete!", windowStyle);
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimulationCompleteFlight, "Simulation Complete!", HighLogic.Skin.window);
                 if (showSimulationWindow)
-                    simulationWindowPosition = GUILayout.Window(8950, simulationWindowPosition, KCT_GUI.DrawSimulationWindow, "KCT Simulation", windowStyle);
+                    simulationWindowPosition = GUILayout.Window(8955, simulationWindowPosition, KCT_GUI.DrawSimulationWindow, "KCT Simulation", HighLogic.Skin.window);
                 if (showTimeRemaining && KCT_GameStates.simulationTimeLimit > 0)
-                    timeRemainingPosition = GUILayout.Window(8951, timeRemainingPosition, KCT_GUI.DrawSimulationTimeWindow, "Time left:", windowStyle);
+                    timeRemainingPosition = GUILayout.Window(8951, timeRemainingPosition, KCT_GUI.DrawSimulationTimeWindow, "Time left:", HighLogic.Skin.window);
                 if (showBuildList)
-                    buildListWindowPosition = GUILayout.Window(8950, buildListWindowPosition, KCT_GUI.DrawBuildListWindow, "Build List", windowStyle);
+                    buildListWindowPosition = GUILayout.Window(8950, buildListWindowPosition, KCT_GUI.DrawBuildListWindow, "Build List", HighLogic.Skin.window);
                 if (showClearLaunch)
-                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawClearLaunch, "Launch site not clear!", windowStyle);
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawClearLaunch, "Launch site not clear!", HighLogic.Skin.window);
                 if (showShipRoster)
-                    crewListWindowPosition = GUILayout.Window(8953, crewListWindowPosition, KCT_GUI.DrawShipRoster, "Select Crew", windowStyle);
+                    crewListWindowPosition = GUILayout.Window(8953, crewListWindowPosition, KCT_GUI.DrawShipRoster, "Select Crew", HighLogic.Skin.window);
                 if (showCrewSelect)
-                    crewListWindowPosition = GUILayout.Window(8954, crewListWindowPosition, KCT_GUI.DrawCrewSelect, "Select Crew", windowStyle);
+                    crewListWindowPosition = GUILayout.Window(8954, crewListWindowPosition, KCT_GUI.DrawCrewSelect, "Select Crew", HighLogic.Skin.window);
                 if (showSimConfig)
-                    simulationConfigPosition = GUILayout.Window(8951, simulationConfigPosition, KCT_GUI.DrawSimulationConfigure, "Simulation Configuration", windowStyle);
+                    simulationConfigPosition = GUILayout.Window(8951, simulationConfigPosition, KCT_GUI.DrawSimulationConfigure, "Simulation Configuration", HighLogic.Skin.window);
                 if (showBodyChooser)
-                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawBodyChooser, "Choose Body", windowStyle);
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawBodyChooser, "Choose Body", HighLogic.Skin.window);
                 if (showUpgradeWindow)
-                    upgradePosition = GUILayout.Window(8952, upgradePosition, KCT_GUI.DrawUpgradeWindow, "Upgrades", windowStyle);
+                    upgradePosition = GUILayout.Window(8952, upgradePosition, KCT_GUI.DrawUpgradeWindow, "Upgrades", HighLogic.Skin.window);
                 if (showBLPlus)
-                    bLPlusPosition = GUILayout.Window(8953, bLPlusPosition, KCT_GUI.DrawBLPlusWindow, "Options", windowStyle);
+                    bLPlusPosition = GUILayout.Window(8953, bLPlusPosition, KCT_GUI.DrawBLPlusWindow, "Options", HighLogic.Skin.window);
                 if (showRename)
-                    centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawRenameWindow, "Rename", windowStyle);
+                    centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawRenameWindow, "Rename", HighLogic.Skin.window);
                 if (showFirstRun)
-                    centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawFirstRun, "Kerbal Construction Time", windowStyle);
+                    centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawFirstRun, "Kerbal Construction Time", HighLogic.Skin.window);
                 if (showSimLengthChooser)
-                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimLengthChooser, "Time Limit", windowStyle);
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimLengthChooser, "Time Limit", HighLogic.Skin.window);
 
                 if (unlockEditor)
                 {
@@ -124,6 +130,7 @@ namespace Kerbal_Construction_Time
                         isKSCLocked = false;
                     }
                 }
+                GUI.skin = oldSkin;
             }
         }
 
@@ -580,16 +587,18 @@ namespace Kerbal_Construction_Time
                     InventoryCategoryChanged(CategoryCurrent);
                 }
 
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((InventoryForCategory.Count + 1) * 30, Screen.height / 1.4F))); //
-                GUILayout.BeginVertical();
 
                 float windowWidth = editorWindowPosition.width;
+                GUILayout.BeginVertical();
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((InventoryForCategory.Count+1) * 27, Screen.height / 4F)));
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Name:");
                 GUILayout.Label("Available:", GUILayout.Width(windowWidth / 7));
                 GUILayout.Label("In use:", GUILayout.Width(windowWidth / 7));
                 GUILayout.EndHorizontal();
-                foreach (KeyValuePair<string, int> entry in InventoryForCategory)
+
+                var ordered = InventoryForCategory.OrderBy(x => PartsInUse.ContainsKey(x.Key) ? PartsInUse[x.Key] : 0).ToDictionary(x => x.Key, x => x.Value).Reverse();
+                foreach (KeyValuePair<string, int> entry in ordered)
                 {
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(InventoryCommonNames[entry.Key]);
@@ -1065,13 +1074,14 @@ namespace Kerbal_Construction_Time
         private static int listWindow = -1;
         public static void DrawBuildListWindow(int windowID)
         {
+            //GUI.skin = HighLogic.Skin;
             int width1 = 120;
             int width2 = 100;
             int butW = 20;
             GUILayout.BeginVertical();
             //List next vessel to finish
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Next:");
+            GUILayout.Label("Next:", windowSkin.label);
             IKCTBuildItem buildItem = KCT_Utilities.NextThingToFinish();
             if (buildItem != null)
             {
@@ -1079,20 +1089,20 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label(buildItem.GetItemName());
                 if (buildItem.GetListType() == KCT_BuildListVessel.ListType.VAB || buildItem.GetListType() == KCT_BuildListVessel.ListType.Reconditioning)
                 {
-                    GUILayout.Label("VAB");
+                    GUILayout.Label("VAB", windowSkin.label);
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
                 }
                 else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.SPH)
                 {
-                    GUILayout.Label("SPH");
+                    GUILayout.Label("SPH", windowSkin.label);
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
                 }
                 else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.TechNode)
                 {
-                    GUILayout.Label("Tech");
+                    GUILayout.Label("Tech", windowSkin.label);
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
                 }
-                
+
                 if (TimeWarp.CurrentRateIndex == 0 && GUILayout.Button("Warp to" + System.Environment.NewLine + "Complete"))
                 {
                     KCT_GameStates.targetedItem = buildItem;
