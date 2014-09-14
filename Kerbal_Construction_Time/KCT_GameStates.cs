@@ -21,7 +21,6 @@ namespace Kerbal_Construction_Time
         public static String simulationReason;
         public static KCT_Settings settings = new KCT_Settings();
         public static KCT_TimeSettings timeSettings = new KCT_TimeSettings();
-        public static double simulationEndTime = 0, simulationTimeLimit = 0, simulationDefaultTimeLimit = 0;
         public static List<KCT_BuildListVessel> VABList = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
@@ -41,14 +40,17 @@ namespace Kerbal_Construction_Time
         public static IKCTBuildItem targetedItem = null;
         public static double EditorBuildTime = 0;
         public static Dictionary<string, int> EditedVesselParts = new Dictionary<string, int>();
-        
+        public static bool LaunchFromTS = false;
         public static KCT_Reconditioning LaunchPadReconditioning;
 
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
-
-
+        
+        
+        //Things pertaining to simulations
         public static CelestialBody simulationBody;
         public static bool simulateInOrbit = false;
+        public static double simulationUT = 0;
+        public static double simulationEndTime = 0, simulationTimeLimit = 0, simulationDefaultTimeLimit = 0;
         public static double simOrbitAltitude = 0, simInclination = 0;
         public static List<String> BodiesVisited = new List<string> {"Kerbin"};
         public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;

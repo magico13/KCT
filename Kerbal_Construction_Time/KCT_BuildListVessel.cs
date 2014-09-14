@@ -123,6 +123,7 @@ namespace Kerbal_Construction_Time
             string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
             shipNode.Save(tempFile);
             FlightDriver.StartWithNewLaunch(tempFile, flag, launchSite, new VesselCrewManifest());
+            KCT_GameStates.LaunchFromTS = false;
         }
 
         public bool RemoveFromBuildList()

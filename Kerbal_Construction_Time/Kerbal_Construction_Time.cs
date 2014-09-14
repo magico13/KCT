@@ -529,6 +529,7 @@ namespace Kerbal_Construction_Time
                 KCT_GUI.hideAll();
                 KCT_GUI.showSimulationWindow = true;
                 KCT_GUI.showTimeRemaining = true;
+                Planetarium.SetUniversalTime(KCT_GameStates.simulationUT);
             }
             if (HighLogic.LoadedSceneIsEditor)
             {
@@ -575,6 +576,10 @@ namespace Kerbal_Construction_Time
                     KCT_GUI.showFirstRun = true;
                 }
                 KCT_GameStates.firstStart = false;
+                if (KCT_GameStates.LaunchFromTS)
+                {
+                    KCT_GameStates.launchedVessel.Launch();
+                }
             }
         }
 
