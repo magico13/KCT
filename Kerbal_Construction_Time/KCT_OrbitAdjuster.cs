@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Kerbal_Construction_Time
 {
@@ -130,21 +131,80 @@ namespace Kerbal_Construction_Time
 
             return new Orbit(inc, e, sma, lan, w, mEp, epoch, body);
         }
+
+
+        //Lander stuff, based on HyperEdit's lander code
+
+        public static void LandAtTarget(double latitude, double longitude, double altitude)
+        {
+            KCTDebug.Log("Landing a vessel at " + latitude + ", " + longitude + ", alt " + altitude);
+            if (FlightGlobals.fetch == null || FlightGlobals.ActiveVessel == null)
+                return;
+            var lander = FlightGlobals.ActiveVessel.GetComponent<LanderAttachment>();
+            if (lander == null)
+            {
+                lander = FlightGlobals.ActiveVessel.gameObject.AddComponent<LanderAttachment>();
+                lander.Latitude = latitude;
+                lander.Longitude = longitude;
+                lander.Altitude = altitude;
+            }
+            else
+                UnityEngine.Object.Destroy(lander);
+        }
+    }
+
+    //This code all is nearly identical to that of HyperEdit.
+    public class LanderAttachment : MonoBehaviour
+    {
+        private bool _alreadyTeleported;
+        public double Latitude;
+        public double Longitude;
+        public double Altitude;
+
+        public void FixedUpdate()
+        {
+            var vessel = GetComponent<Vessel>();
+            if (vessel != FlightGlobals.ActiveVessel)
+            {
+                Destroy(this);
+                return;
+            }
+            if (_alreadyTeleported)
+            {
+              /*  if (Math.Max(0, vessel.terrainAltitude) > Altitude)
+                {
+                    var diff = vessel.mainBody.GetWorldSurfacePosition(Latitude, Longitude, Math.Max(0, vessel.terrainAltitude) + Altitude) - vessel.GetWorldPos3D();
+                    ((Krakensbane)FindObjectOfType(typeof(Krakensbane))).setOffset(diff);
+                }*/
+                if (vessel.LandedOrSplashed)
+                {
+                    Destroy(this);
+                }
+                else
+                {
+                    var accel = (vessel.srf_velocity + vessel.upAxis) * -0.5;
+                    vessel.ChangeWorldVelocity(accel);
+                }
+            }
+            else
+            {
+                var alt = vessel.mainBody.pqsController.GetSurfaceHeight(
+                    QuaternionD.AngleAxis(Longitude, Vector3d.down) *
+                    QuaternionD.AngleAxis(Latitude, Vector3d.forward) * Vector3d.right) -
+                          vessel.mainBody.pqsController.radius;
+                alt = Math.Max(alt, 0); // Underwater!
+                var diff = vessel.mainBody.GetWorldSurfacePosition(Latitude, Longitude, alt + Altitude) - vessel.GetWorldPos3D();
+                if (vessel.Landed)
+                    vessel.Landed = false;
+                else if (vessel.Splashed)
+                    vessel.Splashed = false;
+                foreach (var part in vessel.parts.Where(part => part.Modules.OfType<LaunchClamp>().Any()).ToList())
+                    part.Die();
+                
+                ((Krakensbane)FindObjectOfType(typeof(Krakensbane))).setOffset(diff);
+                vessel.ChangeWorldVelocity(-vessel.obt_velocity);
+                _alreadyTeleported = true;
+            }
+        }
     }
 }
-/*
-Copyright (C) 2014  Michael Marvin, Zachary Eck
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/

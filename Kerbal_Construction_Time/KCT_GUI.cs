@@ -683,14 +683,14 @@ namespace Kerbal_Construction_Time
                 simulationConfigPosition.height = 1;
             }
             GUILayout.EndHorizontal();
-            if (KCT_GameStates.simulationBody.bodyName == "Kerbin")
+            //if (KCT_GameStates.simulationBody.bodyName == "Kerbin")
             {
                 bool changed = KCT_GameStates.simulateInOrbit;
                 KCT_GameStates.simulateInOrbit = GUILayout.Toggle(KCT_GameStates.simulateInOrbit, " Start in orbit?");
                 if (KCT_GameStates.simulateInOrbit != changed)
                     simulationConfigPosition.height = 1;
             }
-            if (KCT_GameStates.simulationBody.bodyName != "Kerbin" || (KCT_GameStates.simulationBody.bodyName == "Kerbin" && KCT_GameStates.simulateInOrbit))
+            if (KCT_GameStates.simulateInOrbit)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Orbit Altitude (km): ");
@@ -700,8 +700,10 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("Min: " + KCT_GameStates.simulationBody.maxAtmosphereAltitude/1000);
                 GUILayout.Label("Max: " + Math.Floor(KCT_GameStates.simulationBody.sphereOfInfluence)/1000);
                 GUILayout.EndHorizontal();
-
-                if (!KCT_GameStates.simulateInOrbit) KCT_GameStates.simulateInOrbit = true;
+            }
+            else if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
+            {
+                //Landed on other bodies
             }
             
             GUILayout.BeginHorizontal();
@@ -718,7 +720,7 @@ namespace Kerbal_Construction_Time
             GUILayout.EndHorizontal();
 
             //simLength = GUILayout.TextField(simLength);
-            float nullFloat, nF2;
+            float nullFloat, nF2; //Costs will need reworked for landed on other bodies
             float cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 1);
             cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
             GUILayout.Label("Cost: " + cost);
@@ -755,8 +757,6 @@ namespace Kerbal_Construction_Time
             if (((KCT_Utilities.CurrentGameIsCareer() && (Funding.Instance.Funds >= cost))
                 || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
             {
-                if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
-                    KCT_GameStates.simulateInOrbit = true;
 
                 KCT_GameStates.simulationTimeLimit = 3600 * double.Parse(simLength);
                 KCT_GameStates.simulationDefaultTimeLimit = KCT_GameStates.simulationTimeLimit;

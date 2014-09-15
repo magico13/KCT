@@ -362,8 +362,9 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public static bool moved = false;
+        public static bool moved = false, landed = false;
         private static bool updateChecked = false;
+        private static int tickCount = 0;
         public void FixedUpdate()
         {
             if (!KCT_GameStates.settings.enabledForSave)
@@ -425,27 +426,47 @@ namespace Kerbal_Construction_Time
                 {
                     if (FlightGlobals.ActiveVessel.loaded && !FlightGlobals.ActiveVessel.packed && !moved)
                     {
+                        bool simulatingOffWorld = KCT_GameStates.simulationBody.bodyName != "Kerbin" || KCT_GameStates.simulateInOrbit;
+                        bool simulatingLandedOffWorld = KCT_GameStates.simulationBody.bodyName != "Kerbin" && !KCT_GameStates.simulateInOrbit;
+                        landed = false;
                         //moved = true;
                         int secondsForMove = 3;
-                        if (KCT_GameStates.simulateInOrbit && loadDeferTime == DateTime.MaxValue)
+                        if (simulatingOffWorld && loadDeferTime == DateTime.MaxValue)
                         {
                             loadDeferTime = DateTime.Now;
                         }
-                        else if (KCT_GameStates.simulateInOrbit && (!KCT_GameStates.delayMove || DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0))
+                        else if (simulatingOffWorld && !simulatingLandedOffWorld && (!KCT_GameStates.delayMove || DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0))
                         {
                             KCTDebug.Log("Moving vessel to orbit. " + KCT_GameStates.simulationBody.bodyName + ":" + KCT_GameStates.simOrbitAltitude + ":" + KCT_GameStates.simInclination);
                             KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simOrbitAltitude, KCT_GameStates.simInclination);
                             moved = true;
                             loadDeferTime = DateTime.MaxValue;
                         }
-                        else if (!KCT_GameStates.simulateInOrbit)
+                        else if (simulatingLandedOffWorld && (!KCT_GameStates.delayMove || DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0))
+                        {
+                            KCTDebug.Log("Moving vessel to orbit. " + KCT_GameStates.simulationBody.bodyName + ":" + KCT_GameStates.simulationBody.maxAtmosphereAltitude + 5000 + ":" + 0);
+                            KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simulationBody.maxAtmosphereAltitude + 5000, 0);
+                            moved = true;
+                            loadDeferTime = DateTime.MaxValue;
+                        }
+                        else if (!simulatingOffWorld)
                             moved = true;
 
-                        if (KCT_GameStates.simulateInOrbit && loadDeferTime != DateTime.MaxValue && lastSeconds != (loadDeferTime.AddSeconds(secondsForMove) - DateTime.Now).Seconds)
+                        if (simulatingOffWorld && loadDeferTime != DateTime.MaxValue && lastSeconds != (loadDeferTime.AddSeconds(secondsForMove) - DateTime.Now).Seconds)
                         {
                             double remaining = (loadDeferTime.AddSeconds(secondsForMove) - DateTime.Now).TotalSeconds;
                             ScreenMessages.PostScreenMessage("[KCT] Moving vessel in " + Math.Round(remaining) + " seconds", (float)(remaining - Math.Floor(remaining)), ScreenMessageStyle.UPPER_CENTER);
                             lastSeconds = (int)remaining;
+                        }
+                        tickCount = 0;
+                    }
+                    else if (!landed && moved && KCT_GameStates.simulationBody.bodyName != "Kerbin" && !KCT_GameStates.simulateInOrbit && FlightGlobals.ActiveVessel.loaded && !FlightGlobals.ActiveVessel.packed)
+                    {
+                        //++tickCount;
+                        //if (tickCount > 10)
+                        {
+                            KCT_OrbitAdjuster.LandAtTarget(KCT_GameStates.simLatitude, KCT_GameStates.simLongitude, KCT_GameStates.simLandAlt);
+                            landed = true;
                         }
                     }
                     if (KCT_GameStates.simulationEndTime > 0 && KCT_GameStates.UT >= KCT_GameStates.simulationEndTime)

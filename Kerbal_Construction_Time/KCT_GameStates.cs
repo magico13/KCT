@@ -52,6 +52,7 @@ namespace Kerbal_Construction_Time
         public static double simulationUT = 0;
         public static double simulationEndTime = 0, simulationTimeLimit = 0, simulationDefaultTimeLimit = 0;
         public static double simOrbitAltitude = 0, simInclination = 0;
+        public static double simLatitude = 0, simLongitude = 0, simLandAlt = 50;
         public static List<String> BodiesVisited = new List<string> {"Kerbin"};
         public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;
 
