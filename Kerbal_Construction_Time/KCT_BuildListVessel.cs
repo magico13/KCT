@@ -58,9 +58,16 @@ namespace Kerbal_Construction_Time
             shipNode = s.SaveShip();
             shipName = s.shipName;
             //Get total ship cost
-            float dry, fuel;
-            s.GetShipCosts(out dry, out fuel);
-            cost = dry + fuel;
+            if (!KCT_GUI.useInventory)
+            {
+                float dry, fuel;
+                s.GetShipCosts(out dry, out fuel);
+                cost = dry + fuel;
+            }
+            else
+            {
+                cost = Scrapyard.Scrapyard.Instance.TotalVesselCostAfterInventory(s.Parts);
+            }
 
             launchSite = ls;
             buildPoints = bP;

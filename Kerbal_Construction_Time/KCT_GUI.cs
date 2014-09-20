@@ -420,6 +420,10 @@ namespace Kerbal_Construction_Time
                     }
                     GUILayout.EndHorizontal();
                 }
+
+                float dryCost, fuelCost;
+                GUILayout.Label("Cost: " + Math.Round(useInventory ? Scrapyard.Scrapyard.Instance.TotalVesselCostAfterInventory(EditorLogic.fetch.ship.Parts) : EditorLogic.fetch.ship.GetShipCosts(out dryCost, out fuelCost)));
+
                 if (GUILayout.Button("Show/Hide Build List"))
                 {
                     showBuildList = !showBuildList;
@@ -493,7 +497,7 @@ namespace Kerbal_Construction_Time
                     if (KCT_GUI.useInventory)
                     {
                         List<string> newParts = new List<string>(KCT_Utilities.PartDictToList(KCT_GUI.PartsInUse));
-                        List<string> theInventory = new List<string>(KCT_Utilities.PartDictToList(KCT_GameStates.PartInventory));
+                        List<string> theInventory = new List<string>(KCT_Utilities.PartDictToList(Scrapyard.Scrapyard.Instance.Parts.Inventory));
                         foreach (string s in KCT_Utilities.PartDictToList(KCT_GameStates.EditedVesselParts))
                             if (newParts.Contains(s))
                                 newParts.Remove(s);
@@ -630,7 +634,7 @@ namespace Kerbal_Construction_Time
         {
             InventoryForCategory.Clear();
             InventoryCommonNames.Clear();
-            foreach (KeyValuePair<string, int> entry in KCT_GameStates.PartInventory)
+            foreach (KeyValuePair<string, float> entry in Scrapyard.Scrapyard.Instance.Parts.Inventory)
             {
                 string name = entry.Key;
                 string baseName = name.Split(',').Length == 1 ? name : name.Split(',')[0];
@@ -643,7 +647,7 @@ namespace Kerbal_Construction_Time
                     name = aPart.title + tweakscale;
                     if (!InventoryForCategory.ContainsKey(entry.Key))
                     {
-                        InventoryForCategory.Add(entry.Key, entry.Value);
+                        InventoryForCategory.Add(entry.Key, (int)entry.Value);
                         InventoryCommonNames.Add(entry.Key, name);
                     }
                 }

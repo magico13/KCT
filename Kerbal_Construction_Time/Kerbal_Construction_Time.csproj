@@ -43,6 +43,9 @@
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>..\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
+    <Reference Include="ScrapYard">
+      <HintPath>..\..\TheScrapyard\Scrapyard\obj\Release\ScrapYard.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

@@ -112,6 +112,19 @@ namespace Kerbal_Construction_Time
             return ret;
         }
 
+        public static List<String> PartDictToList(Dictionary<String, float> dict)
+        {
+            List<String> ret = new List<string>();
+            for (int i = 0; i < dict.Count; i++)
+            {
+                for (int j = 0; j < (int)dict.Values.ElementAt(i); j++)
+                {
+                    ret.Add(dict.Keys.ElementAt(i));
+                }
+            }
+            return ret;
+        }
+
         public static AvailablePart GetAvailablePartByName(string partName)
         {
             foreach (AvailablePart a in PartLoader.LoadedPartsList)
@@ -121,6 +134,11 @@ namespace Kerbal_Construction_Time
             }
             return null;
         }
+
+       /* public static Dictionary<string, int> GetPartInventory()
+        {
+            return Scrapyard.Scrapyard.Instance.Parts.Inventory.ToDictionary(kvp => kvp.Key, kvp => (int)kvp.Value);
+        }*/
 
        /* public static double GetBuildTime(List<string> partNames, bool useTracker, bool useInventory)
         {
@@ -133,7 +151,7 @@ namespace Kerbal_Construction_Time
         public static double GetBuildTime(List<ConfigNode> parts, bool useTracker, bool useInventory)
         {
             Dictionary<String, int> dict = new Dictionary<string, int>();
-            if (useInventory) dict = KCT_GameStates.PartInventory;
+            if (useInventory) dict = Scrapyard.Scrapyard.Instance.Parts.Inventory.ToDictionary(kvp => kvp.Key, kvp => (int)kvp.Value);
             return GetBuildTime(parts, useTracker, dict);
         }
 
@@ -563,7 +581,8 @@ namespace Kerbal_Construction_Time
         }
         public static void AddPartToInventory(String name)
         {
-            if (KCT_GameStates.PartInventory.ContainsKey(name))
+            Scrapyard.Scrapyard.Instance.Parts.Add(name);
+            /*if (KCT_GameStates.PartInventory.ContainsKey(name))
             {
                 ++KCT_GameStates.PartInventory[name];
             }
@@ -571,35 +590,55 @@ namespace Kerbal_Construction_Time
             {
                 KCT_GameStates.PartInventory.Add(name, 1);
             }
-            KCTDebug.Log("Added "+name+" to part inventory");
+            KCTDebug.Log("Added "+name+" to part inventory");*/
         }
 
 
-        public static bool RemovePartFromInventory(Part part)
+
+        public static float RemoveResourceFromInventory(String resourceName, float amount)
         {
-            string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
-            string nameToStore = part.partInfo.name + tweakscale;
-            return RemovePartFromInventory(nameToStore);
+            float amt = Math.Min(amount, Scrapyard.Scrapyard.Instance.Resources.Get(resourceName));
+            Scrapyard.Scrapyard.Instance.Resources.Remove(resourceName, amt);
+            return amount - amt;
         }
-        public static bool RemovePartFromInventory(Part part, Dictionary<String, int> inventory)
+        public static float RemovePartResourcesFromInventory(ProtoPartSnapshot part)
         {
-            string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
-            string nameToStore = part.partInfo.name + tweakscale;
-            return RemovePartFromInventory(nameToStore, inventory);
+            float costRemaining = 0;
+            foreach(ProtoPartResourceSnapshot resource in part.resources)
+            {
+                float amt = float.Parse(resource.resourceValues.GetValue("amount"));
+                float cost = PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost;
+                costRemaining += cost * RemoveResourceFromInventory(resource.resourceName, amt);
+            }
+            return costRemaining;
         }
+
         public static bool RemovePartFromInventory(ConfigNode part)
         {
-            return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part));
+            string name = PartNameFromNode(part) + GetTweakScaleSize(part);
+            if (Scrapyard.Scrapyard.Instance.Parts.Get(name) > 0)
+            {
+                Scrapyard.Scrapyard.Instance.Parts.Remove(name);
+                return true;
+            }
+            return false;
+            //return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part));
         }
-        public static bool RemovePartFromInventory(ConfigNode part, Dictionary<String, int> inventory)
+        /*public static bool RemovePartFromInventory(ConfigNode part, Dictionary<String, int> inventory)
         {
             return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part), inventory);
-        }
+        }*/
         public static bool RemovePartFromInventory(String name)
         {
-            return RemovePartFromInventory(name, KCT_GameStates.PartInventory);
+            if (Scrapyard.Scrapyard.Instance.Parts.Get(name) > 0)
+            {
+                Scrapyard.Scrapyard.Instance.Parts.Remove(name);
+                return true;
+            }
+            return false;
+            //return RemovePartFromInventory(name, KCT_Utilities.GetPartInventory());
         }
-        public static bool RemovePartFromInventory(String name, Dictionary<String, int> inventory)
+       /* public static bool RemovePartFromInventory(String name, Dictionary<String, int> inventory)
         {
             if (inventory.ContainsKey(name))
             {
@@ -612,7 +651,7 @@ namespace Kerbal_Construction_Time
                 return true;
             }
             return false;
-        }
+        }*/
 
         public static void AddPartToTracker(Part part)
         {
@@ -763,10 +802,7 @@ namespace Kerbal_Construction_Time
         {
             KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.SaveShip().GetNodes("PART").ToList(), true, useInventory), EditorLogic.FlagURL);
             blv.shipName = EditorLogic.fetch.shipNameField.Text;
-            Dictionary<String, int> inventory = new Dictionary<string,int>();
-            if (useInventory)
-                inventory = KCT_GameStates.PartInventory;
-            return AddVesselToBuildList(blv, inventory);
+            return AddVesselToBuildList(blv, useInventory);
         }
 
         public static KCT_BuildListVessel AddVesselToBuildList(Dictionary<String, int> inventory)
@@ -778,10 +814,51 @@ namespace Kerbal_Construction_Time
 
         public static KCT_BuildListVessel AddVesselToBuildList(KCT_BuildListVessel blv, bool useInventory)
         {
-            Dictionary<String, int> inventory = new Dictionary<string, int>();
-            if (useInventory)
-                inventory = KCT_GameStates.PartInventory;
-            return AddVesselToBuildList(blv, inventory);
+            if (CurrentGameIsCareer())
+            {
+                float totalCost = blv.cost;
+                double prevFunds = Funding.Instance.Funds;
+                double newFunds = SpendFunds(totalCost);
+                if (prevFunds == newFunds)
+                {
+                    KCTDebug.Log("Tried to add " + blv.shipName + " to build list but not enough funds.");
+                    KCTDebug.Log("Vessel cost: " + blv.cost + ", Current funds: " + newFunds);
+                    var msg = new ScreenMessage("Not Enough Funds To Build!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                    ScreenMessages.PostScreenMessage(msg, true);
+                    return blv;
+                }
+            }
+            string type = "";
+            if (blv.type == KCT_BuildListVessel.ListType.VAB)
+            {
+                KCT_GameStates.VABList.Add(blv);
+                type = "VAB";
+            }
+            else if (blv.type == KCT_BuildListVessel.ListType.SPH)
+            {
+                KCT_GameStates.SPHList.Add(blv);
+                type = "SPH";
+            }
+            if (Scrapyard.Scrapyard.Instance.Parts.Inventory.Count > 0)
+            {
+                foreach (ConfigNode p in blv.ExtractedPartNodes)
+                {
+                    if (KCT_Utilities.RemovePartFromInventory(p))
+                        blv.InventoryParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p));
+                }
+            }
+            if (Scrapyard.Scrapyard.Instance.Resources.Inventory.Count > 0)
+            {
+                foreach (ConfigNode p in blv.ExtractedPartNodes)
+                {
+                    if (KCT_Utilities.RemovePartFromInventory(p))
+                        blv.InventoryParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p));
+                }
+            }
+            KCTDebug.Log("Added " + blv.shipName + " to " + type + " build list. Cost: " + blv.cost);
+            var message = new ScreenMessage("[KCT] Added " + blv.shipName + " to " + type + " build list.", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+            ScreenMessages.PostScreenMessage(message, true);
+            return blv;
         }
 
         public static KCT_BuildListVessel AddVesselToBuildList(KCT_BuildListVessel blv, Dictionary<String, int> inventory)
@@ -815,8 +892,13 @@ namespace Kerbal_Construction_Time
             {
                 foreach (ConfigNode p in blv.ExtractedPartNodes)
                 {
-                    if (KCT_Utilities.RemovePartFromInventory(p, inventory))
-                        blv.InventoryParts.Add(PartNameFromNode(p)+GetTweakScaleSize(p));
+                    string name = PartNameFromNode(p) + GetTweakScaleSize(p);
+                    if (inventory.ContainsKey(name) && inventory[name] > 0)
+                    {
+                        //if (KCT_Utilities.RemovePartFromInventory(p, inventory))
+                        blv.InventoryParts.Add(name);
+                        --inventory[name];
+                    }
                 }
             }
             KCTDebug.Log("Added " + blv.shipName + " to " + type + " build list. Cost: "+blv.cost);
@@ -1042,7 +1124,7 @@ namespace Kerbal_Construction_Time
                 if (KCT_GUI.useInventory)
                 {
                     List<string> newParts = new List<string>(PartDictToList(KCT_GUI.PartsInUse));
-                    List<string> theInventory = new List<string>(PartDictToList(KCT_GameStates.PartInventory));
+                    List<string> theInventory = new List<string>(PartDictToList(Scrapyard.Scrapyard.Instance.Parts.Inventory));
                     foreach (string s in PartDictToList(KCT_GameStates.EditedVesselParts))
                         if (newParts.Contains(s))
                             newParts.Remove(s);

@@ -20,14 +20,14 @@ namespace Kerbal_Construction_Time
         public void addEvents()
         {
             GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
-            GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
+         //   GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
 
             if (!StageRecoveryWrapper.StageRecoveryAvailable)
                 GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
             else
             {
                 KCTDebug.Log("Deferring stage recovery to StageRecovery.");
-                StageRecoveryWrapper.AddRecoverySuccessEvent(StageRecoverySuccessEvent);
+               // StageRecoveryWrapper.AddRecoverySuccessEvent(StageRecoverySuccessEvent);
             }
 
             //GameEvents.onLaunch.Add(vesselSituationChange);
@@ -360,7 +360,7 @@ namespace Kerbal_Construction_Time
                         Message.AppendLine(PartsRecovered.Values.ElementAt(i) + "x " + PartsRecovered.Keys.ElementAt(i));
                     }
 
-                    if (KCT_Utilities.CurrentGameIsCareer())
+                  /*  if (KCT_Utilities.CurrentGameIsCareer())
                     {
                         if (KCT_Utilities.StageRecoveryAddonActive || KCT_Utilities.DebRefundAddonActive) //Delegate funds handling to Stage Recovery or DebRefund if it's present
                         {
@@ -397,7 +397,7 @@ namespace Kerbal_Construction_Time
                             Message.AppendLine("Funds recovered: " + FundsRecovered + "(" + Math.Round(RecoveryPercent * 100, 1) + "%)");
                             KCT_Utilities.AddFunds(FundsRecovered);
                         }
-                    }
+                    }*/
                     Message.AppendLine("\nAdditional information:");
                     Message.AppendLine("Distance from KSC: " + Math.Round(KSCDistance / 1000, 2) + " km");
                     if (!realChuteInUse)
