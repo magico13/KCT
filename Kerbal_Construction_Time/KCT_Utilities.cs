@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using ScrapYard = Scrapyard.Scrapyard;
 
 namespace Kerbal_Construction_Time
 {
+    
     static class KCT_Utilities
     {
         /// <summary>
@@ -151,7 +153,7 @@ namespace Kerbal_Construction_Time
         public static double GetBuildTime(List<ConfigNode> parts, bool useTracker, bool useInventory)
         {
             Dictionary<String, int> dict = new Dictionary<string, int>();
-            if (useInventory) dict = Scrapyard.Scrapyard.Instance.Parts.Inventory.ToDictionary(kvp => kvp.Key, kvp => (int)kvp.Value);
+            if (useInventory) dict = ScrapYard.Instance.Parts.Inventory.ToDictionary(kvp => kvp.Key, kvp => (int)kvp.Value);
             return GetBuildTime(parts, useTracker, dict);
         }
 
@@ -585,7 +587,7 @@ namespace Kerbal_Construction_Time
                 float amt = float.Parse(resource.GetValue("amount"));
                 if (amt > 0)
                 {
-                    Scrapyard.Scrapyard.Instance.Resources.Add(name, amt);
+                    ScrapYard.Instance.Resources.Add(name, amt);
                 }
             }
         }
@@ -598,7 +600,7 @@ namespace Kerbal_Construction_Time
                 float amt = float.Parse(resource.resourceValues.GetValue("amount"));
                 if (amt > 0)
                 {
-                    Scrapyard.Scrapyard.Instance.Resources.Add(name, amt);
+                    ScrapYard.Instance.Resources.Add(name, amt);
                 }
             }
         }
@@ -614,7 +616,7 @@ namespace Kerbal_Construction_Time
         }
         public static void AddPartToInventory(String name)
         {
-            Scrapyard.Scrapyard.Instance.Parts.Add(name);
+            ScrapYard.Instance.Parts.Add(name);
             /*if (KCT_GameStates.PartInventory.ContainsKey(name))
             {
                 ++KCT_GameStates.PartInventory[name];
@@ -630,8 +632,8 @@ namespace Kerbal_Construction_Time
 
         public static float RemoveResourceFromInventory(String resourceName, float amount)
         {
-            float amt = Math.Min(amount, Scrapyard.Scrapyard.Instance.Resources.Get(resourceName));
-            Scrapyard.Scrapyard.Instance.Resources.Remove(resourceName, amt);
+            float amt = Math.Min(amount, ScrapYard.Instance.Resources.Get(resourceName));
+            ScrapYard.Instance.Resources.Remove(resourceName, amt);
             return amount - amt;
         }
         public static float RemovePartResourcesFromInventory(ProtoPartSnapshot part)
@@ -649,9 +651,9 @@ namespace Kerbal_Construction_Time
         public static bool RemovePartFromInventory(ConfigNode part)
         {
             string name = PartNameFromNode(part) + GetTweakScaleSize(part);
-            if (Scrapyard.Scrapyard.Instance.Parts.Get(name) > 0)
+            if (ScrapYard.Instance.Parts.Get(name) > 0)
             {
-                Scrapyard.Scrapyard.Instance.Parts.Remove(name);
+                ScrapYard.Instance.Parts.Remove(name);
                 return true;
             }
             return false;
@@ -663,9 +665,9 @@ namespace Kerbal_Construction_Time
         }*/
         public static bool RemovePartFromInventory(String name)
         {
-            if (Scrapyard.Scrapyard.Instance.Parts.Get(name) > 0)
+            if (ScrapYard.Instance.Parts.Get(name) > 0)
             {
-                Scrapyard.Scrapyard.Instance.Parts.Remove(name);
+                ScrapYard.Instance.Parts.Remove(name);
                 return true;
             }
             return false;
@@ -872,7 +874,7 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.SPHList.Add(blv);
                 type = "SPH";
             }
-            if (Scrapyard.Scrapyard.Instance.Parts.Inventory.Count > 0)
+            if (ScrapYard.Instance.Parts.Inventory.Count > 0)
             {
                 foreach (ConfigNode p in blv.ExtractedPartNodes)
                 {
@@ -880,7 +882,7 @@ namespace Kerbal_Construction_Time
                         blv.InventoryParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p));
                 }
             }
-            if (Scrapyard.Scrapyard.Instance.Resources.Inventory.Count > 0)
+            if (ScrapYard.Instance.Resources.Inventory.Count > 0)
             {
                 foreach (ConfigNode p in blv.ExtractedPartNodes)
                 {
@@ -1157,7 +1159,7 @@ namespace Kerbal_Construction_Time
                 if (KCT_GUI.useInventory)
                 {
                     List<string> newParts = new List<string>(PartDictToList(KCT_GUI.PartsInUse));
-                    List<string> theInventory = new List<string>(PartDictToList(Scrapyard.Scrapyard.Instance.Parts.Inventory));
+                    List<string> theInventory = new List<string>(PartDictToList(ScrapYard.Instance.Parts.Inventory));
                     foreach (string s in PartDictToList(KCT_GameStates.EditedVesselParts))
                         if (newParts.Contains(s))
                             newParts.Remove(s);

@@ -61,8 +61,7 @@ namespace Kerbal_Construction_Time
             if (!KCT_GUI.useInventory)
             {
                 float dry, fuel;
-                s.GetShipCosts(out dry, out fuel);
-                cost = dry + fuel;
+                cost = s.GetShipCosts(out dry, out fuel);
             }
             else
             {

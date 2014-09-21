@@ -2427,6 +2427,7 @@ namespace Kerbal_Construction_Time
             if (GUILayout.Button("Scrap"))
             {
                 KCTDebug.Log("Scrapping " + b.shipName);
+                float toRefund = 0;
                 if (listWindow < 2)
                 {
                     List<ConfigNode> parts = b.ExtractedPartNodes;
@@ -2440,27 +2441,29 @@ namespace Kerbal_Construction_Time
                             ConfigNode aP = parts.Find(a => (KCT_Utilities.PartNameFromNode(a)+KCT_Utilities.GetTweakScaleSize(a)) == s);
                             totalCost -= KCT_Utilities.GetPartCostFromNode(aP);
                             parts.Remove(aP);
-                            KCT_Utilities.AddPartToInventory(s);
-                        }
-                        totalCost = (int) (totalCost * b.ProgressPercent() / 100);
-                        float sum = 0;
-                        while (parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum)) != null)
-                        {
-                            ConfigNode aP = parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum));
-                            sum += KCT_Utilities.GetPartCostFromNode(aP);
-                            parts.Remove(aP);
-                            KCT_Utilities.AddPartToInventory(aP);
+                            KCT_Utilities.AddPartAndFuelToInventory(aP);
                         }
                     }
+                    toRefund = totalCost;
+                    totalCost = (int) (totalCost * b.ProgressPercent() / 100);
+                    float sum = 0;
+                    while (parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum)) != null)
+                    {
+                        ConfigNode aP = parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum));
+                        sum += KCT_Utilities.GetPartCostFromNode(aP);
+                        parts.Remove(aP);
+                        KCT_Utilities.AddPartAndFuelToInventory(aP);
+                    }
                     buildList.RemoveAt(IndexSelected);
+                    toRefund -= sum;
                 }
                 else
                 {
                     foreach (ConfigNode p in b.ExtractedPartNodes)
-                        KCT_Utilities.AddPartToInventory(p);
+                        KCT_Utilities.AddPartAndFuelToInventory(p);
                     buildList.RemoveAt(IndexSelected);
                 }
-                KCT_Utilities.AddFunds(b.cost);
+                KCT_Utilities.AddFunds(Math.Max(toRefund, 0));
                 showBLPlus = false;
                 ResetBLWindow();
             }

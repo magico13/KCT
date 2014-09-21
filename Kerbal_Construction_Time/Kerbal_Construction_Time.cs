@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using KSP;
+using ScrapYard = Scrapyard.Scrapyard;
 
 namespace Kerbal_Construction_Time
 {
