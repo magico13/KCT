@@ -228,7 +228,7 @@ namespace Kerbal_Construction_Time
             {
                 String name = PartNameFromNode(p) + GetTweakScaleSize(p);
                 double effectiveCost = 0;
-                double cost = GetPartCostFromNode(p);
+                double cost = GetRawPartCostFromNode(p);
                 if (inventory.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
                 {
                     // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
@@ -252,7 +252,7 @@ namespace Kerbal_Construction_Time
                 if (effectiveCost < 0) effectiveCost = 0;
                 totalEffectiveCost += effectiveCost;
             }
-
+            //TODO: take cost of fuel, remove inventory parts, then apply inventory effect and add to total effective cost
             return Math.Sqrt(totalEffectiveCost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
         }
 
@@ -407,6 +407,14 @@ namespace Kerbal_Construction_Time
             float dry, wet;
             float total = ShipConstruction.GetPartCosts(part, GetAvailablePartByName(name), out dry, out wet);
             return total;
+        }
+
+        public static float GetRawPartCostFromNode(ConfigNode part)
+        {
+            string name = PartNameFromNode(part);
+            float dry, wet;
+            float total = ShipConstruction.GetPartCosts(part, GetAvailablePartByName(name), out dry, out wet);
+            return dry;
         }
 
         public static string GetTweakScaleSize(ProtoPartSnapshot part)
@@ -568,7 +576,32 @@ namespace Kerbal_Construction_Time
                 DisplayMessage("Vessel Complete!", Message, MessageSystemButton.MessageButtonColor.GREEN, MessageSystemButton.ButtonIcons.COMPLETE);
         }
 
-
+        public static void AddPartAndFuelToInventory(ConfigNode part)
+        {
+            AddPartToInventory(part);
+            foreach (ConfigNode resource in part.GetNodes("RESOURCE"))
+            {
+                string name = resource.GetValue("name");
+                float amt = float.Parse(resource.GetValue("amount"));
+                if (amt > 0)
+                {
+                    Scrapyard.Scrapyard.Instance.Resources.Add(name, amt);
+                }
+            }
+        }
+        public static void AddPartAndFuelToInventory(ProtoPartSnapshot part)
+        {
+            AddPartToInventory(part.partInfo.name + GetTweakScaleSize(part));
+            foreach (ProtoPartResourceSnapshot resource in part.resources)
+            {
+                string name = resource.resourceName;
+                float amt = float.Parse(resource.resourceValues.GetValue("amount"));
+                if (amt > 0)
+                {
+                    Scrapyard.Scrapyard.Instance.Resources.Add(name, amt);
+                }
+            }
+        }
         public static void AddPartToInventory(Part part)
         {
             string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale

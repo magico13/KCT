@@ -532,6 +532,10 @@ namespace Kerbal_Construction_Time
                         //Add the cost of the ship to the funds so it can be removed again by KSP
                         KCT_Utilities.AddFunds(KCT_Utilities.GetTotalVesselCost(FlightGlobals.ActiveVessel.protoVessel));
                         FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
+                        foreach (ProtoPartSnapshot pps in FlightGlobals.ActiveVessel.protoVessel.protoPartSnapshots)
+                        {
+                            KCT_Utilities.AddPartAndFuelToInventory(pps);
+                        }
                     }
                 }
 

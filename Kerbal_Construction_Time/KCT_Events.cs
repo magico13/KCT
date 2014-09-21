@@ -346,7 +346,7 @@ namespace Kerbal_Construction_Time
                     KCTDebug.Log("Recovered parts from " + v.vesselName);
                     foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
                     {
-                        KCT_Utilities.AddPartToInventory(p.partInfo.name+KCT_Utilities.GetTweakScaleSize(p));
+                        KCT_Utilities.AddPartAndFuelToInventory(p);
                         if (!PartsRecovered.ContainsKey(p.partInfo.title))
                             PartsRecovered.Add(p.partInfo.title, 1);
                         else
