@@ -1526,7 +1526,7 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             if (GUILayout.Button("Recover Flight and Proceed"))
             {
-                List<ProtoVessel> list = ShipConstruction.FindVesselsAtLaunchSite(HighLogic.CurrentGame.flightState, KCT_GameStates.launchedVessel.launchSite);
+                List<ProtoVessel> list = ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, KCT_GameStates.launchedVessel.launchSite);
                 foreach (ProtoVessel pv in list)
                     ShipConstruction.RecoverVesselFromFlight(pv, HighLogic.CurrentGame.flightState);
                 if (!IsCrewable(KCT_GameStates.launchedVessel.ExtractedParts))
@@ -2244,7 +2244,8 @@ namespace Kerbal_Construction_Time
                 {
                     if (ResearchAndDevelopment.Instance.Science >= cost)
                     {
-                        ResearchAndDevelopment.Instance.Science -= cost;
+                        //ResearchAndDevelopment.Instance.Science -= cost;
+                        ResearchAndDevelopment.Instance.AddScience(-cost, TransactionReasons.None);
                         ++KCT_GameStates.TotalUpgradePoints;
                         ++KCT_GameStates.PurchasedUpgrades[0];
                     }

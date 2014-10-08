@@ -128,7 +128,8 @@ namespace Kerbal_Construction_Time
                 }
                 else
                 {
-                    ResearchAndDevelopment.Instance.Science += tech.scienceCost;
+                    ResearchAndDevelopment.Instance.AddScience(tech.scienceCost, TransactionReasons.RnDTechResearch);
+                    //ResearchAndDevelopment.Instance.Science += tech.scienceCost;
                     var message = new ScreenMessage("[KCT] This node is already being researched!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
                     ScreenMessages.PostScreenMessage(message, true);
                 }

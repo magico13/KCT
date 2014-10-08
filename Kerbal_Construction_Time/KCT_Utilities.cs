@@ -465,7 +465,8 @@ namespace Kerbal_Construction_Time
         {
             if (science > 0)
             {
-                ResearchAndDevelopment.Instance.Science += science;
+                //ResearchAndDevelopment.Instance.Science += science;
+                ResearchAndDevelopment.Instance.AddScience(science, TransactionReasons.Any);
                 var message = new ScreenMessage("[KCT] " + science + " science added.", 4.0f, ScreenMessageStyle.UPPER_LEFT);
                 ScreenMessages.PostScreenMessage(message, true);
             }
@@ -741,9 +742,8 @@ namespace Kerbal_Construction_Time
                 return 0;
             KCTDebug.Log("Removing funds: " + toSpend + ", New total: " + (Funding.Instance.Funds - toSpend));
             if (toSpend < Funding.Instance.Funds)
-                return (Funding.Instance.Funds -= toSpend);
-            else
-                return Funding.Instance.Funds;
+                Funding.Instance.AddFunds(-toSpend, TransactionReasons.None);
+            return Funding.Instance.Funds;
         }
 
         public static double AddFunds(double toAdd)
@@ -751,7 +751,8 @@ namespace Kerbal_Construction_Time
             if (!CurrentGameIsCareer())
                 return 0;
             KCTDebug.Log("Adding funds: " + toAdd + ", New total: " + (Funding.Instance.Funds + toAdd));
-            return (Funding.Instance.Funds += toAdd);
+            Funding.Instance.AddFunds(toAdd, TransactionReasons.None);
+            return Funding.Instance.Funds;
         }
 
         public static KCT_BuildListVessel AddVesselToBuildList()
