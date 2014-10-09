@@ -461,12 +461,12 @@ namespace Kerbal_Construction_Time
             return HighLogic.CurrentGame.Mode == Game.Modes.CAREER;
         }
 
-        public static void AddScienceWithMessage(float science)
+        public static void AddScienceWithMessage(float science, TransactionReasons reason)
         {
             if (science > 0)
             {
                 //ResearchAndDevelopment.Instance.Science += science;
-                ResearchAndDevelopment.Instance.AddScience(science, TransactionReasons.Any);
+                ResearchAndDevelopment.Instance.AddScience(science, reason);
                 var message = new ScreenMessage("[KCT] " + science + " science added.", 4.0f, ScreenMessageStyle.UPPER_LEFT);
                 ScreenMessages.PostScreenMessage(message, true);
             }
@@ -511,7 +511,7 @@ namespace Kerbal_Construction_Time
 
             //Assign science based on science rate
             if (CurrentGameHasScience() && !vessel.cannotEarnScience)
-                AddScienceWithMessage((float)(KCT_GameStates.RDUpgrades[0] * 0.5 * vessel.buildPoints / 86400));
+                AddScienceWithMessage((float)(KCT_GameStates.RDUpgrades[0] * 0.5 * vessel.buildPoints / 86400), TransactionReasons.None);
 
             //Add parts to the tracker
             if (!vessel.cannotEarnScience)
@@ -736,22 +736,22 @@ namespace Kerbal_Construction_Time
             return (float)cost;
         }
 
-        public static double SpendFunds(double toSpend)
+        public static double SpendFunds(double toSpend, TransactionReasons reason)
         {
             if (!CurrentGameIsCareer())
                 return 0;
             KCTDebug.Log("Removing funds: " + toSpend + ", New total: " + (Funding.Instance.Funds - toSpend));
             if (toSpend < Funding.Instance.Funds)
-                Funding.Instance.AddFunds(-toSpend, TransactionReasons.None);
+                Funding.Instance.AddFunds(-toSpend, reason);
             return Funding.Instance.Funds;
         }
 
-        public static double AddFunds(double toAdd)
+        public static double AddFunds(double toAdd, TransactionReasons reason)
         {
             if (!CurrentGameIsCareer())
                 return 0;
             KCTDebug.Log("Adding funds: " + toAdd + ", New total: " + (Funding.Instance.Funds + toAdd));
-            Funding.Instance.AddFunds(toAdd, TransactionReasons.None);
+            Funding.Instance.AddFunds(toAdd, reason);
             return Funding.Instance.Funds;
         }
 
@@ -789,13 +789,13 @@ namespace Kerbal_Construction_Time
         {
             if (CurrentGameIsCareer())
             {
-                float totalCost = blv.cost;
+                float totalCost = GetTotalVesselCost(blv.shipNode);
                 double prevFunds = Funding.Instance.Funds;
-                double newFunds = SpendFunds(totalCost);
+                double newFunds = SpendFunds(totalCost, TransactionReasons.VesselRollout);
                 if (prevFunds == newFunds)
                 {
                     KCTDebug.Log("Tried to add " + blv.shipName + " to build list but not enough funds.");
-                    KCTDebug.Log("Vessel cost: " + blv.cost + ", Current funds: " + newFunds);
+                    KCTDebug.Log("Vessel cost: " + GetTotalVesselCost(blv.shipNode) + ", Current funds: " + newFunds);
                     var msg = new ScreenMessage("Not Enough Funds To Build!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     ScreenMessages.PostScreenMessage(msg, true);
                     return blv;

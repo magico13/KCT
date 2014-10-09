@@ -55,7 +55,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CompatibilityChecker.cs" />
     <Compile Include="IKCTBuildItem.cs" />
     <Compile Include="KCTDebug.cs" />
     <Compile Include="KCT_BuildListStorage.cs" />

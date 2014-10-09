@@ -297,6 +297,9 @@ namespace Kerbal_Construction_Time
 
             KCT_GUI.guiDataSaver.Load();
 
+            HighLogic.CurrentGame.Parameters.SpaceCenter.CanLaunchAtPad = false;
+            HighLogic.CurrentGame.Parameters.SpaceCenter.CanLaunchAtRunway = false;
+
             if (HighLogic.LoadedSceneIsEditor)
             {
                 if (KCT_GUI.showSimulationCompleteEditor)
@@ -491,12 +494,12 @@ namespace Kerbal_Construction_Time
 
             if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.FundsToChargeAtSimEnd != 0)
             {
-                KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd);
+                KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd, TransactionReasons.None);
                 KCT_GameStates.FundsToChargeAtSimEnd = 0;
             }
             if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.FundsGivenForVessel != 0)
             {
-                KCT_Utilities.SpendFunds(KCT_GameStates.FundsGivenForVessel);
+                KCT_Utilities.SpendFunds(KCT_GameStates.FundsGivenForVessel, TransactionReasons.VesselRollout);
                 KCT_GameStates.FundsGivenForVessel = 0;
             }
 
@@ -509,7 +512,7 @@ namespace Kerbal_Construction_Time
                     if (removed) //Only do these when the vessel is first removed from the list
                     {
                         //Add the cost of the ship to the funds so it can be removed again by KSP
-                        KCT_Utilities.AddFunds(KCT_Utilities.GetTotalVesselCost(FlightGlobals.ActiveVessel.protoVessel));
+                        KCT_Utilities.AddFunds(KCT_Utilities.GetTotalVesselCost(FlightGlobals.ActiveVessel.protoVessel), TransactionReasons.VesselRollout);
                         FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
                     }
                 }

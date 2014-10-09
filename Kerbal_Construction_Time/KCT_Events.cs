@@ -38,6 +38,7 @@ namespace Kerbal_Construction_Time
             if (!ToolbarManager.ToolbarAvailable)
                 GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
             GameEvents.onEditorShipModified.Add(ShipModifiedEvent);
+            GameEvents.OnPartPurchased.Add(PartPurchasedEvent);
             
             eventAdded = true;
         }
@@ -106,6 +107,18 @@ namespace Kerbal_Construction_Time
         }
         void DummyVoid() { }
 
+        public void PartPurchasedEvent(AvailablePart part)
+        {
+            KCT_TechItem tech = KCT_GameStates.TechList.Find(t => t.techID == part.TechRequired);
+            if (tech!= null && tech.isInList())
+            {
+                ScreenMessages.PostScreenMessage("[KCT] You must wait until the node is fully researched to purchase parts!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                Funding.Instance.AddFunds(part.entryCost, TransactionReasons.RnDPartPurchase);
+                tech.protoNode.partsPurchased.Remove(part);
+                tech.DisableTech();
+            }
+        }
+
         public void TechUnlockEvent(GameEvents.HostTargetAction<RDTech, RDTech.OperationResult> ev)
         {
             if (!KCT_GameStates.settings.enabledForSave) return;
@@ -116,22 +129,19 @@ namespace Kerbal_Construction_Time
                 if (!tech.isInList())
                 {
                     ++KCT_GameStates.TotalUpgradePoints;
-                    var message = new ScreenMessage("[KCT] Upgrade Point Added!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                    ScreenMessages.PostScreenMessage(message, true);
+                    ScreenMessages.PostScreenMessage("[KCT] Upgrade Point Added!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
 
                     if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime)
                     {
                         KCT_GameStates.TechList.Add(tech);
-                        message = new ScreenMessage("[KCT] Node will unlock in " + KCT_Utilities.GetFormattedTime(tech.TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                        ScreenMessages.PostScreenMessage(message, true);
+                        ScreenMessages.PostScreenMessage("[KCT] Node will unlock in " + KCT_Utilities.GetFormattedTime(tech.TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
                     }
                 }
                 else
                 {
                     ResearchAndDevelopment.Instance.AddScience(tech.scienceCost, TransactionReasons.RnDTechResearch);
-                    //ResearchAndDevelopment.Instance.Science += tech.scienceCost;
-                    var message = new ScreenMessage("[KCT] This node is already being researched!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                    ScreenMessages.PostScreenMessage(message, true);
+                    ScreenMessages.PostScreenMessage("[KCT] This node is already being researched!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage("[KCT] It will unlock in " + KCT_Utilities.GetFormattedTime(tech.TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
                 }
             }
         }
@@ -196,7 +206,7 @@ namespace Kerbal_Construction_Time
                 if (KCT_GameStates.flightSimulated && KCT_GameStates.simulationTimeLimit > 0)
                 {
                     KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
-                    KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd);
+                    KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd, TransactionReasons.None);
                 }
                 if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning && KCT_GameStates.LaunchPadReconditioning == null)
                 {
@@ -396,7 +406,7 @@ namespace Kerbal_Construction_Time
                             KCTDebug.Log("Funds being returned: " + Math.Round(totalReturn, 2) + "/" + Math.Round(totalBeforeModifier, 2));
 
                             Message.AppendLine("Funds recovered: " + FundsRecovered + "(" + Math.Round(RecoveryPercent * 100, 1) + "%)");
-                            KCT_Utilities.AddFunds(FundsRecovered);
+                            KCT_Utilities.AddFunds(FundsRecovered, TransactionReasons.VesselRecovery);
                         }
                     }
                     Message.AppendLine("\nAdditional information:");
