@@ -486,7 +486,7 @@ namespace Kerbal_Construction_Time
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Save Edits"))
                 {
-                    KCT_Utilities.AddFunds(ship.cost);
+                    KCT_Utilities.AddFunds(ship.cost, TransactionReasons.VesselRollout);
                     ship.RemoveFromBuildList();
 
                     List<string> partsForInventory = new List<string>();
@@ -786,13 +786,13 @@ namespace Kerbal_Construction_Time
                 centralWindowPosition.height = 1;
                 if (!KCT_GameStates.settings.NoCostSimulations)
                 {
-                    KCT_Utilities.SpendFunds(cost);
+                    KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
                     KCT_GameStates.SimulationCost = cost;
                 }
                 if (KCT_Utilities.CurrentGameIsCareer())
                 {
                     KCT_GameStates.FundsGivenForVessel = EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2);
-                    KCT_Utilities.AddFunds(KCT_GameStates.FundsGivenForVessel);
+                    KCT_Utilities.AddFunds(KCT_GameStates.FundsGivenForVessel, TransactionReasons.VesselRollout);
                 }
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL);
@@ -984,7 +984,7 @@ namespace Kerbal_Construction_Time
                 if (!KCT_GameStates.settings.NoCostSimulations)
                 {
                     KCT_GameStates.FundsToChargeAtSimEnd += KCT_GameStates.SimulationCost * 1.1F;
-                    KCT_Utilities.SpendFunds(KCT_GameStates.SimulationCost * 1.1F);
+                    KCT_Utilities.SpendFunds(KCT_GameStates.SimulationCost * 1.1F, TransactionReasons.None);
                 }
                 KCT_GameStates.simulationEndTime += KCT_GameStates.simulationDefaultTimeLimit;
                 KCT_GameStates.simulationTimeLimit += KCT_GameStates.simulationDefaultTimeLimit;
@@ -2262,7 +2262,7 @@ namespace Kerbal_Construction_Time
                 {
                     if (Funding.Instance.Funds >= cost)
                     {
-                        KCT_Utilities.SpendFunds(cost);
+                        KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
                         ++KCT_GameStates.TotalUpgradePoints;
                         ++KCT_GameStates.PurchasedUpgrades[1];
                     }
@@ -2457,7 +2457,7 @@ namespace Kerbal_Construction_Time
                         KCT_Utilities.AddPartToInventory(p);
                     buildList.RemoveAt(IndexSelected);
                 }
-                KCT_Utilities.AddFunds(b.cost);
+                KCT_Utilities.AddFunds(b.cost, TransactionReasons.VesselRollout);
                 showBLPlus = false;
                 ResetBLWindow();
             }
