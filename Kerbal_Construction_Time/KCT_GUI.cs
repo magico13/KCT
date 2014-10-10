@@ -1100,13 +1100,22 @@ namespace Kerbal_Construction_Time
         {
             buildListWindowPosition.height = 1;
             buildListWindowPosition.width = 460;
-            listWindow = -1;
+          //  listWindow = -1;
         }
 
         private static void ScrapVessel()
         {
+            InputLockManager.RemoveControlLock("KCTPopupLock");
             //List<KCT_BuildListVessel> buildList = b.
-            KCT_BuildListVessel b = listWindow == 0 ? KCT_GameStates.VABList[IndexSelected] : KCT_GameStates.SPHList[IndexSelected];
+            KCT_BuildListVessel b;// = listWindow == 0 ? KCT_GameStates.VABList[IndexSelected] : KCT_GameStates.SPHList[IndexSelected];
+            switch (listWindow)
+            {
+                case 0: b = KCT_GameStates.VABList[IndexSelected]; break;
+                case 1: b = KCT_GameStates.SPHList[IndexSelected]; break;
+                case 2: b = KCT_GameStates.VABWarehouse[IndexSelected]; break;
+                case 3: b = KCT_GameStates.SPHWarehouse[IndexSelected]; break;
+                default: KCTDebug.Log("Tried to remove a vessel that couldn't be found! "+listWindow); return;
+            }
             KCTDebug.Log("Scrapping " + b.shipName);
             if (!b.isFinished)
             {
@@ -1146,7 +1155,7 @@ namespace Kerbal_Construction_Time
             KCT_Utilities.AddFunds(b.cost, TransactionReasons.VesselRollout);
         }
 
-        public static void DummyVoid() {}
+        public static void DummyVoid() { InputLockManager.RemoveControlLock("KCTPopupLock"); }
         private static int listWindow = -1;
         public static void DrawBuildListWindow(int windowID)
         {
@@ -1334,6 +1343,7 @@ namespace Kerbal_Construction_Time
                         //GUILayout.Space(butW);
                         if (GUILayout.Button("X", GUILayout.Width(butW)))
                         {
+                            InputLockManager.SetControlLock(ControlTypes.EDITOR_SOFT_LOCK, "KCTPopupLock");
                             IndexSelected = i;
                             DialogOption[] options = new DialogOption[2];
                             options[0] = new DialogOption("Yes", ScrapVessel);
@@ -1405,6 +1415,7 @@ namespace Kerbal_Construction_Time
                         //GUILayout.Space(butW);
                         if (GUILayout.Button("X", GUILayout.Width(butW)))
                         {
+                            InputLockManager.SetControlLock(ControlTypes.EDITOR_SOFT_LOCK, "KCTPopupLock");
                             IndexSelected = i;
                             DialogOption[] options = new DialogOption[2];
                             options[0] = new DialogOption("Yes", ScrapVessel);
@@ -2511,6 +2522,7 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             if (GUILayout.Button("Scrap"))
             {
+                InputLockManager.SetControlLock(ControlTypes.KSC_ALL, "KCTPopupLock");
                 DialogOption[] options = new DialogOption[2];
                 options[0] = new DialogOption("Yes", ScrapVessel);
                 options[1] = new DialogOption("No", DummyVoid);

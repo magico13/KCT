@@ -12,6 +12,7 @@ namespace Kerbal_Construction_Time
         public string techName, techID;
         public double progress;
         public ProtoTechNode protoNode;
+        public List<string> UnlockedParts;
         public double BuildRate { get { return (Math.Pow(2, KCT_GameStates.RDUpgrades[1] + 1) / 86400.0); } } //0pts=1day/2sci, 1pt=1/4, 2=1/8, 3=1/16, 4=1/32...n=1/2^(n+1)
         public double TimeLeft { get { return (scienceCost - progress) / BuildRate; } }
         public bool isComplete { get { return progress >= scienceCost; } }
@@ -23,18 +24,26 @@ namespace Kerbal_Construction_Time
             techID = techNode.techID;
             progress = 0;
             protoNode = ResearchAndDevelopment.Instance.GetTechState(techID);
+            UnlockedParts = new List<string>();
+            foreach (AvailablePart p in techNode.partsPurchased)
+                UnlockedParts.Add(p.name);
 
             KCTDebug.Log("techID = " + techID);
             KCTDebug.Log("BuildRate = " + BuildRate);
             KCTDebug.Log("TimeLeft = " + TimeLeft);
         }
         
-        public KCT_TechItem(string ID, string name, double prog, int sci)
+        public KCT_TechItem(string ID, string name, double prog, int sci, List<string> parts)
         {
             techID = ID;
             techName = name;
             progress = prog;
             scienceCost = sci;
+            UnlockedParts = parts;
+        }
+
+        public KCT_TechItem()
+        {
         }
 
         public void DisableTech()
@@ -51,12 +60,13 @@ namespace Kerbal_Construction_Time
 
         public bool isInList()
         {
-            foreach (KCT_TechItem tech in KCT_GameStates.TechList)
+            return KCT_GameStates.TechList.FirstOrDefault(t => t.techID == this.techID) != null;
+           /* foreach (KCT_TechItem tech in KCT_GameStates.TechList)
             {
                 if (tech.techID == this.techID)
                     return true;
             }
-            return false;
+            return false;*/
         }
 
         string IKCTBuildItem.GetItemName()
@@ -91,9 +101,10 @@ namespace Kerbal_Construction_Time
         [Persistent] string techName, techID;
         [Persistent] int scienceCost;
         [Persistent] double progress;
+        [Persistent] List<string> parts;
         public KCT_TechItem ToTechItem()
         {
-            KCT_TechItem ret = new KCT_TechItem(techID, techName, progress, scienceCost);
+            KCT_TechItem ret = new KCT_TechItem(techID, techName, progress, scienceCost, parts);
             return ret;
         }
         public KCT_TechStorageItem FromTechItem(KCT_TechItem techItem)
@@ -102,6 +113,7 @@ namespace Kerbal_Construction_Time
             this.techID = techItem.techID;
             this.progress = techItem.progress;
             this.scienceCost = techItem.scienceCost;
+            this.parts = techItem.UnlockedParts;
 
             return this;
         }

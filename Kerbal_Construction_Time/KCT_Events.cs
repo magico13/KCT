@@ -113,7 +113,7 @@ namespace Kerbal_Construction_Time
             if (tech!= null && tech.isInList())
             {
                 ScreenMessages.PostScreenMessage("[KCT] You must wait until the node is fully researched to purchase parts!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                Funding.Instance.AddFunds(part.entryCost, TransactionReasons.RnDPartPurchase);
+                KCT_Utilities.AddFunds(part.entryCost, TransactionReasons.RnDPartPurchase);
                 tech.protoNode.partsPurchased.Remove(part);
                 tech.DisableTech();
             }
@@ -124,7 +124,10 @@ namespace Kerbal_Construction_Time
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (ev.target == RDTech.OperationResult.Successful)
             {
-                KCT_TechItem tech = new KCT_TechItem(ev.host);
+                KCT_TechItem tech = new KCT_TechItem();
+                if (ev.host != null) 
+                    tech = new KCT_TechItem(ev.host);
+
                 if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime) tech.DisableTech();
                 if (!tech.isInList())
                 {
