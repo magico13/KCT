@@ -44,7 +44,8 @@ namespace Kerbal_Construction_Time
         public static KCT_Reconditioning LaunchPadReconditioning;
 
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
-        
+        public static string KACAlarmId = "";
+        public static double KACAlarmUT = 0;
         
         //Things pertaining to simulations
         public static CelestialBody simulationBody;

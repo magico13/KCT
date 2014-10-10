@@ -278,6 +278,7 @@ namespace Kerbal_Construction_Time
                 if (InputLockManager.GetControlLock("KCTLaunchLock") == ControlTypes.EDITOR_LAUNCH)
                     InputLockManager.RemoveControlLock("KCTLaunchLock");
             }
+            KACWrapper.InitKACWrapper();
 
             if (!KCT_Events.instance.eventAdded)
             {
@@ -296,9 +297,6 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
 
             KCT_GUI.guiDataSaver.Load();
-
-            HighLogic.CurrentGame.Parameters.SpaceCenter.CanLaunchAtPad = false;
-            HighLogic.CurrentGame.Parameters.SpaceCenter.CanLaunchAtRunway = false;
 
             if (HighLogic.LoadedSceneIsEditor)
             {
@@ -583,6 +581,9 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_GameStates.launchedVessel.Launch();
                 }
+
+                HighLogic.CurrentGame.Parameters.SpaceCenter.CanLaunchAtPad = false;
+                HighLogic.CurrentGame.Parameters.SpaceCenter.CanLaunchAtRunway = false;
             }
         }
 

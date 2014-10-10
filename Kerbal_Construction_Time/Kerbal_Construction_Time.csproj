@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IKCTBuildItem.cs" />
+    <Compile Include="KACWrapper.cs" />
     <Compile Include="KCTDebug.cs" />
     <Compile Include="KCT_BuildListStorage.cs" />
     <Compile Include="KCT_BuildListVessel.cs" />

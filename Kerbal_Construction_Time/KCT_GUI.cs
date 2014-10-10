@@ -1103,6 +1103,50 @@ namespace Kerbal_Construction_Time
             listWindow = -1;
         }
 
+        private static void ScrapVessel()
+        {
+            //List<KCT_BuildListVessel> buildList = b.
+            KCT_BuildListVessel b = listWindow == 0 ? KCT_GameStates.VABList[IndexSelected] : KCT_GameStates.SPHList[IndexSelected];
+            KCTDebug.Log("Scrapping " + b.shipName);
+            if (!b.isFinished)
+            {
+                List<ConfigNode> parts = b.ExtractedPartNodes;
+                float totalCost = 0;
+                foreach (ConfigNode p in parts)
+                    totalCost += KCT_Utilities.GetPartCostFromNode(p);
+                if (b.InventoryParts != null)
+                {
+                    foreach (String s in b.InventoryParts)
+                    {
+                        ConfigNode aP = parts.Find(a => (KCT_Utilities.PartNameFromNode(a) + KCT_Utilities.GetTweakScaleSize(a)) == s);
+                        totalCost -= KCT_Utilities.GetPartCostFromNode(aP);
+                        parts.Remove(aP);
+                        KCT_Utilities.AddPartToInventory(s);
+                    }
+                    totalCost = (int)(totalCost * b.ProgressPercent() / 100);
+                    float sum = 0;
+                    while (parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum)) != null)
+                    {
+                        ConfigNode aP = parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum));
+                        sum += KCT_Utilities.GetPartCostFromNode(aP);
+                        parts.Remove(aP);
+                        KCT_Utilities.AddPartToInventory(aP);
+                    }
+                }
+                //buildList.RemoveAt(IndexSelected);
+                b.RemoveFromBuildList();
+            }
+            else
+            {
+                foreach (ConfigNode p in b.ExtractedPartNodes)
+                    KCT_Utilities.AddPartToInventory(p);
+               // buildList.RemoveAt(IndexSelected);
+                b.RemoveFromBuildList();
+            }
+            KCT_Utilities.AddFunds(b.cost, TransactionReasons.VesselRollout);
+        }
+
+        public static void DummyVoid() {}
         private static int listWindow = -1;
         public static void DrawBuildListWindow(int windowID)
         {
@@ -1148,6 +1192,28 @@ namespace Kerbal_Construction_Time
                     TimeWarp.SetRate(0, true);
                     KCT_GameStates.lastWarpRate = 0;
                 }
+
+                if (KACWrapper.APIReady)
+                {
+                    double UT = Planetarium.GetUniversalTime();
+                    if (!KCT_Utilities.ApproximatelyEqual(KCT_GameStates.KACAlarmUT - UT, buildItem.GetTimeLeft()))
+                    {   
+                        KCTDebug.Log("KAC Alarm being created!");
+                        KCT_GameStates.KACAlarmUT = (buildItem.GetTimeLeft() + UT);
+                        KACWrapper.KACAPI.KACAlarm alarm = KACWrapper.KAC.Alarms.FirstOrDefault(a => a.ID == KCT_GameStates.KACAlarmId);
+                        if (alarm == null)
+                        {
+                            alarm = KACWrapper.KAC.Alarms.FirstOrDefault(a => (a.Name.StartsWith("KCT: ")));
+                        }
+                        if (alarm != null)
+                        {
+                            KCTDebug.Log("Removing existing alarm");
+                            KACWrapper.KAC.DeleteAlarm(alarm.ID);
+                        }
+                        KCT_GameStates.KACAlarmId = KACWrapper.KAC.CreateAlarm(KACWrapper.KACAPI.AlarmTypeEnum.Raw, "KCT: " + buildItem.GetItemName() + " Complete", KCT_GameStates.KACAlarmUT);
+                        KCTDebug.Log("Alarm created with ID: " + KCT_GameStates.KACAlarmId);
+                    }
+                }
             }
             else
             {
@@ -1157,7 +1223,7 @@ namespace Kerbal_Construction_Time
 
             //Buttons for VAB/SPH lists
             List<string> buttonList = new List<string> {"VAB List", "SPH List", "VAB Storage", "SPH Storage"};
-            if (KCT_Utilities.CurrentGameIsCareer() && !KCT_GameStates.settings.InstantTechUnlock) buttonList.Add("Tech");
+            if (KCT_Utilities.CurrentGameHasScience() && !KCT_GameStates.settings.InstantTechUnlock) buttonList.Add("Tech");
             GUILayout.BeginHorizontal();
             //if (HighLogic.LoadedScene == GameScenes.SPACECENTER) { buttonList.Add("Upgrades"); buttonList.Add("Settings"); }
             int lastSelected = listWindow;
@@ -1264,7 +1330,18 @@ namespace Kerbal_Construction_Time
                         IndexSelected = i;
                     }
                     else if (HighLogic.LoadedSceneIsEditor)
-                        GUILayout.Space(butW);
+                    {
+                        //GUILayout.Space(butW);
+                        if (GUILayout.Button("X", GUILayout.Width(butW)))
+                        {
+                            IndexSelected = i;
+                            DialogOption[] options = new DialogOption[2];
+                            options[0] = new DialogOption("Yes", ScrapVessel);
+                            options[1] = new DialogOption("No", DummyVoid);
+                            MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?",windowTitle: "Scrap Vessel" ,options: options);
+                            PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                        }
+                    }
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();
@@ -1324,7 +1401,18 @@ namespace Kerbal_Construction_Time
                         IndexSelected = i;
                     }
                     else if (HighLogic.LoadedSceneIsEditor)
-                        GUILayout.Space(butW);
+                    {
+                        //GUILayout.Space(butW);
+                        if (GUILayout.Button("X", GUILayout.Width(butW)))
+                        {
+                            IndexSelected = i;
+                            DialogOption[] options = new DialogOption[2];
+                            options[0] = new DialogOption("Yes", ScrapVessel);
+                            options[1] = new DialogOption("No", DummyVoid);
+                            MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", windowTitle: "Scrap Vessel", options: options);
+                            PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                        }
+                    }
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();
@@ -2423,41 +2511,11 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginVertical();
             if (GUILayout.Button("Scrap"))
             {
-                KCTDebug.Log("Scrapping " + b.shipName);
-                if (listWindow < 2)
-                {
-                    List<ConfigNode> parts = b.ExtractedPartNodes;
-                    float totalCost = 0;
-                    foreach (ConfigNode p in parts)
-                        totalCost += KCT_Utilities.GetPartCostFromNode(p);
-                    if (b.InventoryParts != null)
-                    {
-                        foreach (String s in b.InventoryParts)
-                        {
-                            ConfigNode aP = parts.Find(a => (KCT_Utilities.PartNameFromNode(a)+KCT_Utilities.GetTweakScaleSize(a)) == s);
-                            totalCost -= KCT_Utilities.GetPartCostFromNode(aP);
-                            parts.Remove(aP);
-                            KCT_Utilities.AddPartToInventory(s);
-                        }
-                        totalCost = (int) (totalCost * b.ProgressPercent() / 100);
-                        float sum = 0;
-                        while (parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum)) != null)
-                        {
-                            ConfigNode aP = parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum));
-                            sum += KCT_Utilities.GetPartCostFromNode(aP);
-                            parts.Remove(aP);
-                            KCT_Utilities.AddPartToInventory(aP);
-                        }
-                    }
-                    buildList.RemoveAt(IndexSelected);
-                }
-                else
-                {
-                    foreach (ConfigNode p in b.ExtractedPartNodes)
-                        KCT_Utilities.AddPartToInventory(p);
-                    buildList.RemoveAt(IndexSelected);
-                }
-                KCT_Utilities.AddFunds(b.cost, TransactionReasons.VesselRollout);
+                DialogOption[] options = new DialogOption[2];
+                options[0] = new DialogOption("Yes", ScrapVessel);
+                options[1] = new DialogOption("No", DummyVoid);
+                MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", windowTitle: "Scrap Vessel", options: options);
+                PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
                 showBLPlus = false;
                 ResetBLWindow();
             }

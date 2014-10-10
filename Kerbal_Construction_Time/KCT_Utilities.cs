@@ -1063,6 +1063,11 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(partNodes, true, partsForInventory);
             }
         }
+
+        public static bool ApproximatelyEqual(double d1, double d2, double error = 0.01 )
+        {
+            return (1-error) <= (d1 / d2) && (d1 / d2) <= (1+error);
+        }
     }
 }
 /*
