@@ -16,6 +16,7 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool DisableRecoveryMessages;
         [Persistent] public bool DisableAllMessages;
         [Persistent] public bool CheckForUpdates, VersionSpecific;
+        [Persistent] public bool AutoKACAlarams;
         [Persistent] public float RecoveryModifierDefault;
         [Persistent] public bool NoCostSimulationsDefault;
         [Persistent] public bool InstantTechUnlockDefault;
@@ -54,6 +55,7 @@ namespace Kerbal_Construction_Time
             OverrideLaunchButton = true;
             RecoveryModifier = 0.75F;
             Reconditioning = true;
+            AutoKACAlarams = true;
 
             RecoveryModifierDefault = 0.75f;
             NoCostSimulationsDefault = false;

@@ -109,6 +109,8 @@ namespace Kerbal_Construction_Time
 
         public void PartPurchasedEvent(AvailablePart part)
         {
+            if (HighLogic.CurrentGame.Parameters.Difficulty.BypassEntryPurchaseAfterResearch)
+                return;
             KCT_TechItem tech = KCT_GameStates.TechList.Find(t => t.techID == part.TechRequired);
             if (tech!= null && tech.isInList())
             {
@@ -144,7 +146,7 @@ namespace Kerbal_Construction_Time
                 {
                     ResearchAndDevelopment.Instance.AddScience(tech.scienceCost, TransactionReasons.RnDTechResearch);
                     ScreenMessages.PostScreenMessage("[KCT] This node is already being researched!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                    ScreenMessages.PostScreenMessage("[KCT] It will unlock in " + KCT_Utilities.GetFormattedTime(tech.TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage("[KCT] It will unlock in " + KCT_Utilities.GetFormattedTime((KCT_GameStates.TechList.First(t => t.techID == ev.host.techID)).TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
                 }
             }
         }

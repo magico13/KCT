@@ -1202,7 +1202,7 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.lastWarpRate = 0;
                 }
 
-                if (KACWrapper.APIReady)
+                if (KCT_GameStates.settings.AutoKACAlarams && KACWrapper.APIReady)
                 {
                     double UT = Planetarium.GetUniversalTime();
                     if (!KCT_Utilities.ApproximatelyEqual(KCT_GameStates.KACAlarmUT - UT, buildItem.GetTimeLeft()))
@@ -2057,7 +2057,7 @@ namespace Kerbal_Construction_Time
 
         public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier, newReconEffect;
         public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, 
-            freeSims, recon, debug, overrideLaunchBtn;
+            freeSims, recon, debug, overrideLaunchBtn, autoAlarms;
 
         public static string newRecoveryModDefault;
         public static bool disableBuildTimesDefault, instantTechUnlockDefault, enableAllBodiesDefault, freeSimsDefault, reconDefault;
@@ -2086,6 +2086,7 @@ namespace Kerbal_Construction_Time
             recon = KCT_GameStates.settings.Reconditioning;
             debug = KCT_GameStates.settings.Debug;
             overrideLaunchBtn = KCT_GameStates.settings.OverrideLaunchButton;
+            autoAlarms = KCT_GameStates.settings.AutoKACAlarams;
             
 
             disableBuildTimesDefault = KCT_GameStates.settings.DisableBuildTimeDefault;
@@ -2190,6 +2191,10 @@ namespace Kerbal_Construction_Time
                 debug = GUILayout.Toggle(debug, debug ? " Enabled" : " Disabled", GUILayout.Width(width2));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
+                GUILayout.Label("Automatic KAC Alarms", GUILayout.Width(width1));
+                autoAlarms = GUILayout.Toggle(autoAlarms, autoAlarms ? " Enabled" : " Disabled", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
                 GUILayout.Label("Auto Check For Updates", GUILayout.Width(width1));
                 checkForUpdates = GUILayout.Toggle(checkForUpdates, checkForUpdates ? " Enabled" : " Disabled");
                 if (GUILayout.Button("Check"))
@@ -2292,6 +2297,7 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.Reconditioning = recon;
                 KCT_GameStates.settings.OverrideLaunchButton = overrideLaunchBtn;
                 KCT_GameStates.settings.Debug = debug;
+                KCT_GameStates.settings.AutoKACAlarams = autoAlarms;
 
                 KCT_GameStates.settings.DisableBuildTimeDefault = disableBuildTimesDefault;
                 KCT_GameStates.settings.InstantTechUnlockDefault = instantTechUnlockDefault;
