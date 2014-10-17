@@ -712,7 +712,7 @@ namespace Kerbal_Construction_Time
             if (orbitBody == Planetarium.fetch.Sun)
                 return 10000 * timeMultiplier;
 
-            float atmosphereMult = orbitBody.atmosphere ? 1.5f : 1f;
+            float atmosphereMult = orbitBody.atmosphere ? 1.1f : 1f;
             bool isMoon = orbitBody.referenceBody != Planetarium.fetch.Sun;
             CelestialBody Parent = orbitBody;
             while (Parent.referenceBody != Planetarium.fetch.Sun)
@@ -728,9 +728,9 @@ namespace Kerbal_Construction_Time
             else
                 orbitRatio = Kerbin.orbit.semiMajorAxis / Parent.orbit.semiMajorAxis;
 
-            double cost = Math.Pow(orbitRatio,2) * 1000 * (Parent.atmosphere ? 1.25 : 1);
+            double cost = Math.Pow(orbitRatio,2) * 500 * (Parent.atmosphere ? 1.1 : 1);
             if (isMoon)
-                cost *= atmosphereMult * 1.25;
+                cost *= atmosphereMult * 1.1;
 
             cost *= timeMultiplier;
             return (float)cost;

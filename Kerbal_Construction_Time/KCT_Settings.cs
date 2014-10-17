@@ -107,7 +107,7 @@ namespace Kerbal_Construction_Time
             OverallMultiplier = 1.0;
             BuildEffect = 1.0;
             InventoryEffect = 100.0;
-            ReconditioningEffect = 3456;
+            ReconditioningEffect = 1728;
         }
 
         public void Load()
