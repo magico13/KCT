@@ -558,6 +558,7 @@ namespace Kerbal_Construction_Time
                     }
                     else
                         InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+                    KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 }
             }
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
