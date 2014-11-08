@@ -680,7 +680,9 @@ namespace Kerbal_Construction_Time
             Kerbal_Construction_Time.moved = false;
             KCT_GameStates.simulationEndTime = 0;
             KCTDebug.Log("Swapping persistent.sfs with simulation backup file.");
-            System.IO.File.Copy(backupFile, saveFile, true);
+            //System.IO.File.Copy(backupFile, saveFile, true);
+            //System.IO.File.Delete(backupFile);
+            GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
             System.IO.File.Delete(backupFile);
         }
 

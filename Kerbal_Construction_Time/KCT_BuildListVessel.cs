@@ -121,9 +121,24 @@ namespace Kerbal_Construction_Time
         {
             KCT_GameStates.flightSimulated = false;
             string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
+            UpdateRFTanks();
             shipNode.Save(tempFile);
             FlightDriver.StartWithNewLaunch(tempFile, flag, launchSite, new VesselCrewManifest());
             KCT_GameStates.LaunchFromTS = false;
+        }
+
+        private void UpdateRFTanks()
+        {
+            foreach (ConfigNode cn in ExtractedPartNodes)
+            {
+                foreach (ConfigNode module in cn.GetNodes("MODULE"))
+                {
+                    if (module.GetValue("name") == "ModuleFuelTanks")
+                    {
+                        module.SetValue("timestamp", Planetarium.GetUniversalTime().ToString());
+                    }
+                }
+            }
         }
 
         public bool RemoveFromBuildList()

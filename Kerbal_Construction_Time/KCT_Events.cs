@@ -154,7 +154,7 @@ namespace Kerbal_Construction_Time
         public void gameSceneEvent(GameScenes scene)
         {
             if (!KCT_GameStates.settings.enabledForSave) return;
-            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
+           /* List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
             if (validScenes.Contains(scene))
             {
                 //Check for simulation save and load it.
@@ -162,7 +162,7 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_Utilities.LoadSimulationSave();
                 }
-            }
+            }*/
             if (!HighLogic.LoadedSceneIsFlight && scene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Backup save at simulation start
             {
                 KCT_Utilities.MakeSimulationSave();
@@ -299,6 +299,10 @@ namespace Kerbal_Construction_Time
                                 mp.Load(ppms.moduleValues);
                                 drag = mp.fullyDeployedDrag;
                             }
+                            else
+                            {
+                                
+                            }
                             //Add the part mass times the fully deployed drag (typically 500) to the dragCoeff variable (you'll see why later)
                             dragCoeff += p.mass * drag;
                             //This is most definitely a parachute part
@@ -387,7 +391,7 @@ namespace Kerbal_Construction_Time
                             bool probeCoreAttached = false;
                             foreach (ProtoPartSnapshot pps in v.protoVessel.protoPartSnapshots)
                             {
-                                if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && ((ModuleCommand)module.moduleRef).minimumCrew == 0)) != null)
+                                if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && (module.moduleRef != null && ((ModuleCommand)module.moduleRef).minimumCrew == 0))) != null)
                                 {
                                     KCTDebug.Log("Probe Core found!");
                                     probeCoreAttached = true;

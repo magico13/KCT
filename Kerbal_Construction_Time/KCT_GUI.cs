@@ -1920,14 +1920,14 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Launch"))
             {
-                if (HighLogic.LoadedScene != GameScenes.TRACKSTATION)
+                //if (HighLogic.LoadedScene != GameScenes.TRACKSTATION)
                     KCT_GameStates.launchedVessel.Launch();
-                else
+               /* else
                 {
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                     KCT_GameStates.LaunchFromTS = true;
                     //KCT_GameStates.launchedVessel.Launch();
-                }
+                }*/
                 showShipRoster = false;
                 crewListWindowPosition.height = 1;
             }

@@ -491,6 +491,16 @@ namespace Kerbal_Construction_Time
                 updateChecked = true;
             }
 
+            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
+            if (validScenes.Contains(HighLogic.LoadedScene))
+            {
+                //Check for simulation save and load it.
+                if (System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
+                {
+                    KCT_Utilities.LoadSimulationSave();
+                }
+            }
+
             if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.buildSimulatedVessel)
             {
                 KCT_GameStates.buildSimulatedVessel = false;
