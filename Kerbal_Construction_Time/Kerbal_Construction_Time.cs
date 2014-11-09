@@ -279,15 +279,7 @@ namespace Kerbal_Construction_Time
                     InputLockManager.RemoveControlLock("KCTLaunchLock");
             }
 
-            try
-            {
-                KACWrapper.InitKACWrapper();
-            }
-            catch (Exception e)
-            {
-                KCTDebug.Log("Caught exception while trying to init KAC wrapper.\n"+e.StackTrace);
-            }
-
+            KACWrapper.InitKACWrapper();
 
             if (!KCT_Events.instance.eventAdded)
             {

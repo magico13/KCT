@@ -1070,6 +1070,35 @@ namespace Kerbal_Construction_Time
         {
             return (1-error) <= (d1 / d2) && (d1 / d2) <= (1+error);
         }
+
+        public static float GetParachuteDragFromPart(AvailablePart parachute)
+        {
+            foreach (AvailablePart.ModuleInfo mi in parachute.moduleInfos)
+            {
+                if (mi.info.Contains("Fully-Deployed Drag"))
+                {
+                    string[] split = mi.info.Split(new Char[] {':'});
+                    //todo: figure out which index has the fully-deployed drag phrase, and then the one higher is the value
+                    for (int i=0; i<split.Length; i++)
+                    {
+                        if (split[i].Contains("Fully-Deployed Drag"))
+                        {
+                            return float.Parse(split[i + 1]);
+                        }
+                    }
+                }
+            }
+            return 0;
+        }
+
+        public static bool IsUnmannedCommand(AvailablePart part)
+        {
+            foreach (AvailablePart.ModuleInfo mi in part.moduleInfos)
+            {
+                if (mi.info.Contains("Unmanned")) return true;
+            }
+            return false;
+        }
     }
 }
 /*

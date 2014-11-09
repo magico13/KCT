@@ -301,7 +301,8 @@ namespace Kerbal_Construction_Time
                             }
                             else
                             {
-                                
+                                drag = KCT_Utilities.GetParachuteDragFromPart(p.partInfo);
+                                KCTDebug.Log("Pulled drag info from part. Drag: " + drag);
                             }
                             //Add the part mass times the fully deployed drag (typically 500) to the dragCoeff variable (you'll see why later)
                             dragCoeff += p.mass * drag;
@@ -391,7 +392,7 @@ namespace Kerbal_Construction_Time
                             bool probeCoreAttached = false;
                             foreach (ProtoPartSnapshot pps in v.protoVessel.protoPartSnapshots)
                             {
-                                if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && (module.moduleRef != null && ((ModuleCommand)module.moduleRef).minimumCrew == 0))) != null)
+                                if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && KCT_Utilities.IsUnmannedCommand(pps.partInfo))) != null)
                                 {
                                     KCTDebug.Log("Probe Core found!");
                                     probeCoreAttached = true;
