@@ -21,6 +21,10 @@ namespace Kerbal_Construction_Time
         public static String simulationReason;
         public static KCT_Settings settings = new KCT_Settings();
         public static KCT_TimeSettings timeSettings = new KCT_TimeSettings();
+
+        public static KCT_KSC ActiveKSC;
+        public static List<KCT_KSC> KSCs = new List<KCT_KSC>();
+
         public static List<KCT_BuildListVessel> VABList = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
@@ -29,6 +33,8 @@ namespace Kerbal_Construction_Time
         public static List<int> VABUpgrades = new List<int>() {0};
         public static List<int> SPHUpgrades = new List<int>() {0};
         public static List<int> RDUpgrades = new List<int>() {0, 0};
+        public static KCT_Reconditioning LaunchPadReconditioning;
+
         public static List<int> PurchasedUpgrades = new List<int>() { 0, 0 };
         public static int TotalUpgradePoints = 0;
         public static KCT_BuildListVessel launchedVessel, editedVessel;
@@ -41,7 +47,7 @@ namespace Kerbal_Construction_Time
         public static double EditorBuildTime = 0;
         public static Dictionary<string, int> EditedVesselParts = new Dictionary<string, int>();
         public static bool LaunchFromTS = false;
-        public static KCT_Reconditioning LaunchPadReconditioning;
+        
 
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
         public static string KACAlarmId = "";
@@ -74,6 +80,10 @@ namespace Kerbal_Construction_Time
             LaunchPadReconditioning = null;
             targetedItem = null;
 
+            ActiveKSC = null;
+            KSCs.Clear();
+
+
             VABList = new List<KCT_BuildListVessel>();
             VABWarehouse = new List<KCT_BuildListVessel>();
             SPHList = new List<KCT_BuildListVessel>();
@@ -101,7 +111,6 @@ namespace Kerbal_Construction_Time
             return this;
         }
     }
-
 }
 /*
 Copyright (C) 2014  Michael Marvin, Zachary Eck

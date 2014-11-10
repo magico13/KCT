@@ -64,6 +64,7 @@
     <Compile Include="KCT_GameStates.cs" />
     <Compile Include="KCT_GUI.cs" />
     <Compile Include="KCT_DataStorage.cs" />
+    <Compile Include="KCT_KSC.cs" />
     <Compile Include="KCT_OrbitAdjuster.cs" />
     <Compile Include="KCT_Reconditioning.cs" />
     <Compile Include="KCT_Settings.cs" />
