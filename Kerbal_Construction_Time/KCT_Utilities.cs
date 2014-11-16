@@ -245,28 +245,29 @@ namespace Kerbal_Construction_Time
             return name;
         }
 
-        public static double GetBuildRate(int index, KCT_BuildListVessel.ListType type)
+        public static double GetBuildRate(int index, KCT_BuildListVessel.ListType type, KCT_KSC KSC)
         {
+            if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
             double ret = 0;
             if (type == KCT_BuildListVessel.ListType.VAB)
             {
-                if (KCT_GameStates.VABUpgrades.Count - 1 >= index)
+                if (KSC.VABUpgrades.Count - 1 >= index)
                 {
-                    ret = KCT_GameStates.VABUpgrades[index] * (index+1) * 0.05;
+                    ret = KSC.VABUpgrades[index] * (index+1) * 0.05;
                     if (index == 0) ret += 0.1;
                 }
             }
             else if (type == KCT_BuildListVessel.ListType.SPH)
             {
-                if (KCT_GameStates.SPHUpgrades.Count - 1 >= index)
+                if (KSC.SPHUpgrades.Count - 1 >= index)
                 {
-                    ret = KCT_GameStates.SPHUpgrades[index] * (index+1) * 0.05;
+                    ret = KSC.SPHUpgrades[index] * (index+1) * 0.05;
                     if (index == 0) ret += 0.1;
                 }
             }
             else if (type == KCT_BuildListVessel.ListType.TechNode)
             {
-                ret = Math.Pow(2, KCT_GameStates.RDUpgrades[1] + 1) / 86400.0;
+                ret = Math.Pow(2, KSC.RDUpgrades[1] + 1) / 86400.0;
             }
             return ret;
         }
@@ -274,9 +275,9 @@ namespace Kerbal_Construction_Time
         public static double GetBuildRate(KCT_BuildListVessel ship)
         {
             if (ship.type == KCT_BuildListVessel.ListType.VAB)
-                return GetBuildRate(KCT_GameStates.VABList.IndexOf(ship), ship.type);
+                return GetBuildRate(ship.KSC.VABList.IndexOf(ship), ship.type, ship.KSC);
             else if (ship.type == KCT_BuildListVessel.ListType.SPH)
-                return GetBuildRate(KCT_GameStates.SPHList.IndexOf(ship), ship.type);
+                return GetBuildRate(ship.KSC.SPHList.IndexOf(ship), ship.type, ship.KSC);
             else
                 return 0;
         }
@@ -284,10 +285,10 @@ namespace Kerbal_Construction_Time
         public static List<double> BuildRatesVAB()
         {
             List<double> rates = new List<double>();
-            if (KCT_GameStates.VABUpgrades.Count > 0)
+            if (KCT_GameStates.ActiveKSC.VABUpgrades.Count > 0)
             {
-                for (int i = 0; i < KCT_GameStates.VABUpgrades.Count; i++)
-                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.VAB));
+                for (int i = 0; i < KCT_GameStates.ActiveKSC.VABUpgrades.Count; i++)
+                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, null));
             }
             else
                 rates.Add(0.1);
@@ -297,10 +298,10 @@ namespace Kerbal_Construction_Time
         public static List<double> BuildRatesSPH()
         {
             List<double> rates = new List<double>();
-            if (KCT_GameStates.SPHUpgrades.Count > 0)
+            if (KCT_GameStates.ActiveKSC.SPHUpgrades.Count > 0)
             {
-                for (int i = 0; i < KCT_GameStates.SPHUpgrades.Count; i++)
-                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.SPH));
+                for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHUpgrades.Count; i++)
+                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, null));
             }
             else
                 rates.Add(0.1);
@@ -314,49 +315,52 @@ namespace Kerbal_Construction_Time
             double UTDiff = UT - lastUT;
             if (UTDiff > 0 && UTDiff < (TimeWarp.fetch.warpRates[TimeWarp.fetch.warpRates.Length-1]*2) && lastUT > 0)
             {
-                double buildRate = 0;
-                if (KCT_GameStates.VABList.Count > 0)
+                foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                 {
-                    for (int i = 0; i < KCT_GameStates.VABList.Count; i++)
+                    double buildRate = 0;
+                    if (ksc.VABList.Count > 0)
                     {
-                        buildRate = GetBuildRate(i, KCT_BuildListVessel.ListType.VAB);
-                        KCT_GameStates.VABList[i].AddProgress(buildRate * (UT - lastUT));
-                        if (((IKCTBuildItem)KCT_GameStates.VABList[i]).IsComplete())
-                            MoveVesselToWarehouse(0, i);
+                        for (int i = 0; i < ksc.VABList.Count; i++)
+                        {
+                            buildRate = GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, ksc);
+                            ksc.VABList[i].AddProgress(buildRate * (UT - lastUT));
+                            if (((IKCTBuildItem)ksc.VABList[i]).IsComplete())
+                                MoveVesselToWarehouse(0, i, ksc);
+                        }
                     }
-                }
-                if (KCT_GameStates.SPHList.Count > 0)
-                {
-                    for (int i = 0; i < KCT_GameStates.SPHList.Count; i++)
+                    if (ksc.SPHList.Count > 0)
                     {
-                        buildRate = GetBuildRate(i, KCT_BuildListVessel.ListType.SPH);
-                        KCT_GameStates.SPHList[i].AddProgress(buildRate * (UT - lastUT));
-                        if (((IKCTBuildItem)KCT_GameStates.SPHList[i]).IsComplete())
-                            MoveVesselToWarehouse(1, i);
+                        for (int i = 0; i < ksc.SPHList.Count; i++)
+                        {
+                            buildRate = GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, ksc);
+                            ksc.SPHList[i].AddProgress(buildRate * (UT - lastUT));
+                            if (((IKCTBuildItem)ksc.SPHList[i]).IsComplete())
+                                MoveVesselToWarehouse(1, i, ksc);
+                        }
                     }
-                }
 
-                for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
-                {
-                    KCT_TechItem tech = KCT_GameStates.TechList[i];
-                    buildRate = tech.BuildRate;
-                    tech.progress+=(buildRate * (UT - lastUT));
-                    if (tech.isComplete || KCT_GameStates.settings.InstantTechUnlock)
+                    for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
                     {
-                        if (KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRate > 1f)
-                            TimeWarp.SetRate(0, true);
-                        if (tech.protoNode == null) continue;
-                        tech.EnableTech();
-                        KCT_GameStates.TechList.Remove(tech);
+                        KCT_TechItem tech = KCT_GameStates.TechList[i];
+                        buildRate = tech.BuildRate;
+                        tech.progress+=(buildRate * (UT - lastUT));
+                        if (tech.isComplete || KCT_GameStates.settings.InstantTechUnlock)
+                        {
+                            if (KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRate > 1f)
+                                TimeWarp.SetRate(0, true);
+                            if (tech.protoNode == null) continue;
+                            tech.EnableTech();
+                            KCT_GameStates.TechList.Remove(tech);
+                        }
                     }
-                }
 
-                if (KCT_GameStates.LaunchPadReconditioning != null)
-                {
-                    IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning;
-                    KCT_GameStates.LaunchPadReconditioning.progress += (item.GetBuildRate() * (UT - lastUT));
-                    if (item.IsComplete() || !KCT_GameStates.settings.Reconditioning)
-                        KCT_GameStates.LaunchPadReconditioning = null;
+                    if (ksc.LaunchPadReconditioning != null)
+                    {
+                        IKCTBuildItem item = (IKCTBuildItem)ksc.LaunchPadReconditioning;
+                        ksc.LaunchPadReconditioning.progress += (item.GetBuildRate() * (UT - lastUT));
+                        if (item.IsComplete() || !KCT_GameStates.settings.Reconditioning)
+                            ksc.LaunchPadReconditioning = null;
+                    }
                 }
             }
             lastUT = UT;
@@ -472,8 +476,9 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public static void MoveVesselToWarehouse(int ListIdentifier, int index)
+        public static void MoveVesselToWarehouse(int ListIdentifier, int index, KCT_KSC KSC)
         {
+            if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
             if (ToolbarManager.ToolbarAvailable)
             {
                 KCT_GameStates.kctToolbarButton.Important = true; //Show the button if it is hidden away
@@ -491,9 +496,9 @@ namespace Kerbal_Construction_Time
             KCT_BuildListVessel vessel = null;
             if (ListIdentifier == 0) //VAB list
             {
-                vessel = KCT_GameStates.VABList[index];
-                KCT_GameStates.VABList.RemoveAt(index);
-                KCT_GameStates.VABWarehouse.Add(vessel);
+                vessel = KSC.VABList[index];
+                KSC.VABList.RemoveAt(index);
+                KSC.VABWarehouse.Add(vessel);
                 
                 Message.AppendLine(vessel.shipName);
                 Message.AppendLine("Please check the VAB Storage to launch it.");
@@ -501,9 +506,9 @@ namespace Kerbal_Construction_Time
             }
             else if (ListIdentifier == 1)//SPH list
             {
-                vessel = KCT_GameStates.SPHList[index];
-                KCT_GameStates.SPHList.RemoveAt(index);
-                KCT_GameStates.SPHWarehouse.Add(vessel);
+                vessel = KSC.SPHList[index];
+                KSC.SPHList.RemoveAt(index);
+                KSC.SPHWarehouse.Add(vessel);
 
                 Message.AppendLine(vessel.shipName);
                 Message.AppendLine("Please check the SPH Storage to launch it.");
@@ -511,7 +516,7 @@ namespace Kerbal_Construction_Time
 
             //Assign science based on science rate
             if (CurrentGameHasScience() && !vessel.cannotEarnScience)
-                AddScienceWithMessage((float)(KCT_GameStates.RDUpgrades[0] * 0.5 * vessel.buildPoints / 86400), TransactionReasons.None);
+                AddScienceWithMessage((float)(KSC.RDUpgrades[0] * 0.5 * vessel.buildPoints / 86400), TransactionReasons.None);
 
             //Add parts to the tracker
             if (!vessel.cannotEarnScience)
@@ -530,20 +535,23 @@ namespace Kerbal_Construction_Time
             string stor = ListIdentifier == 0 ? "VAB" : "SPH";
             KCTDebug.Log("Moved vessel " + vessel.shipName + " to " + stor +" storage.");
 
-            foreach (KCT_BuildListVessel blv in KCT_GameStates.VABList)
+            foreach (KCT_KSC KSC_iterator in KCT_GameStates.KSCs)
             {
-                double newTime = KCT_Utilities.GetBuildTime(blv.ExtractedPartNodes, true, blv.InventoryParts); //Use only the parts that were originally used when recalculating
-                if (newTime < blv.buildPoints)
+                foreach (KCT_BuildListVessel blv in KSC_iterator.VABList)
                 {
-                    blv.buildPoints = blv.buildPoints - ((blv.buildPoints - newTime) * (100 - blv.ProgressPercent())/100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
+                    double newTime = KCT_Utilities.GetBuildTime(blv.ExtractedPartNodes, true, blv.InventoryParts); //Use only the parts that were originally used when recalculating
+                    if (newTime < blv.buildPoints)
+                    {
+                        blv.buildPoints = blv.buildPoints - ((blv.buildPoints - newTime) * (100 - blv.ProgressPercent()) / 100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
+                    }
                 }
-            }
-            foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHList)
-            {
-                double newTime = KCT_Utilities.GetBuildTime(blv.ExtractedPartNodes, true, blv.InventoryParts);
-                if (newTime < blv.buildPoints)
+                foreach (KCT_BuildListVessel blv in KSC_iterator.SPHList)
                 {
-                    blv.buildPoints = blv.buildPoints - ((blv.buildPoints - newTime) * (100 - blv.ProgressPercent()) / 100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
+                    double newTime = KCT_Utilities.GetBuildTime(blv.ExtractedPartNodes, true, blv.InventoryParts);
+                    if (newTime < blv.buildPoints)
+                    {
+                        blv.buildPoints = blv.buildPoints - ((blv.buildPoints - newTime) * (100 - blv.ProgressPercent()) / 100.0); //If progress=0% then set to new build time, 100%=no change, 50%=half of difference.
+                    }
                 }
             }
             KCT_GUI.ResetBLWindow();
@@ -806,12 +814,12 @@ namespace Kerbal_Construction_Time
             string type = "";
             if (blv.type == KCT_BuildListVessel.ListType.VAB)
             {
-                KCT_GameStates.VABList.Add(blv);
+                KCT_GameStates.ActiveKSC.VABList.Add(blv);
                 type = "VAB";
             }
             else if (blv.type == KCT_BuildListVessel.ListType.SPH)
             {
-                KCT_GameStates.SPHList.Add(blv);
+                KCT_GameStates.ActiveKSC.SPHList.Add(blv);
                 type = "SPH";
             }
             if (inventory.Count > 0)
@@ -833,7 +841,7 @@ namespace Kerbal_Construction_Time
         {
             IKCTBuildItem thing = null;
             double shortestTime = double.PositiveInfinity;
-            foreach (IKCTBuildItem blv in KCT_GameStates.VABList)
+            foreach (IKCTBuildItem blv in KCT_GameStates.ActiveKSC.VABList)
             {
                 double time = blv.GetTimeLeft();
                 if (time < shortestTime)
@@ -842,7 +850,7 @@ namespace Kerbal_Construction_Time
                     shortestTime = time;
                 }
             }
-            foreach (IKCTBuildItem blv in KCT_GameStates.SPHList)
+            foreach (IKCTBuildItem blv in KCT_GameStates.ActiveKSC.SPHList)
             {
                 double time = blv.GetTimeLeft();
                 if (time < shortestTime)
@@ -860,9 +868,9 @@ namespace Kerbal_Construction_Time
                     shortestTime = time;
                 }
             }
-            if (KCT_GameStates.LaunchPadReconditioning != null)
+            if (KCT_GameStates.ActiveKSC.LaunchPadReconditioning != null)
             {
-                IKCTBuildItem blv = (IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning;
+                IKCTBuildItem blv = (IKCTBuildItem)KCT_GameStates.ActiveKSC.LaunchPadReconditioning;
                 double time = blv.GetTimeLeft();
                 if (time < shortestTime)
                 {
@@ -877,7 +885,7 @@ namespace Kerbal_Construction_Time
         {
             KCT_BuildListVessel ship = null;
             double shortestTime = double.PositiveInfinity;
-            foreach (KCT_BuildListVessel blv in KCT_GameStates.VABList)
+            foreach (KCT_BuildListVessel blv in KCT_GameStates.ActiveKSC.VABList)
             {
                 double time = blv.timeLeft;
                 if (time < shortestTime)
@@ -886,7 +894,7 @@ namespace Kerbal_Construction_Time
                     shortestTime = time;
                 }
             }
-            foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHList)
+            foreach (KCT_BuildListVessel blv in KCT_GameStates.ActiveKSC.SPHList)
             {
                 double time = blv.timeLeft;
                 if (time < shortestTime)
@@ -950,9 +958,9 @@ namespace Kerbal_Construction_Time
         public static int TotalSpentUpgrades()
         {
             int spentPoints = 0;
-            foreach (int i in KCT_GameStates.VABUpgrades) spentPoints += i;
-            foreach (int i in KCT_GameStates.SPHUpgrades) spentPoints += i;
-            foreach (int i in KCT_GameStates.RDUpgrades) spentPoints += i;
+            foreach (int i in KCT_GameStates.ActiveKSC.VABUpgrades) spentPoints += i;
+            foreach (int i in KCT_GameStates.ActiveKSC.SPHUpgrades) spentPoints += i;
+            foreach (int i in KCT_GameStates.ActiveKSC.RDUpgrades) spentPoints += i;
             return spentPoints;
         }
 

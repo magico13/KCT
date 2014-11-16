@@ -22,10 +22,10 @@ namespace Kerbal_Construction_Time
         public static KCT_Settings settings = new KCT_Settings();
         public static KCT_TimeSettings timeSettings = new KCT_TimeSettings();
 
-        public static KCT_KSC ActiveKSC;
-        public static List<KCT_KSC> KSCs = new List<KCT_KSC>();
+        public static KCT_KSC ActiveKSC = new KCT_KSC("Stock");
+        public static List<KCT_KSC> KSCs = new List<KCT_KSC>() { ActiveKSC };
 
-        public static List<KCT_BuildListVessel> VABList = new List<KCT_BuildListVessel>();
+        /*public static List<KCT_BuildListVessel> VABList = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHWarehouse = new List<KCT_BuildListVessel>();
@@ -33,7 +33,9 @@ namespace Kerbal_Construction_Time
         public static List<int> VABUpgrades = new List<int>() {0};
         public static List<int> SPHUpgrades = new List<int>() {0};
         public static List<int> RDUpgrades = new List<int>() {0, 0};
-        public static KCT_Reconditioning LaunchPadReconditioning;
+        public static KCT_Reconditioning LaunchPadReconditioning;*/
+        public static int TechUpgradesTotal = 0;
+        public static List<KCT_TechItem> TechList = new List<KCT_TechItem>();
 
         public static List<int> PurchasedUpgrades = new List<int>() { 0, 0 };
         public static int TotalUpgradePoints = 0;
@@ -73,22 +75,22 @@ namespace Kerbal_Construction_Time
             simulateInOrbit = false;
             BodiesVisited = new List<string> {"Kerbin"};
             TotalUpgradePoints = 0;
-            VABUpgrades = new List<int>() {0};
+          /*  VABUpgrades = new List<int>() {0};
             SPHUpgrades = new List<int>() {0};
-            RDUpgrades = new List<int>() {0, 0};
+            RDUpgrades = new List<int>() {0, 0};*/
             PurchasedUpgrades = new List<int>() { 0, 0 };
-            LaunchPadReconditioning = null;
+           // LaunchPadReconditioning = null;
             targetedItem = null;
 
-            ActiveKSC = null;
-            KSCs.Clear();
+            ActiveKSC = new KCT_KSC("Stock");
+            KSCs = new List<KCT_KSC>() {ActiveKSC};
 
 
-            VABList = new List<KCT_BuildListVessel>();
+           /* VABList = new List<KCT_BuildListVessel>();
             VABWarehouse = new List<KCT_BuildListVessel>();
             SPHList = new List<KCT_BuildListVessel>();
             SPHWarehouse = new List<KCT_BuildListVessel>();
-            TechList = new List<KCT_TechItem>();
+            TechList = new List<KCT_TechItem>();*/
         }
 
     }

@@ -41,17 +41,19 @@ namespace Kerbal_Construction_Time
     {
         public override void OnSave(ConfigNode node)
         {
-            Boolean error = false;
+            //Boolean error = false;
             KCTDebug.Log("Writing to persistence.");
             base.OnSave(node);
             KCT_DataStorage kctVS = new KCT_DataStorage();
-            KCT_BuildListStorage bls = new KCT_BuildListStorage();
-            KCT_TechStorage tS = new KCT_TechStorage();
+            //KCT_BuildListStorage bls = new KCT_BuildListStorage();
+            //KCT_TechStorage tS = new KCT_TechStorage();
             node.AddNode(kctVS.AsConfigNode());
-            node.AddNode(bls.AsConfigNode());
-            node.AddNode(tS.AsConfigNode());
+            //node.AddNode(bls.AsConfigNode());
+            //node.AddNode(tS.AsConfigNode());
+            foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
+                node.AddNode(KSC.AsConfigNode());
 
-            for (int i=0; i<KCT_GameStates.VABList.Count; i++)
+            /*for (int i=0; i<KCT_GameStates.VABList.Count; i++)
             {
                 KCTDebug.Log("VAB"+i);
                 ConfigNode CN = new ConfigNode();
@@ -130,7 +132,7 @@ namespace Kerbal_Construction_Time
             if (error)
             {
                 //TODO: Popup with error message
-            }
+            }*/
         }
         public override void OnLoad(ConfigNode node)
         {
@@ -151,21 +153,21 @@ namespace Kerbal_Construction_Time
             if (CN != null)
                 ConfigNode.LoadObjectFromConfig(tS, CN);
 
-            for (int i = 0; i < KCT_GameStates.VABList.Count; i++)
+            for (int i = 0; i < KCT_GameStates.ActiveKSC.VABList.Count; i++)
             {
-                KCT_GameStates.VABList[i].shipNode = node.GetNode("VAB" + i);
+                KCT_GameStates.ActiveKSC.VABList[i].shipNode = node.GetNode("VAB" + i);
             }
-            for (int i = 0; i < KCT_GameStates.SPHList.Count; i++)
+            for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHList.Count; i++)
             {
-                KCT_GameStates.SPHList[i].shipNode = node.GetNode("SPH" + i);
+                KCT_GameStates.ActiveKSC.SPHList[i].shipNode = node.GetNode("SPH" + i);
             }
-            for (int i = 0; i < KCT_GameStates.VABWarehouse.Count; i++)
+            for (int i = 0; i < KCT_GameStates.ActiveKSC.VABWarehouse.Count; i++)
             {
-                KCT_GameStates.VABWarehouse[i].shipNode = node.GetNode("VABWH" + i);
+                KCT_GameStates.ActiveKSC.VABWarehouse[i].shipNode = node.GetNode("VABWH" + i);
             }
-            for (int i = 0; i < KCT_GameStates.SPHWarehouse.Count; i++)
+            for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHWarehouse.Count; i++)
             {
-                KCT_GameStates.SPHWarehouse[i].shipNode = node.GetNode("SPHWH" + i);
+                KCT_GameStates.ActiveKSC.SPHWarehouse[i].shipNode = node.GetNode("SPHWH" + i);
             }
             for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
             {

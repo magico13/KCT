@@ -213,9 +213,9 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
                     KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd, TransactionReasons.None);
                 }
-                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning && KCT_GameStates.LaunchPadReconditioning == null)
+                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning && KCT_GameStates.ActiveKSC.LaunchPadReconditioning == null)
                 {
-                    KCT_GameStates.LaunchPadReconditioning = new KCT_Reconditioning(ev.host);
+                    KCT_GameStates.ActiveKSC.LaunchPadReconditioning = new KCT_Reconditioning(ev.host);
                 }
             }
         }

@@ -51,6 +51,8 @@ namespace Kerbal_Construction_Time
             }
         }
         public bool isFinished { get { return progress >= buildPoints; } }
+        public KCT_KSC KSC { get { return KCT_GameStates.KSCs.FirstOrDefault(k => (k.VABList.FirstOrDefault(s => s.id == this.id) != null) 
+            || (k.SPHList.FirstOrDefault(s => s.id == this.id) != null)); } }
 
         public KCT_BuildListVessel(ShipConstruct s, String ls, double bP, String flagURL)
         {
@@ -145,67 +147,68 @@ namespace Kerbal_Construction_Time
         {
             string typeName="";
             bool removed = false;
+            KCT_KSC theKSC = this.KSC;
             if (type == ListType.SPH)
             {
-                if (KCT_GameStates.SPHWarehouse.Contains(this))
-                    removed = KCT_GameStates.SPHWarehouse.Remove(this);
-                else if (KCT_GameStates.SPHList.Contains(this))
-                    removed = KCT_GameStates.SPHList.Remove(this);
+                if (theKSC.SPHWarehouse.Contains(this))
+                    removed = theKSC.SPHWarehouse.Remove(this);
+                else if (theKSC.SPHList.Contains(this))
+                    removed = theKSC.SPHList.Remove(this);
                 typeName="SPH";
             }
             else if (type == ListType.VAB)
             {
-                if (KCT_GameStates.VABWarehouse.Contains(this))
-                    removed = KCT_GameStates.VABWarehouse.Remove(this);
-                else if (KCT_GameStates.VABList.Contains(this))
-                    removed = KCT_GameStates.VABList.Remove(this);
+                if (theKSC.VABWarehouse.Contains(this))
+                    removed = theKSC.VABWarehouse.Remove(this);
+                else if (theKSC.VABList.Contains(this))
+                    removed = theKSC.VABList.Remove(this);
                 typeName="VAB";
             }
             KCTDebug.Log("Removing " + shipName + " from "+ typeName +" storage/list.");
             if (!removed)
             {
                 KCTDebug.Log("Failed to remove ship from list! Performing direct comparison of ids...");
-                foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHWarehouse)
+                foreach (KCT_BuildListVessel blv in theKSC.SPHWarehouse)
                 {
                     if (blv.id == this.id)
                     {
                         KCTDebug.Log("Ship found in SPH storage. Removing...");
-                        removed = KCT_GameStates.SPHWarehouse.Remove(blv);
+                        removed = theKSC.SPHWarehouse.Remove(blv);
                         break;
                     }
                 }
                 if (!removed)
                 {
-                    foreach (KCT_BuildListVessel blv in KCT_GameStates.VABWarehouse)
+                    foreach (KCT_BuildListVessel blv in theKSC.VABWarehouse)
                     {
                         if (blv.id == this.id)
                         {
                             KCTDebug.Log("Ship found in VAB storage. Removing...");
-                            removed = KCT_GameStates.VABWarehouse.Remove(blv);
+                            removed = theKSC.VABWarehouse.Remove(blv);
                             break;
                         }
                     }
                 }
                 if (!removed)
                 {
-                    foreach (KCT_BuildListVessel blv in KCT_GameStates.VABList)
+                    foreach (KCT_BuildListVessel blv in theKSC.VABList)
                     {
                         if (blv.id == this.id)
                         {
                             KCTDebug.Log("Ship found in VAB List. Removing...");
-                            removed = KCT_GameStates.VABList.Remove(blv);
+                            removed = theKSC.VABList.Remove(blv);
                             break;
                         }
                     }
                 }
                 if (!removed)
                 {
-                    foreach (KCT_BuildListVessel blv in KCT_GameStates.SPHList)
+                    foreach (KCT_BuildListVessel blv in theKSC.SPHList)
                     {
                         if (blv.id == this.id)
                         {
                             KCTDebug.Log("Ship found in SPH list. Removing...");
-                            removed = KCT_GameStates.SPHList.Remove(blv);
+                            removed = theKSC.SPHList.Remove(blv);
                             break;
                         }
                     }

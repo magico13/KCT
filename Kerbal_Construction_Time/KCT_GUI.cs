@@ -363,7 +363,7 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label(Math.Round(buildTime, 2).ToString(), GUILayout.ExpandHeight(true));
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Build Time at ");
-                if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type).ToString();
+                if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type, null).ToString();
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
                 GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
@@ -455,7 +455,7 @@ namespace Kerbal_Construction_Time
                 KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Build Time at ");
-                if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type).ToString();
+                if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type, null).ToString();
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
                 GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
@@ -1110,10 +1110,10 @@ namespace Kerbal_Construction_Time
             KCT_BuildListVessel b;// = listWindow == 0 ? KCT_GameStates.VABList[IndexSelected] : KCT_GameStates.SPHList[IndexSelected];
             switch (listWindow)
             {
-                case 0: b = KCT_GameStates.VABList[IndexSelected]; break;
-                case 1: b = KCT_GameStates.SPHList[IndexSelected]; break;
-                case 2: b = KCT_GameStates.VABWarehouse[IndexSelected]; break;
-                case 3: b = KCT_GameStates.SPHWarehouse[IndexSelected]; break;
+                case 0: b = KCT_GameStates.ActiveKSC.VABList[IndexSelected]; break;
+                case 1: b = KCT_GameStates.ActiveKSC.SPHList[IndexSelected]; break;
+                case 2: b = KCT_GameStates.ActiveKSC.VABWarehouse[IndexSelected]; break;
+                case 3: b = KCT_GameStates.ActiveKSC.SPHWarehouse[IndexSelected]; break;
                 default: KCTDebug.Log("Tried to remove a vessel that couldn't be found! "+listWindow); return;
             }
             KCTDebug.Log("Scrapping " + b.shipName);
@@ -1264,7 +1264,7 @@ namespace Kerbal_Construction_Time
             //Content of lists
             if (listWindow==0) //VAB Build List
             {
-                List<KCT_BuildListVessel> buildList = KCT_GameStates.VABList;
+                List<KCT_BuildListVessel> buildList = KCT_GameStates.ActiveKSC.VABList;
                 //GUILayout.Label("VAB Build List");
                 GUILayout.BeginHorizontal();
                 //GUILayout.Label("Name:", GUILayout.Width(width1));
@@ -1274,14 +1274,14 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("BP:", GUILayout.Width(width1 / 2 + 10));
                 GUILayout.Space((butW + 4) * 3);
                 GUILayout.EndHorizontal();
-                if (KCT_GameStates.LaunchPadReconditioning != null)
+                if (KCT_GameStates.ActiveKSC.LaunchPadReconditioning != null)
                 {
                     GUILayout.BeginHorizontal();
-                    IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning;
+                    IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.ActiveKSC.LaunchPadReconditioning;
                     GUILayout.Label(item.GetItemName());
-                    GUILayout.Label(KCT_GameStates.LaunchPadReconditioning.ProgressPercent().ToString()+"%", GUILayout.Width(width1 / 2));
+                    GUILayout.Label(KCT_GameStates.ActiveKSC.LaunchPadReconditioning.ProgressPercent().ToString()+"%", GUILayout.Width(width1 / 2));
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(item.GetTimeLeft()), GUILayout.Width(width2));
-                    GUILayout.Label(Math.Round(KCT_GameStates.LaunchPadReconditioning.BP, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
+                    GUILayout.Label(Math.Round(KCT_GameStates.ActiveKSC.LaunchPadReconditioning.BP, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
                     if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width((butW + 4) * 3)))
                     {
                         KCT_GameStates.targetedItem = item;
@@ -1305,7 +1305,7 @@ namespace Kerbal_Construction_Time
                     if (b.buildRate > 0)
                         GUILayout.Label(KCT_Utilities.GetColonFormattedTime(b.timeLeft), GUILayout.Width(width2));
                     else
-                        GUILayout.Label("Est: " + KCT_Utilities.GetColonFormattedTime((b.buildPoints - b.progress)/KCT_Utilities.GetBuildRate(0, KCT_BuildListVessel.ListType.VAB)), GUILayout.Width(width2));
+                        GUILayout.Label("Est: " + KCT_Utilities.GetColonFormattedTime((b.buildPoints - b.progress)/KCT_Utilities.GetBuildRate(0, KCT_BuildListVessel.ListType.VAB, null)), GUILayout.Width(width2));
                     GUILayout.Label(Math.Round(b.buildPoints, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
                     if (i > 0 && GUILayout.Button("^", GUILayout.Width(butW)))
                     {
@@ -1358,7 +1358,7 @@ namespace Kerbal_Construction_Time
             }
             else if (listWindow==1) //SPH Build List
             {
-                List<KCT_BuildListVessel> buildList = KCT_GameStates.SPHList;
+                List<KCT_BuildListVessel> buildList = KCT_GameStates.ActiveKSC.SPHList;
                 //GUILayout.Label("SPH Build List");
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Name:");
@@ -1377,7 +1377,7 @@ namespace Kerbal_Construction_Time
                     if (b.buildRate > 0)
                         GUILayout.Label(KCT_Utilities.GetColonFormattedTime(b.timeLeft), GUILayout.Width(width2));
                     else
-                        GUILayout.Label("Est: " + KCT_Utilities.GetColonFormattedTime((b.buildPoints - b.progress) / KCT_Utilities.GetBuildRate(0, KCT_BuildListVessel.ListType.SPH)), GUILayout.Width(width2));
+                        GUILayout.Label("Est: " + KCT_Utilities.GetColonFormattedTime((b.buildPoints - b.progress) / KCT_Utilities.GetBuildRate(0, KCT_BuildListVessel.ListType.SPH, null)), GUILayout.Width(width2));
                     GUILayout.Label(Math.Round(b.buildPoints, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
                     if (i > 0 && GUILayout.Button("^", GUILayout.ExpandWidth(false)))
                     {
@@ -1430,7 +1430,7 @@ namespace Kerbal_Construction_Time
             }
             else if (listWindow==2) //VAB Warehouse
             {
-                List<KCT_BuildListVessel> buildList = KCT_GameStates.VABWarehouse;
+                List<KCT_BuildListVessel> buildList = KCT_GameStates.ActiveKSC.VABWarehouse;
                 //GUILayout.Label("VAB Storage");
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((buildList.Count) * 25 + 10, Screen.height / 4F)));
                 for (int i = 0; i < buildList.Count; i++)
@@ -1440,10 +1440,11 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label(b.shipName);
                     if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                     {
-                        if (KCT_GameStates.LaunchPadReconditioning != null)
+                        if (KCT_GameStates.ActiveKSC.LaunchPadReconditioning != null)
                         {
                             //can't launch now
-                            ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in " + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.LaunchPadReconditioning).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                            ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in " 
+                                + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.LaunchPadReconditioning).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
                             ScreenMessages.PostScreenMessage(message, true);
                         }
                         else
@@ -1492,7 +1493,7 @@ namespace Kerbal_Construction_Time
             }
             else if (listWindow==3) //SPH Warehouse
             {
-                List<KCT_BuildListVessel> buildList = KCT_GameStates.SPHWarehouse;
+                List<KCT_BuildListVessel> buildList = KCT_GameStates.ActiveKSC.SPHWarehouse;
                 //GUILayout.Label("SPH Storage");
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((buildList.Count) * 25 + 10, Screen.height / 4F)));
                 for (int i = 0; i < buildList.Count; i++)
@@ -2379,9 +2380,12 @@ namespace Kerbal_Construction_Time
             {
                 if (KCT_GameStates.TotalUpgradePoints - spentPoints > 1)
                 {
-                    KCT_GameStates.VABUpgrades = new List<int>() {0};
-                    KCT_GameStates.SPHUpgrades = new List<int>() { 0 };
-                    KCT_GameStates.RDUpgrades = new List<int>() { 0, 0 };
+                    KCT_GameStates.ActiveKSC.VABUpgrades = new List<int>() {0};
+                    KCT_GameStates.ActiveKSC.SPHUpgrades = new List<int>() { 0 };
+                    KCT_GameStates.ActiveKSC.RDUpgrades = new List<int>() { 0, 0 };
+                    KCT_GameStates.TechUpgradesTotal = 0;
+                    foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                        ksc.RDUpgrades[1] = 0;
                 }
             }
             GUILayout.EndHorizontal();
@@ -2391,38 +2395,39 @@ namespace Kerbal_Construction_Time
             if (GUILayout.Button("SPH")) { upgradeWindowHolder = 1; upgradePosition.height = 1; }
             if (KCT_Utilities.CurrentGameHasScience() && GUILayout.Button("R&D")) { upgradeWindowHolder = 2; upgradePosition.height = 1; }
             GUILayout.EndHorizontal();
+            KCT_KSC KSC = KCT_GameStates.ActiveKSC;
 
             if (upgradeWindowHolder==0) //VAB
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("VAB Upgrades");
                 GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KCT_GameStates.VABUpgrades.Count + 1) * 26), GUILayout.MaxHeight(3 * Screen.height / 4));
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.VABUpgrades.Count + 1) * 26), GUILayout.MaxHeight(3 * Screen.height / 4));
                 GUILayout.BeginVertical();
-                for (int i = 0; i < KCT_GameStates.VABUpgrades.Count; i++)
+                for (int i = 0; i < KSC.VABUpgrades.Count; i++)
                 {
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Rate "+(i+1));
-                    GUILayout.Label(KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.VAB)+" BP/s");
-                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && (i == 0 || KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.VAB)+((i+1)*0.05) 
-                        <= KCT_Utilities.GetBuildRate(i-1, KCT_BuildListVessel.ListType.VAB)))
+                    GUILayout.Label(KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, KSC) + " BP/s");
+                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && (i == 0 || KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, KSC) + ((i + 1) * 0.05)
+                        <= KCT_Utilities.GetBuildRate(i - 1, KCT_BuildListVessel.ListType.VAB, KSC)))
                     {
                         if (GUILayout.Button("+" + ((i + 1) * 0.05), GUILayout.Width(45)))
                         {
-                            ++KCT_GameStates.VABUpgrades[i];
+                            ++KSC.VABUpgrades[i];
                         }
                     }
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Rate " + (KCT_GameStates.VABUpgrades.Count+1));
+                GUILayout.Label("Rate " + (KSC.VABUpgrades.Count + 1));
                 GUILayout.Label("0 BP/s");
-                if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && ((KCT_GameStates.VABUpgrades.Count + 1) * 0.05) 
-                    <= KCT_Utilities.GetBuildRate(KCT_GameStates.VABUpgrades.Count - 1, KCT_BuildListVessel.ListType.VAB))
+                if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && ((KSC.VABUpgrades.Count + 1) * 0.05)
+                    <= KCT_Utilities.GetBuildRate(KSC.VABUpgrades.Count - 1, KCT_BuildListVessel.ListType.VAB, KSC))
                 {
-                    if (GUILayout.Button("+" + ((KCT_GameStates.VABUpgrades.Count + 1) * 0.05), GUILayout.Width(45)))
+                    if (GUILayout.Button("+" + ((KSC.VABUpgrades.Count + 1) * 0.05), GUILayout.Width(45)))
                     {
-                        KCT_GameStates.VABUpgrades.Add(1);
+                        KSC.VABUpgrades.Add(1);
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -2435,32 +2440,32 @@ namespace Kerbal_Construction_Time
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("SPH Upgrades");
                 GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KCT_GameStates.SPHUpgrades.Count + 1) * 26), GUILayout.MaxHeight(3 * Screen.height / 4));
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.SPHUpgrades.Count + 1) * 26), GUILayout.MaxHeight(3 * Screen.height / 4));
                 GUILayout.BeginVertical();
-                for (int i = 0; i < KCT_GameStates.SPHUpgrades.Count; i++)
+                for (int i = 0; i < KSC.SPHUpgrades.Count; i++)
                 {
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Rate " + (i + 1));
-                    GUILayout.Label(KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.SPH) + " BP/s");
-                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && (i == 0 || KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.SPH) + ((i + 1) * 0.05)
-                        <= KCT_Utilities.GetBuildRate(i - 1, KCT_BuildListVessel.ListType.SPH)))
+                    GUILayout.Label(KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, KSC) + " BP/s");
+                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && (i == 0 || KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, KSC) + ((i + 1) * 0.05)
+                        <= KCT_Utilities.GetBuildRate(i - 1, KCT_BuildListVessel.ListType.SPH, KSC)))
                     {
                         if (GUILayout.Button("+" + ((i + 1) * 0.05), GUILayout.Width(45)))
                         {
-                            ++KCT_GameStates.SPHUpgrades[i];
+                            ++KSC.SPHUpgrades[i];
                         }
                     }
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Rate " + (KCT_GameStates.SPHUpgrades.Count+1));
+                GUILayout.Label("Rate " + (KSC.SPHUpgrades.Count + 1));
                 GUILayout.Label("0 BP/s");
-                if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && ((KCT_GameStates.SPHUpgrades.Count + 1) * 0.05)
-                    <= KCT_Utilities.GetBuildRate(KCT_GameStates.SPHUpgrades.Count - 1, KCT_BuildListVessel.ListType.SPH))
+                if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && ((KSC.SPHUpgrades.Count + 1) * 0.05)
+                    <= KCT_Utilities.GetBuildRate(KSC.SPHUpgrades.Count - 1, KCT_BuildListVessel.ListType.SPH, KSC))
                 {
-                    if (GUILayout.Button("+" + ((KCT_GameStates.SPHUpgrades.Count + 1) * 0.05), GUILayout.Width(45)))
+                    if (GUILayout.Button("+" + ((KSC.SPHUpgrades.Count + 1) * 0.05), GUILayout.Width(45)))
                     {
-                        KCT_GameStates.SPHUpgrades.Add(1);
+                        KSC.SPHUpgrades.Add(1);
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -2475,12 +2480,12 @@ namespace Kerbal_Construction_Time
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Research");
-                GUILayout.Label((KCT_GameStates.RDUpgrades[0]*0.5) + " sci/86400 BP");
+                GUILayout.Label((KSC.RDUpgrades[0] * 0.5) + " sci/86400 BP");
                 if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
                 {
                     if (GUILayout.Button("+0.5", GUILayout.Width(45)))
                     {
-                        ++KCT_GameStates.RDUpgrades[0];
+                        ++KSC.RDUpgrades[0];
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -2488,12 +2493,14 @@ namespace Kerbal_Construction_Time
                 int days = GameSettings.KERBIN_TIME ? 4 : 1;
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Development");
-                GUILayout.Label(days+" day(s)/"+Math.Pow(2, KCT_GameStates.RDUpgrades[1]+1)+" sci");
+                GUILayout.Label(days + " day(s)/" + Math.Pow(2, KSC.RDUpgrades[1] + 1) + " sci");
                 if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
                 {
-                    if (GUILayout.Button(days+"d/" + Math.Pow(2, KCT_GameStates.RDUpgrades[1]+2), GUILayout.ExpandWidth(false)))
+                    if (GUILayout.Button(days + "d/" + Math.Pow(2, KSC.RDUpgrades[1] + 2), GUILayout.ExpandWidth(false)))
                     {
-                        ++KCT_GameStates.RDUpgrades[1];
+                        ++KSC.RDUpgrades[1];
+                        foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                            ksc.RDUpgrades[1] = KSC.RDUpgrades[1];
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -2516,10 +2523,10 @@ namespace Kerbal_Construction_Time
             List<KCT_BuildListVessel> buildList = new List<KCT_BuildListVessel>();
             switch (listWindow)
             {
-                case 0: buildList = KCT_GameStates.VABList; break;
-                case 1: buildList = KCT_GameStates.SPHList; break;
-                case 2: buildList = KCT_GameStates.VABWarehouse; break;
-                case 3: buildList = KCT_GameStates.SPHWarehouse; break;
+                case 0: buildList = KCT_GameStates.ActiveKSC.VABList; break;
+                case 1: buildList = KCT_GameStates.ActiveKSC.SPHList; break;
+                case 2: buildList = KCT_GameStates.ActiveKSC.VABWarehouse; break;
+                case 3: buildList = KCT_GameStates.ActiveKSC.SPHWarehouse; break;
                 default: showBLPlus = false; break;
             }
             KCT_BuildListVessel b = buildList[IndexSelected];
@@ -2610,10 +2617,10 @@ namespace Kerbal_Construction_Time
                 List<KCT_BuildListVessel> buildList = new List<KCT_BuildListVessel>();
                 switch (listWindow)
                 {
-                    case 0: buildList = KCT_GameStates.VABList; break;
-                    case 1: buildList = KCT_GameStates.SPHList; break;
-                    case 2: buildList = KCT_GameStates.VABWarehouse; break;
-                    case 3: buildList = KCT_GameStates.SPHWarehouse; break;
+                    case 0: buildList = KCT_GameStates.ActiveKSC.VABList; break;
+                    case 1: buildList = KCT_GameStates.ActiveKSC.SPHList; break;
+                    case 2: buildList = KCT_GameStates.ActiveKSC.VABWarehouse; break;
+                    case 3: buildList = KCT_GameStates.ActiveKSC.SPHWarehouse; break;
                     default: showBLPlus = false; break;
                 }
                 KCT_BuildListVessel b = buildList[IndexSelected];

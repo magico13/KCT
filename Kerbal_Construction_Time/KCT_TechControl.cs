@@ -13,7 +13,7 @@ namespace Kerbal_Construction_Time
         public double progress;
         public ProtoTechNode protoNode;
         public List<string> UnlockedParts;
-        public double BuildRate { get { return (Math.Pow(2, KCT_GameStates.RDUpgrades[1] + 1) / 86400.0); } } //0pts=1day/2sci, 1pt=1/4, 2=1/8, 3=1/16, 4=1/32...n=1/2^(n+1)
+        public double BuildRate { get { return (Math.Pow(2, KCT_GameStates.TechUpgradesTotal + 1) / 86400.0); } } //0pts=1day/2sci, 1pt=1/4, 2=1/8, 3=1/16, 4=1/32...n=1/2^(n+1)
         public double TimeLeft { get { return (scienceCost - progress) / BuildRate; } }
         public bool isComplete { get { return progress >= scienceCost; } }
 

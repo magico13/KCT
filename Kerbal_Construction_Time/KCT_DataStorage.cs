@@ -97,9 +97,9 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.PartTracker = ListToDict(PartTracker);
             KCT_GameStates.PartInventory = ListToDict(PartInventory);
             KCT_GameStates.BodiesVisited = BodiesVisited;
-            KCT_GameStates.VABUpgrades = VABUpgrades;
-            KCT_GameStates.SPHUpgrades = SPHUpgrades;
-            KCT_GameStates.RDUpgrades = RDUpgrades;
+            KCT_GameStates.ActiveKSC.VABUpgrades = VABUpgrades;
+            KCT_GameStates.ActiveKSC.SPHUpgrades = SPHUpgrades;
+            KCT_GameStates.ActiveKSC.RDUpgrades = RDUpgrades;
             KCT_GameStates.PurchasedUpgrades = PurchasedUpgrades;
             KCT_GameStates.TotalUpgradePoints = TotalUpgradePoints;
             KCT_GameStates.FundsGivenForVessel = fundsFromSimulation;
@@ -108,9 +108,9 @@ namespace Kerbal_Construction_Time
             if (firstStart)
             {
                 KCT_GameStates.TotalUpgradePoints += 15;
-                KCT_GameStates.VABUpgrades = new List<int>() { 0 };
-                KCT_GameStates.SPHUpgrades = new List<int>() { 0 };
-                KCT_GameStates.RDUpgrades = new List<int>() { 0, 0 };
+                KCT_GameStates.ActiveKSC.VABUpgrades = new List<int>() { 0 };
+                KCT_GameStates.ActiveKSC.SPHUpgrades = new List<int>() { 0 };
+                KCT_GameStates.ActiveKSC.RDUpgrades = new List<int>() { 0, 0 };
                 //firstStart = false;
             }
             KCT_GameStates.firstStart = firstStart;
@@ -122,9 +122,9 @@ namespace Kerbal_Construction_Time
             PartInventory = DictToList(KCT_GameStates.PartInventory);
             enabledForSave = KCT_GameStates.settings.enabledForSave;
             BodiesVisited = KCT_GameStates.BodiesVisited;
-            VABUpgrades = KCT_GameStates.VABUpgrades;
+            /*VABUpgrades = KCT_GameStates.VABUpgrades;
             SPHUpgrades = KCT_GameStates.SPHUpgrades;
-            RDUpgrades = KCT_GameStates.RDUpgrades;
+            RDUpgrades = KCT_GameStates.RDUpgrades;*/
             PurchasedUpgrades = KCT_GameStates.PurchasedUpgrades;
             TotalUpgradePoints = KCT_GameStates.TotalUpgradePoints;
             fundsFromSimulation = KCT_GameStates.FundsGivenForVessel;

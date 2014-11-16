@@ -22,36 +22,36 @@ namespace Kerbal_Construction_Time
 
         public override void OnDecodeFromConfigNode()
         {
-            KCT_GameStates.VABList.Clear();
-            KCT_GameStates.SPHList.Clear();
-            KCT_GameStates.VABWarehouse.Clear();
-            KCT_GameStates.SPHWarehouse.Clear();
+            KCT_GameStates.ActiveKSC.VABList.Clear();
+            KCT_GameStates.ActiveKSC.SPHList.Clear();
+            KCT_GameStates.ActiveKSC.VABWarehouse.Clear();
+            KCT_GameStates.ActiveKSC.SPHWarehouse.Clear();
 
             foreach (BuildListItem b in VABBuildList)
             {
                 KCT_BuildListVessel blv = b.ToBuildListVessel();
                 //if (ListContains(blv, KCT_GameStates.VABList) < 0)
-                    KCT_GameStates.VABList.Add(blv);
+                KCT_GameStates.ActiveKSC.VABList.Add(blv);
             }
             foreach (BuildListItem b in SPHBuildList)
             {
                 KCT_BuildListVessel blv = b.ToBuildListVessel();
                 //if (ListContains(blv, KCT_GameStates.SPHList) < 0)
-                    KCT_GameStates.SPHList.Add(blv);
+                KCT_GameStates.ActiveKSC.SPHList.Add(blv);
             }
             foreach (BuildListItem b in VABWarehouse)
             {
                 KCT_BuildListVessel blv = b.ToBuildListVessel();
                // if (ListContains(blv, KCT_GameStates.VABWarehouse) < 0)
-                    KCT_GameStates.VABWarehouse.Add(blv);
+                KCT_GameStates.ActiveKSC.VABWarehouse.Add(blv);
             }
             foreach (BuildListItem b in SPHWarehouse)
             {
                 KCT_BuildListVessel blv = b.ToBuildListVessel();
                // if (ListContains(blv, KCT_GameStates.SPHWarehouse) < 0)
-                    KCT_GameStates.SPHWarehouse.Add(blv);
+                KCT_GameStates.ActiveKSC.SPHWarehouse.Add(blv);
             }
-            KCT_GameStates.LaunchPadReconditioning = LPRecon;
+            KCT_GameStates.ActiveKSC.LaunchPadReconditioning = LPRecon;
         }
 
         public override void OnEncodeToConfigNode()
@@ -60,7 +60,7 @@ namespace Kerbal_Construction_Time
             SPHBuildList.Clear();
             VABWarehouse.Clear();
             SPHWarehouse.Clear();
-            foreach (KCT_BuildListVessel b in KCT_GameStates.VABList)
+           /* foreach (KCT_BuildListVessel b in KCT_GameStates.VABList)
             {
                 if (b.shipNode == null)
                 {
@@ -104,7 +104,7 @@ namespace Kerbal_Construction_Time
                 bls.FromBuildListVessel(b);
                 SPHWarehouse.Add(bls);
             }
-            LPRecon = KCT_GameStates.LaunchPadReconditioning;
+            LPRecon = KCT_GameStates.LaunchPadReconditioning;*/
         }
 
         public class BuildListItem

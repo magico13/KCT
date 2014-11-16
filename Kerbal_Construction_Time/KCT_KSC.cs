@@ -5,14 +5,14 @@ using System.Text;
 
 namespace Kerbal_Construction_Time
 {
-    class KCT_KSC
+    public class KCT_KSC
     {
         public string KSCName;
         public List<KCT_BuildListVessel> VABList = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> SPHWarehouse = new List<KCT_BuildListVessel>();
-        public List<KCT_TechItem> TechList = new List<KCT_TechItem>();
+        //public List<KCT_TechItem> TechList = new List<KCT_TechItem>();
         public List<int> VABUpgrades = new List<int>() { 0 };
         public List<int> SPHUpgrades = new List<int>() { 0 };
         public List<int> RDUpgrades = new List<int>() { 0, 0 };
@@ -21,6 +21,9 @@ namespace Kerbal_Construction_Time
         public KCT_KSC(string name)
         {
             KSCName = name;
+            //We propogate the tech list and upgrades throughout each KSC, since it doesn't make sense for each one to have its own tech.
+            RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
+            //TechList = KCT_GameStates.ActiveKSC.TechList;
         }
 
         public ConfigNode AsConfigNode()
@@ -97,7 +100,7 @@ namespace Kerbal_Construction_Time
             }
             node.AddNode(sphwh);
 
-            ConfigNode tech = new ConfigNode("TechList");
+            /*ConfigNode tech = new ConfigNode("TechList");
             foreach (KCT_TechItem techItem in TechList)
             {
                 KCT_TechStorageItem techNode = new KCT_TechStorageItem();
@@ -109,7 +112,7 @@ namespace Kerbal_Construction_Time
                 cnTemp.AddNode(protoNode);
                 tech.AddNode(cnTemp);
             }
-            node.AddNode(tech);
+            node.AddNode(tech);*/
 
             if (LaunchPadReconditioning != null)
             {
@@ -130,7 +133,7 @@ namespace Kerbal_Construction_Time
             VABWarehouse.Clear();
             SPHList.Clear();
             SPHWarehouse.Clear();
-            TechList.Clear();
+            //TechList.Clear();
             LaunchPadReconditioning = null;
 
 
@@ -191,7 +194,7 @@ namespace Kerbal_Construction_Time
                 this.SPHWarehouse.Add(blv);
             }
 
-            tmp = node.GetNode("TechList");
+           /* tmp = node.GetNode("TechList");
             foreach (ConfigNode techNode in tmp.GetNodes("Tech"))
             {
                 KCT_TechStorageItem techStorageItem = new KCT_TechStorageItem();
@@ -199,7 +202,7 @@ namespace Kerbal_Construction_Time
                 KCT_TechItem techItem = techStorageItem.ToTechItem();
                 techItem.protoNode = new ProtoTechNode(techNode.GetNode("ProtoNode"));
                 this.TechList.Add(techItem);
-            }
+            }*/
 
             tmp = node.GetNode("Reconditioning");
             if (tmp != null)
