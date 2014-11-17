@@ -41,7 +41,7 @@ namespace Kerbal_Construction_Time
     {
         public override void OnSave(ConfigNode node)
         {
-            //Boolean error = false;
+            Boolean error = false;
             KCTDebug.Log("Writing to persistence.");
             base.OnSave(node);
             KCT_DataStorage kctVS = new KCT_DataStorage();
@@ -112,8 +112,22 @@ namespace Kerbal_Construction_Time
                     Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE SPHWH" + i);
                     error = true;
                 }
+            }*/
+            ConfigNode tech = new ConfigNode("TechList");
+            foreach (KCT_TechItem techItem in KCT_GameStates.TechList)
+            {
+                KCT_TechStorageItem techNode = new KCT_TechStorageItem();
+                techNode.FromTechItem(techItem);
+                ConfigNode cnTemp = new ConfigNode("Tech");
+                cnTemp = ConfigNode.CreateConfigFromObject(techNode, cnTemp);
+                ConfigNode protoNode = new ConfigNode("ProtoNode");
+                techItem.protoNode.Save(protoNode);
+                cnTemp.AddNode(protoNode);
+                tech.AddNode(cnTemp);
             }
-            for (int i=0; i< KCT_GameStates.TechList.Count; i++)
+            node.AddNode(tech);
+
+            /*for (int i=0; i< KCT_GameStates.TechList.Count; i++)
             {
                 KCTDebug.Log("Tech" + i);
                 ConfigNode CN = new ConfigNode("Tech"+i);
@@ -172,6 +186,26 @@ namespace Kerbal_Construction_Time
             for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
             {
                 KCT_GameStates.TechList[i].protoNode = new ProtoTechNode(node.GetNode("Tech" + i));
+            }
+
+            //New format
+            KCT_GameStates.KSCs.Clear();
+            foreach (ConfigNode ksc in node.GetNodes("KSC"))
+            {
+                string name = ksc.GetValue("name");
+                KCT_KSC loaded_KSC = new KCT_KSC(name);
+                loaded_KSC.FromConfigNode(ksc);
+                KCT_GameStates.KSCs.Add(loaded_KSC);
+            }
+
+            ConfigNode tmp = node.GetNode("TechList");
+            foreach (ConfigNode techNode in tmp.GetNodes("Tech"))
+            {
+                KCT_TechStorageItem techStorageItem = new KCT_TechStorageItem();
+                ConfigNode.LoadObjectFromConfig(techStorageItem, techNode);
+                KCT_TechItem techItem = techStorageItem.ToTechItem();
+                techItem.protoNode = new ProtoTechNode(techNode.GetNode("ProtoNode"));
+                KCT_GameStates.TechList.Add(techItem);
             }
 
             Kerbal_Construction_Time.DelayedStart();
@@ -461,6 +495,11 @@ namespace Kerbal_Construction_Time
                     {
                         KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + KCT_GameStates.simulationTimeLimit; //Just in case the event doesn't fire
                     }
+                }
+
+                if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
+                {
+                    KCT_Utilities.SetActiveKSCToRSS();
                 }
 
                 if (!KCT_GUI.PrimarilyDisabled)

@@ -1022,6 +1022,53 @@ namespace Kerbal_Construction_Time
             }
         }
 
+        public static bool RSSActive
+        {
+            get
+            {
+                Type RSS = AssemblyLoader.loadedAssemblies
+                .Select(a => a.assembly.GetExportedTypes())
+                .SelectMany(t => t)
+                .FirstOrDefault(t => t.FullName == "RealSolarSystem.KSCSwitcher");
+
+                if (RSS != null) return true;
+
+                return false;
+            }
+        }
+
+        public static string GetActiveRSSKSC()
+        {
+            if (!RSSActive) return "Stock";
+            Type RSS = AssemblyLoader.loadedAssemblies
+                 .Select(a => a.assembly.GetExportedTypes())
+                 .SelectMany(t => t)
+                 .FirstOrDefault(t => t.FullName == "RealSolarSystem.KSCSwitcher");
+
+            System.Reflection.FieldInfo site = RSS.GetField("activeSite");
+
+            return (string)KCT_Utilities.GetMemberInfoValue(site, null);
+        }
+
+        public static void SetActiveKSCToRSS()
+        {
+            string site = GetActiveRSSKSC();
+            if (site != KCT_GameStates.ActiveKSC.KSCName)
+            {
+                KCT_KSC setActive = KCT_GameStates.KSCs.FirstOrDefault(ksc => ksc.KSCName == site);
+                if (setActive != null)
+                {
+                    KCT_GameStates.ActiveKSC = setActive;
+                }
+                else
+                {
+                    setActive = new KCT_KSC(site);
+                    KCT_GameStates.KSCs.Add(setActive);
+                    KCT_GameStates.ActiveKSC = setActive;
+                }
+            }
+        }
+
         public static void DisplayMessage(String title, StringBuilder text, MessageSystemButton.MessageButtonColor color, MessageSystemButton.ButtonIcons icon)
         {
             MessageSystem.Message m = new MessageSystem.Message(title, text.ToString(), color, icon);

@@ -87,7 +87,7 @@ namespace Kerbal_Construction_Time
         [Persistent] List<int> SPHUpgrades = new List<int>() {0};
         [Persistent] List<int> RDUpgrades = new List<int>() {0,0};
         [Persistent] List<int> PurchasedUpgrades = new List<int>() {0,0};
-        [Persistent] int TotalUpgradePoints = 0;
+        [Persistent] int TotalUpgradePoints = 0, TechUpgrades = 0;
         [Persistent] List<String> BodiesVisited = new List<string> {"Kerbin"};
         [Persistent] List<String> PartTracker = new List<String>();
         [Persistent] List<String> PartInventory = new List<String>();
@@ -103,6 +103,7 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.PurchasedUpgrades = PurchasedUpgrades;
             KCT_GameStates.TotalUpgradePoints = TotalUpgradePoints;
             KCT_GameStates.FundsGivenForVessel = fundsFromSimulation;
+            KCT_GameStates.TechUpgradesTotal = TechUpgrades;
             SetSettings();
             //Fix for change to number of upgrades at start.
             if (firstStart)
@@ -125,6 +126,7 @@ namespace Kerbal_Construction_Time
             /*VABUpgrades = KCT_GameStates.VABUpgrades;
             SPHUpgrades = KCT_GameStates.SPHUpgrades;
             RDUpgrades = KCT_GameStates.RDUpgrades;*/
+            TechUpgrades = KCT_GameStates.TechUpgradesTotal;
             PurchasedUpgrades = KCT_GameStates.PurchasedUpgrades;
             TotalUpgradePoints = KCT_GameStates.TotalUpgradePoints;
             fundsFromSimulation = KCT_GameStates.FundsGivenForVessel;
