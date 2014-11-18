@@ -49,7 +49,7 @@ namespace Kerbal_Construction_Time
         public static double EditorBuildTime = 0;
         public static Dictionary<string, int> EditedVesselParts = new Dictionary<string, int>();
         public static bool LaunchFromTS = false;
-        
+        public static bool LoadingSimulationSave = false;
 
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
         public static string KACAlarmId = "";
@@ -82,8 +82,8 @@ namespace Kerbal_Construction_Time
            // LaunchPadReconditioning = null;
             targetedItem = null;
 
-            ActiveKSC = new KCT_KSC("Stock");
-            KSCs = new List<KCT_KSC>() {ActiveKSC};
+            //ActiveKSC = new KCT_KSC("Stock");
+            //KSCs = new List<KCT_KSC>() {ActiveKSC};
 
 
            /* VABList = new List<KCT_BuildListVessel>();

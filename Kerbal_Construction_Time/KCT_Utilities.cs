@@ -691,7 +691,8 @@ namespace Kerbal_Construction_Time
             //System.IO.File.Copy(backupFile, saveFile, true);
             //System.IO.File.Delete(backupFile);
             GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
-            System.IO.File.Delete(backupFile);
+            //System.IO.File.Delete(backupFile);
+            KCT_GameStates.LoadingSimulationSave = true;
         }
 
 
@@ -830,7 +831,7 @@ namespace Kerbal_Construction_Time
                         blv.InventoryParts.Add(PartNameFromNode(p)+GetTweakScaleSize(p));
                 }
             }
-            KCTDebug.Log("Added " + blv.shipName + " to " + type + " build list. Cost: "+blv.cost);
+            KCTDebug.Log("Added " + blv.shipName + " to " + type + " build list at KSC "+KCT_GameStates.ActiveKSC.KSCName+". Cost: "+blv.cost);
             //KCTDebug.Log("Cost Breakdown (total, parts, fuel): " + blv.totalCost + ", " + blv.dryCost + ", " + blv.fuelCost);
             var message = new ScreenMessage("[KCT] Added " + blv.shipName + " to " + type + " build list.", 4.0f, ScreenMessageStyle.UPPER_CENTER);
             ScreenMessages.PostScreenMessage(message, true);
@@ -1053,8 +1054,9 @@ namespace Kerbal_Construction_Time
         public static void SetActiveKSCToRSS()
         {
             string site = GetActiveRSSKSC();
-            if (site != KCT_GameStates.ActiveKSC.KSCName)
+            if (KCT_GameStates.ActiveKSC == null || site != KCT_GameStates.ActiveKSC.KSCName)
             {
+                KCTDebug.Log("Setting active site to " + site);
                 KCT_KSC setActive = KCT_GameStates.KSCs.FirstOrDefault(ksc => ksc.KSCName == site);
                 if (setActive != null)
                 {

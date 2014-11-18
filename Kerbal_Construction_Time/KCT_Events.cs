@@ -179,6 +179,8 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.firstStart = true;
                 KCT_Utilities.disableSimulationLocks();
                 InputLockManager.RemoveControlLock("KCTLaunchLock");
+                KCT_GameStates.ActiveKSC = new KCT_KSC("Stock");
+                KCT_GameStates.KSCs = new List<KCT_KSC>() { KCT_GameStates.ActiveKSC };
             }
             if (HighLogic.LoadedSceneIsEditor)
             {

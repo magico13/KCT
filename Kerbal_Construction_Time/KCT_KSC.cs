@@ -20,6 +20,7 @@ namespace Kerbal_Construction_Time
 
         public KCT_KSC(string name)
         {
+            //KCTDebug.Log("Creating KSC with name: " + name);
             KSCName = name;
             //We propogate the tech list and upgrades throughout each KSC, since it doesn't make sense for each one to have its own tech.
             RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
@@ -28,27 +29,28 @@ namespace Kerbal_Construction_Time
 
         public ConfigNode AsConfigNode()
         {
+            KCTDebug.Log("Saving KSC");
             ConfigNode node = new ConfigNode("KSC");
-            node.SetValue("KSCName", KSCName);
-
+            node.AddValue("KSCName", KSCName);
+            KCTDebug.Log("Name:" + KSCName);
             ConfigNode vabup = new ConfigNode("VABUpgrades");
             foreach (int upgrade in VABUpgrades)
             {
-                vabup.SetValue("Upgrade", upgrade.ToString());
+                vabup.AddValue("Upgrade", upgrade.ToString());
             }
             node.AddNode(vabup);
 
             ConfigNode sphup = new ConfigNode("SPHUpgrades");
             foreach (int upgrade in SPHUpgrades)
             {
-                vabup.SetValue("Upgrade", upgrade.ToString());
+                sphup.AddValue("Upgrade", upgrade.ToString());
             }
             node.AddNode(sphup);
 
             ConfigNode rdup = new ConfigNode("RDUpgrades");
             foreach (int upgrade in RDUpgrades)
             {
-                vabup.SetValue("Upgrade", upgrade.ToString());
+                rdup.AddValue("Upgrade", upgrade.ToString());
             }
             node.AddNode(rdup);
 
@@ -144,12 +146,12 @@ namespace Kerbal_Construction_Time
                 this.VABUpgrades.Add(int.Parse(upgrade));
             }
             ConfigNode sphup = node.GetNode("SPHUpgrades");
-            foreach (string upgrade in vabup.GetValues("Upgrade"))
+            foreach (string upgrade in sphup.GetValues("Upgrade"))
             {
                 this.SPHUpgrades.Add(int.Parse(upgrade));
             }
             ConfigNode rdup = node.GetNode("RDUpgrades");
-            foreach (string upgrade in vabup.GetValues("Upgrade"))
+            foreach (string upgrade in rdup.GetValues("Upgrade"))
             {
                 this.RDUpgrades.Add(int.Parse(upgrade));
             }
