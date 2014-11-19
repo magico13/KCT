@@ -115,6 +115,7 @@ namespace Kerbal_Construction_Time
                     error = true;
                 }
             }*/
+            KCTDebug.Log("10");
             ConfigNode tech = new ConfigNode("TechList");
             foreach (KCT_TechItem techItem in KCT_GameStates.TechList)
             {
@@ -128,7 +129,6 @@ namespace Kerbal_Construction_Time
                 tech.AddNode(cnTemp);
             }
             node.AddNode(tech);
-
             /*for (int i=0; i< KCT_GameStates.TechList.Count; i++)
             {
                 KCTDebug.Log("Tech" + i);
@@ -154,6 +154,7 @@ namespace Kerbal_Construction_Time
         {
             KCTDebug.Log("Reading from persistence.");
             base.OnLoad(node);
+            KCT_GameStates.activeKSCName = "Stock";
             KCT_DataStorage kctVS = new KCT_DataStorage();
             KCT_BuildListStorage bls = new KCT_BuildListStorage();
             KCT_TechStorage tS = new KCT_TechStorage();
@@ -192,15 +193,17 @@ namespace Kerbal_Construction_Time
 
             //New format
             KCT_GameStates.KSCs.Clear();
+            KCT_GameStates.ActiveKSC = null;
             foreach (ConfigNode ksc in node.GetNodes("KSC"))
             {
-                string name = ksc.GetValue("name");
+                string name = ksc.GetValue("KSCName");
                 KCT_KSC loaded_KSC = new KCT_KSC(name);
                 loaded_KSC.FromConfigNode(ksc);
                 if (loaded_KSC != null && loaded_KSC.KSCName != null && loaded_KSC.KSCName.Length > 0)
                     KCT_GameStates.KSCs.Add(loaded_KSC);
             }
             //KCT_Utilities.SetActiveKSCToRSS();
+            KCT_Utilities.SetActiveKSC(KCT_GameStates.activeKSCName);
 
             ConfigNode tmp = node.GetNode("TechList");
             if (tmp != null)
@@ -534,10 +537,7 @@ namespace Kerbal_Construction_Time
             if (!KCT_GameStates.settings.enabledForSave)
                 return;
 
-            if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
-                KCT_Utilities.SetActiveKSCToRSS();
-
-            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
+            /*List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
             if (validScenes.Contains(HighLogic.LoadedScene))
             {
                 //Check for simulation save and load it.
@@ -549,7 +549,7 @@ namespace Kerbal_Construction_Time
                     else
                         System.IO.File.Delete(backupFile);
                 }
-            }
+            }*/
 
             if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
             {

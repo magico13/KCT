@@ -24,6 +24,7 @@ namespace Kerbal_Construction_Time
 
         public static KCT_KSC ActiveKSC = new KCT_KSC("Stock");
         public static List<KCT_KSC> KSCs = new List<KCT_KSC>() { ActiveKSC };
+        public static string activeKSCName = "Stock";
 
         /*public static List<KCT_BuildListVessel> VABList = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();

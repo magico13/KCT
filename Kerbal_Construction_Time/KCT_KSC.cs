@@ -29,10 +29,10 @@ namespace Kerbal_Construction_Time
 
         public ConfigNode AsConfigNode()
         {
-            KCTDebug.Log("Saving KSC");
+            KCTDebug.Log("Saving KSC "+KSCName);
             ConfigNode node = new ConfigNode("KSC");
             node.AddValue("KSCName", KSCName);
-            KCTDebug.Log("Name:" + KSCName);
+
             ConfigNode vabup = new ConfigNode("VABUpgrades");
             foreach (int upgrade in VABUpgrades)
             {
@@ -59,9 +59,11 @@ namespace Kerbal_Construction_Time
             {
                 KCT_BuildListStorage.BuildListItem ship = new KCT_BuildListStorage.BuildListItem();
                 ship.FromBuildListVessel(blv);
-                ConfigNode cnTemp = new ConfigNode("Vessel");
+                ConfigNode cnTemp = new ConfigNode("KCTVessel");
                 cnTemp = ConfigNode.CreateConfigFromObject(ship, cnTemp);
-                cnTemp.AddNode(blv.shipNode);
+                ConfigNode shipNode = new ConfigNode("ShipNode");
+                blv.shipNode.CopyTo(shipNode);
+                cnTemp.AddNode(shipNode);
                 vabl.AddNode(cnTemp);
             }
             node.AddNode(vabl);
@@ -71,9 +73,11 @@ namespace Kerbal_Construction_Time
             {
                 KCT_BuildListStorage.BuildListItem ship = new KCT_BuildListStorage.BuildListItem();
                 ship.FromBuildListVessel(blv);
-                ConfigNode cnTemp = new ConfigNode("Vessel");
+                ConfigNode cnTemp = new ConfigNode("KCTVessel");
                 cnTemp = ConfigNode.CreateConfigFromObject(ship, cnTemp);
-                cnTemp.AddNode(blv.shipNode);
+                ConfigNode shipNode = new ConfigNode("ShipNode");
+                blv.shipNode.CopyTo(shipNode);
+                cnTemp.AddNode(shipNode);
                 sphl.AddNode(cnTemp);
             }
             node.AddNode(sphl);
@@ -83,9 +87,11 @@ namespace Kerbal_Construction_Time
             {
                 KCT_BuildListStorage.BuildListItem ship = new KCT_BuildListStorage.BuildListItem();
                 ship.FromBuildListVessel(blv);
-                ConfigNode cnTemp = new ConfigNode("Vessel");
+                ConfigNode cnTemp = new ConfigNode("KCTVessel");
                 cnTemp = ConfigNode.CreateConfigFromObject(ship, cnTemp);
-                cnTemp.AddNode(blv.shipNode);
+                ConfigNode shipNode = new ConfigNode("ShipNode");
+                blv.shipNode.CopyTo(shipNode);
+                cnTemp.AddNode(shipNode);
                 vabwh.AddNode(cnTemp);
             }
             node.AddNode(vabwh);
@@ -95,9 +101,11 @@ namespace Kerbal_Construction_Time
             {
                 KCT_BuildListStorage.BuildListItem ship = new KCT_BuildListStorage.BuildListItem();
                 ship.FromBuildListVessel(blv);
-                ConfigNode cnTemp = new ConfigNode("Vessel");
+                ConfigNode cnTemp = new ConfigNode("KCTVessel");
                 cnTemp = ConfigNode.CreateConfigFromObject(ship, cnTemp);
-                cnTemp.AddNode(blv.shipNode);
+                ConfigNode shipNode = new ConfigNode("ShipNode");
+                blv.shipNode.CopyTo(shipNode);
+                cnTemp.AddNode(shipNode);
                 sphwh.AddNode(cnTemp);
             }
             node.AddNode(sphwh);
@@ -122,7 +130,6 @@ namespace Kerbal_Construction_Time
                 cnTemp = ConfigNode.CreateConfigFromObject(LaunchPadReconditioning, cnTemp);
                 node.AddNode(cnTemp);
             }
-
             return node;
         }
 
@@ -157,42 +164,42 @@ namespace Kerbal_Construction_Time
             }
 
             ConfigNode tmp = node.GetNode("VABList");
-            foreach (ConfigNode vessel in tmp.GetNodes("Vessel"))
+            foreach (ConfigNode vessel in tmp.GetNodes("KCTVessel"))
             {
                 KCT_BuildListStorage.BuildListItem listItem = new KCT_BuildListStorage.BuildListItem();
                 ConfigNode.LoadObjectFromConfig(listItem, vessel);
                 KCT_BuildListVessel blv = listItem.ToBuildListVessel();
-                blv.shipNode = vessel.GetNode("Vessel"); //TODO: Find out what the hell this is saved as.
+                blv.shipNode = vessel.GetNode("ShipNode");
                 this.VABList.Add(blv);
             }
 
             tmp = node.GetNode("SPHList");
-            foreach (ConfigNode vessel in tmp.GetNodes("Vessel"))
+            foreach (ConfigNode vessel in tmp.GetNodes("KCTVessel"))
             {
                 KCT_BuildListStorage.BuildListItem listItem = new KCT_BuildListStorage.BuildListItem();
                 ConfigNode.LoadObjectFromConfig(listItem, vessel);
                 KCT_BuildListVessel blv = listItem.ToBuildListVessel();
-                blv.shipNode = vessel.GetNode("Vessel"); //TODO: Find out what the hell this is saved as.
+                blv.shipNode = vessel.GetNode("ShipNode");
                 this.SPHList.Add(blv);
             }
 
             tmp = node.GetNode("VABWarehouse");
-            foreach (ConfigNode vessel in tmp.GetNodes("Vessel"))
+            foreach (ConfigNode vessel in tmp.GetNodes("KCTVessel"))
             {
                 KCT_BuildListStorage.BuildListItem listItem = new KCT_BuildListStorage.BuildListItem();
                 ConfigNode.LoadObjectFromConfig(listItem, vessel);
                 KCT_BuildListVessel blv = listItem.ToBuildListVessel();
-                blv.shipNode = vessel.GetNode("Vessel"); //TODO: Find out what the hell this is saved as.
+                blv.shipNode = vessel.GetNode("ShipNode");
                 this.VABWarehouse.Add(blv);
             }
 
             tmp = node.GetNode("SPHWarehouse");
-            foreach (ConfigNode vessel in tmp.GetNodes("Vessel"))
+            foreach (ConfigNode vessel in tmp.GetNodes("KCTVessel"))
             {
                 KCT_BuildListStorage.BuildListItem listItem = new KCT_BuildListStorage.BuildListItem();
                 ConfigNode.LoadObjectFromConfig(listItem, vessel);
                 KCT_BuildListVessel blv = listItem.ToBuildListVessel();
-                blv.shipNode = vessel.GetNode("Vessel"); //TODO: Find out what the hell this is saved as.
+                blv.shipNode = vessel.GetNode("ShipNode");
                 this.SPHWarehouse.Add(blv);
             }
 

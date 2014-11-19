@@ -688,9 +688,9 @@ namespace Kerbal_Construction_Time
             Kerbal_Construction_Time.moved = false;
             KCT_GameStates.simulationEndTime = 0;
             KCTDebug.Log("Swapping persistent.sfs with simulation backup file.");
-            //System.IO.File.Copy(backupFile, saveFile, true);
-            //System.IO.File.Delete(backupFile);
-            GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
+            System.IO.File.Copy(backupFile, saveFile, true);
+            System.IO.File.Delete(backupFile);
+            //GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
             //System.IO.File.Delete(backupFile);
             KCT_GameStates.LoadingSimulationSave = true;
         }
@@ -1068,7 +1068,28 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.KSCs.Add(setActive);
                     KCT_GameStates.ActiveKSC = setActive;
                 }
+                KCT_GameStates.activeKSCName = site;
             }
+        }
+
+        public static void SetActiveKSC(string site)
+        {
+            if (KCT_GameStates.ActiveKSC == null || site != KCT_GameStates.ActiveKSC.KSCName)
+            {
+                KCTDebug.Log("Setting active site to " + site);
+                KCT_KSC setActive = KCT_GameStates.KSCs.FirstOrDefault(ksc => ksc.KSCName == site);
+                if (setActive != null)
+                {
+                    KCT_GameStates.ActiveKSC = setActive;
+                }
+                else
+                {
+                    setActive = new KCT_KSC(site);
+                    KCT_GameStates.KSCs.Add(setActive);
+                    KCT_GameStates.ActiveKSC = setActive;
+                }
+            }
+            KCT_GameStates.activeKSCName = site;
         }
 
         public static void DisplayMessage(String title, StringBuilder text, MessageSystemButton.MessageButtonColor color, MessageSystemButton.ButtonIcons icon)

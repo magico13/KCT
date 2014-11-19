@@ -91,6 +91,7 @@ namespace Kerbal_Construction_Time
         [Persistent] List<String> BodiesVisited = new List<string> {"Kerbin"};
         [Persistent] List<String> PartTracker = new List<String>();
         [Persistent] List<String> PartInventory = new List<String>();
+        [Persistent] string activeKSC = "";
 
         public override void OnDecodeFromConfigNode()
         {
@@ -104,6 +105,8 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.TotalUpgradePoints = TotalUpgradePoints;
             KCT_GameStates.FundsGivenForVessel = fundsFromSimulation;
             KCT_GameStates.TechUpgradesTotal = TechUpgrades;
+            KCT_GameStates.activeKSCName = activeKSC;
+
             SetSettings();
             //Fix for change to number of upgrades at start.
             if (firstStart)
@@ -131,6 +134,7 @@ namespace Kerbal_Construction_Time
             TotalUpgradePoints = KCT_GameStates.TotalUpgradePoints;
             fundsFromSimulation = KCT_GameStates.FundsGivenForVessel;
             firstStart = KCT_GameStates.firstStart;
+            activeKSC = KCT_GameStates.ActiveKSC.KSCName;
             GetSettings();
         }
 
