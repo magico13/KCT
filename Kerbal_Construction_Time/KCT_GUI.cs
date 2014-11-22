@@ -355,6 +355,7 @@ namespace Kerbal_Construction_Time
         private static void DrawEditorGUI(int windowID)
         {
             GUILayout.BeginVertical();
+            GUILayout.Label("Current KSC: " + KCT_GameStates.ActiveKSC.KSCName);
             if (!KCT_GameStates.EditorShipEditingMode) //Build mode
             {
                 double buildTime = KCT_GameStates.EditorBuildTime;
@@ -1164,6 +1165,7 @@ namespace Kerbal_Construction_Time
             int width2 = 100;
             int butW = 20;
             GUILayout.BeginVertical();
+            GUILayout.Label("Current KSC: " + KCT_GameStates.ActiveKSC.KSCName);
             //List next vessel to finish
             GUILayout.BeginHorizontal();
             GUILayout.Label("Next:", windowSkin.label);

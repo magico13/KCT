@@ -154,7 +154,7 @@ namespace Kerbal_Construction_Time
         public void gameSceneEvent(GameScenes scene)
         {
             if (!KCT_GameStates.settings.enabledForSave) return;
-           /* List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
+            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
             if (validScenes.Contains(scene))
             {
                 //Check for simulation save and load it.
@@ -162,7 +162,7 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_Utilities.LoadSimulationSave();
                 }
-            }*/
+            }
             if (!HighLogic.LoadedSceneIsFlight && scene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Backup save at simulation start
             {
                 KCT_Utilities.MakeSimulationSave();
@@ -179,6 +179,9 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.firstStart = true;
                 KCT_Utilities.disableSimulationLocks();
                 InputLockManager.RemoveControlLock("KCTLaunchLock");
+                KCT_GameStates.activeKSCName = "Stock";
+                KCT_GameStates.ActiveKSC = new KCT_KSC("Stock");
+                KCT_GameStates.KSCs = new List<KCT_KSC>() { KCT_GameStates.ActiveKSC };
             }
             if (HighLogic.LoadedSceneIsEditor)
             {

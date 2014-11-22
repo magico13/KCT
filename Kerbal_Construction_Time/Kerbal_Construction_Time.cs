@@ -41,7 +41,7 @@ namespace Kerbal_Construction_Time
     {
         public override void OnSave(ConfigNode node)
         {
-            //Boolean error = false;
+            Boolean error = false;
             KCTDebug.Log("Writing to persistence.");
             base.OnSave(node);
             KCT_DataStorage kctVS = new KCT_DataStorage();
@@ -51,22 +51,10 @@ namespace Kerbal_Construction_Time
             //node.AddNode(bls.AsConfigNode());
             //node.AddNode(tS.AsConfigNode());
             foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
-                node.AddNode(KSC.AsConfigNode());
-
-            ConfigNode tech = new ConfigNode("TechList");
-            foreach (KCT_TechItem techItem in KCT_GameStates.TechList)
             {
-                KCT_TechStorageItem techNode = new KCT_TechStorageItem();
-                techNode.FromTechItem(techItem);
-                ConfigNode cnTemp = new ConfigNode("Tech");
-                cnTemp = ConfigNode.CreateConfigFromObject(techNode, cnTemp);
-                ConfigNode protoNode = new ConfigNode("ProtoNode");
-                techItem.protoNode.Save(protoNode);
-                cnTemp.AddNode(protoNode);
-                tech.AddNode(cnTemp);
+                if (KSC != null && KSC.KSCName != null && KSC.KSCName.Length > 0)
+                    node.AddNode(KSC.AsConfigNode());
             }
-            node.AddNode(tech);
-
             /*for (int i=0; i<KCT_GameStates.VABList.Count; i++)
             {
                 KCTDebug.Log("VAB"+i);
@@ -126,8 +114,21 @@ namespace Kerbal_Construction_Time
                     Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE SPHWH" + i);
                     error = true;
                 }
+            }*/
+            ConfigNode tech = new ConfigNode("TechList");
+            foreach (KCT_TechItem techItem in KCT_GameStates.TechList)
+            {
+                KCT_TechStorageItem techNode = new KCT_TechStorageItem();
+                techNode.FromTechItem(techItem);
+                ConfigNode cnTemp = new ConfigNode("Tech");
+                cnTemp = ConfigNode.CreateConfigFromObject(techNode, cnTemp);
+                ConfigNode protoNode = new ConfigNode("ProtoNode");
+                techItem.protoNode.Save(protoNode);
+                cnTemp.AddNode(protoNode);
+                tech.AddNode(cnTemp);
             }
-            for (int i=0; i< KCT_GameStates.TechList.Count; i++)
+            node.AddNode(tech);
+            /*for (int i=0; i< KCT_GameStates.TechList.Count; i++)
             {
                 KCTDebug.Log("Tech" + i);
                 ConfigNode CN = new ConfigNode("Tech"+i);
@@ -152,6 +153,7 @@ namespace Kerbal_Construction_Time
         {
             KCTDebug.Log("Reading from persistence.");
             base.OnLoad(node);
+            KCT_GameStates.activeKSCName = "Stock";
             KCT_DataStorage kctVS = new KCT_DataStorage();
             KCT_BuildListStorage bls = new KCT_BuildListStorage();
             KCT_TechStorage tS = new KCT_TechStorage();
@@ -181,28 +183,42 @@ namespace Kerbal_Construction_Time
             }
             for (int i = 0; i < KCT_GameStates.ActiveKSC.VABWarehouse.Count; i++)
             {
-                 ConfigNode loaded = node.GetNode("VABWH" + i);
-                 if (loaded != null)
-                     KCT_GameStates.ActiveKSC.VABWarehouse[i].shipNode = loaded;
+                ConfigNode loaded = node.GetNode("VABWH" + i);
+                if (loaded != null)
+                    KCT_GameStates.ActiveKSC.VABWarehouse[i].shipNode = loaded;
             }
             for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHWarehouse.Count; i++)
             {
-                 ConfigNode loaded = node.GetNode("SPHWH" + i);
-                 if (loaded != null)
-                     KCT_GameStates.ActiveKSC.SPHWarehouse[i].shipNode = loaded;
+                ConfigNode loaded = node.GetNode("SPHWH" + i);
+                if (loaded != null)
+                    KCT_GameStates.ActiveKSC.SPHWarehouse[i].shipNode = loaded;
             }
             for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
             {
-                 ConfigNode loaded = node.GetNode("Tech" + i);
-                 if (loaded != null)
-                     KCT_GameStates.TechList[i].protoNode = new ProtoTechNode(loaded);
+                ConfigNode loaded = node.GetNode("Tech" + i);
+                if (loaded != null)
+                    KCT_GameStates.TechList[i].protoNode = new ProtoTechNode(loaded);
             }
 
-
-            CN = node.GetNode("TechList");
-            if (CN != null)
+            //New format
+            KCT_GameStates.KSCs.Clear();
+            KCT_GameStates.ActiveKSC = null;
+            foreach (ConfigNode ksc in node.GetNodes("KSC"))
             {
-                foreach (ConfigNode techNode in CN.GetNodes("Tech"))
+                string name = ksc.GetValue("KSCName");
+                KCT_KSC loaded_KSC = new KCT_KSC(name);
+                loaded_KSC.FromConfigNode(ksc);
+                if (loaded_KSC != null && loaded_KSC.KSCName != null && loaded_KSC.KSCName.Length > 0)
+                    KCT_GameStates.KSCs.Add(loaded_KSC);
+            }
+            //KCT_Utilities.SetActiveKSCToRSS();
+            KCT_Utilities.SetActiveKSC(KCT_GameStates.activeKSCName);
+
+            KCT_GameStates.TechList.Clear();
+            ConfigNode tmp = node.GetNode("TechList");
+            if (tmp != null)
+            {
+                foreach (ConfigNode techNode in tmp.GetNodes("Tech"))
                 {
                     KCT_TechStorageItem techStorageItem = new KCT_TechStorageItem();
                     ConfigNode.LoadObjectFromConfig(techStorageItem, techNode);
@@ -211,7 +227,6 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.TechList.Add(techItem);
                 }
             }
-
 
             Kerbal_Construction_Time.DelayedStart();
         }
@@ -502,6 +517,11 @@ namespace Kerbal_Construction_Time
                     }
                 }
 
+                if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
+                {
+                    KCT_Utilities.SetActiveKSCToRSS();
+                }
+
                 if (!KCT_GUI.PrimarilyDisabled)
                     KCT_Utilities.ProgressBuildTime();
             }
@@ -524,22 +544,30 @@ namespace Kerbal_Construction_Time
                 updateChecked = true;
             }
 
-            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
+            if (!KCT_GameStates.settings.enabledForSave)
+                return;
+
+            /*List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
             if (validScenes.Contains(HighLogic.LoadedScene))
             {
                 //Check for simulation save and load it.
-                if (System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
+                string backupFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs";
+                if (System.IO.File.Exists(backupFile))
                 {
-                    KCT_Utilities.LoadSimulationSave();
+                    if (!KCT_GameStates.LoadingSimulationSave)
+                        KCT_Utilities.LoadSimulationSave();
+                    else
+                        System.IO.File.Delete(backupFile);
                 }
-            }
+            }*/
 
-            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.buildSimulatedVessel)
+            if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
             {
-                KCT_GameStates.buildSimulatedVessel = false;
-                KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
-                toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.ExtractedPartNodes, true, KCT_GUI.useInventory);
-                KCT_Utilities.AddVesselToBuildList(toBuild, KCT_GUI.useInventory);
+                KCTDebug.Log("Simulation started");
+                KCT_GUI.hideAll();
+                KCT_GUI.showSimulationWindow = true;
+                KCT_GUI.showTimeRemaining = true;
+                Planetarium.SetUniversalTime(KCT_GameStates.simulationUT);
             }
 
             if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.FundsToChargeAtSimEnd != 0)
@@ -551,6 +579,29 @@ namespace Kerbal_Construction_Time
             {
                 KCT_Utilities.SpendFunds(KCT_GameStates.FundsGivenForVessel, TransactionReasons.VesselRollout);
                 KCT_GameStates.FundsGivenForVessel = 0;
+            }
+            if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
+            {
+                List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
+                if (!invalidTypes.Contains(FlightGlobals.ActiveVessel.vesselType) && !KCT_GameStates.BodiesVisited.Contains(FlightGlobals.ActiveVessel.mainBody.bodyName))
+                {
+                    KCT_GameStates.BodiesVisited.Add(FlightGlobals.ActiveVessel.mainBody.bodyName);
+                    var message = new ScreenMessage("[KCT] New simulation body unlocked: " + FlightGlobals.ActiveVessel.mainBody.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage(message, true);
+                    KCTDebug.Log("Unlocked sim body: " + FlightGlobals.ActiveVessel.mainBody.bodyName);
+                }
+            }
+
+            if (KCT_GUI.PrimarilyDisabled) return;
+            
+            //The following should only be executed when fully enabled for the save
+
+            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.buildSimulatedVessel)
+            {
+                KCT_GameStates.buildSimulatedVessel = false;
+                KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
+                toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.ExtractedPartNodes, true, KCT_GUI.useInventory);
+                KCT_Utilities.AddVesselToBuildList(toBuild, KCT_GUI.useInventory);
             }
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
@@ -566,24 +617,8 @@ namespace Kerbal_Construction_Time
                         FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
                     }
                 }
-
-                List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
-                if (!invalidTypes.Contains(FlightGlobals.ActiveVessel.vesselType) && !KCT_GameStates.BodiesVisited.Contains(FlightGlobals.ActiveVessel.mainBody.bodyName))
-                {
-                    KCT_GameStates.BodiesVisited.Add(FlightGlobals.ActiveVessel.mainBody.bodyName);
-                    var message = new ScreenMessage("[KCT] New simulation body unlocked: " + FlightGlobals.ActiveVessel.mainBody.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                    ScreenMessages.PostScreenMessage(message, true);
-                    KCTDebug.Log("Unlocked sim body: " + FlightGlobals.ActiveVessel.mainBody.bodyName);
-                }
             }
-            if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
-            {
-                KCTDebug.Log("Simulation started");
-                KCT_GUI.hideAll();
-                KCT_GUI.showSimulationWindow = true;
-                KCT_GUI.showTimeRemaining = true;
-                Planetarium.SetUniversalTime(KCT_GameStates.simulationUT);
-            }
+           
             if (HighLogic.LoadedSceneIsEditor)
             {
                 if (KCT_GameStates.EditorShipEditingMode)
@@ -634,9 +669,6 @@ namespace Kerbal_Construction_Time
                 {
                     KCT_GameStates.launchedVessel.Launch();
                 }
-
-                HighLogic.CurrentGame.Parameters.SpaceCenter.CanLaunchAtPad = false;
-                HighLogic.CurrentGame.Parameters.SpaceCenter.CanLaunchAtRunway = false;
             }
         }
 
