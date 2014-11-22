@@ -53,6 +53,20 @@ namespace Kerbal_Construction_Time
             foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
                 node.AddNode(KSC.AsConfigNode());
 
+            ConfigNode tech = new ConfigNode("TechList");
+            foreach (KCT_TechItem techItem in KCT_GameStates.TechList)
+            {
+                KCT_TechStorageItem techNode = new KCT_TechStorageItem();
+                techNode.FromTechItem(techItem);
+                ConfigNode cnTemp = new ConfigNode("Tech");
+                cnTemp = ConfigNode.CreateConfigFromObject(techNode, cnTemp);
+                ConfigNode protoNode = new ConfigNode("ProtoNode");
+                techItem.protoNode.Save(protoNode);
+                cnTemp.AddNode(protoNode);
+                tech.AddNode(cnTemp);
+            }
+            node.AddNode(tech);
+
             /*for (int i=0; i<KCT_GameStates.VABList.Count; i++)
             {
                 KCTDebug.Log("VAB"+i);
@@ -155,24 +169,49 @@ namespace Kerbal_Construction_Time
 
             for (int i = 0; i < KCT_GameStates.ActiveKSC.VABList.Count; i++)
             {
-                KCT_GameStates.ActiveKSC.VABList[i].shipNode = node.GetNode("VAB" + i);
+                ConfigNode loaded = node.GetNode("VAB" + i);
+                if (loaded != null)
+                    KCT_GameStates.ActiveKSC.VABList[i].shipNode = loaded;
             }
             for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHList.Count; i++)
             {
-                KCT_GameStates.ActiveKSC.SPHList[i].shipNode = node.GetNode("SPH" + i);
+                ConfigNode loaded = node.GetNode("SPH" + i);
+                if (loaded != null)
+                    KCT_GameStates.ActiveKSC.SPHList[i].shipNode = loaded;
             }
             for (int i = 0; i < KCT_GameStates.ActiveKSC.VABWarehouse.Count; i++)
             {
-                KCT_GameStates.ActiveKSC.VABWarehouse[i].shipNode = node.GetNode("VABWH" + i);
+                 ConfigNode loaded = node.GetNode("VABWH" + i);
+                 if (loaded != null)
+                     KCT_GameStates.ActiveKSC.VABWarehouse[i].shipNode = loaded;
             }
             for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHWarehouse.Count; i++)
             {
-                KCT_GameStates.ActiveKSC.SPHWarehouse[i].shipNode = node.GetNode("SPHWH" + i);
+                 ConfigNode loaded = node.GetNode("SPHWH" + i);
+                 if (loaded != null)
+                     KCT_GameStates.ActiveKSC.SPHWarehouse[i].shipNode = loaded;
             }
             for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
             {
-                KCT_GameStates.TechList[i].protoNode = new ProtoTechNode(node.GetNode("Tech" + i));
+                 ConfigNode loaded = node.GetNode("Tech" + i);
+                 if (loaded != null)
+                     KCT_GameStates.TechList[i].protoNode = new ProtoTechNode(loaded);
             }
+
+
+            CN = node.GetNode("TechList");
+            if (CN != null)
+            {
+                foreach (ConfigNode techNode in CN.GetNodes("Tech"))
+                {
+                    KCT_TechStorageItem techStorageItem = new KCT_TechStorageItem();
+                    ConfigNode.LoadObjectFromConfig(techStorageItem, techNode);
+                    KCT_TechItem techItem = techStorageItem.ToTechItem();
+                    techItem.protoNode = new ProtoTechNode(techNode.GetNode("ProtoNode"));
+                    KCT_GameStates.TechList.Add(techItem);
+                }
+            }
+
 
             Kerbal_Construction_Time.DelayedStart();
         }

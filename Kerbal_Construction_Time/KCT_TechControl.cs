@@ -42,9 +42,7 @@ namespace Kerbal_Construction_Time
             UnlockedParts = parts;
         }
 
-        public KCT_TechItem()
-        {
-        }
+        public KCT_TechItem() {}
 
         public void DisableTech()
         {
