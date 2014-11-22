@@ -209,7 +209,10 @@ namespace Kerbal_Construction_Time
                 KCT_KSC loaded_KSC = new KCT_KSC(name);
                 loaded_KSC.FromConfigNode(ksc);
                 if (loaded_KSC != null && loaded_KSC.KSCName != null && loaded_KSC.KSCName.Length > 0)
+                {
+                    loaded_KSC.RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
                     KCT_GameStates.KSCs.Add(loaded_KSC);
+                }
             }
             //KCT_Utilities.SetActiveKSCToRSS();
             KCT_Utilities.SetActiveKSC(KCT_GameStates.activeKSCName);
@@ -238,7 +241,7 @@ namespace Kerbal_Construction_Time
         internal Kerbal_Construction_Time()
         {
             instance = this;
-            if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null)
+            if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null && KCT_GameStates.settings.PreferBlizzyToolbar)
             {
                 KCTDebug.Log("Adding Toolbar Button");
                 KCT_GameStates.kctToolbarButton = ToolbarManager.Instance.add("Kerbal_Construction_Time", "MainButton");

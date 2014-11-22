@@ -17,7 +17,7 @@ namespace Kerbal_Construction_Time
         [Persistent]
         List<BuildListItem> SPHWarehouse = new List<BuildListItem>();
 
-        [Persistent]KCT_Reconditioning LPRecon;
+        [Persistent]KCT_Recon_Rollout LPRecon;
 
 
         public override void OnDecodeFromConfigNode()
@@ -26,6 +26,7 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.ActiveKSC.SPHList.Clear();
             KCT_GameStates.ActiveKSC.VABWarehouse.Clear();
             KCT_GameStates.ActiveKSC.SPHWarehouse.Clear();
+            KCT_GameStates.ActiveKSC.Recon_Rollout.Clear();
 
             foreach (BuildListItem b in VABBuildList)
             {
@@ -51,7 +52,7 @@ namespace Kerbal_Construction_Time
                // if (ListContains(blv, KCT_GameStates.SPHWarehouse) < 0)
                 KCT_GameStates.ActiveKSC.SPHWarehouse.Add(blv);
             }
-            KCT_GameStates.ActiveKSC.LaunchPadReconditioning = LPRecon;
+            KCT_GameStates.ActiveKSC.Recon_Rollout.Add(LPRecon);
         }
 
         public override void OnEncodeToConfigNode()

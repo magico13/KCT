@@ -16,7 +16,7 @@ namespace Kerbal_Construction_Time
         public List<int> VABUpgrades = new List<int>() { 0 };
         public List<int> SPHUpgrades = new List<int>() { 0 };
         public List<int> RDUpgrades = new List<int>() { 0, 0 };
-        public KCT_Reconditioning LaunchPadReconditioning;
+        public List<KCT_Recon_Rollout> Recon_Rollout = new List<KCT_Recon_Rollout>();
 
         public KCT_KSC(string name)
         {
@@ -26,6 +26,13 @@ namespace Kerbal_Construction_Time
             RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
             //TechList = KCT_GameStates.ActiveKSC.TechList;
         }
+
+        public KCT_Recon_Rollout GetReconditioning()
+        {
+            return Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
+        }
+
+
 
         public ConfigNode AsConfigNode()
         {
@@ -124,12 +131,14 @@ namespace Kerbal_Construction_Time
             }
             node.AddNode(tech);*/
 
-            if (LaunchPadReconditioning != null)
+            ConfigNode RRCN = new ConfigNode("Recon_Rollout");
+            foreach (KCT_Recon_Rollout rr in Recon_Rollout)
             {
-                ConfigNode cnTemp = new ConfigNode("Reconditioning");
-                cnTemp = ConfigNode.CreateConfigFromObject(LaunchPadReconditioning, cnTemp);
-                node.AddNode(cnTemp);
+                ConfigNode rrCN = new ConfigNode("Recon_Rollout_Item");
+                rrCN = ConfigNode.CreateConfigFromObject(rr, rrCN);
+                RRCN.AddNode(rrCN);
             }
+            node.AddNode(RRCN);
             return node;
         }
 
@@ -143,7 +152,7 @@ namespace Kerbal_Construction_Time
             SPHList.Clear();
             SPHWarehouse.Clear();
             //TechList.Clear();
-            LaunchPadReconditioning = null;
+            Recon_Rollout.Clear();
 
 
             this.KSCName = node.GetValue("KSCName");
@@ -213,10 +222,12 @@ namespace Kerbal_Construction_Time
                 this.TechList.Add(techItem);
             }*/
 
-            tmp = node.GetNode("Reconditioning");
-            if (tmp != null)
+            tmp = node.GetNode("Recon_Rollout");
+            foreach (ConfigNode RRCN in tmp.GetNodes("Recon_Rollout_Item"))
             {
-                ConfigNode.LoadObjectFromConfig(this.LaunchPadReconditioning, tmp);
+                KCT_Recon_Rollout tempRR = new KCT_Recon_Rollout();
+                ConfigNode.LoadObjectFromConfig(tempRR, RRCN);
+                Recon_Rollout.Add(tempRR);
             }
 
             return this;

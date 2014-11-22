@@ -5,23 +5,26 @@ using System.Text;
 
 namespace Kerbal_Construction_Time
 {
-    public class KCT_Reconditioning : IKCTBuildItem
+    public class KCT_Recon_Rollout : IKCTBuildItem
     {
         [Persistent] private string name;
         [Persistent] public double BP, progress;
+        public enum RRType { Reconditioning, Rollout, Rollback };
 
-
-        public KCT_Reconditioning()
+        public KCT_Recon_Rollout()
         {
             name = "LaunchPad Reconditioning";
             progress = 0;
             BP = 0;
         }
 
-        public KCT_Reconditioning(Vessel vessel)
+        public KCT_Recon_Rollout(Vessel vessel, RRType type)
         {
-            BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 25 tons (default) * overall multiplier
-            name = "LaunchPad Reconditioning";
+            if (type == RRType.Reconditioning) {
+                BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
+                if (BP > KCT_GameStates.timeSettings.MaxReconditioning) BP = KCT_GameStates.timeSettings.MaxReconditioning;
+                name = "LaunchPad Reconditioning";
+            }
             progress = 0;
         }
 

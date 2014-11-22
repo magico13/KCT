@@ -1276,14 +1276,14 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("BP:", GUILayout.Width(width1 / 2 + 10));
                 GUILayout.Space((butW + 4) * 3);
                 GUILayout.EndHorizontal();
-                if (KCT_GameStates.ActiveKSC.LaunchPadReconditioning != null)
+                if (KCT_Utilities.ReconditioningActive(null))
                 {
                     GUILayout.BeginHorizontal();
-                    IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.ActiveKSC.LaunchPadReconditioning;
+                    IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning();
                     GUILayout.Label(item.GetItemName());
-                    GUILayout.Label(KCT_GameStates.ActiveKSC.LaunchPadReconditioning.ProgressPercent().ToString()+"%", GUILayout.Width(width1 / 2));
+                    GUILayout.Label(KCT_GameStates.ActiveKSC.GetReconditioning().ProgressPercent().ToString()+"%", GUILayout.Width(width1 / 2));
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(item.GetTimeLeft()), GUILayout.Width(width2));
-                    GUILayout.Label(Math.Round(KCT_GameStates.ActiveKSC.LaunchPadReconditioning.BP, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
+                    GUILayout.Label(Math.Round(KCT_GameStates.ActiveKSC.GetReconditioning().BP, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
                     if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width((butW + 4) * 3)))
                     {
                         KCT_GameStates.targetedItem = item;
@@ -1442,11 +1442,11 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label(b.shipName);
                     if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                     {
-                        if (KCT_GameStates.ActiveKSC.LaunchPadReconditioning != null)
+                        if (KCT_Utilities.ReconditioningActive(null))
                         {
                             //can't launch now
                             ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in " 
-                                + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.LaunchPadReconditioning).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                                + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning()).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
                             ScreenMessages.PostScreenMessage(message, true);
                         }
                         else
@@ -2058,7 +2058,7 @@ namespace Kerbal_Construction_Time
 
         public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier, newReconEffect;
         public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, 
-            freeSims, recon, debug, overrideLaunchBtn, autoAlarms;
+            freeSims, recon, debug, overrideLaunchBtn, autoAlarms, useBlizzyToolbar, allowParachuteRecovery;
 
         public static string newRecoveryModDefault;
         public static bool disableBuildTimesDefault, instantTechUnlockDefault, enableAllBodiesDefault, freeSimsDefault, reconDefault;
@@ -2088,6 +2088,8 @@ namespace Kerbal_Construction_Time
             debug = KCT_GameStates.settings.Debug;
             overrideLaunchBtn = KCT_GameStates.settings.OverrideLaunchButton;
             autoAlarms = KCT_GameStates.settings.AutoKACAlarams;
+            useBlizzyToolbar = KCT_GameStates.settings.PreferBlizzyToolbar;
+            allowParachuteRecovery = KCT_GameStates.settings.AllowParachuteRecovery;
             
 
             disableBuildTimesDefault = KCT_GameStates.settings.DisableBuildTimeDefault;
@@ -2196,6 +2198,14 @@ namespace Kerbal_Construction_Time
                 autoAlarms = GUILayout.Toggle(autoAlarms, autoAlarms ? " Enabled" : " Disabled", GUILayout.Width(width2));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
+                GUILayout.Label("Prefered Toolbar", GUILayout.Width(width1));
+                useBlizzyToolbar = GUILayout.Toggle(useBlizzyToolbar, useBlizzyToolbar ? " Toolbar Mod" : " Stock AppLauncher", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Parachute Recovery", GUILayout.Width(width1));
+                allowParachuteRecovery = GUILayout.Toggle(allowParachuteRecovery, allowParachuteRecovery ? " Active" : " Disabled", GUILayout.Width(width2));
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
                 GUILayout.Label("Auto Check For Updates", GUILayout.Width(width1));
                 checkForUpdates = GUILayout.Toggle(checkForUpdates, checkForUpdates ? " Enabled" : " Disabled");
                 if (GUILayout.Button("Check"))
@@ -2299,6 +2309,8 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.settings.OverrideLaunchButton = overrideLaunchBtn;
                 KCT_GameStates.settings.Debug = debug;
                 KCT_GameStates.settings.AutoKACAlarams = autoAlarms;
+                KCT_GameStates.settings.PreferBlizzyToolbar = useBlizzyToolbar;
+                KCT_GameStates.settings.AllowParachuteRecovery = allowParachuteRecovery;
 
                 KCT_GameStates.settings.DisableBuildTimeDefault = disableBuildTimesDefault;
                 KCT_GameStates.settings.InstantTechUnlockDefault = instantTechUnlockDefault;
@@ -2334,7 +2346,7 @@ namespace Kerbal_Construction_Time
         private static int upgradeWindowHolder = 0;
         private static void DrawUpgradeWindow(int windowID)
         {
-            int spentPoints = KCT_Utilities.TotalSpentUpgrades();
+            int spentPoints = KCT_Utilities.TotalSpentUpgrades(null);
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
             GUILayout.Label("Total Points: " + KCT_GameStates.TotalUpgradePoints);
@@ -2498,11 +2510,20 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label(days + " day(s)/" + Math.Pow(2, KSC.RDUpgrades[1] + 1) + " sci");
                 if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
                 {
-                    if (GUILayout.Button(days + "d/" + Math.Pow(2, KSC.RDUpgrades[1] + 2), GUILayout.ExpandWidth(false)))
+                    bool everyKSCCanUpgrade = true;
+                    foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                     {
-                        ++KSC.RDUpgrades[1];
+                        if (KCT_GameStates.TotalUpgradePoints - KCT_Utilities.TotalSpentUpgrades(ksc) <= 0)
+                        {
+                            everyKSCCanUpgrade = false;
+                            break;
+                        }
+                    }
+                    if (everyKSCCanUpgrade && GUILayout.Button(days + "d/" + Math.Pow(2, KSC.RDUpgrades[1] + 2), GUILayout.ExpandWidth(false)))
+                    {
+                        ++KCT_GameStates.TechUpgradesTotal;
                         foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
-                            ksc.RDUpgrades[1] = KSC.RDUpgrades[1];
+                            ksc.RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -2650,7 +2671,7 @@ namespace Kerbal_Construction_Time
                 centralWindowPosition.Set((Screen.width - 450) / 2, (Screen.height - 200) / 2, 450, 200);
             }
             GUILayout.BeginVertical();
-            GUILayout.Label("Welcome to KCT! It is advised that you spend your " + (KCT_GameStates.TotalUpgradePoints-KCT_Utilities.TotalSpentUpgrades()) + " upgrades to increase the build rate in the building you will primarily be using.");
+            GUILayout.Label("Welcome to KCT! It is advised that you spend your " + (KCT_GameStates.TotalUpgradePoints-KCT_Utilities.TotalSpentUpgrades(null)) + " upgrades to increase the build rate in the building you will primarily be using.");
             GUILayout.Label("Please see the getting started guide included in the download or available from the forum for more information!");
             if (KCT_GameStates.settings.CheckForUpdates)
                 GUILayout.Label("Due to your settings, automatic update checking is enabled. You can disable it in the Settings menu!");

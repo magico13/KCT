@@ -339,27 +339,26 @@ namespace Kerbal_Construction_Time
                         }
                     }
 
-                    for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
+                    if (KCT_Utilities.ReconditioningActive(ksc))
                     {
-                        KCT_TechItem tech = KCT_GameStates.TechList[i];
-                        buildRate = tech.BuildRate;
-                        tech.progress+=(buildRate * (UT - lastUT));
-                        if (tech.isComplete || KCT_GameStates.settings.InstantTechUnlock)
-                        {
-                            if (KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRate > 1f)
-                                TimeWarp.SetRate(0, true);
-                            if (tech.protoNode == null) continue;
-                            tech.EnableTech();
-                            KCT_GameStates.TechList.Remove(tech);
-                        }
-                    }
-
-                    if (ksc.LaunchPadReconditioning != null)
-                    {
-                        IKCTBuildItem item = (IKCTBuildItem)ksc.LaunchPadReconditioning;
-                        ksc.LaunchPadReconditioning.progress += (item.GetBuildRate() * (UT - lastUT));
+                        IKCTBuildItem item = (IKCTBuildItem)ksc.GetReconditioning();
+                        ksc.GetReconditioning().progress += (item.GetBuildRate() * (UT - lastUT));
                         if (item.IsComplete() || !KCT_GameStates.settings.Reconditioning)
-                            ksc.LaunchPadReconditioning = null;
+                            ksc.Recon_Rollout.Remove(ksc.GetReconditioning());
+                    }
+                }
+                for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
+                {
+                    KCT_TechItem tech = KCT_GameStates.TechList[i];
+                    double buildRate = tech.BuildRate;
+                    tech.progress += (buildRate * (UT - lastUT));
+                    if (tech.isComplete || KCT_GameStates.settings.InstantTechUnlock)
+                    {
+                        if (KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRate > 1f)
+                            TimeWarp.SetRate(0, true);
+                        if (tech.protoNode == null) continue;
+                        tech.EnableTech();
+                        KCT_GameStates.TechList.Remove(tech);
                     }
                 }
             }
@@ -479,7 +478,7 @@ namespace Kerbal_Construction_Time
         public static void MoveVesselToWarehouse(int ListIdentifier, int index, KCT_KSC KSC)
         {
             if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
-            if (ToolbarManager.ToolbarAvailable)
+            if (KCT_GameStates.kctToolbarButton != null)
             {
                 KCT_GameStates.kctToolbarButton.Important = true; //Show the button if it is hidden away
                 startedFlashing = DateTime.Now; //Set the time to start flashing
@@ -501,7 +500,7 @@ namespace Kerbal_Construction_Time
                 KSC.VABWarehouse.Add(vessel);
                 
                 Message.AppendLine(vessel.shipName);
-                Message.AppendLine("Please check the VAB Storage to launch it.");
+                Message.AppendLine("Please check the VAB Storage at "+KSC.KSCName+" to launch it.");
             
             }
             else if (ListIdentifier == 1)//SPH list
@@ -511,7 +510,7 @@ namespace Kerbal_Construction_Time
                 KSC.SPHWarehouse.Add(vessel);
 
                 Message.AppendLine(vessel.shipName);
-                Message.AppendLine("Please check the SPH Storage to launch it.");
+                Message.AppendLine("Please check the SPH Storage at " + KSC.KSCName + " to launch it.");
             }
 
             //Assign science based on science rate
@@ -533,7 +532,7 @@ namespace Kerbal_Construction_Time
             }
 
             string stor = ListIdentifier == 0 ? "VAB" : "SPH";
-            KCTDebug.Log("Moved vessel " + vessel.shipName + " to " + stor +" storage.");
+            KCTDebug.Log("Moved vessel " + vessel.shipName + " to " +KSC.KSCName + "'s " + stor + " storage.");
 
             foreach (KCT_KSC KSC_iterator in KCT_GameStates.KSCs)
             {
@@ -869,9 +868,9 @@ namespace Kerbal_Construction_Time
                     shortestTime = time;
                 }
             }
-            if (KCT_GameStates.ActiveKSC.LaunchPadReconditioning != null)
+            if (KCT_Utilities.ReconditioningActive(null))
             {
-                IKCTBuildItem blv = (IKCTBuildItem)KCT_GameStates.ActiveKSC.LaunchPadReconditioning;
+                IKCTBuildItem blv = (IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning();
                 double time = blv.GetTimeLeft();
                 if (time < shortestTime)
                 {
@@ -956,12 +955,13 @@ namespace Kerbal_Construction_Time
             return newVal;
         }
 
-        public static int TotalSpentUpgrades()
+        public static int TotalSpentUpgrades(KCT_KSC ksc)
         {
+            if (ksc == null) ksc = KCT_GameStates.ActiveKSC;
             int spentPoints = 0;
-            foreach (int i in KCT_GameStates.ActiveKSC.VABUpgrades) spentPoints += i;
-            foreach (int i in KCT_GameStates.ActiveKSC.SPHUpgrades) spentPoints += i;
-            foreach (int i in KCT_GameStates.ActiveKSC.RDUpgrades) spentPoints += i;
+            foreach (int i in ksc.VABUpgrades) spentPoints += i;
+            foreach (int i in ksc.SPHUpgrades) spentPoints += i;
+            foreach (int i in ksc.RDUpgrades) spentPoints += i;
             return spentPoints;
         }
 
@@ -1176,6 +1176,14 @@ namespace Kerbal_Construction_Time
                 if (mi.info.Contains("Unmanned")) return true;
             }
             return false;
+        }
+
+        public static bool ReconditioningActive(KCT_KSC KSC)
+        {
+            if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
+
+            KCT_Recon_Rollout recon = KSC.GetReconditioning();
+            return (recon != null);
         }
     }
 }

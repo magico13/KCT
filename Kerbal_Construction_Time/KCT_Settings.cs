@@ -25,6 +25,8 @@ namespace Kerbal_Construction_Time
         [Persistent] public bool ReconditioningDefault;
         [Persistent] public bool Debug;
         [Persistent] public bool OverrideLaunchButton;
+        [Persistent] public bool PreferBlizzyToolbar;
+        [Persistent] public bool AllowParachuteRecovery;
 
         //Game specific settings
         public bool enabledForSave = true;
@@ -56,6 +58,8 @@ namespace Kerbal_Construction_Time
             RecoveryModifier = 0.75F;
             Reconditioning = true;
             AutoKACAlarams = true;
+            PreferBlizzyToolbar = true;
+            AllowParachuteRecovery = true;
 
             RecoveryModifierDefault = 0.75f;
             NoCostSimulationsDefault = false;
@@ -100,7 +104,7 @@ namespace Kerbal_Construction_Time
     public class KCT_TimeSettings
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_TimeSettings.txt";
-        [Persistent] public double OverallMultiplier, BuildEffect, InventoryEffect, ReconditioningEffect;
+        [Persistent] public double OverallMultiplier, BuildEffect, InventoryEffect, ReconditioningEffect, MaxReconditioning, RolloutReconSplit;
         
         public KCT_TimeSettings()
         {
@@ -108,6 +112,8 @@ namespace Kerbal_Construction_Time
             BuildEffect = 1.0;
             InventoryEffect = 100.0;
             ReconditioningEffect = 1728;
+            MaxReconditioning = 648000; // This is 7.5 days / 30 days at 1 BP/s,  (or 375 tons)
+            RolloutReconSplit = 0.25;
         }
 
         public void Load()

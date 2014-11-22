@@ -35,7 +35,7 @@ namespace Kerbal_Construction_Time
             GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
             GameEvents.onVesselSOIChanged.Add(SOIChangeEvent);
             GameEvents.OnTechnologyResearched.Add(TechUnlockEvent);
-            if (!ToolbarManager.ToolbarAvailable)
+            //if (!ToolbarManager.ToolbarAvailable || !KCT_GameStates.settings.PreferBlizzyToolbar)
                 GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
             GameEvents.onEditorShipModified.Add(ShipModifiedEvent);
             GameEvents.OnPartPurchased.Add(PartPurchasedEvent);
@@ -92,6 +92,9 @@ namespace Kerbal_Construction_Time
         public void OnGUIAppLauncherReady()
         {
             bool vis;
+            if (ToolbarManager.ToolbarAvailable && KCT_GameStates.settings.PreferBlizzyToolbar)
+                return;
+                
             if (ApplicationLauncher.Ready && (KCTButtonStock == null || !ApplicationLauncher.Instance.Contains(KCTButtonStock, out vis))) //Add Stock button
             {
                 KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
@@ -216,9 +219,11 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
                     KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd, TransactionReasons.None);
                 }
-                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning && KCT_GameStates.ActiveKSC.LaunchPadReconditioning == null)
+                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning)
                 {
-                    KCT_GameStates.ActiveKSC.LaunchPadReconditioning = new KCT_Reconditioning(ev.host);
+                    KCT_Recon_Rollout reconditioning = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
+                    if (reconditioning == null)
+                        KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(ev.host, KCT_Recon_Rollout.RRType.Reconditioning));
                 }
             }
         }
@@ -253,6 +258,8 @@ namespace Kerbal_Construction_Time
         public void vesselDestroyEvent(Vessel v)
         {
             if (!KCT_GameStates.settings.enabledForSave) return;
+            if (!KCT_GameStates.settings.AllowParachuteRecovery) return;
+
             Dictionary<string, int> PartsRecovered = new Dictionary<string, int>();
             float FundsRecovered = 0, KSCDistance = 0, RecoveryPercent = 0;
             StringBuilder Message = new StringBuilder();
