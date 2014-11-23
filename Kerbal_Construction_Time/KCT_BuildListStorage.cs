@@ -121,7 +121,7 @@ namespace Kerbal_Construction_Time
             [Persistent]
             bool cannotEarnScience;
             [Persistent]
-            float cost = 0;
+            float cost = 0, mass = 0;
 
             public KCT_BuildListVessel ToBuildListVessel()
             {
@@ -131,6 +131,7 @@ namespace Kerbal_Construction_Time
                     ret.InventoryParts = InventoryParts;
                 ret.id = new Guid(shipID);
                 ret.cannotEarnScience = cannotEarnScience;
+                ret.TotalMass = mass;
                 return ret;
             }
 
@@ -146,7 +147,7 @@ namespace Kerbal_Construction_Time
                 this.shipID = blv.id.ToString();
                 this.cannotEarnScience = blv.cannotEarnScience;
                 this.cost = blv.cost;
-                
+                this.mass = blv.TotalMass;
                 return this;
 
             }

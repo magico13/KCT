@@ -18,7 +18,7 @@ namespace Kerbal_Construction_Time
         public ConfigNode shipNode;
         public Guid id;
         public bool cannotEarnScience;
-        public float cost = 0;
+        public float cost = 0, TotalMass = 0;
         public double buildRate { get { return KCT_Utilities.GetBuildRate(this); } }
         public double timeLeft
         {
@@ -66,6 +66,12 @@ namespace Kerbal_Construction_Time
             float dry, fuel;
             s.GetShipCosts(out dry, out fuel);
             cost = dry + fuel;
+            TotalMass = 0;
+            foreach (Part p in s.Parts)
+            {
+                TotalMass += p.mass;
+                TotalMass += p.GetResourceMass();
+            }
 
             launchSite = ls;
             buildPoints = bP;
@@ -106,6 +112,7 @@ namespace Kerbal_Construction_Time
             {
                 ret.buildPoints = KCT_Utilities.GetBuildTime(ret.ExtractedPartNodes, true, this.InventoryParts.Count > 0);
             }
+            ret.TotalMass = this.TotalMass;
             return ret;
         }
 
@@ -149,6 +156,7 @@ namespace Kerbal_Construction_Time
         //NOTE: This is an approximation. This won't properly take into account for resources and tweakscale! DO NOT USE IF YOU CARE 100% ABOUT THE MASS
         public double GetTotalMass()
         {
+            if (TotalMass != 0) return TotalMass;
             double mass = 0;
             foreach (Part p in this.ExtractedParts)
             {
