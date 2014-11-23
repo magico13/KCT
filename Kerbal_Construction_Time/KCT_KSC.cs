@@ -32,6 +32,10 @@ namespace Kerbal_Construction_Time
             return Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
         }
 
+        public KCT_Recon_Rollout GetReconRollout(KCT_Recon_Rollout.RolloutReconType type)
+        {
+            return Recon_Rollout.FirstOrDefault(r => r.RRType == type);
+        }
 
 
         public ConfigNode AsConfigNode()

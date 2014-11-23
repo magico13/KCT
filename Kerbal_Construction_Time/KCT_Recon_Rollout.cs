@@ -9,23 +9,53 @@ namespace Kerbal_Construction_Time
     {
         [Persistent] private string name;
         [Persistent] public double BP, progress;
-        public enum RRType { Reconditioning, Rollout, Rollback };
+        [Persistent] public string associatedID;
+        public enum RolloutReconType { Reconditioning, Rollout, Rollback, None };
+        public RolloutReconType RRType;
 
         public KCT_Recon_Rollout()
         {
             name = "LaunchPad Reconditioning";
             progress = 0;
             BP = 0;
+            RRType = RolloutReconType.None;
+            associatedID = "";
         }
 
-        public KCT_Recon_Rollout(Vessel vessel, RRType type)
+        public KCT_Recon_Rollout(Vessel vessel, RolloutReconType type, string id)
         {
-            if (type == RRType.Reconditioning) {
+            RRType = type;
+            associatedID = id;
+            if (type == RolloutReconType.Reconditioning) 
+            {
                 BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
                 if (BP > KCT_GameStates.timeSettings.MaxReconditioning) BP = KCT_GameStates.timeSettings.MaxReconditioning;
+                BP *= (1 - KCT_GameStates.timeSettings.RolloutReconSplit);
                 name = "LaunchPad Reconditioning";
             }
+            else if (type == RolloutReconType.Rollout)
+            {
+                BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
+                if (BP > KCT_GameStates.timeSettings.MaxReconditioning) BP = KCT_GameStates.timeSettings.MaxReconditioning;
+                BP *= KCT_GameStates.timeSettings.RolloutReconSplit;
+                name = "Vessel Rollout";
+            }
+            else if (type == RolloutReconType.Rollback)
+            {
+                BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
+                if (BP > KCT_GameStates.timeSettings.MaxReconditioning) BP = KCT_GameStates.timeSettings.MaxReconditioning;
+                BP *= KCT_GameStates.timeSettings.RolloutReconSplit;
+                name = "Vessel Rollback";
+            }
             progress = 0;
+        }
+
+        public void SwapRolloutType()
+        {
+            if (RRType == RolloutReconType.Rollout)
+                RRType = RolloutReconType.Rollback;
+            else if (RRType == RolloutReconType.Rollback)
+                RRType = RolloutReconType.Rollout;
         }
 
         public double ProgressPercent()
@@ -60,6 +90,11 @@ namespace Kerbal_Construction_Time
         bool IKCTBuildItem.IsComplete()
         {
             return progress >= BP;
+        }
+
+        IKCTBuildItem AsBuildItem()
+        {
+            return (IKCTBuildItem)this;
         }
     }
 }
