@@ -238,7 +238,7 @@ namespace Kerbal_Construction_Time
                             status = "Being Recovered";
 
                         GUILayout.Label("Status: "+status+"   ", GUILayout.ExpandWidth(false));
-                        if (reconActive && !HighLogic.LoadedSceneIsEditor && (rollout == null || b.id.ToString() != rollout.associatedID) && (rollback == null || rollback.associatedID != b.id.ToString()) && GUILayout.Button("Rollout", GUILayout.ExpandWidth(false)))
+                        if (reconActive && !HighLogic.LoadedSceneIsEditor && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null && GUILayout.Button("Rollout", GUILayout.ExpandWidth(false)))
                         {
                             if (rollout != null)
                             {
@@ -253,9 +253,10 @@ namespace Kerbal_Construction_Time
                         }
                         else if (reconActive && !HighLogic.LoadedSceneIsEditor && rollback != null && b.id.ToString() == rollback.associatedID && !rollback.AsBuildItem().IsComplete())
                         {
-                            if (rollout == null && GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft())))
+                            if (rollout == null)
                             {
-                                rollback.SwapRolloutType();
+                                if (GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft())))
+                                    rollback.SwapRolloutType();
                             }
                             else
                             {
@@ -564,9 +565,9 @@ namespace Kerbal_Construction_Time
                 //GUILayout.Label("Tech Node Research");
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Node Name:");
-                GUILayout.Label("Progress:", GUILayout.Width(width1));
+                GUILayout.Label("Progress:", GUILayout.Width(width1/2));
                 GUILayout.Label("Time Left:", GUILayout.Width(width1));
-                GUILayout.Space(width2);
+                GUILayout.Space(70);
                 GUILayout.EndHorizontal();
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(250));
                 if (techList.Count == 0)
@@ -576,9 +577,9 @@ namespace Kerbal_Construction_Time
                     KCT_TechItem t = techList[i];
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(t.techName);
-                    GUILayout.Label(Math.Round(100 * t.progress / t.scienceCost, 2) + " %", GUILayout.Width(width1));
+                    GUILayout.Label(Math.Round(100 * t.progress / t.scienceCost, 2) + " %", GUILayout.Width(width1/2));
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(t.TimeLeft), GUILayout.Width(width1));
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(width2)))
+                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(70)))
                     {
                         KCT_GameStates.targetedItem = t;
                         KCT_GameStates.canWarp = true;
@@ -586,7 +587,7 @@ namespace Kerbal_Construction_Time
                         KCT_GameStates.warpInitiated = true;
                     }
                     else if (HighLogic.LoadedSceneIsEditor)
-                        GUILayout.Space(width2);
+                        GUILayout.Space(70);
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();

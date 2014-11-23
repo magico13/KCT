@@ -9,7 +9,7 @@ namespace Kerbal_Construction_Time
     {
         [Persistent] private string name;
         [Persistent] public double BP, progress;
-        [Persistent] public string associatedID;
+        [Persistent] public string associatedID = "";
         [Persistent] public int launchPadID = 0;
         public enum RolloutReconType { Reconditioning, Rollout, Rollback, Recovery, None };
         private RolloutReconType RRTypeInternal = RolloutReconType.None;
@@ -38,7 +38,7 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public KCT_KSC KSC { get { return KCT_GameStates.KSCs.FirstOrDefault(k => k.GetReconRollout(RRType).associatedID == this.associatedID);} }
+        public KCT_KSC KSC { get { return KCT_GameStates.KSCs.Count > 0 ? KCT_GameStates.KSCs.FirstOrDefault(k => k.GetReconRollout(RRType).associatedID == this.associatedID) : null;} }
 
         public KCT_Recon_Rollout()
         {
