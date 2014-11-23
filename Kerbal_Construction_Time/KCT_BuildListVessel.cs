@@ -51,8 +51,11 @@ namespace Kerbal_Construction_Time
             }
         }
         public bool isFinished { get { return progress >= buildPoints; } }
-        public KCT_KSC KSC { get { return KCT_GameStates.KSCs.FirstOrDefault(k => (k.VABList.FirstOrDefault(s => s.id == this.id) != null) 
-            || (k.SPHList.FirstOrDefault(s => s.id == this.id) != null)); } }
+        public KCT_KSC KSC { get { 
+            return KCT_GameStates.KSCs.FirstOrDefault(k => ( type == ListType.VAB ? (
+                k.VABList.FirstOrDefault(s => s.id == this.id) != null || k.VABWarehouse.FirstOrDefault(s => s.id == this.id) != null)
+            : (k.SPHList.FirstOrDefault(s => s.id == this.id) != null || k.SPHWarehouse.FirstOrDefault(s => s.id == this.id) != null))); 
+        } }
 
         public KCT_BuildListVessel(ShipConstruct s, String ls, double bP, String flagURL)
         {
@@ -143,11 +146,28 @@ namespace Kerbal_Construction_Time
             }
         }
 
+        //NOTE: This is an approximation. This won't properly take into account for resources and tweakscale! DO NOT USE IF YOU CARE 100% ABOUT THE MASS
+        public double GetTotalMass()
+        {
+            double mass = 0;
+            foreach (Part p in this.ExtractedParts)
+            {
+                mass += p.mass;
+                mass += p.GetResourceMass();
+            }
+            return mass;
+        }
+
         public bool RemoveFromBuildList()
         {
             string typeName="";
             bool removed = false;
             KCT_KSC theKSC = this.KSC;
+            if (theKSC == null)
+            {
+                KCTDebug.Log("Could not find the KSC to remove vessel!");
+                return false;
+            }
             if (type == ListType.SPH)
             {
                 if (theKSC.SPHWarehouse.Contains(this))

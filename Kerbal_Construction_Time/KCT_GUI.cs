@@ -30,7 +30,7 @@ namespace Kerbal_Construction_Time
         //private static Rect simulationCompleteFlightPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
         private static Rect simulationWindowPosition = new Rect((Screen.width - 250) / 2, (Screen.height - 250) / 2, 250, 1);
         public static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
-        public static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 460, 1);
+        public static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 500, 1);
         private static Rect crewListWindowPosition = new Rect((Screen.width-360)/2, (Screen.height / 4), 360, 1);
         private static Rect settingsPosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 300, 1);
         private static Rect upgradePosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 240, 1);
@@ -355,7 +355,7 @@ namespace Kerbal_Construction_Time
         private static void DrawEditorGUI(int windowID)
         {
             GUILayout.BeginVertical();
-            GUILayout.Label("Current KSC: " + KCT_GameStates.ActiveKSC.KSCName);
+            //GUILayout.Label("Current KSC: " + KCT_GameStates.ActiveKSC.KSCName);
             if (!KCT_GameStates.EditorShipEditingMode) //Build mode
             {
                 double buildTime = KCT_GameStates.EditorBuildTime;
@@ -368,7 +368,7 @@ namespace Kerbal_Construction_Time
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
                 GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
-                if (type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB();
+                if (type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB(null);
                 else rates = KCT_Utilities.BuildRatesSPH();
                 double bR;
                 if (double.TryParse(buildRateForDisplay, out bR))
@@ -460,7 +460,7 @@ namespace Kerbal_Construction_Time
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
                 GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
-                if (ship.type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB();
+                if (ship.type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB(null);
                 else rates = KCT_Utilities.BuildRatesSPH();
                 double bR;
                 if (double.TryParse(buildRateForDisplay, out bR))
@@ -1100,7 +1100,7 @@ namespace Kerbal_Construction_Time
         public static void ResetBLWindow()
         {
             buildListWindowPosition.height = 1;
-            buildListWindowPosition.width = 460;
+            buildListWindowPosition.width = 500;
           //  listWindow = -1;
         }
 
@@ -1108,14 +1108,11 @@ namespace Kerbal_Construction_Time
         {
             InputLockManager.RemoveControlLock("KCTPopupLock");
             //List<KCT_BuildListVessel> buildList = b.
-            KCT_BuildListVessel b;// = listWindow == 0 ? KCT_GameStates.VABList[IndexSelected] : KCT_GameStates.SPHList[IndexSelected];
-            switch (listWindow)
+            KCT_BuildListVessel b = KCT_Utilities.BLVesselByID(IDSelected);// = listWindow == 0 ? KCT_GameStates.VABList[IndexSelected] : KCT_GameStates.SPHList[IndexSelected];
+            if (b == null)
             {
-                case 0: b = KCT_GameStates.ActiveKSC.VABList[IndexSelected]; break;
-                case 1: b = KCT_GameStates.ActiveKSC.SPHList[IndexSelected]; break;
-                case 2: b = KCT_GameStates.ActiveKSC.VABWarehouse[IndexSelected]; break;
-                case 3: b = KCT_GameStates.ActiveKSC.SPHWarehouse[IndexSelected]; break;
-                default: KCTDebug.Log("Tried to remove a vessel that couldn't be found! "+listWindow); return;
+                KCTDebug.Log("Tried to remove a vessel that doesn't exist!");
+                return;
             }
             KCTDebug.Log("Scrapping " + b.shipName);
             if (!b.isFinished)
@@ -1609,10 +1606,12 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
         }
 
-        public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier, newReconEffect;
+        public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier, 
+            newReconEffect, maxReconditioning, newNodeModifier;
         public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, 
             freeSims, recon, debug, overrideLaunchBtn, autoAlarms, useBlizzyToolbar, allowParachuteRecovery;
 
+        public static double reconSplit;
         public static string newRecoveryModDefault;
         public static bool disableBuildTimesDefault, instantTechUnlockDefault, enableAllBodiesDefault, freeSimsDefault, reconDefault;
         private static void ShowSettings()
@@ -1643,7 +1642,10 @@ namespace Kerbal_Construction_Time
             autoAlarms = KCT_GameStates.settings.AutoKACAlarams;
             useBlizzyToolbar = KCT_GameStates.settings.PreferBlizzyToolbar;
             allowParachuteRecovery = KCT_GameStates.settings.AllowParachuteRecovery;
-            
+
+            reconSplit = KCT_GameStates.timeSettings.RolloutReconSplit;
+            maxReconditioning = KCT_GameStates.timeSettings.MaxReconditioning.ToString();
+            newNodeModifier = KCT_GameStates.timeSettings.NodeModifier.ToString();
 
             disableBuildTimesDefault = KCT_GameStates.settings.DisableBuildTimeDefault;
             instantTechUnlockDefault = KCT_GameStates.settings.InstantTechUnlockDefault;
@@ -1752,7 +1754,7 @@ namespace Kerbal_Construction_Time
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Prefered Toolbar", GUILayout.Width(width1));
-                useBlizzyToolbar = GUILayout.Toggle(useBlizzyToolbar, useBlizzyToolbar ? " Toolbar Mod" : " Stock AppLauncher", GUILayout.Width(width2));
+                useBlizzyToolbar = GUILayout.Toggle(useBlizzyToolbar, useBlizzyToolbar ? " Toolbar Mod" : " Stock", GUILayout.Width(width2));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Parachute Recovery", GUILayout.Width(width1));
@@ -1797,14 +1799,32 @@ namespace Kerbal_Construction_Time
                 newInvEffect = GUILayout.TextField(newInvEffect, 10, GUILayout.Width(100));
                 GUILayout.EndHorizontal();
 
-                GUILayout.Label("LaunchPad Reconditioning:");
                 GUILayout.BeginHorizontal();
+                GUILayout.Label("Tech Modifier", GUILayout.Width(width1));
+                newNodeModifier = GUILayout.TextField(newNodeModifier, 10, GUILayout.Width(100));
+                GUILayout.EndHorizontal();
+
+                GUILayout.Label("Reconditioning/Rollout:");
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Total: ");
                 double mult;
                 if (!double.TryParse(newMultiplier, out mult)) mult = KCT_GameStates.timeSettings.OverallMultiplier;
                 double days = mult * 86400;
                 GUILayout.Label(days + " BP per ");
                 newReconEffect = GUILayout.TextField(newReconEffect, 10, GUILayout.Width(100));
                 GUILayout.Label(" tons.");
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Max BP: ");
+                maxReconditioning = GUILayout.TextField(maxReconditioning, 10, GUILayout.Width(100));
+                GUILayout.EndHorizontal();
+
+                GUILayout.Label("Rollout %:");
+                GUILayout.BeginHorizontal();
+                reconSplit = GUILayout.HorizontalSlider((float)reconSplit, 0, 1);
+                reconSplit = Math.Round(reconSplit, 2);
+                GUILayout.Label(" "+reconSplit*100 + "%", GUILayout.Width(50));
                 GUILayout.EndHorizontal();
             }
             if (settingSelected == 3)
@@ -1877,6 +1897,9 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);
                 KCT_GameStates.timeSettings.BuildEffect = double.Parse(newBuildEffect);
                 KCT_GameStates.timeSettings.InventoryEffect = double.Parse(newInvEffect);
+                KCT_GameStates.timeSettings.NodeModifier = double.Parse(newNodeModifier);
+                KCT_GameStates.timeSettings.MaxReconditioning = double.Parse(maxReconditioning);
+                KCT_GameStates.timeSettings.RolloutReconSplit = reconSplit;
                 double reconTime = double.Parse(newReconEffect);
                 reconTime = (86400 / reconTime);
                 KCT_GameStates.timeSettings.ReconditioningEffect = reconTime;
@@ -2088,7 +2111,7 @@ namespace Kerbal_Construction_Time
                 GUI.DragWindow();
         }
 
-        private static int IndexSelected=0;
+        private static Guid IDSelected = new Guid();
         private static void DrawBLPlusWindow(int windowID)
         {
             bLPlusPosition.xMin = buildListWindowPosition.xMax;
@@ -2096,16 +2119,7 @@ namespace Kerbal_Construction_Time
             bLPlusPosition.yMin = buildListWindowPosition.yMin;
             bLPlusPosition.height = 175;
             //bLPlusPosition.height = bLPlusPosition.yMax - bLPlusPosition.yMin;
-            List<KCT_BuildListVessel> buildList = new List<KCT_BuildListVessel>();
-            switch (listWindow)
-            {
-                case 0: buildList = KCT_GameStates.ActiveKSC.VABList; break;
-                case 1: buildList = KCT_GameStates.ActiveKSC.SPHList; break;
-                case 2: buildList = KCT_GameStates.ActiveKSC.VABWarehouse; break;
-                case 3: buildList = KCT_GameStates.ActiveKSC.SPHWarehouse; break;
-                default: showBLPlus = false; break;
-            }
-            KCT_BuildListVessel b = buildList[IndexSelected];
+            KCT_BuildListVessel b = KCT_Utilities.BLVesselByID(IDSelected);
             GUILayout.BeginVertical();
             if (GUILayout.Button("Scrap"))
             {
@@ -2190,16 +2204,7 @@ namespace Kerbal_Construction_Time
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Save"))
             {
-                List<KCT_BuildListVessel> buildList = new List<KCT_BuildListVessel>();
-                switch (listWindow)
-                {
-                    case 0: buildList = KCT_GameStates.ActiveKSC.VABList; break;
-                    case 1: buildList = KCT_GameStates.ActiveKSC.SPHList; break;
-                    case 2: buildList = KCT_GameStates.ActiveKSC.VABWarehouse; break;
-                    case 3: buildList = KCT_GameStates.ActiveKSC.SPHWarehouse; break;
-                    default: showBLPlus = false; break;
-                }
-                KCT_BuildListVessel b = buildList[IndexSelected];
+                KCT_BuildListVessel b = KCT_Utilities.BLVesselByID(IDSelected);
                 b.shipName = newName; //Change the name from our point of view
                 showRename = false;
                 centralWindowPosition.width = 150;

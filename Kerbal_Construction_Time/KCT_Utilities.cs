@@ -282,13 +282,14 @@ namespace Kerbal_Construction_Time
                 return 0;
         }
 
-        public static List<double> BuildRatesVAB()
+        public static List<double> BuildRatesVAB(KCT_KSC KSC)
         {
+            if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
             List<double> rates = new List<double>();
-            if (KCT_GameStates.ActiveKSC.VABUpgrades.Count > 0)
+            if (KSC.VABUpgrades.Count > 0)
             {
-                for (int i = 0; i < KCT_GameStates.ActiveKSC.VABUpgrades.Count; i++)
-                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, null));
+                for (int i = 0; i < KSC.VABUpgrades.Count; i++)
+                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, KSC));
             }
             else
                 rates.Add(0.1);
@@ -339,13 +340,13 @@ namespace Kerbal_Construction_Time
                         }
                     }
 
-                    if (KCT_Utilities.ReconditioningActive(ksc))
+                    foreach (KCT_Recon_Rollout rr in ksc.Recon_Rollout)
                     {
-                        IKCTBuildItem item = (IKCTBuildItem)ksc.GetReconditioning();
-                        ksc.GetReconditioning().progress += (item.GetBuildRate() * (UT - lastUT));
-                        if (item.IsComplete() || !KCT_GameStates.settings.Reconditioning)
-                            ksc.Recon_Rollout.Remove(ksc.GetReconditioning());
+                        rr.progress += rr.AsBuildItem().GetBuildRate() * (UT - lastUT);
                     }
+
+                    ksc.Recon_Rollout.RemoveAll(rr => !KCT_GameStates.settings.Reconditioning || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));
+
                 }
                 for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
                 {
@@ -1184,6 +1185,39 @@ namespace Kerbal_Construction_Time
 
             KCT_Recon_Rollout recon = KSC.GetReconditioning();
             return (recon != null);
+        }
+
+        public static KCT_BuildListVessel BLVesselByID(Guid id)
+        {
+            KCT_BuildListVessel ret = null;
+            foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+            {
+                KCT_BuildListVessel tmp = ksc.VABList.Find(v => v.id == id);
+                if (tmp != null)
+                {
+                    ret = tmp;
+                    break;
+                }
+                tmp = ksc.SPHList.Find(v => v.id == id);
+                if (tmp != null)
+                {
+                    ret = tmp;
+                    break;
+                }
+                tmp = ksc.VABWarehouse.Find(v => v.id == id);
+                if (tmp != null)
+                {
+                    ret = tmp;
+                    break;
+                }
+                tmp = ksc.SPHWarehouse.Find(v => v.id == id);
+                if (tmp != null)
+                {
+                    ret = tmp;
+                    break;
+                }
+            }
+            return ret;
         }
     }
 }

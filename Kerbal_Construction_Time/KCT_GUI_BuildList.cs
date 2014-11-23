@@ -122,7 +122,7 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("Name:");
                 GUILayout.Label("Progress:", GUILayout.Width(width1 / 2));
                 GUILayout.Label("Time Left:", GUILayout.Width(width2));
-                GUILayout.Label("BP:", GUILayout.Width(width1 / 2 + 10));
+                //GUILayout.Label("BP:", GUILayout.Width(width1 / 2 + 10));
                 GUILayout.Space((butW + 4) * 3);
                 GUILayout.EndHorizontal();
                 if (KCT_Utilities.ReconditioningActive(null))
@@ -132,7 +132,7 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label(item.GetItemName());
                     GUILayout.Label(KCT_GameStates.ActiveKSC.GetReconditioning().ProgressPercent().ToString() + "%", GUILayout.Width(width1 / 2));
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(item.GetTimeLeft()), GUILayout.Width(width2));
-                    GUILayout.Label(Math.Round(KCT_GameStates.ActiveKSC.GetReconditioning().BP, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
+                    //GUILayout.Label(Math.Round(KCT_GameStates.ActiveKSC.GetReconditioning().BP, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
                     if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width((butW + 4) * 3)))
                     {
                         KCT_GameStates.targetedItem = item;
@@ -145,13 +145,12 @@ namespace Kerbal_Construction_Time
                     //GUILayout.Space((butW + 4) * 3);
                     GUILayout.EndHorizontal();
                 }
-                //TODO: Add rollout and rollback here
 
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((buildList.Count) * 25 + 10, Screen.height / 4F)));
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(250));
                 {
                     if (buildList.Count == 0)
                     {
-                        GUILayout.Label("No vessels under construction! Go to the VAB to build some.");
+                        GUILayout.Label("No vessels under construction! Go to the VAB to build more.");
                     }
                     for (int i = 0; i < buildList.Count; i++)
                     {
@@ -164,7 +163,7 @@ namespace Kerbal_Construction_Time
                             GUILayout.Label(KCT_Utilities.GetColonFormattedTime(b.timeLeft), GUILayout.Width(width2));
                         else
                             GUILayout.Label("Est: " + KCT_Utilities.GetColonFormattedTime((b.buildPoints - b.progress) / KCT_Utilities.GetBuildRate(0, KCT_BuildListVessel.ListType.VAB, null)), GUILayout.Width(width2));
-                        GUILayout.Label(Math.Round(b.buildPoints, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
+                       // GUILayout.Label(Math.Round(b.buildPoints, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
                         if (i > 0 && GUILayout.Button("^", GUILayout.Width(butW)))
                         {
                             buildList.RemoveAt(i);
@@ -185,11 +184,11 @@ namespace Kerbal_Construction_Time
                         }
                         if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("*", GUILayout.Width(butW)))
                         {
-                            if (IndexSelected == i)
+                            if (IDSelected == b.id)
                                 showBLPlus = !showBLPlus;
                             else
                                 showBLPlus = true;
-                            IndexSelected = i;
+                            IDSelected = b.id;
                         }
                         else if (HighLogic.LoadedSceneIsEditor)
                         {
@@ -197,7 +196,7 @@ namespace Kerbal_Construction_Time
                             if (GUILayout.Button("X", GUILayout.Width(butW)))
                             {
                                 InputLockManager.SetControlLock(ControlTypes.EDITOR_SOFT_LOCK, "KCTPopupLock");
-                                IndexSelected = i;
+                                IDSelected = b.id;
                                 DialogOption[] options = new DialogOption[2];
                                 options[0] = new DialogOption("Yes", ScrapVessel);
                                 options[1] = new DialogOption("No", DummyVoid);
@@ -210,22 +209,49 @@ namespace Kerbal_Construction_Time
 
                     //ADD Storage here!
                     buildList = KCT_GameStates.ActiveKSC.VABWarehouse;
+                    GUILayout.Label("__________________________________________________");
                     GUILayout.Label("VAB Storage");
                     if (buildList.Count == 0)
                     {
-                        GUILayout.Label("No vessels in storage. They will be moved here automatically when they are finished building.");
+                        GUILayout.Label("No vessels in storage!\nThey will be moved here automatically when they are finished building.");
                     }
+                    KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout);
+                    KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollback);
+                    bool reconActive = KCT_GameStates.settings.Reconditioning;
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];
                         GUILayout.BeginHorizontal();
                         GUILayout.Label(b.shipName);
-                        KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout);
-                        if (!HighLogic.LoadedSceneIsEditor && (rollout == null || b.id.ToString() != rollout.associatedID) && GUILayout.Button("Rollout", GUILayout.ExpandWidth(false)))
+                        string status = "In Storage";
+                        if (rollout != null && rollout.associatedID == b.id.ToString())
                         {
-
+                            status = "Rolling Out";
+                            if (rollout.AsBuildItem().IsComplete())
+                                status = "On the Pad";
                         }
-                        else if (!HighLogic.LoadedSceneIsEditor && b.id.ToString() == rollout.associatedID && rollout.ProgressPercent() >= 100 && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
+                        if (rollback != null && rollback.associatedID == b.id.ToString())
+                            status = "Rolling Back";
+                        
+                        GUILayout.Label("Status: "+status+"  ", GUILayout.ExpandWidth(false));
+                        if (reconActive && !HighLogic.LoadedSceneIsEditor && (rollout == null || b.id.ToString() != rollout.associatedID) && (rollback == null || rollback.associatedID != b.id.ToString()) && GUILayout.Button("Rollout", GUILayout.ExpandWidth(false)))
+                        {
+                            if (rollout != null)
+                            {
+                                rollout.SwapRolloutType();
+                            }
+                            KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()));
+                        }
+                        else if (reconActive && !HighLogic.LoadedSceneIsEditor && rollout != null && b.id.ToString() == rollout.associatedID && !rollout.AsBuildItem().IsComplete() && rollback == null &&
+                            GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollout.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false)))
+                        {
+                            rollout.SwapRolloutType();
+                        }
+                        else if (reconActive && !HighLogic.LoadedSceneIsEditor && rollback != null && b.id.ToString() == rollback.associatedID && !rollback.AsBuildItem().IsComplete())
+                        {
+                            GUILayout.Label(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
+                        }
+                        else if (!HighLogic.LoadedSceneIsEditor && (!reconActive || ( rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
                             if (KCT_Utilities.ReconditioningActive(null))
                             {
@@ -236,6 +262,8 @@ namespace Kerbal_Construction_Time
                             }
                             else
                             {
+                                if (rollout != null)
+                                    KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);
                                 KCT_GameStates.launchedVessel = b;
                                 if (ShipAssembly.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
                                 {
@@ -266,11 +294,11 @@ namespace Kerbal_Construction_Time
                         }
                         if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("*", GUILayout.Width(butW)))
                         {
-                            if (IndexSelected == i)
+                            if (IDSelected == b.id)
                                 showBLPlus = !showBLPlus;
                             else
                                 showBLPlus = true;
-                            IndexSelected = i;
+                            IDSelected = b.id;
                         }
                         else if (HighLogic.LoadedSceneIsEditor)
                             GUILayout.Space(butW);
@@ -286,66 +314,125 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("Name:");
                 GUILayout.Label("Progress:", GUILayout.Width(width1 / 2));
                 GUILayout.Label("Time Left:", GUILayout.Width(width2));
-                GUILayout.Label("BP:", GUILayout.Width(width1 / 2 + 10));
+                //GUILayout.Label("BP:", GUILayout.Width(width1 / 2 + 10));
                 GUILayout.Space((butW + 4) * 3);
                 GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((buildList.Count) * 25 + 10, Screen.height / 4F)));
-                for (int i = 0; i < buildList.Count; i++)
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(250));
                 {
-                    KCT_BuildListVessel b = buildList[i];
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(b.shipName);
-                    GUILayout.Label(Math.Round(b.ProgressPercent(), 2).ToString() + "%", GUILayout.Width(width1 / 2));
-                    if (b.buildRate > 0)
-                        GUILayout.Label(KCT_Utilities.GetColonFormattedTime(b.timeLeft), GUILayout.Width(width2));
-                    else
-                        GUILayout.Label("Est: " + KCT_Utilities.GetColonFormattedTime((b.buildPoints - b.progress) / KCT_Utilities.GetBuildRate(0, KCT_BuildListVessel.ListType.SPH, null)), GUILayout.Width(width2));
-                    GUILayout.Label(Math.Round(b.buildPoints, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
-                    if (i > 0 && GUILayout.Button("^", GUILayout.ExpandWidth(false)))
+                    if (buildList.Count == 0)
                     {
-                        buildList.RemoveAt(i);
-                        buildList.Insert(i - 1, b);
+                        GUILayout.Label("No vessels under construction! Go to the SPH to build more.");
                     }
-                    else if (i == 0)
+                    for (int i = 0; i < buildList.Count; i++)
                     {
-                        GUILayout.Space(butW + 4);
-                    }
-                    if (i < buildList.Count - 1 && GUILayout.Button("v", GUILayout.ExpandWidth(false)))
-                    {
-                        buildList.RemoveAt(i);
-                        buildList.Insert(i + 1, b);
-                    }
-                    else if (i >= buildList.Count - 1)
-                    {
-                        GUILayout.Space(butW + 4);
-                    }
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("*", GUILayout.Width(butW)))
-                    {
-                        if (IndexSelected == i)
-                            showBLPlus = !showBLPlus;
+                        KCT_BuildListVessel b = buildList[i];
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(b.shipName);
+                        GUILayout.Label(Math.Round(b.ProgressPercent(), 2).ToString() + "%", GUILayout.Width(width1 / 2));
+                        if (b.buildRate > 0)
+                            GUILayout.Label(KCT_Utilities.GetColonFormattedTime(b.timeLeft), GUILayout.Width(width2));
                         else
-                            showBLPlus = true;
-                        IndexSelected = i;
-                    }
-                    else if (HighLogic.LoadedSceneIsEditor)
-                    {
-                        //GUILayout.Space(butW);
-                        if (GUILayout.Button("X", GUILayout.Width(butW)))
+                            GUILayout.Label("Est: " + KCT_Utilities.GetColonFormattedTime((b.buildPoints - b.progress) / KCT_Utilities.GetBuildRate(0, KCT_BuildListVessel.ListType.SPH, null)), GUILayout.Width(width2));
+                        //GUILayout.Label(Math.Round(b.buildPoints, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
+                        if (i > 0 && GUILayout.Button("^", GUILayout.ExpandWidth(false)))
                         {
-                            InputLockManager.SetControlLock(ControlTypes.EDITOR_SOFT_LOCK, "KCTPopupLock");
-                            IndexSelected = i;
-                            DialogOption[] options = new DialogOption[2];
-                            options[0] = new DialogOption("Yes", ScrapVessel);
-                            options[1] = new DialogOption("No", DummyVoid);
-                            MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", windowTitle: "Scrap Vessel", options: options);
-                            PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                            buildList.RemoveAt(i);
+                            buildList.Insert(i - 1, b);
                         }
+                        else if (i == 0)
+                        {
+                            GUILayout.Space(butW + 4);
+                        }
+                        if (i < buildList.Count - 1 && GUILayout.Button("v", GUILayout.ExpandWidth(false)))
+                        {
+                            buildList.RemoveAt(i);
+                            buildList.Insert(i + 1, b);
+                        }
+                        else if (i >= buildList.Count - 1)
+                        {
+                            GUILayout.Space(butW + 4);
+                        }
+                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("*", GUILayout.Width(butW)))
+                        {
+                            if (IDSelected == b.id)
+                                showBLPlus = !showBLPlus;
+                            else
+                                showBLPlus = true;
+                            IDSelected = b.id;
+                        }
+                        else if (HighLogic.LoadedSceneIsEditor)
+                        {
+                            //GUILayout.Space(butW);
+                            if (GUILayout.Button("X", GUILayout.Width(butW)))
+                            {
+                                InputLockManager.SetControlLock(ControlTypes.EDITOR_SOFT_LOCK, "KCTPopupLock");
+                                IDSelected = b.id;
+                                DialogOption[] options = new DialogOption[2];
+                                options[0] = new DialogOption("Yes", ScrapVessel);
+                                options[1] = new DialogOption("No", DummyVoid);
+                                MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", windowTitle: "Scrap Vessel", options: options);
+                                PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                            }
+                        }
+                        GUILayout.EndHorizontal();
                     }
-                    GUILayout.EndHorizontal();
+
+                    buildList = KCT_GameStates.ActiveKSC.SPHWarehouse;
+                    GUILayout.Label("__________________________________________________");
+                    GUILayout.Label("SPH Storage");
+                    for (int i = 0; i < buildList.Count; i++)
+                    {
+                        KCT_BuildListVessel b = buildList[i];
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(b.shipName);
+                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
+                        {
+                            showBLPlus = false;
+                            KCT_GameStates.launchedVessel = b;
+                            if (ShipAssembly.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "Runway", false))
+                            {
+                                if (!IsCrewable(b.ExtractedParts))
+                                    b.Launch();
+                                else
+                                {
+                                    showBuildList = false;
+                                    centralWindowPosition.height = 1;
+                                    KCT_GameStates.launchedCrew.Clear();
+                                    parts = KCT_GameStates.launchedVessel.ExtractedParts;
+                                    pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
+                                    KCT_GameStates.launchedCrew = new List<CrewedPart>();
+                                    foreach (PseudoPart pp in pseudoParts)
+                                        KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
+                                    CrewFirstAvailable();
+                                    showShipRoster = true;
+                                }
+                            }
+                            else
+                            {
+                                showBuildList = false;
+                                showClearLaunch = true;
+                            }
+                        }
+                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("*", GUILayout.Width(butW)))
+                        {
+                            if (IDSelected == b.id)
+                                showBLPlus = !showBLPlus;
+                            else
+                                showBLPlus = true;
+                            IDSelected = b.id;
+                        }
+                        else if (HighLogic.LoadedSceneIsEditor)
+                            GUILayout.Space(butW);
+                        GUILayout.EndHorizontal();
+                    }
+                    if (buildList.Count == 0)
+                    {
+                        GUILayout.Label("No vessels in storage!\nThey will be moved here automatically when they are finished building.");
+                    }
                 }
                 GUILayout.EndScrollView();
             }
-            else if (listWindow == 2) //VAB Warehouse
+            /*else if (listWindow == 2) //VAB Warehouse
             {
                 List<KCT_BuildListVessel> buildList = KCT_GameStates.ActiveKSC.VABWarehouse;
                 //GUILayout.Label("VAB Storage");
@@ -459,8 +546,8 @@ namespace Kerbal_Construction_Time
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();
-            }
-            else if (listWindow == 4) //Tech nodes
+            }*/
+            else if (listWindow == 2) //Tech nodes
             {
                 List<KCT_TechItem> techList = KCT_GameStates.TechList;
                 //GUILayout.Label("Tech Node Research");
@@ -470,7 +557,9 @@ namespace Kerbal_Construction_Time
                 GUILayout.Label("Time Left:", GUILayout.Width(width1));
                 GUILayout.Space(width2);
                 GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((techList.Count) * 25 + 10, Screen.height / 4F)));
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(250));
+                if (techList.Count == 0)
+                    GUILayout.Label("No tech nodes are being researched!\nBegin research by unlocking tech in the R&D building.");
                 for (int i = 0; i < techList.Count; i++)
                 {
                     KCT_TechItem t = techList[i];

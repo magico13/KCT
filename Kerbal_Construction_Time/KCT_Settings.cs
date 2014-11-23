@@ -104,7 +104,7 @@ namespace Kerbal_Construction_Time
     public class KCT_TimeSettings
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_TimeSettings.txt";
-        [Persistent] public double OverallMultiplier, BuildEffect, InventoryEffect, ReconditioningEffect, MaxReconditioning, RolloutReconSplit;
+        [Persistent] public double OverallMultiplier, BuildEffect, InventoryEffect, ReconditioningEffect, MaxReconditioning, RolloutReconSplit, NodeModifier;
         
         public KCT_TimeSettings()
         {
@@ -114,6 +114,7 @@ namespace Kerbal_Construction_Time
             ReconditioningEffect = 1728;
             MaxReconditioning = 648000; // This is 7.5 days / 30 days at 1 BP/s,  (or 375 tons)
             RolloutReconSplit = 0.25;
+            NodeModifier = 1.0;
         }
 
         public void Load()
