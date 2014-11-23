@@ -216,11 +216,13 @@ namespace Kerbal_Construction_Time
                         GUILayout.Label("No vessels in storage!\nThey will be moved here automatically when they are finished building.");
                     }
                     KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout);
-                    KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollback);
+                    //KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollback);
                     bool reconActive = KCT_GameStates.settings.Reconditioning;
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];
+                        KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Rollback);
+                        KCT_Recon_Rollout recovery = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Recovery);
                         GUILayout.BeginHorizontal();
                         GUILayout.Label(b.shipName);
                         string status = "In Storage";
@@ -230,10 +232,12 @@ namespace Kerbal_Construction_Time
                             if (rollout.AsBuildItem().IsComplete())
                                 status = "On the Pad";
                         }
-                        if (rollback != null && rollback.associatedID == b.id.ToString())
+                        else if (rollback != null)
                             status = "Rolling Back";
-                        
-                        GUILayout.Label("Status: "+status+"  ", GUILayout.ExpandWidth(false));
+                        else if (recovery != null)
+                            status = "Being Recovered";
+
+                        GUILayout.Label("Status: "+status+"   ", GUILayout.ExpandWidth(false));
                         if (reconActive && !HighLogic.LoadedSceneIsEditor && (rollout == null || b.id.ToString() != rollout.associatedID) && (rollback == null || rollback.associatedID != b.id.ToString()) && GUILayout.Button("Rollout", GUILayout.ExpandWidth(false)))
                         {
                             if (rollout != null)
@@ -249,7 +253,14 @@ namespace Kerbal_Construction_Time
                         }
                         else if (reconActive && !HighLogic.LoadedSceneIsEditor && rollback != null && b.id.ToString() == rollback.associatedID && !rollback.AsBuildItem().IsComplete())
                         {
-                            GUILayout.Label(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
+                            if (rollout == null && GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft())))
+                            {
+                                rollback.SwapRolloutType();
+                            }
+                            else
+                            {
+                                GUILayout.Label(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
+                            }
                         }
                         else if (!HighLogic.LoadedSceneIsEditor && (!reconActive || ( rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {

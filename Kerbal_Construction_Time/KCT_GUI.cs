@@ -30,7 +30,7 @@ namespace Kerbal_Construction_Time
         //private static Rect simulationCompleteFlightPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
         private static Rect simulationWindowPosition = new Rect((Screen.width - 250) / 2, (Screen.height - 250) / 2, 250, 1);
         public static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
-        public static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 500, 1);
+        public static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 400, 1);
         private static Rect crewListWindowPosition = new Rect((Screen.width-360)/2, (Screen.height / 4), 360, 1);
         private static Rect settingsPosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 300, 1);
         private static Rect upgradePosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 240, 1);
@@ -1100,7 +1100,7 @@ namespace Kerbal_Construction_Time
         public static void ResetBLWindow()
         {
             buildListWindowPosition.height = 1;
-            buildListWindowPosition.width = 500;
+            buildListWindowPosition.width = 400;
           //  listWindow = -1;
         }
 
@@ -2080,10 +2080,11 @@ namespace Kerbal_Construction_Time
                 }
                 GUILayout.EndHorizontal();
 
-                int days = GameSettings.KERBIN_TIME ? 4 : 1;
+                double days = GameSettings.KERBIN_TIME ? 4 : 1;
+                days *= KCT_GameStates.timeSettings.NodeModifier;
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Development");
-                GUILayout.Label(days + " day(s)/" + Math.Pow(2, KSC.RDUpgrades[1] + 1) + " sci");
+                GUILayout.Label(Math.Round(days, 1) + " day(s)/" + Math.Pow(2, KSC.RDUpgrades[1] + 1) + " sci");
                 if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
                 {
                     bool everyKSCCanUpgrade = true;
@@ -2095,7 +2096,7 @@ namespace Kerbal_Construction_Time
                             break;
                         }
                     }
-                    if (everyKSCCanUpgrade && GUILayout.Button(days + "d/" + Math.Pow(2, KSC.RDUpgrades[1] + 2), GUILayout.ExpandWidth(false)))
+                    if (everyKSCCanUpgrade && GUILayout.Button(Math.Round(days, 1) + "d/" + Math.Pow(2, KSC.RDUpgrades[1] + 2), GUILayout.ExpandWidth(false)))
                     {
                         ++KCT_GameStates.TechUpgradesTotal;
                         foreach (KCT_KSC ksc in KCT_GameStates.KSCs)

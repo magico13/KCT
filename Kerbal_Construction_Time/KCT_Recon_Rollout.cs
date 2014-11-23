@@ -10,7 +10,8 @@ namespace Kerbal_Construction_Time
         [Persistent] private string name;
         [Persistent] public double BP, progress;
         [Persistent] public string associatedID;
-        public enum RolloutReconType { Reconditioning, Rollout, Rollback, None };
+        [Persistent] public int launchPadID = 0;
+        public enum RolloutReconType { Reconditioning, Rollout, Rollback, Recovery, None };
         private RolloutReconType RRTypeInternal = RolloutReconType.None;
         public RolloutReconType RRType
         {
@@ -26,6 +27,8 @@ namespace Kerbal_Construction_Time
                         RRTypeInternal = RolloutReconType.Rollout;
                     if (name == "Vessel Rollback")
                         RRTypeInternal = RolloutReconType.Rollback;
+                    if (name == "Vessel Recovery")
+                        RRTypeInternal = RolloutReconType.Recovery;
                     return RRTypeInternal;
                 }
             }
@@ -67,6 +70,11 @@ namespace Kerbal_Construction_Time
                 BP *= KCT_GameStates.timeSettings.RolloutReconSplit;
                 name = "Vessel Rollback";
             }
+            else if (type == RolloutReconType.Recovery)
+            {
+                BP *= KCT_GameStates.timeSettings.RolloutReconSplit;
+                name = "Vessel Recovery";
+            }
             progress = 0;
         }
 
@@ -90,6 +98,11 @@ namespace Kerbal_Construction_Time
             {
                 BP *= KCT_GameStates.timeSettings.RolloutReconSplit;
                 name = "Vessel Rollback";
+            }
+            else if (type == RolloutReconType.Recovery)
+            {
+                BP *= KCT_GameStates.timeSettings.RolloutReconSplit;
+                name = "Vessel Recovery";
             }
             progress = 0;
         }

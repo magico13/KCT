@@ -869,7 +869,16 @@ namespace Kerbal_Construction_Time
                     shortestTime = time;
                 }
             }
-            if (KCT_Utilities.ReconditioningActive(null))
+            foreach (IKCTBuildItem rr in KCT_GameStates.ActiveKSC.Recon_Rollout)
+            {
+                double time = rr.GetTimeLeft();
+                if (time < shortestTime)
+                {
+                    thing = rr;
+                    shortestTime = time;
+                }
+            }
+            /*if (KCT_Utilities.ReconditioningActive(null))
             {
                 IKCTBuildItem blv = (IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning();
                 double time = blv.GetTimeLeft();
@@ -878,7 +887,7 @@ namespace Kerbal_Construction_Time
                     thing = blv;
                     shortestTime = time;
                 }
-            }
+            }*/
             return thing;
         }
 
