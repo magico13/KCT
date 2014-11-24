@@ -235,10 +235,10 @@ namespace Kerbal_Construction_Time
                         else if (rollback != null)
                             status = "Rolling Back";
                         else if (recovery != null)
-                            status = "Being Recovered";
+                            status = "Recovering";
 
                         GUILayout.Label("Status: "+status+"   ", GUILayout.ExpandWidth(false));
-                        if (reconActive && !HighLogic.LoadedSceneIsEditor && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null && GUILayout.Button("Rollout", GUILayout.ExpandWidth(false)))
+                        if (reconActive && !HighLogic.LoadedSceneIsEditor && recovery == null && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null && GUILayout.Button("Rollout", GUILayout.ExpandWidth(false)))
                         {
                             if (rollout != null)
                             {
@@ -246,12 +246,12 @@ namespace Kerbal_Construction_Time
                             }
                             KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()));
                         }
-                        else if (reconActive && !HighLogic.LoadedSceneIsEditor && rollout != null && b.id.ToString() == rollout.associatedID && !rollout.AsBuildItem().IsComplete() && rollback == null &&
+                        else if (reconActive && !HighLogic.LoadedSceneIsEditor && recovery == null && rollout != null && b.id.ToString() == rollout.associatedID && !rollout.AsBuildItem().IsComplete() && rollback == null &&
                             GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollout.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false)))
                         {
                             rollout.SwapRolloutType();
                         }
-                        else if (reconActive && !HighLogic.LoadedSceneIsEditor && rollback != null && b.id.ToString() == rollback.associatedID && !rollback.AsBuildItem().IsComplete())
+                        else if (reconActive && !HighLogic.LoadedSceneIsEditor && recovery == null && rollback != null && b.id.ToString() == rollback.associatedID && !rollback.AsBuildItem().IsComplete())
                         {
                             if (rollout == null)
                             {
@@ -263,7 +263,7 @@ namespace Kerbal_Construction_Time
                                 GUILayout.Label(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
                             }
                         }
-                        else if (!HighLogic.LoadedSceneIsEditor && (!reconActive || ( rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
+                        else if (!HighLogic.LoadedSceneIsEditor && recovery == null && (!reconActive || (rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
                             if (KCT_Utilities.ReconditioningActive(null))
                             {
@@ -304,15 +304,22 @@ namespace Kerbal_Construction_Time
                                 }
                             }
                         }
-                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("*", GUILayout.Width(butW)))
+                        else if (!HighLogic.LoadedSceneIsEditor && recovery != null)
                         {
-                            if (IDSelected == b.id)
-                                showBLPlus = !showBLPlus;
-                            else
-                                showBLPlus = true;
-                            IDSelected = b.id;
+                            GUILayout.Label(KCT_Utilities.GetColonFormattedTime(recovery.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
                         }
-                        else if (HighLogic.LoadedSceneIsEditor)
+                        if (!HighLogic.LoadedSceneIsEditor && (status == "In Storage" || status == "On the Pad"))
+                        {
+                            if (GUILayout.Button("*", GUILayout.Width(butW)))
+                            {
+                                if (IDSelected == b.id)
+                                    showBLPlus = !showBLPlus;
+                                else
+                                    showBLPlus = true;
+                                IDSelected = b.id;
+                            }
+                        }
+                        else
                             GUILayout.Space(butW);
                         GUILayout.EndHorizontal();
                     }
@@ -397,7 +404,14 @@ namespace Kerbal_Construction_Time
                         KCT_BuildListVessel b = buildList[i];
                         GUILayout.BeginHorizontal();
                         GUILayout.Label(b.shipName);
-                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
+                        string status = "In Storage";
+                        KCT_Recon_Rollout recovery = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Recovery);
+                        if (recovery != null)
+                            status = "Recovering";
+
+                        GUILayout.Label("Status: " + status + "   ", GUILayout.ExpandWidth(false));
+
+                        if (!HighLogic.LoadedSceneIsEditor && recovery == null && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
                             showBLPlus = false;
                             KCT_GameStates.launchedVessel = b;
@@ -425,15 +439,22 @@ namespace Kerbal_Construction_Time
                                 showClearLaunch = true;
                             }
                         }
-                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("*", GUILayout.Width(butW)))
+                        else if (!HighLogic.LoadedSceneIsEditor && recovery != null)
                         {
-                            if (IDSelected == b.id)
-                                showBLPlus = !showBLPlus;
-                            else
-                                showBLPlus = true;
-                            IDSelected = b.id;
+                            GUILayout.Label(KCT_Utilities.GetColonFormattedTime(recovery.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
                         }
-                        else if (HighLogic.LoadedSceneIsEditor)
+                        if (!HighLogic.LoadedSceneIsEditor && status == "In Storage")
+                        {
+                            if (GUILayout.Button("*", GUILayout.Width(butW)))
+                            {
+                                if (IDSelected == b.id)
+                                    showBLPlus = !showBLPlus;
+                                else
+                                    showBLPlus = true;
+                                IDSelected = b.id;
+                            }
+                        }
+                        else
                             GUILayout.Space(butW);
                         GUILayout.EndHorizontal();
                     }

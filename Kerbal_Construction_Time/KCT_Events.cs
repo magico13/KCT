@@ -39,8 +39,18 @@ namespace Kerbal_Construction_Time
                 GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
             GameEvents.onEditorShipModified.Add(ShipModifiedEvent);
             GameEvents.OnPartPurchased.Add(PartPurchasedEvent);
-            
+            GameEvents.OnVesselRecoveryRequested.Add(RecoveryRequested);
+
             eventAdded = true;
+        }
+
+        public void RecoveryRequested (Vessel v)
+        {
+            ShipBackup backup = ShipAssembly.MakeVesselBackup(v);
+            string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp2.craft";
+            backup.SaveShip(tempFile);
+
+            KCT_GameStates.recoveryRequestVessel = ConfigNode.Load(tempFile);
         }
 
         private void StageRecoverySuccessEvent(Vessel v, float[] infoArray, string reason)
@@ -233,11 +243,18 @@ namespace Kerbal_Construction_Time
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
             {
-                KCTDebug.Log("Adding recovered parts to Part Inventory");
-                foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
+                if (!v.wasControllable)
                 {
-                    string name = p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p);
-                    KCT_Utilities.AddPartToInventory(name);
+                    KCTDebug.Log("Adding recovered parts to Part Inventory");
+                    foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
+                    {
+                        string name = p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p);
+                        KCT_Utilities.AddPartToInventory(name);
+                    }
+                }
+                else
+                {
+                    KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(v);
                 }
             }
         }

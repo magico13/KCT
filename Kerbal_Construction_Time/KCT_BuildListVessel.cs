@@ -18,7 +18,7 @@ namespace Kerbal_Construction_Time
         public ConfigNode shipNode;
         public Guid id;
         public bool cannotEarnScience;
-        public float cost = 0, TotalMass = 0;
+        public float cost = 0, TotalMass = 0, DistanceFromKSC = 0;
         public double buildRate { get { return KCT_Utilities.GetBuildRate(this); } }
         public double timeLeft
         {
@@ -101,6 +101,54 @@ namespace Kerbal_Construction_Time
             InventoryParts = new List<string>();
             cannotEarnScience = false;
             cost = spentFunds;
+        }
+
+        public KCT_BuildListVessel(ProtoVessel vessel) //For recovered vessels
+        {
+            id = Guid.NewGuid();
+            shipName = vessel.vesselName;
+            //shipNode = KCT_Utilities.ProtoVesselToCraftFile(vessel);
+            shipNode = KCT_GameStates.recoveryRequestVessel;
+
+            //Fix the rotation to 0, 0, 0, 1
+            ConfigNode[] parts = shipNode.GetNodes("PART");
+            ConfigNode tmp = new ConfigNode("ShipNode");
+            vessel.Save(tmp);
+            ConfigNode[] parts2 = tmp.GetNodes("PART");
+            for (int i = 0; i < parts.Length; i++)
+            {
+                parts[i].SetValue("rot", parts2[i].GetValue("rotation"));
+                parts[i].SetValue("pos", parts2[i].GetValue("position"));
+            }
+            
+            cost = KCT_Utilities.GetTotalVesselCost(vessel);
+            TotalMass = 0;
+            InventoryParts = new List<string>();
+            foreach (ProtoPartSnapshot p in vessel.protoPartSnapshots)
+            {
+                InventoryParts.Add(p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p));
+                TotalMass += p.mass;
+                foreach (ProtoPartResourceSnapshot rsc in p.resources)
+                {
+                    PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.resourceName);
+                    if (def != null)
+                        TotalMass += def.density * float.Parse(rsc.resourceValues.GetValue("amount"));
+                }
+            }
+            cannotEarnScience = true;
+
+            buildPoints = KCT_Utilities.GetBuildTime(shipNode.GetNodes("PART").ToList(), true, InventoryParts);
+            flag = HighLogic.CurrentGame.flagURL;
+            progress = buildPoints;
+
+            DistanceFromKSC = (float)SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(vessel.latitude, vessel.longitude));
+        }
+
+        public void UpdateShipType(ListType newType)
+        {
+            this.type = newType;
+            shipNode.SetValue("type", type == ListType.VAB ? "VAB" : "SPH");
+            launchSite = type == ListType.VAB ? "LaunchPad" : "Runway";
         }
 
         public KCT_BuildListVessel NewCopy(bool RecalcTime)
@@ -255,13 +303,23 @@ namespace Kerbal_Construction_Time
 
             foreach (ConfigNode CN in partNodes)
             {
-                FakePart p = new FakePart();
-                ConfigNode.LoadObjectFromConfig(p, CN);
-                string pName = "";
-                string[] split = p.part.Split('_');
-                for (int i = 0; i < split.Length - 1; i++)
-                    pName += split[i];
-                PseudoPart returnPart = new PseudoPart(pName, split[split.Length - 1]);
+                string name = CN.GetValue("part");
+                string pID = "";
+                if (name != null)
+                {
+                    string[] split = name.Split('_');
+                    name = split[0];
+                    pID = split[1];
+                }
+                else
+                {
+                    name = CN.GetValue("name");
+                    pID = CN.GetValue("uid");
+                }
+                
+                //for (int i = 0; i < split.Length - 1; i++)
+                //    pName += split[i];
+                PseudoPart returnPart = new PseudoPart(name, pID);
                 retList.Add(returnPart);
             }
             return retList;

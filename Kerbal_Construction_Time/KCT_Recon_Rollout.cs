@@ -38,7 +38,7 @@ namespace Kerbal_Construction_Time
             }
         }
 
-        public KCT_KSC KSC { get { return KCT_GameStates.KSCs.Count > 0 ? KCT_GameStates.KSCs.FirstOrDefault(k => k.GetReconRollout(RRType).associatedID == this.associatedID) : null;} }
+        public KCT_KSC KSC { get { return KCT_GameStates.KSCs.Count > 0 ? KCT_GameStates.KSCs.FirstOrDefault(k => k.Recon_Rollout.Exists(r=> r.associatedID == this.associatedID)) : null;} }
 
         public KCT_Recon_Rollout()
         {
@@ -74,6 +74,9 @@ namespace Kerbal_Construction_Time
             {
                 BP *= KCT_GameStates.timeSettings.RolloutReconSplit;
                 name = "Vessel Recovery";
+                double KSCDistance = (float)SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(vessel.latitude, vessel.longitude));
+                double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
+                BP += BP * (KSCDistance / maxDist);
             }
             progress = 0;
         }
@@ -103,6 +106,8 @@ namespace Kerbal_Construction_Time
             {
                 BP *= KCT_GameStates.timeSettings.RolloutReconSplit;
                 name = "Vessel Recovery";
+                double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
+                BP += BP * (vessel.DistanceFromKSC / maxDist);
             }
             progress = 0;
         }

@@ -241,7 +241,10 @@ namespace Kerbal_Construction_Time
         public static string PartNameFromNode(ConfigNode part)
         {
             string name = part.GetValue("part");
-            name = name.Split('_')[0];
+            if (name != null)
+                name = name.Split('_')[0];
+            else
+                name = part.GetValue("name");
             return name;
         }
 
@@ -871,6 +874,8 @@ namespace Kerbal_Construction_Time
             }
             foreach (IKCTBuildItem rr in KCT_GameStates.ActiveKSC.Recon_Rollout)
             {
+                if (rr.IsComplete())
+                    continue;
                 double time = rr.GetTimeLeft();
                 if (time < shortestTime)
                 {
@@ -1227,6 +1232,58 @@ namespace Kerbal_Construction_Time
                 }
             }
             return ret;
+        }
+
+        public static ConfigNode ProtoVesselToCraftFile(ProtoVessel vessel)
+        {
+            ConfigNode craft = new ConfigNode("ShipNode");
+            ConfigNode pvNode = new ConfigNode();
+            vessel.Save(pvNode);
+            //KCTDebug.Log(pvNode);
+
+            craft.AddValue("ship", pvNode.GetValue("name"));
+            craft.AddValue("version", Versioning.GetVersionString());
+            craft.AddValue("description", "Craft file converted automatically by Kerbal Construction Time.");
+            craft.AddValue("type", "VAB");
+            ConfigNode[] parts = pvNode.GetNodes("PART");
+            foreach (ConfigNode part in parts)
+            {
+                ConfigNode newPart = new ConfigNode("PART");
+                newPart.AddValue("part", part.GetValue("name") + "_" + part.GetValue("uid"));
+                newPart.AddValue("partName", "Part");
+                newPart.AddValue("pos", part.GetValue("position"));
+                newPart.AddValue("rot", part.GetValue("rotation"));
+                newPart.AddValue("attRot", part.GetValue("rotation"));
+                newPart.AddValue("mir", part.GetValue("mirror"));
+                newPart.AddValue("istg", part.GetValue("istg"));
+                newPart.AddValue("dstg", part.GetValue("dstg"));
+                newPart.AddValue("sidx", part.GetValue("sidx"));
+                newPart.AddValue("sqor", part.GetValue("sqor"));
+                newPart.AddValue("attm", part.GetValue("attm"));
+                newPart.AddValue("modCost", part.GetValue("modCost"));
+
+                foreach (string attn in part.GetValues("attN"))
+                {
+                    string attach_point = attn.Split(',')[0];
+                    if (attach_point == "None")
+                        continue;
+                    int attachedIndex = int.Parse(attn.Split(',')[1]);
+                    string attached = parts[attachedIndex].GetValue("name") + "_" + parts[attachedIndex].GetValue("uid");
+                    newPart.AddValue("link", attached);
+                    newPart.AddValue("attN", attach_point + "," + attached);
+                }
+
+                newPart.AddNode(part.GetNode("EVENTS"));
+                newPart.AddNode(part.GetNode("ACTIONS"));
+                foreach (ConfigNode mod in part.GetNodes("MODULE"))
+                    newPart.AddNode(mod);
+                foreach (ConfigNode rsc in part.GetNodes("RESOURCE"))
+                    newPart.AddNode(rsc);
+                craft.AddNode(newPart);
+            }
+
+
+            return craft;
         }
     }
 }

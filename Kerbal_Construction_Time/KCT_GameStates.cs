@@ -21,6 +21,7 @@ namespace Kerbal_Construction_Time
         public static String simulationReason;
         public static KCT_Settings settings = new KCT_Settings();
         public static KCT_TimeSettings timeSettings = new KCT_TimeSettings();
+        public static ConfigNode recoveryRequestVessel;
 
         public static KCT_KSC ActiveKSC = new KCT_KSC("Stock");
         public static List<KCT_KSC> KSCs = new List<KCT_KSC>() { ActiveKSC };
@@ -40,7 +41,7 @@ namespace Kerbal_Construction_Time
 
         public static List<int> PurchasedUpgrades = new List<int>() { 0, 0 };
         public static int TotalUpgradePoints = 0;
-        public static KCT_BuildListVessel launchedVessel, editedVessel;
+        public static KCT_BuildListVessel launchedVessel, editedVessel, recoveredVessel;
         //public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
         public static List<CrewedPart> launchedCrew = new List<CrewedPart>();
         public static IButton kctToolbarButton;

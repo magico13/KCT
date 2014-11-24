@@ -525,6 +525,17 @@ namespace Kerbal_Construction_Time
                     KCT_Utilities.SetActiveKSCToRSS();
                 }
 
+                if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.recoveredVessel != null)
+                {
+                    InputLockManager.SetControlLock(ControlTypes.All, "KCTPopupLock");
+                    DialogOption[] options = new DialogOption[3];
+                    options[0] = new DialogOption("VAB Storage", RecoverToVAB);
+                    options[1] = new DialogOption("SPH Storage", RecoverToSPH);
+                    options[2] = new DialogOption("The Scrapyard", RecoverToScrapyard);
+                    MultiOptionDialog diag = new MultiOptionDialog("Send recovered vessel to", windowTitle: "Vessel Recovery", options: options);
+                    PopupDialog.SpawnPopupDialog(diag, false, HighLogic.Skin);
+                }
+
                 if (!KCT_GUI.PrimarilyDisabled)
                     KCT_Utilities.ProgressBuildTime();
             }
@@ -535,6 +546,39 @@ namespace Kerbal_Construction_Time
             }
 
         }
+        
+        private void RecoverToVAB()
+        {
+            KCT_Utilities.SpendFunds(KCT_GameStates.recoveredVessel.cost, TransactionReasons.VesselRollout);
+            KCT_GameStates.recoveredVessel.UpdateShipType(KCT_BuildListVessel.ListType.VAB);
+            KCT_GameStates.ActiveKSC.VABWarehouse.Add(KCT_GameStates.recoveredVessel);
+            KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(KCT_GameStates.recoveredVessel, KCT_Recon_Rollout.RolloutReconType.Recovery, KCT_GameStates.recoveredVessel.id.ToString()));
+            KCT_GameStates.recoveredVessel = null;
+            InputLockManager.RemoveControlLock("KCTPopupLock");
+            
+        }
+        private void RecoverToSPH()
+        {
+            KCT_Utilities.SpendFunds(KCT_GameStates.recoveredVessel.cost, TransactionReasons.VesselRollout);
+            KCT_GameStates.recoveredVessel.UpdateShipType(KCT_BuildListVessel.ListType.SPH);
+            KCT_GameStates.ActiveKSC.SPHWarehouse.Add(KCT_GameStates.recoveredVessel);
+            KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(KCT_GameStates.recoveredVessel, KCT_Recon_Rollout.RolloutReconType.Recovery, KCT_GameStates.recoveredVessel.id.ToString()));
+            KCT_GameStates.recoveredVessel = null;
+            InputLockManager.RemoveControlLock("KCTPopupLock");
+        }
+        private void RecoverToScrapyard()
+        {
+            KCTDebug.Log("Adding recovered parts to Part Inventory");
+            foreach (ConfigNode p in KCT_GameStates.recoveredVessel.ExtractedPartNodes)
+            {
+               // string name = p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p);
+                KCT_Utilities.AddPartToInventory(p);
+            }
+            KCT_GameStates.recoveredVessel = null;
+            InputLockManager.RemoveControlLock("KCTPopupLock");
+
+        }
+
         private static DateTime loadDeferTime = DateTime.MaxValue;
         private static int lastSeconds = 0;
 

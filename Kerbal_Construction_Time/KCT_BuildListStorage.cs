@@ -121,7 +121,7 @@ namespace Kerbal_Construction_Time
             [Persistent]
             bool cannotEarnScience;
             [Persistent]
-            float cost = 0, mass = 0;
+            float cost = 0, mass = 0, kscDistance = 0;
 
             public KCT_BuildListVessel ToBuildListVessel()
             {
@@ -132,6 +132,7 @@ namespace Kerbal_Construction_Time
                 ret.id = new Guid(shipID);
                 ret.cannotEarnScience = cannotEarnScience;
                 ret.TotalMass = mass;
+                ret.DistanceFromKSC = kscDistance;
                 return ret;
             }
 
@@ -148,6 +149,7 @@ namespace Kerbal_Construction_Time
                 this.cannotEarnScience = blv.cannotEarnScience;
                 this.cost = blv.cost;
                 this.mass = blv.TotalMass;
+                this.kscDistance = blv.DistanceFromKSC;
                 return this;
 
             }
