@@ -47,10 +47,10 @@ namespace Kerbal_Construction_Time
         public void RecoveryRequested (Vessel v)
         {
             ShipBackup backup = ShipAssembly.MakeVesselBackup(v);
-            string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp2.craft";
-            backup.SaveShip(tempFile);
+            //string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp2.craft";
+            //backup.SaveShip(tempFile);
 
-            KCT_GameStates.recoveryRequestVessel = ConfigNode.Load(tempFile);
+            KCT_GameStates.recoveryRequestVessel = backup; //ConfigNode.Load(tempFile);
         }
 
         private void StageRecoverySuccessEvent(Vessel v, float[] infoArray, string reason)

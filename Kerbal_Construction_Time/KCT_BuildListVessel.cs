@@ -103,24 +103,39 @@ namespace Kerbal_Construction_Time
             cost = spentFunds;
         }
 
+        private ProtoVessel recovered;
+
         public KCT_BuildListVessel(ProtoVessel vessel) //For recovered vessels
         {
             id = Guid.NewGuid();
             shipName = vessel.vesselName;
             //shipNode = KCT_Utilities.ProtoVesselToCraftFile(vessel);
-            shipNode = KCT_GameStates.recoveryRequestVessel;
+            string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/tmp.craft";
+            KCT_GameStates.recoveryRequestVessel.SaveShip(tempFile);
+            shipNode = ConfigNode.Load(tempFile);
+            //recovered = vessel;
 
-            //Fix the rotation to 0, 0, 0, 1
             ConfigNode[] parts = shipNode.GetNodes("PART");
             ConfigNode tmp = new ConfigNode("ShipNode");
             vessel.Save(tmp);
+
+           // string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/protovessel.craft";
+           // tmp.Save(tempFile);
             ConfigNode[] parts2 = tmp.GetNodes("PART");
             for (int i = 0; i < parts.Length; i++)
             {
                 parts[i].SetValue("rot", parts2[i].GetValue("rotation"));
                 parts[i].SetValue("pos", parts2[i].GetValue("position"));
+                //parts[i].SetValue("attRot", parts2[i].GetValue("position"));
             }
+
+            SanitizeShipNode(shipNode);
             
+            
+           /* List<Part> shipParts = ShipAssembly.rebuildShip(KCT_GameStates.recoveryRequestVessel);
+            ship = new ShipConstruct(shipName, 0, shipParts);
+            shipNode = ship.SaveShip();*/
+
             cost = KCT_Utilities.GetTotalVesselCost(vessel);
             TotalMass = 0;
             InventoryParts = new List<string>();
@@ -149,6 +164,68 @@ namespace Kerbal_Construction_Time
             this.type = newType;
             shipNode.SetValue("type", type == ListType.VAB ? "VAB" : "SPH");
             launchSite = type == ListType.VAB ? "LaunchPad" : "Runway";
+
+           /* if (type == ListType.SPH)
+            {
+                foreach (ConfigNode part in shipNode.GetNodes("PART"))
+                {
+                    string[] rot = part.GetValue("rot").Split(',');
+                    string newRot = (float.Parse(rot[0]) + 0.7071068) + "," + rot[1] + "," + rot[2] + "," + (float.Parse(rot[3]) - (1-0.7071068));
+                    part.SetValue("rot", newRot);
+
+                    string[] pos = part.GetValue("pos").Split(',');
+                    string newPos = pos[0] + ",0," + (pos[1]);
+                    part.SetValue("pos", newPos);
+                }
+            }*/
+        }
+
+        private ConfigNode SanitizeShipNode(ConfigNode node)
+        {
+            //PART, MODULE -> clean experiments, repack chutes, disable engines
+            foreach(ConfigNode part in node.GetNodes("PART"))
+            {
+                foreach(ConfigNode module in part.GetNodes("MODULE"))
+                {
+                    string name = module.GetValue("name");
+                    if (name == "ModuleEngines")
+                    {
+                        module.SetValue("staged", "False");
+                        module.SetValue("flameout", "False");
+                        module.SetValue("EngineIgnited", "False");
+                        module.SetValue("engineShutdown", "False");
+                        module.SetValue("currentThrottle", "0");
+                        module.SetValue("manuallyOverridden", "False");
+                    }
+                    else if (name == "ModuleEnginesFX")
+                    {
+                        module.SetValue("staged", "False");
+                        module.SetValue("flameout", "False");
+                        module.SetValue("EngineIgnited", "False");
+                        module.SetValue("engineShutdown", "False");
+                        module.SetValue("currentThrottle", "0");
+                        module.SetValue("manuallyOverridden", "False");
+                    }
+                    else if (name == "ModuleScienceExperiment")
+                    {
+                        module.SetValue("Deployed", "False");
+                        module.SetValue("Inoperable", "False");
+                        module.RemoveNodes("ScienceData");
+                    }
+                    else if (name == "ModuleScienceContainer")
+                    {
+                        module.RemoveNodes("ScienceData");
+                    }
+                    else if (name == "ModuleParachute")
+                    {
+                        module.SetValue("staged", "False");
+                        module.SetValue("persistentState", "STOWED");
+                    }
+                }
+            }
+
+
+            return node;
         }
 
         public KCT_BuildListVessel NewCopy(bool RecalcTime)
@@ -206,10 +283,15 @@ namespace Kerbal_Construction_Time
         {
             if (TotalMass != 0) return TotalMass;
             double mass = 0;
-            foreach (Part p in this.ExtractedParts)
+            foreach (ConfigNode p in this.ExtractedPartNodes)
             {
-                mass += p.mass;
-                mass += p.GetResourceMass();
+                mass += float.Parse(p.GetValue("mass"));
+                //mass += p.GetResourceMass();
+                foreach (ConfigNode rsc in p.GetNodes("RESOURCE"))
+                {
+                    PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.GetValue("name"));
+                    mass += def.density * float.Parse(rsc.GetValue("amount"));
+                }
             }
             return mass;
         }

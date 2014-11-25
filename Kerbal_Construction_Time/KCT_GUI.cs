@@ -30,12 +30,12 @@ namespace Kerbal_Construction_Time
         //private static Rect simulationCompleteFlightPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
         private static Rect simulationWindowPosition = new Rect((Screen.width - 250) / 2, (Screen.height - 250) / 2, 250, 1);
         public static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
-        public static Rect buildListWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 400, 1);
+        public static Rect buildListWindowPosition = new Rect(Screen.width - 400, 40, 400, 1);
         private static Rect crewListWindowPosition = new Rect((Screen.width-360)/2, (Screen.height / 4), 360, 1);
         private static Rect settingsPosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 300, 1);
         private static Rect upgradePosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 240, 1);
         private static Rect simulationConfigPosition = new Rect((Screen.width / 2)-150, (Screen.height / 4), 300, 1);
-        private static Rect bLPlusPosition = new Rect(1, 1 / 2, 150, 1);
+        private static Rect bLPlusPosition = new Rect(Screen.width-500, 40, 100, 1);
 
         private static GUISkin windowSkin;// = HighLogic.Skin;// = new GUIStyle(HighLogic.Skin.window);
 
@@ -1331,7 +1331,7 @@ namespace Kerbal_Construction_Time
                 if (p.CrewCapacity>0)
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(p.partInfo.title);
+                    GUILayout.Label(p.partInfo.title, GUILayout.Width(175));
                     if (GUILayout.Button("Fill", GUILayout.Width(75)))
                     {
                         if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.uid) == null)
@@ -2115,7 +2115,7 @@ namespace Kerbal_Construction_Time
         private static Guid IDSelected = new Guid();
         private static void DrawBLPlusWindow(int windowID)
         {
-            bLPlusPosition.xMin = buildListWindowPosition.xMax;
+            bLPlusPosition.xMax = buildListWindowPosition.xMin;
             bLPlusPosition.width = 100;
             bLPlusPosition.yMin = buildListWindowPosition.yMin;
             bLPlusPosition.height = 175;

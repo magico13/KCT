@@ -621,11 +621,11 @@ namespace Kerbal_Construction_Time
             if (KCT_UpdateChecker.UpdateFound)
                 GUILayout.Label("Update available! Current: " + KCT_UpdateChecker.CurrentVersion + " Latest: " + KCT_UpdateChecker.WebVersion);
             GUILayout.EndVertical();
-            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
-                GUI.DragWindow();
+          /*  if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+                GUI.DragWindow();*/
 
 
-            CheckKSCLock();
+           // CheckKSCLock();
 
             /*
             if (Event.current.type == EventType.Repaint && buildListWindowPosition.Contains(Event.current.mousePosition))
