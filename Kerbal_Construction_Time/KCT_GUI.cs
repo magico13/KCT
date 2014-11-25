@@ -1331,7 +1331,7 @@ namespace Kerbal_Construction_Time
                 if (p.CrewCapacity>0)
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(p.partInfo.title, GUILayout.Width(175));
+                    GUILayout.Label(p.partInfo.title.Length <= 15 ? p.partInfo.title : p.partInfo.title.Substring(0, 15));
                     if (GUILayout.Button("Fill", GUILayout.Width(75)))
                     {
                         if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.uid) == null)
