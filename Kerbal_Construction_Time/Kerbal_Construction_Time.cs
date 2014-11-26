@@ -153,7 +153,10 @@ namespace Kerbal_Construction_Time
         {
             KCTDebug.Log("Reading from persistence.");
             base.OnLoad(node);
-            KCT_GameStates.activeKSCName = "Stock";
+            KCT_Utilities.SetActiveKSC("Stock");
+            KCT_GameStates.TechList.Clear();
+
+
             KCT_DataStorage kctVS = new KCT_DataStorage();
             KCT_BuildListStorage bls = new KCT_BuildListStorage();
             KCT_TechStorage tS = new KCT_TechStorage();
@@ -200,9 +203,41 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.TechList[i].protoNode = new ProtoTechNode(loaded);
             }
 
+            KCT_KSC backedUp = null;
+            if (KCT_GameStates.ActiveKSC.VABList.Count > 0 || KCT_GameStates.ActiveKSC.SPHList.Count > 0 || KCT_GameStates.ActiveKSC.VABWarehouse.Count > 0 || KCT_GameStates.ActiveKSC.SPHWarehouse.Count > 0)
+            {
+                KCTDebug.Log("An old save is being converted to the new system.");
+                backedUp = KCT_GameStates.ActiveKSC;
+            }
+
             //New format
+            /*KCT_GameStates.KSCs.Clear();
+            KCT_GameStates.ActiveKSC = null;
+            foreach (ConfigNode ksc in node.GetNodes("KSC"))
+            {
+                string name = ksc.GetValue("KSCName");
+                KCT_KSC loaded_KSC = new KCT_KSC(name);
+                loaded_KSC.FromConfigNode(ksc);
+                if (loaded_KSC != null && loaded_KSC.KSCName != null && loaded_KSC.KSCName.Length > 0)
+                {
+                    loaded_KSC.RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
+                    KCT_GameStates.KSCs.Add(loaded_KSC);
+                }
+            }
+            //KCT_Utilities.SetActiveKSCToRSS();
+            KCT_Utilities.SetActiveKSC(KCT_GameStates.activeKSCName);*/
+
+            //New format
+            KCT_GameStates.activeKSCName = "";
             KCT_GameStates.KSCs.Clear();
             KCT_GameStates.ActiveKSC = null;
+            if (backedUp != null)
+            {
+                KCTDebug.Log("doing the backup thing");
+                KCT_GameStates.KSCs.Add(backedUp);
+                KCT_GameStates.activeKSCName = backedUp.KSCName;
+                KCT_GameStates.ActiveKSC = backedUp;
+            }
             foreach (ConfigNode ksc in node.GetNodes("KSC"))
             {
                 string name = ksc.GetValue("KSCName");
@@ -217,7 +252,7 @@ namespace Kerbal_Construction_Time
             //KCT_Utilities.SetActiveKSCToRSS();
             KCT_Utilities.SetActiveKSC(KCT_GameStates.activeKSCName);
 
-            KCT_GameStates.TechList.Clear();
+            
             ConfigNode tmp = node.GetNode("TechList");
             if (tmp != null)
             {
@@ -230,6 +265,7 @@ namespace Kerbal_Construction_Time
                     KCT_GameStates.TechList.Add(techItem);
                 }
             }
+            KCT_GameStates.ActiveKSC.AsConfigNode().Save(KSPUtil.ApplicationRootPath + "/KSC.node");
 
             Kerbal_Construction_Time.DelayedStart();
         }

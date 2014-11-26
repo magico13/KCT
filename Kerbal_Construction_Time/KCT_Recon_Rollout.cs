@@ -7,10 +7,10 @@ namespace Kerbal_Construction_Time
 {
     public class KCT_Recon_Rollout : IKCTBuildItem
     {
-        [Persistent] private string name;
-        [Persistent] public double BP, progress;
+        [Persistent] private string name = "";
+        [Persistent] public double BP = 0, progress = 0;
         [Persistent] public string associatedID = "";
-        [Persistent] public int launchPadID = 0;
+        [Persistent] public string launchPadID = "LaunchPad";
         public enum RolloutReconType { Reconditioning, Rollout, Rollback, Recovery, None };
         private RolloutReconType RRTypeInternal = RolloutReconType.None;
         public RolloutReconType RRType
@@ -23,11 +23,11 @@ namespace Kerbal_Construction_Time
                 {
                     if (name == "LaunchPad Reconditioning")
                         RRTypeInternal = RolloutReconType.Reconditioning;
-                    if (name == "Vessel Rollout")
+                    else if (name == "Vessel Rollout")
                         RRTypeInternal = RolloutReconType.Rollout;
-                    if (name == "Vessel Rollback")
+                    else if (name == "Vessel Rollback")
                         RRTypeInternal = RolloutReconType.Rollback;
-                    if (name == "Vessel Recovery")
+                    else if (name == "Vessel Recovery")
                         RRTypeInternal = RolloutReconType.Recovery;
                     return RRTypeInternal;
                 }
@@ -47,6 +47,7 @@ namespace Kerbal_Construction_Time
             BP = 0;
             RRType = RolloutReconType.None;
             associatedID = "";
+            launchPadID = "LaunchPad";
         }
 
         public KCT_Recon_Rollout(Vessel vessel, RolloutReconType type, string id)

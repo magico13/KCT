@@ -67,10 +67,10 @@ namespace Kerbal_Construction_Time
             foreach (ProtoPartSnapshot part in v.protoVessel.protoPartSnapshots)
             {
                 float random = (float)rand.NextDouble();
-                string name = part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part);
+               // string name = part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part);
                 if (random < damage)
                 {
-                    KCT_Utilities.AddPartToInventory(name);
+                    KCT_Utilities.AddPartToInventory(part);
                 }
                 else
                 {
@@ -116,6 +116,8 @@ namespace Kerbal_Construction_Time
                     DummyVoid,
                     ApplicationLauncher.AppScenes.ALWAYS,
                     GameDatabase.Instance.GetTexture("KerbalConstructionTime/icons/KCT_on", false));
+
+                ApplicationLauncher.Instance.EnableMutuallyExclusive(KCTButtonStock);
             }
         }
         void DummyVoid() { }
@@ -243,18 +245,19 @@ namespace Kerbal_Construction_Time
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
             {
-                if (!v.wasControllable)
+                if (KCT_GameStates.settings.Debug && v.wasControllable || v.protoPartSnapshots.Find(p => p.modules.Find(m => m.moduleName.ToLower() == "modulecommand") != null) != null)
+                {
+                    KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(v);
+                }
+                else
                 {
                     KCTDebug.Log("Adding recovered parts to Part Inventory");
                     foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
                     {
-                        string name = p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p);
-                        KCT_Utilities.AddPartToInventory(name);
+                        //string name = p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p);
+                        
+                        KCT_Utilities.AddPartToInventory(p);
                     }
-                }
-                else
-                {
-                    KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(v);
                 }
             }
         }
@@ -394,7 +397,7 @@ namespace Kerbal_Construction_Time
                     KCTDebug.Log("Recovered parts from " + v.vesselName);
                     foreach (ProtoPartSnapshot p in v.protoVessel.protoPartSnapshots)
                     {
-                        KCT_Utilities.AddPartToInventory(p.partInfo.name+KCT_Utilities.GetTweakScaleSize(p));
+                        KCT_Utilities.AddPartToInventory(p);
                         if (!PartsRecovered.ContainsKey(p.partInfo.title))
                             PartsRecovered.Add(p.partInfo.title, 1);
                         else

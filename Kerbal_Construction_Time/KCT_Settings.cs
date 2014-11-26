@@ -58,7 +58,7 @@ namespace Kerbal_Construction_Time
             RecoveryModifier = 0.75F;
             Reconditioning = true;
             AutoKACAlarams = true;
-            PreferBlizzyToolbar = true;
+            PreferBlizzyToolbar = false;
             AllowParachuteRecovery = true;
 
             RecoveryModifierDefault = 0.75f;
@@ -112,7 +112,7 @@ namespace Kerbal_Construction_Time
             BuildEffect = 1.0;
             InventoryEffect = 100.0;
             ReconditioningEffect = 1728;
-            MaxReconditioning = 648000; // This is 7.5 days / 30 days at 1 BP/s,  (or 375 tons)
+            MaxReconditioning = 345600; // This is 4 days / 16 days at 1 BP/s  (or 200 tons)
             RolloutReconSplit = 0.25;
             NodeModifier = 1.0;
         }

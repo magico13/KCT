@@ -14,7 +14,8 @@ namespace Kerbal_Construction_Time
         public String launchSite, flag, shipName;
         public ListType type;
         public enum ListType { VAB, SPH, TechNode, Reconditioning };
-        public List<string> InventoryParts;
+        //public List<string> InventoryParts;
+        public Dictionary<string, int> InventoryParts;
         public ConfigNode shipNode;
         public Guid id;
         public bool cannotEarnScience;
@@ -81,7 +82,7 @@ namespace Kerbal_Construction_Time
                 type = ListType.VAB;
             else
                 type = ListType.SPH;
-            InventoryParts = new List<string>();
+            InventoryParts = new Dictionary<string, int>();
             id = Guid.NewGuid();
             cannotEarnScience = false;
         }
@@ -98,12 +99,12 @@ namespace Kerbal_Construction_Time
                 type = ListType.VAB;
             else
                 type = ListType.SPH;
-            InventoryParts = new List<string>();
+            InventoryParts = new Dictionary<string, int>();
             cannotEarnScience = false;
             cost = spentFunds;
         }
 
-        private ProtoVessel recovered;
+        //private ProtoVessel recovered;
 
         public KCT_BuildListVessel(ProtoVessel vessel) //For recovered vessels
         {
@@ -138,10 +139,24 @@ namespace Kerbal_Construction_Time
 
             cost = KCT_Utilities.GetTotalVesselCost(vessel);
             TotalMass = 0;
-            InventoryParts = new List<string>();
+            InventoryParts = new Dictionary<string, int>();
             foreach (ProtoPartSnapshot p in vessel.protoPartSnapshots)
             {
-                InventoryParts.Add(p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p));
+                //InventoryParts.Add(p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p));
+                string name = p.partInfo.name;
+                int amt = 1;
+                if (p.partInfo.name.ToLower().Contains("procedural"))
+                {
+                    float dry, wet;
+                    ShipConstruction.GetPartCosts(p, p.partInfo, out dry, out wet);
+                    amt = (int)(1000 * dry);
+                }
+                else
+                {
+                    name += KCT_Utilities.GetTweakScaleSize(p);
+                }
+                KCT_Utilities.AddToDict(InventoryParts, name, amt);
+
                 TotalMass += p.mass;
                 foreach (ProtoPartResourceSnapshot rsc in p.resources)
                 {

@@ -12,6 +12,8 @@ namespace Kerbal_Construction_Time
             showSimulationCompleteFlight, showBuildList, showClearLaunch, showShipRoster, showCrewSelect, showSettings, showSimConfig, showBodyChooser, showUpgradeWindow,
             showBLPlus, showRename, showFirstRun, showSimLengthChooser;
 
+        public static bool clicked = false;
+
         public static GUIDataSaver guiDataSaver = new GUIDataSaver();
 
         private static bool unlockEditor;
@@ -56,7 +58,7 @@ namespace Kerbal_Construction_Time
                 {
                     onClick();
                 }*/
-                if (ToolbarManager.ToolbarAvailable)
+                if (ToolbarManager.ToolbarAvailable && KCT_GameStates.kctToolbarButton != null)
                 {
                     KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture(); //Set texture, allowing for flashing of icon.
                 }
@@ -182,7 +184,8 @@ namespace Kerbal_Construction_Time
 
         public static void onClick()
         {
-            if (ToolbarManager.ToolbarAvailable)
+            clicked = !clicked;
+            if (ToolbarManager.ToolbarAvailable && KCT_GameStates.kctToolbarButton != null)
                 if (KCT_GameStates.kctToolbarButton.Important) KCT_GameStates.kctToolbarButton.Important = false;
 
           /*  if (!KCT_GameStates.settings.enabledForSave)
@@ -238,7 +241,38 @@ namespace Kerbal_Construction_Time
                 listWindow = -1;
                 KCT_GameStates.showWindows[0] = showBuildList;
             }
+
+            if (showBuildList || showSettings || showEditorGUI || showSimulationWindow)
+            {
+                KCT_Events.instance.KCTButtonStock.SetTrue(false);
+            }
+            else
+            {
+                KCT_Events.instance.KCTButtonStock.SetFalse(false);
+            }
         }
+
+        public static void onHoverOn()
+        {
+            if (!PrimarilyDisabled && !clicked)
+            {
+                if (HighLogic.LoadedScene == GameScenes.SPACECENTER && !showBuildList)
+                {
+                    showBuildList = true;
+                }
+            }
+        }
+        public static void onHoverOff()
+        {
+            if (!PrimarilyDisabled && !clicked)
+            {
+                if (HighLogic.LoadedScene == GameScenes.SPACECENTER && showBuildList)
+                {
+                    showBuildList = false;
+                }
+            }
+        }
+
 
         public static void hideAll()
         {
@@ -490,41 +524,81 @@ namespace Kerbal_Construction_Time
                     KCT_Utilities.AddFunds(ship.cost, TransactionReasons.VesselRollout);
                     ship.RemoveFromBuildList();
 
-                    List<string> partsForInventory = new List<string>();
+                    Dictionary<string, int> partsForInventory = new Dictionary<string, int>();
+                    //List<string> partsForInventory = new List<string>();
                     if (KCT_GUI.useInventory)
                     {
-                        List<string> newParts = new List<string>(KCT_Utilities.PartDictToList(KCT_GUI.PartsInUse));
-                        List<string> theInventory = new List<string>(KCT_Utilities.PartDictToList(KCT_GameStates.PartInventory));
-                        foreach (string s in KCT_Utilities.PartDictToList(KCT_GameStates.EditedVesselParts))
+                        Dictionary<string, int> newParts = new Dictionary<string, int>(KCT_GUI.PartsInUse);
+                        //List<string> newParts = new List<string>(KCT_Utilities.PartDictToList(KCT_GUI.PartsInUse));
+                        //List<string> theInventory = new List<string>(KCT_Utilities.PartDictToList(KCT_GameStates.PartInventory));
+                        Dictionary<string, int> theInventory = new Dictionary<string, int>(KCT_GameStates.PartInventory);
+                       /* foreach (string s in KCT_Utilities.PartDictToList(KCT_GameStates.EditedVesselParts))
                             if (newParts.Contains(s))
-                                newParts.Remove(s);
+                                newParts.Remove(s);*/
+                        foreach (KeyValuePair<string, int> kvp in KCT_GameStates.EditedVesselParts)
+                        {
+                            if (newParts.ContainsKey(kvp.Key))
+                            {
+                                if (newParts[kvp.Key] >= kvp.Value)
+                                    newParts[kvp.Key] -= kvp.Value;
+                                else
+                                    newParts[kvp.Key] = 0;
+                            }
+                        }
 
-                        foreach (string s in newParts)
+                        /*foreach (string s in newParts)
                         {
                             if (theInventory.Contains(s))
                             {
                                 theInventory.Remove(s);
                                 partsForInventory.Add(s);
                             }
+                        }*/
+                        foreach (KeyValuePair<string, int> kvp in newParts)
+                        {
+                            if (theInventory.ContainsKey(kvp.Key))
+                            {
+                                if (theInventory[kvp.Key] >= kvp.Value)
+                                {
+                                    theInventory[kvp.Key] -= kvp.Value;
+                                    KCT_Utilities.AddToDict(partsForInventory, kvp.Key, kvp.Value);
+                                }
+                                else
+                                {
+                                    KCT_Utilities.AddToDict(partsForInventory, kvp.Key, theInventory[kvp.Key]);
+                                    theInventory[kvp.Key] = 0;
+                                }
+                            }
                         }
+
                     }
-                    foreach (string s in ship.InventoryParts)
-                        partsForInventory.Add(s);
+                    //foreach (string s in ship.InventoryParts)
+                    //    partsForInventory.Add(s);
+                    foreach (KeyValuePair<string, int> kvp in ship.InventoryParts)
+                        KCT_Utilities.AddToDict(partsForInventory, kvp.Key, kvp.Value);
 
 
-                    KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(KCT_Utilities.PartListToDict(partsForInventory));//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
+                    KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(partsForInventory);//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                     newShip.progress = newProgress;
                     KCTDebug.Log("Finished? " + ship.isFinished);
                     if (ship.isFinished)
                         newShip.cannotEarnScience = true;
 
-                    foreach (string s in newShip.InventoryParts) //Compare the old inventory parts and the new one, removing the new ones from the old
+                    //foreach (string s in newShip.InventoryParts) //Compare the old inventory parts and the new one, removing the new ones from the old
+                    foreach (KeyValuePair<string, int> kvp in newShip.InventoryParts)
                     {
-                        if (ship.InventoryParts.Contains(s))
-                            ship.InventoryParts.Remove(s);
+                        if (ship.InventoryParts.ContainsKey(kvp.Key))
+                        {
+                            if (ship.InventoryParts[kvp.Key] >= newShip.InventoryParts[kvp.Key])
+                                ship.InventoryParts[kvp.Key] -= newShip.InventoryParts[kvp.Key];
+                            else
+                                ship.InventoryParts[kvp.Key] = 0;
+                            //ship.InventoryParts.Remove(s);
+                        }
                     }
-                    foreach (string s in ship.InventoryParts) //Add the remaining old parts to the overall inventory
-                        KCT_Utilities.AddPartToInventory(s);
+                    //foreach (string s in ship.InventoryParts) //Add the remaining old parts to the overall inventory
+                    foreach (KeyValuePair<string, int> kvp in ship.InventoryParts)
+                        KCT_Utilities.AddPartToInventory(kvp.Key, kvp.Value);
                     
                     GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE); 
 
@@ -1123,22 +1197,53 @@ namespace Kerbal_Construction_Time
                     totalCost += KCT_Utilities.GetPartCostFromNode(p);
                 if (b.InventoryParts != null)
                 {
-                    foreach (String s in b.InventoryParts)
+                    //foreach (KeyValuePair<string, int> kvp in b.InventoryParts)
+                    List<ConfigNode> toRemove = new List<ConfigNode>();
+                    foreach (ConfigNode cn in parts)
                     {
-                        ConfigNode aP = parts.Find(a => (KCT_Utilities.PartNameFromNode(a) + KCT_Utilities.GetTweakScaleSize(a)) == s);
-                        totalCost -= KCT_Utilities.GetPartCostFromNode(aP);
-                        parts.Remove(aP);
-                        KCT_Utilities.AddPartToInventory(s);
+                        //ConfigNode aP = parts.Find(a => (KCT_Utilities.PartNameFromNode(a) + KCT_Utilities.GetTweakScaleSize(a)) == kvp.Key);
+                        //if (aP == null)
+                        //    aP = parts.Find(a => (KCT_Utilities.PartNameFromNode(a)) == kvp.Key);
+                        string name = KCT_Utilities.PartNameFromNode(cn);
+                        if (!name.ToLower().Contains("procedural"))
+                            name += KCT_Utilities.GetTweakScaleSize(cn);
+                        if (b.InventoryParts.ContainsKey(name))
+                        {
+                            totalCost -= KCT_Utilities.GetPartCostFromNode(cn);
+                            //parts.Remove(cn);
+                            int amt = 1;
+                            if (name.ToLower().Contains("procedural"))
+                            {
+                                amt = (int)(1000 * KCT_Utilities.GetPartCostFromNode(cn));
+                            }
+                            if (b.InventoryParts[name] >= amt)
+                            {
+                                b.InventoryParts[name] -= amt;
+                                KCT_Utilities.AddPartToInventory(name, amt);
+                            }
+                            else
+                            {
+                                KCT_Utilities.AddPartToInventory(name, b.InventoryParts[name]);
+                                b.InventoryParts[name] = 0;
+                            }
+                            if (b.InventoryParts[name] == 0)
+                                b.InventoryParts.Remove(name);
+                            toRemove.Add(cn);
+                        }   
                     }
-                    totalCost = (int)(totalCost * b.ProgressPercent() / 100);
-                    float sum = 0;
-                    while (parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum)) != null)
+                    foreach (ConfigNode cn in toRemove)
                     {
-                        ConfigNode aP = parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum));
-                        sum += KCT_Utilities.GetPartCostFromNode(aP);
-                        parts.Remove(aP);
-                        KCT_Utilities.AddPartToInventory(aP);
+                        parts.Remove(cn);
                     }
+                }
+                totalCost = (int)(totalCost * b.ProgressPercent() / 100);
+                float sum = 0;
+                while (parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum)) != null)
+                {
+                    ConfigNode aP = parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum));
+                    sum += KCT_Utilities.GetPartCostFromNode(aP);
+                    parts.Remove(aP);
+                    KCT_Utilities.AddPartToInventory(aP);
                 }
                 //buildList.RemoveAt(IndexSelected);
                 b.RemoveFromBuildList();
@@ -2287,7 +2392,7 @@ namespace Kerbal_Construction_Time
         [Persistent] GUIPosition editorPositionSaved, buildListPositionSaved, timeLimitPositionSaved;
         public void Save()
         {
-            buildListPositionSaved = new GUIPosition("buildList", KCT_GUI.buildListWindowPosition.x, KCT_GUI.buildListWindowPosition.y, KCT_GameStates.showWindows[0]);
+           // buildListPositionSaved = new GUIPosition("buildList", KCT_GUI.buildListWindowPosition.x, KCT_GUI.buildListWindowPosition.y, KCT_GameStates.showWindows[0]);
             editorPositionSaved = new GUIPosition("editor", KCT_GUI.editorWindowPosition.x, KCT_GUI.editorWindowPosition.y, KCT_GameStates.showWindows[1]);
             timeLimitPositionSaved = new GUIPosition("timeLimit", KCT_GUI.timeRemainingPosition.x, KCT_GUI.timeRemainingPosition.y, KCT_GUI.showTimeRemaining);
 
@@ -2303,9 +2408,9 @@ namespace Kerbal_Construction_Time
             ConfigNode cnToLoad = ConfigNode.Load(filePath);
             ConfigNode.LoadObjectFromConfig(this, cnToLoad);
 
-            KCT_GUI.buildListWindowPosition.x = buildListPositionSaved.xPos;
+            /*KCT_GUI.buildListWindowPosition.x = buildListPositionSaved.xPos;
             KCT_GUI.buildListWindowPosition.y = buildListPositionSaved.yPos;
-            KCT_GameStates.showWindows[0] = buildListPositionSaved.visible;
+            KCT_GameStates.showWindows[0] = buildListPositionSaved.visible;*/
 
             KCT_GUI.editorWindowPosition.x = editorPositionSaved.xPos;
             KCT_GUI.editorWindowPosition.y = editorPositionSaved.yPos;

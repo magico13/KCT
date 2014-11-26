@@ -213,7 +213,7 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label("VAB Storage");
                     if (buildList.Count == 0)
                     {
-                        GUILayout.Label("No vessels in storage!\nThey will be moved here automatically when they are finished building.");
+                        GUILayout.Label("No vessels in storage!\nThey will be stored here when they are complete.");
                     }
                     KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout);
                     //KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollback);
@@ -460,126 +460,11 @@ namespace Kerbal_Construction_Time
                     }
                     if (buildList.Count == 0)
                     {
-                        GUILayout.Label("No vessels in storage!\nThey will be moved here automatically when they are finished building.");
+                        GUILayout.Label("No vessels in storage!\nThey will be stored here when they are complete.");
                     }
                 }
                 GUILayout.EndScrollView();
             }
-            /*else if (listWindow == 2) //VAB Warehouse
-            {
-                List<KCT_BuildListVessel> buildList = KCT_GameStates.ActiveKSC.VABWarehouse;
-                //GUILayout.Label("VAB Storage");
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((buildList.Count) * 25 + 10, Screen.height / 4F)));
-                for (int i = 0; i < buildList.Count; i++)
-                {
-                    KCT_BuildListVessel b = buildList[i];
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(b.shipName);
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
-                    {
-                        if (KCT_Utilities.ReconditioningActive(null))
-                        {
-                            //can't launch now
-                            ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in "
-                                + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning()).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                            ScreenMessages.PostScreenMessage(message, true);
-                        }
-                        else
-                        {
-                            KCT_GameStates.launchedVessel = b;
-                            if (ShipAssembly.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
-                            {
-                                showBLPlus = false;
-                                // buildList.RemoveAt(i);
-                                if (!IsCrewable(b.ExtractedParts))
-                                    b.Launch();
-                                else
-                                {
-                                    showBuildList = false;
-                                    centralWindowPosition.height = 1;
-                                    KCT_GameStates.launchedCrew.Clear();
-                                    parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                                    pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
-                                    KCT_GameStates.launchedCrew = new List<CrewedPart>();
-                                    foreach (PseudoPart pp in pseudoParts)
-                                        KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
-                                    CrewFirstAvailable();
-                                    showShipRoster = true;
-                                }
-                            }
-                            else
-                            {
-                                showBuildList = false;
-                                showClearLaunch = true;
-                            }
-                        }
-                    }
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("*", GUILayout.Width(butW)))
-                    {
-                        if (IndexSelected == i)
-                            showBLPlus = !showBLPlus;
-                        else
-                            showBLPlus = true;
-                        IndexSelected = i;
-                    }
-                    else if (HighLogic.LoadedSceneIsEditor)
-                        GUILayout.Space(butW);
-                    GUILayout.EndHorizontal();
-                }
-                GUILayout.EndScrollView();
-            }
-            else if (listWindow == 3) //SPH Warehouse
-            {
-                List<KCT_BuildListVessel> buildList = KCT_GameStates.ActiveKSC.SPHWarehouse;
-                //GUILayout.Label("SPH Storage");
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(Math.Min((buildList.Count) * 25 + 10, Screen.height / 4F)));
-                for (int i = 0; i < buildList.Count; i++)
-                {
-                    KCT_BuildListVessel b = buildList[i];
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(b.shipName);
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
-                    {
-                        showBLPlus = false;
-                        KCT_GameStates.launchedVessel = b;
-                        if (ShipAssembly.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "Runway", false))
-                        {
-                            if (!IsCrewable(b.ExtractedParts))
-                                b.Launch();
-                            else
-                            {
-                                showBuildList = false;
-                                centralWindowPosition.height = 1;
-                                KCT_GameStates.launchedCrew.Clear();
-                                parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                                pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
-                                KCT_GameStates.launchedCrew = new List<CrewedPart>();
-                                foreach (PseudoPart pp in pseudoParts)
-                                    KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
-                                CrewFirstAvailable();
-                                showShipRoster = true;
-                            }
-                        }
-                        else
-                        {
-                            showBuildList = false;
-                            showClearLaunch = true;
-                        }
-                    }
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("*", GUILayout.Width(butW)))
-                    {
-                        if (IndexSelected == i)
-                            showBLPlus = !showBLPlus;
-                        else
-                            showBLPlus = true;
-                        IndexSelected = i;
-                    }
-                    else if (HighLogic.LoadedSceneIsEditor)
-                        GUILayout.Space(butW);
-                    GUILayout.EndHorizontal();
-                }
-                GUILayout.EndScrollView();
-            }*/
             else if (listWindow == 2) //Tech nodes
             {
                 List<KCT_TechItem> techList = KCT_GameStates.TechList;
@@ -613,33 +498,13 @@ namespace Kerbal_Construction_Time
                 }
                 GUILayout.EndScrollView();
             }
-            /*else
-            {
-                //if (buildListWindowPosition.height > 32*3) buildListWindowPosition.height = 32*3;
-                //buildListWindowPosition.height = 1;
-            }*/
+
             if (KCT_UpdateChecker.UpdateFound)
-                GUILayout.Label("Update available! Current: " + KCT_UpdateChecker.CurrentVersion + " Latest: " + KCT_UpdateChecker.WebVersion);
-            GUILayout.EndVertical();
-          /*  if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
-                GUI.DragWindow();*/
-
-
-           // CheckKSCLock();
-
-            /*
-            if (Event.current.type == EventType.Repaint && buildListWindowPosition.Contains(Event.current.mousePosition))
             {
-                //Mouseover event
-                if (InputLockManager.IsUnlocked(ControlTypes.KSC_ALL))
-                    InputLockManager.SetControlLock(ControlTypes.KSC_ALL, "KCTKSCLock");
+                GUILayout.Label("Current Version: " + KCT_UpdateChecker.CurrentVersion);
+                GUILayout.Label("Latest: " + KCT_UpdateChecker.WebVersion);
             }
-            else
-            {
-                //Mouse away
-                if (InputLockManager.GetControlLock("KCTKSCLock") != ControlTypes.None && InputLockManager.IsLocked(ControlTypes.KSC_ALL))
-                    InputLockManager.RemoveControlLock("KCTKSCLock");
-            }*/
+            GUILayout.EndVertical();
         }
 
 

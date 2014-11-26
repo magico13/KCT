@@ -43,28 +43,28 @@ namespace Kerbal_Construction_Time
             KCTDebug.Log("Saving KSC "+KSCName);
             ConfigNode node = new ConfigNode("KSC");
             node.AddValue("KSCName", KSCName);
-
+            
             ConfigNode vabup = new ConfigNode("VABUpgrades");
             foreach (int upgrade in VABUpgrades)
             {
                 vabup.AddValue("Upgrade", upgrade.ToString());
             }
             node.AddNode(vabup);
-
+            
             ConfigNode sphup = new ConfigNode("SPHUpgrades");
             foreach (int upgrade in SPHUpgrades)
             {
                 sphup.AddValue("Upgrade", upgrade.ToString());
             }
             node.AddNode(sphup);
-
+            
             ConfigNode rdup = new ConfigNode("RDUpgrades");
             foreach (int upgrade in RDUpgrades)
             {
                 rdup.AddValue("Upgrade", upgrade.ToString());
             }
             node.AddNode(rdup);
-
+            
             ConfigNode vabl = new ConfigNode("VABList");
             foreach (KCT_BuildListVessel blv in VABList)
             {
@@ -78,7 +78,7 @@ namespace Kerbal_Construction_Time
                 vabl.AddNode(cnTemp);
             }
             node.AddNode(vabl);
-
+            
             ConfigNode sphl = new ConfigNode("SPHList");
             foreach (KCT_BuildListVessel blv in SPHList)
             {
@@ -92,7 +92,7 @@ namespace Kerbal_Construction_Time
                 sphl.AddNode(cnTemp);
             }
             node.AddNode(sphl);
-
+            
             ConfigNode vabwh = new ConfigNode("VABWarehouse");
             foreach (KCT_BuildListVessel blv in VABWarehouse)
             {
@@ -106,7 +106,7 @@ namespace Kerbal_Construction_Time
                 vabwh.AddNode(cnTemp);
             }
             node.AddNode(vabwh);
-
+            
             ConfigNode sphwh = new ConfigNode("SPHWarehouse");
             foreach (KCT_BuildListVessel blv in SPHWarehouse)
             {
@@ -134,7 +134,7 @@ namespace Kerbal_Construction_Time
                 tech.AddNode(cnTemp);
             }
             node.AddNode(tech);*/
-
+            
             ConfigNode RRCN = new ConfigNode("Recon_Rollout");
             foreach (KCT_Recon_Rollout rr in Recon_Rollout)
             {

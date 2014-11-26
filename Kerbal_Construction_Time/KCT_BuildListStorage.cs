@@ -17,7 +17,7 @@ namespace Kerbal_Construction_Time
         [Persistent]
         List<BuildListItem> SPHWarehouse = new List<BuildListItem>();
 
-        [Persistent]KCT_Recon_Rollout LPRecon;
+        [Persistent]KCT_Recon_Rollout LPRecon = new KCT_Recon_Rollout();
 
 
         public override void OnDecodeFromConfigNode()
@@ -128,7 +128,14 @@ namespace Kerbal_Construction_Time
                 KCT_BuildListVessel ret = new KCT_BuildListVessel(shipName, launchSite, buildTime, flag, cost);
                 ret.progress = progress;
                 if (InventoryParts != null)
-                    ret.InventoryParts = InventoryParts;
+                {
+                    int ignore;
+                    if (InventoryParts.Count > 1 && int.TryParse(InventoryParts[1], out ignore))
+                        ret.InventoryParts = KCT_Utilities.PartListToDictAlternating(InventoryParts);
+                    else
+                        ret.InventoryParts = KCT_Utilities.PartListToDict(InventoryParts);
+
+                }
                 ret.id = new Guid(shipID);
                 ret.cannotEarnScience = cannotEarnScience;
                 ret.TotalMass = mass;
@@ -144,7 +151,7 @@ namespace Kerbal_Construction_Time
                 this.flag = blv.flag;
                 //this.shipURL = blv.shipURL;
                 this.shipName = blv.shipName;
-                this.InventoryParts = blv.InventoryParts;
+                this.InventoryParts = KCT_Utilities.PartDictToList(blv.InventoryParts);
                 this.shipID = blv.id.ToString();
                 this.cannotEarnScience = blv.cannotEarnScience;
                 this.cost = blv.cost;

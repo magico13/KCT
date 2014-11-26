@@ -85,6 +85,24 @@ namespace Kerbal_Construction_Time
             return newInv;
         }
 
+        public static Dictionary<String, int> PartListToDictAlternating(List<String> list)
+        {
+            Dictionary<String, int> newInv = new Dictionary<String, int>();
+            int length = list.Count;
+            for (int i = 0; i < length; i += 2)
+            {
+                KCT_Utilities.AddToDict(newInv, list[i], int.Parse(list[i + 1]));
+            }
+                /*foreach (String s in list)
+                {
+                    if (newInv.Keys.Contains(s))
+                        newInv[s]++;
+                    else
+                        newInv.Add(s, 1);
+                }*/
+            return newInv;
+        }
+
        /* public static Dictionary<String, int> PartListToDict(List<Part> list)
         {
             Dictionary<String, int> newInv = new Dictionary<String, int>();
@@ -104,10 +122,11 @@ namespace Kerbal_Construction_Time
             List<String> ret = new List<string>();
             for (int i = 0; i < dict.Count; i++)
             {
-                for (int j=0; j<dict.Values.ElementAt(i); j++)
-                {
+                //for (int j=0; j<dict.Values.ElementAt(i); j++)
+              //  {
                     ret.Add(dict.Keys.ElementAt(i));
-                }
+                    ret.Add(dict.Values.ElementAt(i).ToString());
+               // }
             }
             return ret;
         }
@@ -211,24 +230,54 @@ namespace Kerbal_Construction_Time
                 String name = PartNameFromNode(p) + GetTweakScaleSize(p);
                 double effectiveCost = 0;
                 double cost = GetPartCostFromNode(p);
-                if (inventory.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
+                if (!name.ToLower().Contains("procedural"))
                 {
-                    // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
-                    if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
-                        effectiveCost = Math.Min(cost / (KCT_GameStates.timeSettings.InventoryEffect + (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1))), cost);
-                    else // Otherwise the cost is just the normal cost divided by the inventory effect
-                        effectiveCost = cost / KCT_GameStates.timeSettings.InventoryEffect;
-                    --invCopy[name];
-                    if (invCopy[name] == 0)
-                        invCopy.Remove(name);
+                    if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
+                    {
+                        // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
+                        if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
+                            effectiveCost = Math.Min(cost / (KCT_GameStates.timeSettings.InventoryEffect + (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1))), cost);
+                        else // Otherwise the cost is just the normal cost divided by the inventory effect
+                            effectiveCost = cost / KCT_GameStates.timeSettings.InventoryEffect;
+                        --invCopy[name];
+                        if (invCopy[name] == 0)
+                            invCopy.Remove(name);
+                    }
+                    else if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name)) // The more the part is used, the faster it gets to build
+                    {
+                        effectiveCost = Math.Min(cost / (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1)), cost);
+                    }
+                    else // If the part has never been used, it takes the maximal time
+                    {
+                        effectiveCost = cost;
+                    }
                 }
-                else if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name)) // The more the part is used, the faster it gets to build
+                else //Procedural parts get handled differently
                 {
-                    effectiveCost = Math.Min(cost / (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1)), cost);
-                }
-                else // If the part has never been used, it takes the maximal time
-                {
-                    effectiveCost = cost;
+                    name = PartNameFromNode(p);
+                    double costRemaining = cost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
+                    costRemaining = Math.Max(costRemaining, 0);
+                    double costRemoved = cost - costRemaining;
+
+                    if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0)
+                    {
+                        // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
+                        if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
+                            effectiveCost = (costRemaining + (costRemoved / KCT_GameStates.timeSettings.InventoryEffect)) / Math.Max(KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1), 1);
+                        else // Otherwise the cost is just the normal cost divided by the inventory effect
+                            effectiveCost = costRemaining + (costRemoved / KCT_GameStates.timeSettings.InventoryEffect);
+                        invCopy[name] -= (int)(costRemoved*1000);
+                        if (invCopy[name] == 0)
+                            invCopy.Remove(name);
+                    }
+                    else if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name)) // The more the part is used, the faster it gets to build
+                    {
+                        effectiveCost = Math.Min(cost / (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1)), cost);
+                    }
+                    else // If the part has never been used, it takes the maximal time
+                    {
+                        effectiveCost = cost;
+                    }
                 }
 
                 if (effectiveCost < 0) effectiveCost = 0;
@@ -390,12 +439,15 @@ namespace Kerbal_Construction_Time
             return total;
         }
 
-        public static float GetPartCostFromNode(ConfigNode part)
+        public static float GetPartCostFromNode(ConfigNode part, bool includeFuel = true)
         {
             string name = PartNameFromNode(part);
             float dry, wet;
             float total = ShipConstruction.GetPartCosts(part, GetAvailablePartByName(name), out dry, out wet);
-            return total;
+            if (includeFuel)
+                return total;
+            else
+                return dry;
         }
 
         public static string GetTweakScaleSize(ProtoPartSnapshot part)
@@ -562,65 +614,161 @@ namespace Kerbal_Construction_Time
                 DisplayMessage("Vessel Complete!", Message, MessageSystemButton.MessageButtonColor.GREEN, MessageSystemButton.ButtonIcons.COMPLETE);
         }
 
-
-        public static void AddPartToInventory(Part part)
+        public static void AddPartToInventory(ProtoPartSnapshot part)
         {
-            string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
-            string nameToStore = part.partInfo.name + tweakscale;
-            AddPartToInventory(nameToStore);
-        }
-        public static void AddPartToInventory(ConfigNode part)
-        {
-            AddPartToInventory(PartNameFromNode(part) + GetTweakScaleSize(part));
-        }
-        public static void AddPartToInventory(String name)
-        {
-            if (KCT_GameStates.PartInventory.ContainsKey(name))
+            string name = part.partInfo.name;
+            int amt = 1;
+            if (name.ToLower().Contains("procedural"))
             {
-                ++KCT_GameStates.PartInventory[name];
+                float cost = part.partInfo.cost + part.moduleCosts;
+                foreach (ProtoPartResourceSnapshot resource in part.resources)
+                {
+                    cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * float.Parse(resource.resourceValues.GetValue("amount")));
+                }
+                amt = (int)(cost * 1000);
+
+                AddPartToInventory(name, amt);
+                return;
             }
             else
             {
-                KCT_GameStates.PartInventory.Add(name, 1);
+                string tweakscale = GetTweakScaleSize(part); //partName,tweakscale
+                string nameToStore = part.partInfo.name + tweakscale;
+                AddPartToInventory(nameToStore, amt);
+                return;
             }
-            KCTDebug.Log("Added "+name+" to part inventory");
+        }
+
+        public static void AddPartToInventory(Part part)
+        {
+            string name = part.partInfo.name;
+            int amt = 1;
+            if (name.ToLower().Contains("procedural"))
+            {
+                float cost = part.partInfo.cost + part.GetModuleCosts();
+                foreach (PartResource resource in part.Resources.list)
+                {
+                    cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.amount);
+                }
+                amt = (int)(cost * 1000);
+
+                AddPartToInventory(name, amt);
+                return;
+            }
+            else
+            {
+                string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
+                string nameToStore = part.partInfo.name + tweakscale;
+                AddPartToInventory(nameToStore, amt);
+                return;
+            }
+        }
+        public static void AddPartToInventory(ConfigNode part)
+        {
+            string name = PartNameFromNode(part) + GetTweakScaleSize(part);
+            int amt = 1;
+            if (name.ToLower().Contains("procedural"))
+            {
+                name = PartNameFromNode(part);
+                amt = (int)(1000 * GetPartCostFromNode(part, false));
+            }
+            AddPartToInventory(name, amt);
+        }
+        public static void AddPartToInventory(String name)
+        {
+            AddPartToInventory(name, 1);
+        }
+        public static void AddPartToInventory(String name, int amt)
+        {
+            if (KCT_GameStates.PartInventory.ContainsKey(name))
+            {
+                KCT_GameStates.PartInventory[name] += amt;
+            }
+            else
+            {
+                KCT_GameStates.PartInventory.Add(name, amt);
+            }
+            KCTDebug.Log("Added "+amt+"x"+name+" to part inventory");
         }
 
 
         public static bool RemovePartFromInventory(Part part)
         {
-            string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
+            string name = part.partInfo.name;
+            int amt = 1;
+            if (name.ToLower().Contains("procedural"))
+            {
+                float cost = part.partInfo.cost + part.GetModuleCosts();
+                foreach (PartResource resource in part.Resources.list)
+                {
+                    cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.maxAmount);
+                }
+                amt = (int)(cost * 1000);
+            }
+            else
+                name += GetTweakScaleSize(part.protoPartSnapshot); 
+            /*string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
             string nameToStore = part.partInfo.name + tweakscale;
-            return RemovePartFromInventory(nameToStore);
+            return RemovePartFromInventory(nameToStore);*/
+            return RemovePartFromInventory(name, amt);
         }
         public static bool RemovePartFromInventory(Part part, Dictionary<String, int> inventory)
         {
-            string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
-            string nameToStore = part.partInfo.name + tweakscale;
-            return RemovePartFromInventory(nameToStore, inventory);
+            string name = part.partInfo.name;
+            int amt = 1;
+            if (name.ToLower().Contains("procedural"))
+            {
+                float cost = part.partInfo.cost + part.GetModuleCosts();
+                foreach (PartResource resource in part.Resources.list)
+                {
+                    cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.maxAmount);
+                }
+                amt = (int)(cost * 1000);
+            }
+            else
+                name += GetTweakScaleSize(part.protoPartSnapshot); 
+            /*string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
+            string nameToStore = part.partInfo.name + tweakscale;*/
+            return RemovePartFromInventory(name, inventory, amt);
         }
         public static bool RemovePartFromInventory(ConfigNode part)
         {
-            return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part));
+            string name = PartNameFromNode(part) + GetTweakScaleSize(part);
+            int amt = 1;
+            if (name.ToLower().Contains("procedural"))
+            {
+                name = PartNameFromNode(part);
+                amt = (int)(1000 * GetPartCostFromNode(part, false));
+            }
+            //return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part));
+            return RemovePartFromInventory(name, amt);
         }
         public static bool RemovePartFromInventory(ConfigNode part, Dictionary<String, int> inventory)
         {
-            return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part), inventory);
-        }
-        public static bool RemovePartFromInventory(String name)
-        {
-            return RemovePartFromInventory(name, KCT_GameStates.PartInventory);
-        }
-        public static bool RemovePartFromInventory(String name, Dictionary<String, int> inventory)
-        {
-            if (inventory.ContainsKey(name))
+            string name = PartNameFromNode(part) + GetTweakScaleSize(part);
+            int amt = 1;
+            if (name.ToLower().Contains("procedural"))
             {
-                --inventory[name];
+                name = PartNameFromNode(part);
+                amt = (int)(1000 * GetPartCostFromNode(part, false));
+            }
+            //return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part), inventory, 1);
+            return RemovePartFromInventory(name, inventory, amt);
+        }
+        public static bool RemovePartFromInventory(String name, int amt)
+        {
+            return RemovePartFromInventory(name, KCT_GameStates.PartInventory, amt);
+        }
+        public static bool RemovePartFromInventory(String name, Dictionary<String, int> inventory, int amt)
+        {
+            if (inventory.ContainsKey(name) && inventory[name] >= amt)
+            {
+                inventory[name] -= amt;
                 if (inventory[name] == 0)
                 {
                     inventory.Remove(name);
                 }
-                KCTDebug.Log("Removed " + name + " from part inventory");
+                KCTDebug.Log("Removed " + amt + "x" + name + " from part inventory");
                 return true;
             }
             return false;
@@ -831,7 +979,12 @@ namespace Kerbal_Construction_Time
                 foreach (ConfigNode p in blv.ExtractedPartNodes)
                 {
                     if (KCT_Utilities.RemovePartFromInventory(p, inventory))
-                        blv.InventoryParts.Add(PartNameFromNode(p)+GetTweakScaleSize(p));
+                    {
+                        if (!PartNameFromNode(p).ToLower().Contains("procedural"))
+                            blv.InventoryParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p), 1);
+                        else
+                            blv.InventoryParts.Add(PartNameFromNode(p), (int)(1000 * GetPartCostFromNode(p, false)));
+                    }
                 }
             }
             KCTDebug.Log("Added " + blv.shipName + " to " + type + " build list at KSC "+KCT_GameStates.ActiveKSC.KSCName+". Cost: "+blv.cost);
@@ -844,6 +997,8 @@ namespace Kerbal_Construction_Time
         public static IKCTBuildItem NextThingToFinish()
         {
             IKCTBuildItem thing = null;
+            if (KCT_GameStates.ActiveKSC == null)
+                return null;
             double shortestTime = double.PositiveInfinity;
             foreach (IKCTBuildItem blv in KCT_GameStates.ActiveKSC.VABList)
             {
@@ -1089,6 +1244,7 @@ namespace Kerbal_Construction_Time
 
         public static void SetActiveKSC(string site)
         {
+            if (site == "") site = "Stock";
             if (KCT_GameStates.ActiveKSC == null || site != KCT_GameStates.ActiveKSC.KSCName)
             {
                 KCTDebug.Log("Setting active site to " + site);
@@ -1115,7 +1271,7 @@ namespace Kerbal_Construction_Time
 
         public static void RecalculateEditorBuildTime(ShipConstruct ship)
         {
-            KCTDebug.Log("Recalculating build time");
+            //KCTDebug.Log("Recalculating build time");
             List<ConfigNode> partNodes = ship.SaveShip().GetNodes("PART").ToList();
             KCT_GUI.PartsInUse.Clear();
             if (KCT_GUI.useInventory)
@@ -1134,26 +1290,53 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(partNodes, true, KCT_GUI.useInventory);
             else
             {
-                List<string> partsForInventory = new List<string>();
+                //List<string> partsForInventory = new List<string>();
+                Dictionary<string, int> partsForInventory = new Dictionary<string, int>();
                 if (KCT_GUI.useInventory)
                 {
-                    List<string> newParts = new List<string>(PartDictToList(KCT_GUI.PartsInUse));
-                    List<string> theInventory = new List<string>(PartDictToList(KCT_GameStates.PartInventory));
-                    foreach (string s in PartDictToList(KCT_GameStates.EditedVesselParts))
-                        if (newParts.Contains(s))
-                            newParts.Remove(s);
-
-                    foreach (string s in newParts)
+                    Dictionary<string, int> newParts = new Dictionary<string,int>(KCT_GUI.PartsInUse);
+                    Dictionary<string, int> theInventory = new Dictionary<string,int>(KCT_GameStates.PartInventory);
+                    foreach (KeyValuePair<string, int> kvp in KCT_GameStates.EditedVesselParts)
                     {
-                        if (theInventory.Contains(s))
+                        if (newParts.ContainsKey(kvp.Key))
                         {
-                            theInventory.Remove(s);
-                            partsForInventory.Add(s);
+                            if (newParts[kvp.Key] >= kvp.Value)
+                            {
+                                newParts[kvp.Key] -= kvp.Value;
+                            }
+                            else
+                            {
+                                newParts[kvp.Key] = 0;
+                            }
+                        }
+                    }
+
+
+                    /*foreach (string s in PartDictToList(KCT_GameStates.EditedVesselParts))
+                        if (newParts.Contains(s))
+                            newParts.Remove(s);*/
+
+                    foreach (KeyValuePair<string, int> kvp in newParts)
+                    {
+                        if (theInventory.ContainsKey(kvp.Key))
+                        {
+                            if (theInventory[kvp.Key] >= kvp.Value)
+                            {
+                                theInventory[kvp.Key] -= kvp.Value;
+                                KCT_Utilities.AddToDict(partsForInventory, kvp.Key, kvp.Value);
+                            }
+                            else
+                            {
+                                KCT_Utilities.AddToDict(partsForInventory, kvp.Key, theInventory[kvp.Key]);
+                                theInventory[kvp.Key] = 0;
+                            }
+                           // theInventory.Remove(s);
+                           // partsForInventory.Add(s);
                         }
                     }
                 }
-                foreach (string s in KCT_GameStates.editedVessel.InventoryParts)
-                    partsForInventory.Add(s);
+                foreach (KeyValuePair<string, int> kvp in KCT_GameStates.editedVessel.InventoryParts)
+                    KCT_Utilities.AddToDict(partsForInventory, kvp.Key, kvp.Value);
 
                 KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(partNodes, true, partsForInventory);
             }
@@ -1284,6 +1467,28 @@ namespace Kerbal_Construction_Time
 
 
             return craft;
+        }
+
+        public static void AddToDict(Dictionary<string, int> dict, string key, int value)
+        {
+            if (!dict.ContainsKey(key))
+                dict.Add(key, value);
+            else
+                dict[key] += value;
+        }
+
+        public static bool RemoveFromDict(Dictionary<string, int> dict, string key, int value)
+        {
+            if (!dict.ContainsKey(key))
+                return false;
+            else if (dict[key] < value)
+                return false;
+            else
+            {
+                dict[key] -= value;
+                return true;
+            }
+                
         }
     }
 }
