@@ -263,7 +263,7 @@ namespace Kerbal_Construction_Time
                                 GUILayout.Label(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
                             }
                         }
-                        else if (!HighLogic.LoadedSceneIsEditor && recovery == null && (!reconActive || (rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
+                        else if (!HighLogic.LoadedSceneIsEditor && HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && (!reconActive || (rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
                             if (KCT_Utilities.ReconditioningActive(null))
                             {
@@ -411,7 +411,7 @@ namespace Kerbal_Construction_Time
 
                         GUILayout.Label("Status: " + status + "   ", GUILayout.ExpandWidth(false));
 
-                        if (!HighLogic.LoadedSceneIsEditor && recovery == null && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
+                        if (!HighLogic.LoadedSceneIsEditor && HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
                             showBLPlus = false;
                             KCT_GameStates.launchedVessel = b;
