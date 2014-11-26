@@ -422,9 +422,10 @@ namespace Kerbal_Construction_Time
                             bool probeCoreAttached = false;
                             foreach (ProtoPartSnapshot pps in v.protoVessel.protoPartSnapshots)
                             {
-                                if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && KCT_Utilities.IsUnmannedCommand(pps.partInfo))) != null)
+                                //if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && KCT_Utilities.IsUnmannedCommand(pps.partInfo))) != null)
+                                if (v.protoVessel.wasControllable)
                                 {
-                                    KCTDebug.Log("Probe Core found!");
+                                    KCTDebug.Log("Was controlled!");
                                     probeCoreAttached = true;
                                     break;
                                 }
