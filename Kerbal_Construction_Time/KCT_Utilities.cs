@@ -263,9 +263,9 @@ namespace Kerbal_Construction_Time
                     {
                         // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
                         if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
-                            effectiveCost = (costRemaining + (costRemoved / KCT_GameStates.timeSettings.InventoryEffect)) / Math.Max(KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1), 1);
+                            effectiveCost = (costRemaining + (costRemoved * 10 / KCT_GameStates.timeSettings.InventoryEffect)) / Math.Max(KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1), 1);
                         else // Otherwise the cost is just the normal cost divided by the inventory effect
-                            effectiveCost = costRemaining + (costRemoved / KCT_GameStates.timeSettings.InventoryEffect);
+                            effectiveCost = costRemaining + (costRemoved * 10 / KCT_GameStates.timeSettings.InventoryEffect);
                         invCopy[name] -= (int)(costRemoved*1000);
                         if (invCopy[name] == 0)
                             invCopy.Remove(name);
