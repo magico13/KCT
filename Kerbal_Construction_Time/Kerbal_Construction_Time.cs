@@ -268,6 +268,7 @@ namespace Kerbal_Construction_Time
             KCT_GameStates.ActiveKSC.AsConfigNode().Save(KSPUtil.ApplicationRootPath + "/KSC.node");
 
             Kerbal_Construction_Time.DelayedStart();
+            KCT_GUI.CheckToolbar();
         }
     }
 

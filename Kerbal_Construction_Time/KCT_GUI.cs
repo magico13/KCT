@@ -124,7 +124,7 @@ namespace Kerbal_Construction_Time
                         isKSCLocked = true;
                     }
                 }
-                else if (!showBuildList)
+                else //if (!showBuildList)
                 {
                     if (isKSCLocked)
                     {
@@ -239,7 +239,7 @@ namespace Kerbal_Construction_Time
                 showBuildList = !showBuildList;
                 showBLPlus = false;
                 listWindow = -1;
-                KCT_GameStates.showWindows[0] = showBuildList;
+               // KCT_GameStates.showWindows[0] = showBuildList;
             }
 
             if (showBuildList || showSettings || showEditorGUI || showSimulationWindow)
@@ -2022,6 +2022,41 @@ namespace Kerbal_Construction_Time
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                 GUI.DragWindow();
+        }
+
+        public static void  CheckToolbar()
+        {
+            if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null && KCT_GameStates.settings.PreferBlizzyToolbar && KCT_GameStates.kctToolbarButton == null)
+            {
+                KCTDebug.Log("Adding Toolbar Button");
+                KCT_GameStates.kctToolbarButton = ToolbarManager.Instance.add("Kerbal_Construction_Time", "MainButton");
+                if (KCT_GameStates.kctToolbarButton != null)
+                {
+                    if (!KCT_GameStates.settings.enabledForSave) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
+                    else KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(new GameScenes[] { GameScenes.SPACECENTER, GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.EDITOR, GameScenes.SPH });
+                    KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
+                    KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
+                    KCT_GameStates.kctToolbarButton.OnClick += ((e) =>
+                    {
+                        KCT_GUI.onClick();
+                    });
+                }
+            }
+            bool vis;
+            if (ApplicationLauncher.Ready && (!KCT_GameStates.settings.PreferBlizzyToolbar || !ToolbarManager.ToolbarAvailable) && (KCT_Events.instance.KCTButtonStock == null || !ApplicationLauncher.Instance.Contains(KCT_Events.instance.KCTButtonStock, out vis))) //Add Stock button
+            {
+                KCT_Events.instance.KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
+                    KCT_GUI.onClick,
+                    KCT_GUI.onClick,
+                    KCT_GUI.onHoverOn, //TODO: List next ship here?
+                    KCT_GUI.onHoverOff,
+                    KCT_Events.instance.DummyVoid,
+                    KCT_Events.instance.DummyVoid,
+                    ApplicationLauncher.AppScenes.ALWAYS,
+                    GameDatabase.Instance.GetTexture("KerbalConstructionTime/icons/KCT_on", false));
+
+                ApplicationLauncher.Instance.EnableMutuallyExclusive(KCT_Events.instance.KCTButtonStock);
+            }
         }
 
         private static int upgradeWindowHolder = 0;

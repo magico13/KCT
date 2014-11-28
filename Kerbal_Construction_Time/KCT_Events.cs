@@ -108,19 +108,19 @@ namespace Kerbal_Construction_Time
             if (ApplicationLauncher.Ready && (KCTButtonStock == null || !ApplicationLauncher.Instance.Contains(KCTButtonStock, out vis))) //Add Stock button
             {
                 KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
-                    KCT_GUI.onClick,
-                    KCT_GUI.onClick,
-                    DummyVoid, //TODO: List next ship here?
-                    DummyVoid,
-                    DummyVoid,
-                    DummyVoid,
-                    ApplicationLauncher.AppScenes.ALWAYS,
-                    GameDatabase.Instance.GetTexture("KerbalConstructionTime/icons/KCT_on", false));
+                        KCT_GUI.onClick,
+                        KCT_GUI.onClick,
+                        KCT_GUI.onHoverOn, //TODO: List next ship here?
+                        KCT_GUI.onHoverOff,
+                        DummyVoid,
+                        DummyVoid,
+                        ApplicationLauncher.AppScenes.ALWAYS,
+                        GameDatabase.Instance.GetTexture("KerbalConstructionTime/icons/KCT_on", false));
 
                 ApplicationLauncher.Instance.EnableMutuallyExclusive(KCTButtonStock);
             }
         }
-        void DummyVoid() { }
+        public void DummyVoid() { }
 
         public void PartPurchasedEvent(AvailablePart part)
         {
@@ -245,7 +245,7 @@ namespace Kerbal_Construction_Time
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
             {
-                if (KCT_GameStates.settings.Debug && (v.wasControllable || v.protoPartSnapshots.Find(p => p.modules.Find(m => m.moduleName.ToLower() == "modulecommand") != null) != null))
+                if (KCT_GameStates.settings.Debug && HighLogic.LoadedScene != GameScenes.TRACKSTATION && (v.wasControllable || v.protoPartSnapshots.Find(p => p.modules.Find(m => m.moduleName.ToLower() == "modulecommand") != null) != null))
                 {
                     KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(v);
                 }

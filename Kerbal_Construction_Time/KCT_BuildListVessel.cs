@@ -108,6 +108,11 @@ namespace Kerbal_Construction_Time
 
         public KCT_BuildListVessel(ProtoVessel vessel) //For recovered vessels
         {
+            if (KCT_GameStates.recoveryRequestVessel == null)
+            {
+                KCTDebug.Log("Somehow tried to recover something that was null!");
+                return;
+            }
             id = Guid.NewGuid();
             shipName = vessel.vesselName;
             //shipNode = KCT_Utilities.ProtoVesselToCraftFile(vessel);
@@ -300,12 +305,25 @@ namespace Kerbal_Construction_Time
             double mass = 0;
             foreach (ConfigNode p in this.ExtractedPartNodes)
             {
-                mass += float.Parse(p.GetValue("mass"));
-                //mass += p.GetResourceMass();
-                foreach (ConfigNode rsc in p.GetNodes("RESOURCE"))
+                float massTmp;
+                if (float.TryParse(p.GetValue("mass"), out massTmp))
                 {
-                    PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.GetValue("name"));
-                    mass += def.density * float.Parse(rsc.GetValue("amount"));
+                    mass += massTmp;
+                    //mass += p.GetResourceMass();
+                    foreach (ConfigNode rsc in p.GetNodes("RESOURCE"))
+                    {
+                        PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.GetValue("name"));
+                        mass += def.density * float.Parse(rsc.GetValue("amount"));
+                    }
+                }
+                else
+                {
+                    AvailablePart part = KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(p));
+                    if (part != null)
+                    {
+                        mass += part.partPrefab.mass;
+                        mass += part.partPrefab.GetResourceMass();
+                    }
                 }
             }
             return mass;
