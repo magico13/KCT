@@ -501,8 +501,10 @@ namespace Kerbal_Construction_Time
 
             if (KCT_UpdateChecker.UpdateFound)
             {
+                GUILayout.BeginHorizontal();
                 GUILayout.Label("Current Version: " + KCT_UpdateChecker.CurrentVersion);
                 GUILayout.Label("Latest: " + KCT_UpdateChecker.WebVersion);
+                GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();
         }

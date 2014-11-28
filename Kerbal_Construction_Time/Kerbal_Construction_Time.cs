@@ -228,7 +228,7 @@ namespace Kerbal_Construction_Time
             KCT_Utilities.SetActiveKSC(KCT_GameStates.activeKSCName);*/
 
             //New format
-            KCT_GameStates.activeKSCName = "";
+            //KCT_GameStates.activeKSCName = "";
             KCT_GameStates.KSCs.Clear();
             KCT_GameStates.ActiveKSC = null;
             if (backedUp != null)
