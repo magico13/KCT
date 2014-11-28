@@ -2048,8 +2048,8 @@ namespace Kerbal_Construction_Time
                 KCT_Events.instance.KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
                     KCT_GUI.onClick,
                     KCT_GUI.onClick,
-                    KCT_GUI.onHoverOn, //TODO: List next ship here?
-                    KCT_GUI.onHoverOff,
+                    KCT_Events.instance.DummyVoid, //TODO: List next ship here?
+                    KCT_Events.instance.DummyVoid,
                     KCT_Events.instance.DummyVoid,
                     KCT_Events.instance.DummyVoid,
                     ApplicationLauncher.AppScenes.ALWAYS,
