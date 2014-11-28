@@ -245,7 +245,7 @@ namespace Kerbal_Construction_Time
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
             {
-                if (KCT_GameStates.settings.Debug && v.wasControllable || v.protoPartSnapshots.Find(p => p.modules.Find(m => m.moduleName.ToLower() == "modulecommand") != null) != null)
+                if (KCT_GameStates.settings.Debug && (v.wasControllable || v.protoPartSnapshots.Find(p => p.modules.Find(m => m.moduleName.ToLower() == "modulecommand") != null) != null))
                 {
                     KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(v);
                 }
