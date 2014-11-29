@@ -410,7 +410,7 @@ namespace Kerbal_Construction_Time
                             status = "Recovering";
 
                         GUILayout.Label("Status: " + status + "   ", GUILayout.ExpandWidth(false));
-
+                        //ScenarioDestructibles.protoDestructibles["KSCRunway"].
                         if (!HighLogic.LoadedSceneIsEditor && HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
                             showBLPlus = false;

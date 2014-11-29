@@ -246,7 +246,8 @@ namespace Kerbal_Construction_Time
                 if (loaded_KSC != null && loaded_KSC.KSCName != null && loaded_KSC.KSCName.Length > 0)
                 {
                     loaded_KSC.RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
-                    KCT_GameStates.KSCs.Add(loaded_KSC);
+                    if (KCT_GameStates.KSCs.Find(k => k.KSCName == loaded_KSC.KSCName) == null)
+                        KCT_GameStates.KSCs.Add(loaded_KSC);
                 }
             }
             //KCT_Utilities.SetActiveKSCToRSS();
