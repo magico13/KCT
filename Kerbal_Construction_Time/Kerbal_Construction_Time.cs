@@ -153,6 +153,8 @@ namespace Kerbal_Construction_Time
         {
             KCTDebug.Log("Reading from persistence.");
             base.OnLoad(node);
+            KCT_GameStates.KSCs.Clear();
+            KCT_GameStates.ActiveKSC = null;
             KCT_Utilities.SetActiveKSC("Stock");
             KCT_GameStates.TechList.Clear();
 
@@ -172,39 +174,56 @@ namespace Kerbal_Construction_Time
             if (CN != null)
                 ConfigNode.LoadObjectFromConfig(tS, CN);
 
+            bool doUpgrade = false;
+
             for (int i = 0; i < KCT_GameStates.ActiveKSC.VABList.Count; i++)
             {
                 ConfigNode loaded = node.GetNode("VAB" + i);
                 if (loaded != null)
+                {
                     KCT_GameStates.ActiveKSC.VABList[i].shipNode = loaded;
+                    doUpgrade = true;
+                }
             }
             for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHList.Count; i++)
             {
                 ConfigNode loaded = node.GetNode("SPH" + i);
                 if (loaded != null)
+                { 
                     KCT_GameStates.ActiveKSC.SPHList[i].shipNode = loaded;
+                    doUpgrade = true;
+                }
             }
             for (int i = 0; i < KCT_GameStates.ActiveKSC.VABWarehouse.Count; i++)
             {
                 ConfigNode loaded = node.GetNode("VABWH" + i);
                 if (loaded != null)
+                { 
                     KCT_GameStates.ActiveKSC.VABWarehouse[i].shipNode = loaded;
+                    doUpgrade = true;
+                }
             }
             for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHWarehouse.Count; i++)
             {
                 ConfigNode loaded = node.GetNode("SPHWH" + i);
                 if (loaded != null)
+                { 
                     KCT_GameStates.ActiveKSC.SPHWarehouse[i].shipNode = loaded;
+                    doUpgrade = true;
+                }
             }
             for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
             {
                 ConfigNode loaded = node.GetNode("Tech" + i);
                 if (loaded != null)
+                { 
                     KCT_GameStates.TechList[i].protoNode = new ProtoTechNode(loaded);
+                    doUpgrade = true;
+                }
             }
 
             KCT_KSC backedUp = null;
-            if (KCT_GameStates.ActiveKSC.VABList.Count > 0 || KCT_GameStates.ActiveKSC.SPHList.Count > 0 || KCT_GameStates.ActiveKSC.VABWarehouse.Count > 0 || KCT_GameStates.ActiveKSC.SPHWarehouse.Count > 0)
+            if (doUpgrade)
             {
                 KCTDebug.Log("An old save is being converted to the new system.");
                 backedUp = KCT_GameStates.ActiveKSC;
