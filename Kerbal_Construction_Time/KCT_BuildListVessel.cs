@@ -150,7 +150,7 @@ namespace Kerbal_Construction_Time
                 //InventoryParts.Add(p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p));
                 string name = p.partInfo.name;
                 int amt = 1;
-                if (p.partInfo.name.ToLower().Contains("procedural"))
+                if (KCT_Utilities.PartIsProcedural(p))
                 {
                     float dry, wet;
                     ShipConstruction.GetPartCosts(p, p.partInfo, out dry, out wet);

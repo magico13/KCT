@@ -1205,14 +1205,14 @@ namespace Kerbal_Construction_Time
                         //if (aP == null)
                         //    aP = parts.Find(a => (KCT_Utilities.PartNameFromNode(a)) == kvp.Key);
                         string name = KCT_Utilities.PartNameFromNode(cn);
-                        if (!name.ToLower().Contains("procedural"))
+                        if (!KCT_Utilities.PartIsProcedural(cn))
                             name += KCT_Utilities.GetTweakScaleSize(cn);
                         if (b.InventoryParts.ContainsKey(name))
                         {
                             totalCost -= KCT_Utilities.GetPartCostFromNode(cn);
                             //parts.Remove(cn);
                             int amt = 1;
-                            if (name.ToLower().Contains("procedural"))
+                            if (KCT_Utilities.PartIsProcedural(cn))
                             {
                                 amt = (int)(1000 * KCT_Utilities.GetPartCostFromNode(cn));
                             }

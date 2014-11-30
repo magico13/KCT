@@ -230,7 +230,7 @@ namespace Kerbal_Construction_Time
                 String name = PartNameFromNode(p) + GetTweakScaleSize(p);
                 double effectiveCost = 0;
                 double cost = GetPartCostFromNode(p);
-                if (!name.ToLower().Contains("procedural"))
+                if (!KCT_Utilities.PartIsProcedural(p))
                 {
                     if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
                     {
@@ -618,7 +618,7 @@ namespace Kerbal_Construction_Time
         {
             string name = part.partInfo.name;
             int amt = 1;
-            if (name.ToLower().Contains("procedural"))
+            if (KCT_Utilities.PartIsProcedural(part))
             {
                 float cost = part.partInfo.cost + part.moduleCosts;
                 foreach (ProtoPartResourceSnapshot resource in part.resources)
@@ -643,7 +643,7 @@ namespace Kerbal_Construction_Time
         {
             string name = part.partInfo.name;
             int amt = 1;
-            if (name.ToLower().Contains("procedural"))
+            if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts();
                 foreach (PartResource resource in part.Resources.list)
@@ -667,7 +667,7 @@ namespace Kerbal_Construction_Time
         {
             string name = PartNameFromNode(part) + GetTweakScaleSize(part);
             int amt = 1;
-            if (name.ToLower().Contains("procedural"))
+            if (KCT_Utilities.PartIsProcedural(part))
             {
                 name = PartNameFromNode(part);
                 amt = (int)(1000 * GetPartCostFromNode(part, false));
@@ -696,7 +696,7 @@ namespace Kerbal_Construction_Time
         {
             string name = part.partInfo.name;
             int amt = 1;
-            if (name.ToLower().Contains("procedural"))
+            if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts();
                 foreach (PartResource resource in part.Resources.list)
@@ -716,7 +716,7 @@ namespace Kerbal_Construction_Time
         {
             string name = part.partInfo.name;
             int amt = 1;
-            if (name.ToLower().Contains("procedural"))
+            if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts();
                 foreach (PartResource resource in part.Resources.list)
@@ -735,7 +735,7 @@ namespace Kerbal_Construction_Time
         {
             string name = PartNameFromNode(part) + GetTweakScaleSize(part);
             int amt = 1;
-            if (name.ToLower().Contains("procedural"))
+            if (KCT_Utilities.PartIsProcedural(part))
             {
                 name = PartNameFromNode(part);
                 amt = (int)(1000 * GetPartCostFromNode(part, false));
@@ -747,7 +747,7 @@ namespace Kerbal_Construction_Time
         {
             string name = PartNameFromNode(part) + GetTweakScaleSize(part);
             int amt = 1;
-            if (name.ToLower().Contains("procedural"))
+            if (KCT_Utilities.PartIsProcedural(part))
             {
                 name = PartNameFromNode(part);
                 amt = (int)(1000 * GetPartCostFromNode(part, false));
@@ -980,7 +980,7 @@ namespace Kerbal_Construction_Time
                 {
                     if (KCT_Utilities.RemovePartFromInventory(p, inventory))
                     {
-                        if (!PartNameFromNode(p).ToLower().Contains("procedural"))
+                        if (!KCT_Utilities.PartIsProcedural(p))
                             blv.InventoryParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p), 1);
                         else
                             blv.InventoryParts.Add(PartNameFromNode(p), (int)(1000 * GetPartCostFromNode(p, false)));
@@ -1489,6 +1489,22 @@ namespace Kerbal_Construction_Time
                 return true;
             }
                 
+        }
+
+        public static bool PartIsProcedural(ConfigNode part)
+        {
+            ConfigNode[] modules = part.GetNodes("MODULE");
+            foreach (ConfigNode mod in modules)
+            {
+                if (mod.GetValue("name").ToLower().Contains("procedural"))
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool PartIsProcedural(ProtoPartSnapshot part)
+        {
+            return part.modules.Find(m => m.moduleName.ToLower().Contains("procedural")) != null;
         }
     }
 }
