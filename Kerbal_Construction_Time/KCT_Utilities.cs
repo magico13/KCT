@@ -621,10 +621,12 @@ namespace Kerbal_Construction_Time
             if (KCT_Utilities.PartIsProcedural(part))
             {
                 float cost = part.partInfo.cost + part.moduleCosts;
+                KCTDebug.Log("PP cost: " + cost);
                 foreach (ProtoPartResourceSnapshot resource in part.resources)
                 {
                     cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * float.Parse(resource.resourceValues.GetValue("amount")));
                 }
+                KCTDebug.Log("After fuel costs: " + cost);
                 amt = (int)(cost * 1000);
 
                 AddPartToInventory(name, amt);
@@ -1278,11 +1280,20 @@ namespace Kerbal_Construction_Time
             {
                 foreach (ConfigNode part in partNodes)
                 {
-                    string name = PartNameFromNode(part) + GetTweakScaleSize(part);
-                    if (!KCT_GUI.PartsInUse.ContainsKey(name))
-                        KCT_GUI.PartsInUse.Add(name, 1);
+                    string name = PartNameFromNode(part);
+                    int amt = 1;
+                    if (!PartIsProcedural(part))
+                    {
+                        name += GetTweakScaleSize(part);
+                    }
                     else
-                        ++KCT_GUI.PartsInUse[name];
+                    {
+                        amt = (int)(1000 * GetPartCostFromNode(part));
+                    }
+                    if (!KCT_GUI.PartsInUse.ContainsKey(name))
+                        KCT_GUI.PartsInUse.Add(name, amt);
+                    else
+                        KCT_GUI.PartsInUse[name] += amt;
                 }
             }
 
