@@ -635,8 +635,8 @@ namespace Kerbal_Construction_Time
             else
             {
                 string tweakscale = GetTweakScaleSize(part); //partName,tweakscale
-                string nameToStore = part.partInfo.name + tweakscale;
-                AddPartToInventory(nameToStore, amt);
+                name += tweakscale;
+                AddPartToInventory(name, amt);
                 return;
             }
         }
@@ -648,10 +648,12 @@ namespace Kerbal_Construction_Time
             if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts();
+                KCTDebug.Log("PP cost: " + cost);
                 foreach (PartResource resource in part.Resources.list)
                 {
                     cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.amount);
                 }
+                KCTDebug.Log("After fuel costs: " + cost);
                 amt = (int)(cost * 1000);
 
                 AddPartToInventory(name, amt);
@@ -1273,6 +1275,8 @@ namespace Kerbal_Construction_Time
 
         public static void RecalculateEditorBuildTime(ShipConstruct ship)
         {
+            if (!HighLogic.LoadedSceneIsEditor)
+                return;
             //KCTDebug.Log("Recalculating build time");
             List<ConfigNode> partNodes = ship.SaveShip().GetNodes("PART").ToList();
             KCT_GUI.PartsInUse.Clear();
