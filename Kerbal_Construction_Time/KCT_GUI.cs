@@ -44,7 +44,7 @@ namespace Kerbal_Construction_Time
         private static bool isKSCLocked = false, isEditorLocked = false;
 
 
-        private static List<GameScenes> validScenes = new List<GameScenes> { GameScenes.FLIGHT, GameScenes.EDITOR, GameScenes.SPH, GameScenes.SPACECENTER, GameScenes.TRACKSTATION };
+        private static List<GameScenes> validScenes = new List<GameScenes> { GameScenes.FLIGHT, GameScenes.EDITOR, GameScenes.SPACECENTER, GameScenes.TRACKSTATION };
         public static void SetGUIPositions(GUI.WindowFunction OnWindow)
         {
             GUISkin oldSkin = GUI.skin;
@@ -228,7 +228,7 @@ namespace Kerbal_Construction_Time
                 showSimulationWindow = !showSimulationWindow;
                 simulationWindowPosition.height = 1;
             }
-            else if ((HighLogic.LoadedScene == GameScenes.EDITOR) || (HighLogic.LoadedScene == GameScenes.SPH) && !PrimarilyDisabled)
+            else if ((HighLogic.LoadedScene == GameScenes.EDITOR) && !PrimarilyDisabled)
             {
                 showEditorGUI = !showEditorGUI;
                 KCT_GameStates.showWindows[1] = showEditorGUI;
@@ -1042,9 +1042,9 @@ namespace Kerbal_Construction_Time
                 if (FlightDriver.CanRevertToPrelaunch)
                 {
                     if (FlightDriver.LaunchSiteName == "LaunchPad")
-                        FlightDriver.RevertToPrelaunch(GameScenes.EDITOR);
+                        FlightDriver.RevertToPrelaunch(EditorFacility.VAB);
                     else if (FlightDriver.LaunchSiteName == "Runway")
-                        FlightDriver.RevertToPrelaunch(GameScenes.SPH);
+                        FlightDriver.RevertToPrelaunch(EditorFacility.SPH);
                 }
                 else
                 {
@@ -1087,9 +1087,9 @@ namespace Kerbal_Construction_Time
                 KCT_GameStates.flightSimulated = false;
                 KCT_GameStates.simulationEndTime = 0;
                 if (FlightDriver.LaunchSiteName == "LaunchPad")
-                    FlightDriver.RevertToPrelaunch(GameScenes.EDITOR);
+                    FlightDriver.RevertToPrelaunch(EditorFacility.VAB);
                 else if (FlightDriver.LaunchSiteName == "Runway")
-                    FlightDriver.RevertToPrelaunch(GameScenes.SPH);
+                    FlightDriver.RevertToPrelaunch(EditorFacility.SPH);
                 centralWindowPosition.height = 1;
             }
             if (GUILayout.Button("Go to Space Center"))
@@ -1156,9 +1156,9 @@ namespace Kerbal_Construction_Time
               //  if (MCEWrapper.MCEAvailable) //Support for MCE
               //      MCEWrapper.IloadMCEbackup();
                 if (FlightDriver.LaunchSiteName == "LaunchPad")
-                    FlightDriver.RevertToPrelaunch(GameScenes.EDITOR);
+                    FlightDriver.RevertToPrelaunch(EditorFacility.VAB);
                 else if (FlightDriver.LaunchSiteName == "Runway")
-                    FlightDriver.RevertToPrelaunch(GameScenes.SPH);
+                    FlightDriver.RevertToPrelaunch(EditorFacility.SPH);
                 centralWindowPosition.height = 1;
             }
             if (GUILayout.Button("Close"))
@@ -1439,8 +1439,8 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label(p.partInfo.title.Length <= 15 ? p.partInfo.title : p.partInfo.title.Substring(0, 15));
                     if (GUILayout.Button("Fill", GUILayout.Width(75)))
                     {
-                        if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.uid) == null)
-                            KCT_GameStates.launchedCrew.Add(new CrewedPart(p.uid, new List<ProtoCrewMember>()));
+                        if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.flightID) == null)
+                            KCT_GameStates.launchedCrew.Add(new CrewedPart(p.flightID, new List<ProtoCrewMember>()));
                         for (int i=0; i<p.CrewCapacity; i++)
                         {
                             if (KCT_GameStates.launchedCrew[j].crewList.Count <= i)
@@ -1605,8 +1605,8 @@ namespace Kerbal_Construction_Time
             if (partIndex > -1)
             {
                 Part p = parts[partIndex];
-                if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.uid) == null)
-                    KCT_GameStates.launchedCrew.Add(new CrewedPart(p.uid, new List<ProtoCrewMember>()));
+                if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.flightID) == null)
+                    KCT_GameStates.launchedCrew.Add(new CrewedPart(p.flightID, new List<ProtoCrewMember>()));
                 for (int i = 0; i < p.CrewCapacity; i++)
                 {
                     if (KCT_GameStates.launchedCrew[partIndex].crewList.Count <= i)
@@ -2033,7 +2033,7 @@ namespace Kerbal_Construction_Time
                 if (KCT_GameStates.kctToolbarButton != null)
                 {
                     if (!KCT_GameStates.settings.enabledForSave) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
-                    else KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(new GameScenes[] { GameScenes.SPACECENTER, GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.EDITOR, GameScenes.SPH });
+                    else KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(new GameScenes[] { GameScenes.SPACECENTER, GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.EDITOR });
                     KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
                     KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
                     KCT_GameStates.kctToolbarButton.OnClick += ((e) =>
@@ -2299,7 +2299,8 @@ namespace Kerbal_Construction_Time
                         ++KCT_GameStates.EditedVesselParts[name];
                 }
 
-                EditorDriver.StartAndLoadVessel(tempFile);
+                //EditorDriver.StartAndLoadVessel(tempFile);
+                EditorDriver.StartAndLoadVessel(tempFile, b.type == KCT_BuildListVessel.ListType.VAB ? EditorFacility.VAB : EditorFacility.SPH);
             }
             if (GUILayout.Button("Rename"))
             {

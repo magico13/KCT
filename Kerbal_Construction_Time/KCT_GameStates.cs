@@ -21,7 +21,7 @@ namespace Kerbal_Construction_Time
         public static String simulationReason;
         public static KCT_Settings settings = new KCT_Settings();
         public static KCT_TimeSettings timeSettings = new KCT_TimeSettings();
-        public static ShipBackup recoveryRequestVessel;
+        //public static ShipBackup recoveryRequestVessel;
 
         public static KCT_KSC ActiveKSC = null;
         public static List<KCT_KSC> KSCs = new List<KCT_KSC>();
@@ -110,7 +110,7 @@ namespace Kerbal_Construction_Time
 
         public CrewedPart FromPart(Part part, List<ProtoCrewMember> crew)
         {
-            partID = part.uid;
+            partID = part.flightID;
             crewList = crew;
             return this;
         }

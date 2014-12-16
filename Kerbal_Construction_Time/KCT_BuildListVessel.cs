@@ -38,7 +38,7 @@ namespace Kerbal_Construction_Time
                 foreach (PseudoPart PP in this.GetPseudoParts())
                 {
                     Part p = KCT_Utilities.GetAvailablePartByName(PP.name).partPrefab;
-                    p.uid = PP.uid;
+                    p.flightID = PP.uid;
                     temp.Add(p);
                 }
                 return temp;
@@ -108,16 +108,16 @@ namespace Kerbal_Construction_Time
 
         public KCT_BuildListVessel(ProtoVessel vessel) //For recovered vessels
         {
-            if (KCT_GameStates.recoveryRequestVessel == null)
+           /* if (KCT_GameStates.recoveryRequestVessel == null)
             {
                 KCTDebug.Log("Somehow tried to recover something that was null!");
                 return;
-            }
+            }*/
             id = Guid.NewGuid();
             shipName = vessel.vesselName;
             //shipNode = KCT_Utilities.ProtoVesselToCraftFile(vessel);
             string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/tmp.craft";
-            KCT_GameStates.recoveryRequestVessel.SaveShip(tempFile);
+           // KCT_GameStates.recoveryRequestVessel.SaveShip(tempFile);
             shipNode = ConfigNode.Load(tempFile);
             //recovered = vessel;
 

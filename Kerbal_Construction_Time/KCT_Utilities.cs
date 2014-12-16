@@ -647,7 +647,7 @@ namespace Kerbal_Construction_Time
             int amt = 1;
             if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
             {
-                float cost = part.partInfo.cost + part.GetModuleCosts();
+                float cost = part.partInfo.cost + part.GetModuleCosts(0);
                 foreach (PartResource resource in part.Resources.list)
                 {
                     cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.amount);
@@ -700,7 +700,7 @@ namespace Kerbal_Construction_Time
             int amt = 1;
             if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
             {
-                float cost = part.partInfo.cost + part.GetModuleCosts();
+                float cost = part.partInfo.cost + part.GetModuleCosts(0);
                 foreach (PartResource resource in part.Resources.list)
                 {
                     cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.maxAmount);
@@ -720,7 +720,7 @@ namespace Kerbal_Construction_Time
             int amt = 1;
             if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
             {
-                float cost = part.partInfo.cost + part.GetModuleCosts();
+                float cost = part.partInfo.cost + part.GetModuleCosts(0);
                 foreach (PartResource resource in part.Resources.list)
                 {
                     cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.maxAmount);

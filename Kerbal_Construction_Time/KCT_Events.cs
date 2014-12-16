@@ -46,11 +46,11 @@ namespace Kerbal_Construction_Time
 
         public void RecoveryRequested (Vessel v)
         {
-            ShipBackup backup = ShipAssembly.MakeVesselBackup(v);
+            //ShipBackup backup = ShipAssembly.MakeVesselBackup(v);
             //string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp2.craft";
             //backup.SaveShip(tempFile);
 
-            KCT_GameStates.recoveryRequestVessel = backup; //ConfigNode.Load(tempFile);
+           // KCT_GameStates.recoveryRequestVessel = backup; //ConfigNode.Load(tempFile);
         }
 
         private void StageRecoverySuccessEvent(Vessel v, float[] infoArray, string reason)
@@ -169,7 +169,7 @@ namespace Kerbal_Construction_Time
         public void gameSceneEvent(GameScenes scene)
         {
             if (!KCT_GameStates.settings.enabledForSave) return;
-            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
+            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
             if (validScenes.Contains(scene))
             {
                 //Check for simulation save and load it.
@@ -183,7 +183,7 @@ namespace Kerbal_Construction_Time
                 KCT_Utilities.MakeSimulationSave();
             }
 
-            if (HighLogic.LoadedScene == scene && (scene == GameScenes.EDITOR || scene == GameScenes.SPH)) //Fix for null reference when using new or load buttons in editor
+            if (HighLogic.LoadedScene == scene && scene == GameScenes.EDITOR) //Fix for null reference when using new or load buttons in editor
             {
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
             }

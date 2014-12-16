@@ -41,7 +41,7 @@ namespace Kerbal_Construction_Time
     {
         public override void OnSave(ConfigNode node)
         {
-            Boolean error = false;
+           // Boolean error = false;
             KCTDebug.Log("Writing to persistence.");
             base.OnSave(node);
             KCT_DataStorage kctVS = new KCT_DataStorage();
@@ -305,7 +305,7 @@ namespace Kerbal_Construction_Time
                 if (KCT_GameStates.kctToolbarButton != null)
                 {
                     if (!KCT_GameStates.settings.enabledForSave) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
-                    else KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(new GameScenes[] { GameScenes.SPACECENTER, GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.EDITOR, GameScenes.SPH });
+                    else KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(new GameScenes[] { GameScenes.SPACECENTER, GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.EDITOR });
                     KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
                     KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
                     KCT_GameStates.kctToolbarButton.OnClick += ((e) =>
@@ -361,7 +361,7 @@ namespace Kerbal_Construction_Time
                 try
                 {
                     Debug.Log("[KCT] Adding InternalModule scenario to game '" + HighLogic.CurrentGame.Title + "'");
-                    HighLogic.CurrentGame.AddProtoScenarioModule(typeof(KerbalConstructionTimeData), new GameScenes[] {GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.EDITOR, GameScenes.SPH, GameScenes.TRACKSTATION});
+                    HighLogic.CurrentGame.AddProtoScenarioModule(typeof(KerbalConstructionTimeData), new GameScenes[] {GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.EDITOR, GameScenes.TRACKSTATION});
                     // the game will add this scenario to the appropriate persistent file on save from now on
                 }
                 catch (ArgumentException ae)
@@ -381,8 +381,6 @@ namespace Kerbal_Construction_Time
                     scenario.targetScenes.Add(GameScenes.FLIGHT);
                 if (!scenario.targetScenes.Contains(GameScenes.EDITOR))
                     scenario.targetScenes.Add(GameScenes.EDITOR);
-                if (!scenario.targetScenes.Contains(GameScenes.SPH))
-                    scenario.targetScenes.Add(GameScenes.SPH);
                 if (!scenario.targetScenes.Contains(GameScenes.TRACKSTATION))
                     scenario.targetScenes.Add(GameScenes.TRACKSTATION);
 
@@ -454,7 +452,7 @@ namespace Kerbal_Construction_Time
                 {
                     Part p = FlightGlobals.ActiveVessel.parts[i];
                     {
-                        CrewedPart cP = KCT_GameStates.launchedCrew.Find(part => part.partID == p.uid);
+                        CrewedPart cP = KCT_GameStates.launchedCrew.Find(part => part.partID == p.flightID);
                         if (cP == null) continue;
                         List<ProtoCrewMember> crewList = cP.crewList;
                         foreach (ProtoCrewMember crewMember in crewList)
