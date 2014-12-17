@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
     public class KCTDebug
     {

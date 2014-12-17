@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
     public static partial class KCT_GUI
     {
@@ -1071,7 +1071,7 @@ namespace Kerbal_Construction_Time
 
             if (FlightDriver.CanRevertToPostInit && GUILayout.Button("Restart Simulation"))
             {
-                Kerbal_Construction_Time.moved = false;
+                KerbalConstructionTime.moved = false;
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
                 KCT_GameStates.simulationEndTime = 0;
@@ -1136,7 +1136,7 @@ namespace Kerbal_Construction_Time
             if (FlightDriver.CanRevertToPostInit && GUILayout.Button("Restart Simulation"))
             {
                 showSimulationWindow = false;
-                Kerbal_Construction_Time.moved = false;
+                KerbalConstructionTime.moved = false;
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
                 KCT_GameStates.simulationEndTime = 0;
@@ -1439,8 +1439,8 @@ namespace Kerbal_Construction_Time
                     GUILayout.Label(p.partInfo.title.Length <= 15 ? p.partInfo.title : p.partInfo.title.Substring(0, 15));
                     if (GUILayout.Button("Fill", GUILayout.Width(75)))
                     {
-                        if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.flightID) == null)
-                            KCT_GameStates.launchedCrew.Add(new CrewedPart(p.flightID, new List<ProtoCrewMember>()));
+                        if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.craftID) == null)
+                            KCT_GameStates.launchedCrew.Add(new CrewedPart(p.craftID, new List<ProtoCrewMember>()));
                         for (int i=0; i<p.CrewCapacity; i++)
                         {
                             if (KCT_GameStates.launchedCrew[j].crewList.Count <= i)
@@ -1605,8 +1605,8 @@ namespace Kerbal_Construction_Time
             if (partIndex > -1)
             {
                 Part p = parts[partIndex];
-                if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.flightID) == null)
-                    KCT_GameStates.launchedCrew.Add(new CrewedPart(p.flightID, new List<ProtoCrewMember>()));
+                if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.craftID) == null)
+                    KCT_GameStates.launchedCrew.Add(new CrewedPart(p.craftID, new List<ProtoCrewMember>()));
                 for (int i = 0; i < p.CrewCapacity; i++)
                 {
                     if (KCT_GameStates.launchedCrew[partIndex].crewList.Count <= i)

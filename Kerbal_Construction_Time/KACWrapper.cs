@@ -9,7 +9,7 @@ using System.Text;
 // TODO: Change this namespace to something specific to your plugin here.
 //EG:
 // namespace MyPlugin_KACWrapper
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
 
     ///////////////////////////////////////////////////////////////////////////////////////////

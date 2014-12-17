@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
     class KCT_OrbitAdjuster
     {

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 
 //Change this to your mod's namespace!
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
     /////////////////////////////////////
     // DO NOT EDIT BEYOND THIS POINT!  //

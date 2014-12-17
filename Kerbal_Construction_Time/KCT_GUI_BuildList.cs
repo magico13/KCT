@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
     public static partial class KCT_GUI
     {
@@ -277,7 +277,7 @@ namespace Kerbal_Construction_Time
                                 if (rollout != null)
                                     KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);
                                 KCT_GameStates.launchedVessel = b;
-                                if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "LaunchPad").Count > 0)//  ShipConstruction.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
+                                if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "LaunchPad").Count == 0)//  ShipConstruction.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
                                 {
                                     showBLPlus = false;
                                     // buildList.RemoveAt(i);
@@ -415,7 +415,7 @@ namespace Kerbal_Construction_Time
                         {
                             showBLPlus = false;
                             KCT_GameStates.launchedVessel = b;
-                            if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "Runway").Count > 0)
+                            if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "Runway").Count == 0)
                             {
                                 if (!IsCrewable(b.ExtractedParts))
                                     b.Launch();

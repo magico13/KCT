@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 using System.IO;
 
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
     public class KCT_BuildListVessel : IKCTBuildItem
     {
@@ -38,7 +38,7 @@ namespace Kerbal_Construction_Time
                 foreach (PseudoPart PP in this.GetPseudoParts())
                 {
                     Part p = KCT_Utilities.GetAvailablePartByName(PP.name).partPrefab;
-                    p.flightID = PP.uid;
+                    p.craftID = PP.uid;
                     temp.Add(p);
                 }
                 return temp;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
     static class KCT_Utilities
     {
@@ -840,7 +840,7 @@ namespace Kerbal_Construction_Time
             string saveFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/persistent.sfs";
             KCT_Utilities.disableSimulationLocks();
             KCT_GameStates.flightSimulated = false;
-            Kerbal_Construction_Time.moved = false;
+            KerbalConstructionTime.moved = false;
             KCT_GameStates.simulationEndTime = 0;
             KCTDebug.Log("Swapping persistent.sfs with simulation backup file.");
             System.IO.File.Copy(backupFile, saveFile, true);

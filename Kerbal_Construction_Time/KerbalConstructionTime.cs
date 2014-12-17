@@ -5,34 +5,34 @@ using System.Text;
 using UnityEngine;
 using KSP;
 
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
     [KSPAddon(KSPAddon.Startup.TrackingStation, false)]
-    public class KCT_Tracking_Station : Kerbal_Construction_Time
+    public class KCT_Tracking_Station : KerbalConstructionTime
     {
 
     }
 
     [KSPAddon(KSPAddon.Startup.Flight, false)]
-    public class KCT_Flight : Kerbal_Construction_Time
+    public class KCT_Flight : KerbalConstructionTime
     {
 
     }
 
     [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
-    public class KCT_SpaceCenter : Kerbal_Construction_Time
+    public class KCT_SpaceCenter : KerbalConstructionTime
     {
         
     }
 
     [KSPAddon(KSPAddon.Startup.EditorVAB, false)]
-    public class KCT_VABEditor : Kerbal_Construction_Time
+    public class KCT_VABEditor : KerbalConstructionTime
     {
 
     }
 
     [KSPAddon(KSPAddon.Startup.EditorSPH, false)]
-    public class KCT_SPHEditor : Kerbal_Construction_Time
+    public class KCT_SPHEditor : KerbalConstructionTime
     {
 
     }
@@ -287,15 +287,15 @@ namespace Kerbal_Construction_Time
             }
             KCT_GameStates.ActiveKSC.AsConfigNode().Save(KSPUtil.ApplicationRootPath + "/KSC.node");
 
-            Kerbal_Construction_Time.DelayedStart();
+            KerbalConstructionTime.DelayedStart();
             KCT_GUI.CheckToolbar();
         }
     }
 
-    public class Kerbal_Construction_Time : MonoBehaviour
+    public class KerbalConstructionTime : MonoBehaviour
     {
         public static MonoBehaviour instance;
-        internal Kerbal_Construction_Time()
+        internal KerbalConstructionTime()
         {
             instance = this;
             if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null && KCT_GameStates.settings.PreferBlizzyToolbar)
@@ -448,11 +448,18 @@ namespace Kerbal_Construction_Time
                         && FlightGlobals.ActiveVessel.GetCrewCount() == 0 && KCT_GameStates.launchedCrew.Count > 0)
             {
                 KerbalRoster roster = HighLogic.CurrentGame.CrewRoster;
+
+                foreach (CrewedPart c in KCT_GameStates.launchedCrew)
+                {
+                    KCTDebug.Log(c.partID);
+                }
+
                 for (int i = 0; i < FlightGlobals.ActiveVessel.parts.Count; i++)
                 {
                     Part p = FlightGlobals.ActiveVessel.parts[i];
+                    KCTDebug.Log("craft: " + p.craftID);
                     {
-                        CrewedPart cP = KCT_GameStates.launchedCrew.Find(part => part.partID == p.flightID);
+                        CrewedPart cP = KCT_GameStates.launchedCrew.Find(part => part.partID == p.craftID);
                         if (cP == null) continue;
                         List<ProtoCrewMember> crewList = cP.crewList;
                         foreach (ProtoCrewMember crewMember in crewList)
@@ -734,7 +741,7 @@ namespace Kerbal_Construction_Time
                     {
                         KCTDebug.Log("Taking control of launch button");
                         EditorLogic.fetch.launchBtn.methodToInvoke = "ShowLaunchAlert";
-                        EditorLogic.fetch.launchBtn.scriptWithMethodToInvoke = Kerbal_Construction_Time.instance;
+                        EditorLogic.fetch.launchBtn.scriptWithMethodToInvoke = KerbalConstructionTime.instance;
                     }
                     else
                         InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
     public abstract class ConfigNodeStorage : IPersistenceLoad, IPersistenceSave
     {

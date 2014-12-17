@@ -30,7 +30,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace Kerbal_Construction_Time {
+namespace KerbalConstructionTime {
 
 
 

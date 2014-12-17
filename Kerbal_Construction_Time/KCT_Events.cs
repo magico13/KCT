@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 using System.Collections;
 
-namespace Kerbal_Construction_Time
+namespace KerbalConstructionTime
 {
     class KCT_Events
     {
