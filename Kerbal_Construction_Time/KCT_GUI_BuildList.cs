@@ -11,6 +11,9 @@ namespace KerbalConstructionTime
         private static int listWindow = -1;
         public static void DrawBuildListWindow(int windowID)
         {
+            if (buildListWindowPosition.xMax > Screen.width)
+                buildListWindowPosition.x = Screen.width - buildListWindowPosition.width;
+
             //GUI.skin = HighLogic.Skin;
             int width1 = 120;
             int width2 = 100;
@@ -265,7 +268,12 @@ namespace KerbalConstructionTime
                         }
                         else if (!HighLogic.LoadedSceneIsEditor && HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && (!reconActive || (rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
-                            if (KCT_Utilities.ReconditioningActive(null))
+                            bool operational = new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
+                            if (!operational)
+                            {
+                                ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                            }
+                            else if (KCT_Utilities.ReconditioningActive(null))
                             {
                                 //can't launch now
                                 ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in "
@@ -413,30 +421,38 @@ namespace KerbalConstructionTime
                         //ScenarioDestructibles.protoDestructibles["KSCRunway"].
                         if (!HighLogic.LoadedSceneIsEditor && HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
-                            showBLPlus = false;
-                            KCT_GameStates.launchedVessel = b;
-                            if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "Runway").Count == 0)
+                            bool operational = true;//new PreFlightTests.FacilityOperational("Runway", "building").Test();
+                            if (!operational)
                             {
-                                if (!IsCrewable(b.ExtractedParts))
-                                    b.Launch();
-                                else
-                                {
-                                    showBuildList = false;
-                                    centralWindowPosition.height = 1;
-                                    KCT_GameStates.launchedCrew.Clear();
-                                    parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                                    pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
-                                    KCT_GameStates.launchedCrew = new List<CrewedPart>();
-                                    foreach (PseudoPart pp in pseudoParts)
-                                        KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
-                                    CrewFirstAvailable();
-                                    showShipRoster = true;
-                                }
+                                ScreenMessages.PostScreenMessage("You must repair the runway prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                             }
                             else
                             {
-                                showBuildList = false;
-                                showClearLaunch = true;
+                                showBLPlus = false;
+                                KCT_GameStates.launchedVessel = b;
+                                if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "Runway").Count == 0)
+                                {
+                                    if (!IsCrewable(b.ExtractedParts))
+                                        b.Launch();
+                                    else
+                                    {
+                                        showBuildList = false;
+                                        centralWindowPosition.height = 1;
+                                        KCT_GameStates.launchedCrew.Clear();
+                                        parts = KCT_GameStates.launchedVessel.ExtractedParts;
+                                        pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
+                                        KCT_GameStates.launchedCrew = new List<CrewedPart>();
+                                        foreach (PseudoPart pp in pseudoParts)
+                                            KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
+                                        CrewFirstAvailable();
+                                        showShipRoster = true;
+                                    }
+                                }
+                                else
+                                {
+                                    showBuildList = false;
+                                    showClearLaunch = true;
+                                }
                             }
                         }
                         else if (!HighLogic.LoadedSceneIsEditor && recovery != null)

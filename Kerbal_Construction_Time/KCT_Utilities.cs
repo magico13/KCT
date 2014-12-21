@@ -955,6 +955,62 @@ namespace KerbalConstructionTime
         {
             if (CurrentGameIsCareer())
             {
+                //Check upgrades
+                //First, mass limit
+                bool passed = true;
+                string failedReason = "";
+                if (blv.type == KCT_BuildListVessel.ListType.VAB)
+                {
+                    if (blv.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)))
+                    {
+                        passed = false;
+                        failedReason = "Mass limit exceeded!";
+                    }
+                    if (blv.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.VehicleAssemblyBuilding)))
+                    {
+                        passed = false;
+                        failedReason = "Part Count limit exceeded!";
+                    }
+                    if (HighLogic.LoadedSceneIsEditor)
+                    {
+                        PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(EditorLogic.fetch.ship, SpaceCenterFacility.VehicleAssemblyBuilding, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.VehicleAssemblyBuilding)));
+                        if (!sizeCheck.Test())
+                        {
+                            passed = false;
+                            failedReason = "Size limits exceeded!";
+                        }
+                    }
+                }
+                else if (blv.type == KCT_BuildListVessel.ListType.SPH)
+                {
+                    if (blv.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway)))
+                    {
+                        passed = false;
+                        failedReason = "Mass limit exceeded!";
+                    }
+                    if (blv.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.SpaceplaneHangar)))
+                    {
+                        passed = false;
+                        failedReason = "Part Count limit exceeded!";
+                    }
+                    if (HighLogic.LoadedSceneIsEditor)
+                    {
+                        PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(EditorLogic.fetch.ship, SpaceCenterFacility.SpaceplaneHangar, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.SpaceplaneHangar)));
+                        if (!sizeCheck.Test())
+                        {
+                            passed = false;
+                            failedReason = "Size limits exceeded!";
+                        }
+                    }
+                }
+                if (!passed)
+                {
+                    ScreenMessages.PostScreenMessage("Did not pass editor checks!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                    ScreenMessages.PostScreenMessage(failedReason, 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                    return blv;
+                }
+
+
                 float totalCost = GetTotalVesselCost(blv.shipNode);
                 double prevFunds = Funding.Instance.Funds;
                 double newFunds = SpendFunds(totalCost, TransactionReasons.VesselRollout);
@@ -1142,11 +1198,12 @@ namespace KerbalConstructionTime
         public static float GetRecoveryValueForChuteLanding(ProtoVessel pv)
         {
             bool probeCoreAttached = false;
-            foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
+           // foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
             {
-                if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && ((ModuleCommand)module.moduleRef).minimumCrew == 0)) != null)
+                //if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && ((ModuleCommand)module.moduleRef).minimumCrew == 0)) != null)
+                if (pv.wasControllable)
                 {
-                    KCTDebug.Log("Probe Core found!");
+                    KCTDebug.Log("Vessel was controllable!");
                     probeCoreAttached = true;
                 }
             }
@@ -1368,13 +1425,23 @@ namespace KerbalConstructionTime
             {
                 if (mi.info.Contains("Fully-Deployed Drag"))
                 {
-                    string[] split = mi.info.Split(new Char[] {':'});
-                    //todo: figure out which index has the fully-deployed drag phrase, and then the one higher is the value
+                    string[] split = mi.info.Split(new Char[] {':', '\n'});
+                    //TODO: Get SR code and put that in here, maybe with TryParse instead of Parse
                     for (int i=0; i<split.Length; i++)
                     {
                         if (split[i].Contains("Fully-Deployed Drag"))
                         {
-                            return float.Parse(split[i + 1]);
+                            float drag = 500;
+                            if (!float.TryParse(split[i+1], out drag))
+                            {
+                                string[] split2 = split[i + 1].Split('>');
+                                if (!float.TryParse(split2[1], out drag))
+                                {
+                                    Debug.Log("[KCT] Failure trying to read parachute data. Assuming 500 drag.");
+                                    drag = 500;
+                                }
+                            }
+                            return drag;
                         }
                     }
                 }
@@ -1399,7 +1466,7 @@ namespace KerbalConstructionTime
             return (recon != null);
         }
 
-        public static KCT_BuildListVessel BLVesselByID(Guid id)
+        public static KCT_BuildListVessel FindBLVesselByID(Guid id)
         {
             KCT_BuildListVessel ret = null;
             foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
@@ -1432,6 +1499,9 @@ namespace KerbalConstructionTime
             return ret;
         }
 
+        /**
+         * Don't actually use this!
+         * */
         public static ConfigNode ProtoVesselToCraftFile(ProtoVessel vessel)
         {
             ConfigNode craft = new ConfigNode("ShipNode");
@@ -1520,6 +1590,112 @@ namespace KerbalConstructionTime
         public static bool PartIsProcedural(ProtoPartSnapshot part)
         {
             return part.modules.Find(m => m.moduleName.ToLower().Contains("procedural")) != null;
+        }
+
+        public static double ParseMath(string input, Dictionary<string, string> variables)
+        {
+            foreach (KeyValuePair<string, string> kvp in variables)
+            {
+                if (input.Contains("["+kvp.Key+"]"))
+                {
+                    input.Replace("[" + kvp.Key + "]", kvp.Value);
+                }
+            }
+
+            double currentVal = 0;
+            string stack = "";
+            string lastOp = "+";
+            string[] ops = { "+", "-", "*", "/", "%", "^", "(", "e" };
+            for (int i = 0; i < input.Length; ++i )
+            {
+                string ch = input[i].ToString();
+                bool isOp = false;
+
+                foreach (string op in ops)
+                {
+                    if (op == ch)
+                    {
+                        isOp = true;
+                        break;
+                    }
+                }
+                if (isOp)
+                {
+                    if (ch == "-" && (stack.Trim() == ""))
+                    {
+                        stack += ch;
+                    }
+                    else if (ch == "e" || ch == "E")
+                    {
+                        int index;
+                        for (index = i; index < input.Length; ++index)
+                        {
+                            string ch2 = input[index].ToString();
+                            if (ops.Contains(ch2))
+                                break;
+                        }
+                        string sub = input.Substring(i + 1, index - i - 1);
+                        double exp = ParseMath(sub, variables);
+                        double newVal = double.Parse(stack) * Math.Pow(10, exp);
+                        currentVal = DoMath(currentVal, lastOp, newVal.ToString());
+                        stack = "0";
+                        lastOp = "+";
+                        i = index - 1;
+                    }
+                    else if (ch == "(")
+                    {
+                        int depth = 0;
+                        int j = 0;
+                        for (j = i + 1; j < input.Length; ++j)
+                        {
+                            if (input[j] == '(') depth++;
+                            if (input[j] == ')') depth--;
+
+                            if (depth < 0)
+                            {
+                                break;
+                            }
+                            string sub = input.Substring(i + 1, j - i - 1);
+                            string val = ParseMath(sub, variables).ToString();
+                            input = input.Substring(0, i) + val + input.Substring(j + 1);
+                            --i;
+                        }
+                    }
+                    else
+                    {
+                        currentVal = DoMath(currentVal, lastOp, stack);
+                        lastOp = ch;
+                        stack = "";
+                    }
+                }
+                else
+                {
+                    stack += ch;
+                }
+            }
+            return currentVal;
+        }
+
+        private static double DoMath(double currentVal, string operation, string newVal)
+        {
+            double newValue = 0;
+            if (!double.TryParse(newVal, out newValue))
+            {
+                Debug.Log("[KCT] Tried to parse a non-double value: " + newVal);
+                return currentVal;
+            }
+            switch (operation)
+            {
+                case "+": currentVal += newValue; break;
+                case "-": currentVal -= newValue; break;
+                case "*": currentVal *= newValue; break;
+                case "/": currentVal /= newValue; break;
+                case "%": currentVal = currentVal % long.Parse(newVal); break;
+                case "^": currentVal = Math.Pow(currentVal, newValue); break;
+                default: break;
+            }
+
+            return currentVal;
         }
     }
 }

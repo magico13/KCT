@@ -866,6 +866,9 @@ namespace KerbalConstructionTime
                 }
                 if (KCT_Utilities.CurrentGameIsCareer())
                 {
+                    if (KCT_GameStates.FundsGivenForVessel != 0)
+                        KCT_Utilities.SpendFunds(KCT_GameStates.FundsGivenForVessel, TransactionReasons.VesselRollout);
+
                     KCT_GameStates.FundsGivenForVessel = EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2);
                     KCT_Utilities.AddFunds(KCT_GameStates.FundsGivenForVessel, TransactionReasons.VesselRollout);
                 }
@@ -1182,7 +1185,7 @@ namespace KerbalConstructionTime
         {
             InputLockManager.RemoveControlLock("KCTPopupLock");
             //List<KCT_BuildListVessel> buildList = b.
-            KCT_BuildListVessel b = KCT_Utilities.BLVesselByID(IDSelected);// = listWindow == 0 ? KCT_GameStates.VABList[IndexSelected] : KCT_GameStates.SPHList[IndexSelected];
+            KCT_BuildListVessel b = KCT_Utilities.FindBLVesselByID(IDSelected);// = listWindow == 0 ? KCT_GameStates.VABList[IndexSelected] : KCT_GameStates.SPHList[IndexSelected];
             if (b == null)
             {
                 KCTDebug.Log("Tried to remove a vessel that doesn't exist!");
@@ -2260,7 +2263,7 @@ namespace KerbalConstructionTime
             bLPlusPosition.yMin = buildListWindowPosition.yMin;
             bLPlusPosition.height = 175;
             //bLPlusPosition.height = bLPlusPosition.yMax - bLPlusPosition.yMin;
-            KCT_BuildListVessel b = KCT_Utilities.BLVesselByID(IDSelected);
+            KCT_BuildListVessel b = KCT_Utilities.FindBLVesselByID(IDSelected);
             GUILayout.BeginVertical();
             if (GUILayout.Button("Scrap"))
             {
@@ -2346,7 +2349,7 @@ namespace KerbalConstructionTime
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Save"))
             {
-                KCT_BuildListVessel b = KCT_Utilities.BLVesselByID(IDSelected);
+                KCT_BuildListVessel b = KCT_Utilities.FindBLVesselByID(IDSelected);
                 b.shipName = newName; //Change the name from our point of view
                 showRename = false;
                 centralWindowPosition.width = 150;
