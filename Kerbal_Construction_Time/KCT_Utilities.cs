@@ -319,7 +319,9 @@ namespace KerbalConstructionTime
             }
             else if (type == KCT_BuildListVessel.ListType.TechNode)
             {
-                ret = Math.Pow(2, KSC.RDUpgrades[1] + 1) / 86400.0;
+                ret = ParseMath(KCT_GameStates.formulaSettings.NodeFormula, new Dictionary<string, string>() { {"N", KSC.RDUpgrades[1].ToString()} });//Math.Pow(2, KSC.RDUpgrades[1] + 1) / 86400.0;
+                double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
+                if (max > 0 && ret > max) ret = max;
             }
             return ret;
         }
@@ -1041,9 +1043,11 @@ namespace KerbalConstructionTime
                     if (KCT_Utilities.RemovePartFromInventory(p, inventory))
                     {
                         if (!KCT_Utilities.PartIsProcedural(p))
-                            blv.InventoryParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p), 1);
+                            AddToDict(blv.InventoryParts, PartNameFromNode(p) + GetTweakScaleSize(p), 1);
+                           // blv.InventoryParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p), 1);
                         else
-                            blv.InventoryParts.Add(PartNameFromNode(p), (int)(1000 * GetPartCostFromNode(p, false)));
+                            AddToDict(blv.InventoryParts, PartNameFromNode(p), (int)(1000 * GetPartCostFromNode(p, false)));
+                           // blv.InventoryParts.Add(PartNameFromNode(p), (int)(1000 * GetPartCostFromNode(p, false)));
                     }
                 }
             }
@@ -1621,13 +1625,15 @@ namespace KerbalConstructionTime
 
         public static double ParseMath(string input, Dictionary<string, string> variables)
         {
+            KCTDebug.Log(input);
             foreach (KeyValuePair<string, string> kvp in variables)
             {
                 if (input.Contains("["+kvp.Key+"]"))
                 {
-                    input.Replace("[" + kvp.Key + "]", kvp.Value);
+                    input = input.Replace("[" + kvp.Key + "]", kvp.Value);
                 }
             }
+            KCTDebug.Log("Input: "+input);
 
             double currentVal = 0;
             string stack = "";
@@ -1637,7 +1643,7 @@ namespace KerbalConstructionTime
             {
                 string ch = input[i].ToString();
                 bool isOp = false;
-
+                KCTDebug.Log(ch);
                 foreach (string op in ops)
                 {
                     if (op == ch)
@@ -1682,11 +1688,11 @@ namespace KerbalConstructionTime
                             {
                                 break;
                             }
-                            string sub = input.Substring(i + 1, j - i - 1);
-                            string val = ParseMath(sub, variables).ToString();
-                            input = input.Substring(0, i) + val + input.Substring(j + 1);
-                            --i;
                         }
+                        string sub = input.Substring(i + 1, j - i - 1);
+                        string val = ParseMath(sub, variables).ToString();
+                        input = input.Substring(0, i) + val + input.Substring(j + 1);
+                        --i;
                     }
                     else
                     {
@@ -1700,6 +1706,8 @@ namespace KerbalConstructionTime
                     stack += ch;
                 }
             }
+            currentVal = DoMath(currentVal, lastOp, stack);
+            KCTDebug.Log("Result: " + currentVal);
             return currentVal;
         }
 

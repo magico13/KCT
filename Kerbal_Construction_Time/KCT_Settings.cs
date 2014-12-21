@@ -137,7 +137,40 @@ namespace KerbalConstructionTime
             ConfigNode cnTemp = ConfigNode.CreateConfigFromObject(this, new ConfigNode());
             cnTemp.Save(filePath);
         }
+    }
 
+    public class KCT_FormulaSettings
+    {
+        protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Formulas.cfg";
+        [Persistent] public string NodeFormula, UpgradeFundsFormula, UpgradeScienceFormula;
+        [Persistent] public string NodeMax, UpgradeFundsMax, UpgradeScienceMax;
+        public KCT_FormulaSettings()
+        {
+            NodeFormula = "2^([N]+1) / 86400"; //Rate = 2^(N+1)/86400 BP/s
+            NodeMax = "0";
+            UpgradeFundsFormula = "2^([N]+4) * 1000";
+            UpgradeFundsMax = "1024000";
+            UpgradeScienceFormula = "2^([N]+2) * 1.0";
+            UpgradeScienceMax = "512";
+        }
+
+        public void Load()
+        {
+            if (System.IO.File.Exists(filePath))
+            {
+                ConfigNode cnToLoad = ConfigNode.Load(filePath);
+                ConfigNode.LoadObjectFromConfig(this, cnToLoad.GetNode("KCT_FormulaSettings"));
+            }
+        }
+
+        public void Save()
+        {
+            ConfigNode cnTemp = new ConfigNode("KCT_FormulaSettings");
+            ConfigNode.CreateConfigFromObject(this, new ConfigNode()).CopyTo(cnTemp);
+            ConfigNode toSave = new ConfigNode();
+            toSave.AddNode(cnTemp);
+            toSave.Save(filePath);
+        }
     }
 }
 /*

@@ -353,6 +353,8 @@ namespace KerbalConstructionTime
             KCT_GameStates.settings.Save(); //Save the settings file, with defaults if it doesn't exist
             KCT_GameStates.timeSettings.Load(); //Load the time settings
             KCT_GameStates.timeSettings.Save(); //Save the time settings
+            KCT_GameStates.formulaSettings.Load();
+            KCT_GameStates.formulaSettings.Save();
             
             //Code for saving to the persistence.sfs
             ProtoScenarioModule scenario = HighLogic.CurrentGame.scenarios.Find(s => s.moduleName == typeof(KerbalConstructionTimeData).Name);

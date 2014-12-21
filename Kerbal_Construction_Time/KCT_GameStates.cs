@@ -21,6 +21,7 @@ namespace KerbalConstructionTime
         public static String simulationReason;
         public static KCT_Settings settings = new KCT_Settings();
         public static KCT_TimeSettings timeSettings = new KCT_TimeSettings();
+        public static KCT_FormulaSettings formulaSettings = new KCT_FormulaSettings();
         //public static ShipBackup recoveryRequestVessel;
 
         public static KCT_KSC ActiveKSC = null;
