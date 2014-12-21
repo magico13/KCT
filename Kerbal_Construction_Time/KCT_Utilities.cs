@@ -1330,6 +1330,33 @@ namespace KerbalConstructionTime
             MessageSystem.Instance.AddMessage(m);
         }
 
+        public static bool LaunchFacilityIntact(KCT_BuildListVessel.ListType type)
+        {
+            bool intact = true;
+            if (type == KCT_BuildListVessel.ListType.VAB)
+            {
+                intact = new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
+            }
+            else if (type == KCT_BuildListVessel.ListType.SPH)
+            {
+               /* if (!new PreFlightTests.FacilityOperational("Runway", "End09").Test())
+                    intact = false;
+                if (!new PreFlightTests.FacilityOperational("Runway", "End27").Test())
+                    intact = false;*/
+                if (!new PreFlightTests.FacilityOperational("Runway", "Section1").Test())
+                    intact = false;
+                if (!new PreFlightTests.FacilityOperational("Runway", "Section2").Test())
+                    intact = false;
+                if (!new PreFlightTests.FacilityOperational("Runway", "Section3").Test())
+                    intact = false;
+                if (!new PreFlightTests.FacilityOperational("Runway", "Section4").Test())
+                    intact = false;
+                if (!new PreFlightTests.FacilityOperational("Runway", "Section5").Test())
+                    intact = false;
+            }
+            return intact;
+        }
+
         public static void RecalculateEditorBuildTime(ShipConstruct ship)
         {
             if (!HighLogic.LoadedSceneIsEditor)

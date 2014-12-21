@@ -268,7 +268,7 @@ namespace KerbalConstructionTime
                         }
                         else if (!HighLogic.LoadedSceneIsEditor && HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && (!reconActive || (rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
-                            bool operational = new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
+                            bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
                             if (!operational)
                             {
                                 ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
@@ -421,7 +421,7 @@ namespace KerbalConstructionTime
                         //ScenarioDestructibles.protoDestructibles["KSCRunway"].
                         if (!HighLogic.LoadedSceneIsEditor && HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
-                            bool operational = true;//new PreFlightTests.FacilityOperational("Runway", "building").Test();
+                            bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.SPH);//new PreFlightTests.FacilityOperational("Runway", "building").Test();
                             if (!operational)
                             {
                                 ScreenMessages.PostScreenMessage("You must repair the runway prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
