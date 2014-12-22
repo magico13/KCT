@@ -1659,7 +1659,7 @@ namespace KerbalConstructionTime
         {
             List<ProtoCrewMember> availableCrew = CrewAvailable();
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.MaxHeight(Screen.height / 2));
-            scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(availableCrew.Count * 28 + 35), GUILayout.MaxHeight(Screen.height / 2));
+            scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(availableCrew.Count * 28 * 2 + 35), GUILayout.MaxHeight(Screen.height / 2));
 
             float cWidth = 80;
 
@@ -1674,7 +1674,7 @@ namespace KerbalConstructionTime
             {
                 GUILayout.BeginHorizontal();
                 //GUILayout.Label(crew.name);
-                if (GUILayout.Button(crew.name))
+                if (GUILayout.Button(crew.name+"\n"+crew.experienceTrait.Title+" "+crew.experienceLevel))
                 {
                     List<ProtoCrewMember> activeCrew;
                     activeCrew = KCT_GameStates.launchedCrew[partIndexToCrew].crewList;
