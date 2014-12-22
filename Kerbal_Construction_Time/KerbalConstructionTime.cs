@@ -477,7 +477,7 @@ namespace KerbalConstructionTime
                                 KCTDebug.Log("Assigning " + finalCrewMember.name + " to " + p.partInfo.name);
                                 try
                                 {
-                                    if (p.AddCrewmemberAt(finalCrewMember, crewList.IndexOf(crewMember)))
+                                    if (p.AddCrewmember(finalCrewMember))//p.AddCrewmemberAt(finalCrewMember, crewList.IndexOf(crewMember)))
                                     {
                                         finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Assigned;
                                         if (finalCrewMember.seat != null)
