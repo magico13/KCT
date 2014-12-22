@@ -475,10 +475,25 @@ namespace KerbalConstructionTime
                                         finalCrewMember = rosterCrew;
                                 }
                                 KCTDebug.Log("Assigning " + finalCrewMember.name + " to " + p.partInfo.name);
-                                p.AddCrewmemberAt(finalCrewMember, crewList.IndexOf(crewMember));
-                                finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Assigned;
-                                if (finalCrewMember.seat != null)
-                                    finalCrewMember.seat.SpawnCrew();
+                                try
+                                {
+                                    if (p.AddCrewmemberAt(finalCrewMember, crewList.IndexOf(crewMember)))
+                                    {
+                                        finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Assigned;
+                                        if (finalCrewMember.seat != null)
+                                            finalCrewMember.seat.SpawnCrew();
+                                    }
+                                    else
+                                    {
+                                        Debug.LogError("Error when assigning " + crewMember.name + " to " + p.partInfo.name);
+                                        finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Available;
+                                    }
+                                }
+                                catch
+                                {
+                                    Debug.LogError("Error when assigning " + crewMember.name + " to " + p.partInfo.name);
+                                    finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Available;
+                                }
                             }
                         }
                     }

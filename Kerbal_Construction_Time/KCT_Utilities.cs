@@ -973,7 +973,7 @@ namespace KerbalConstructionTime
                     }
                     if (HighLogic.LoadedSceneIsEditor)
                     {
-                        PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(EditorLogic.fetch.ship, SpaceCenterFacility.VehicleAssemblyBuilding, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.VehicleAssemblyBuilding)));
+                        PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(EditorLogic.fetch.ship, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)));
                         if (!sizeCheck.Test())
                         {
                             passed = false;
@@ -995,7 +995,7 @@ namespace KerbalConstructionTime
                     }
                     if (HighLogic.LoadedSceneIsEditor)
                     {
-                        PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(EditorLogic.fetch.ship, SpaceCenterFacility.SpaceplaneHangar, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.SpaceplaneHangar)));
+                        PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(EditorLogic.fetch.ship, SpaceCenterFacility.Runway, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway)));
                         if (!sizeCheck.Test())
                         {
                             passed = false;
@@ -1623,7 +1623,7 @@ namespace KerbalConstructionTime
 
         public static double ParseMath(string input, Dictionary<string, string> variables)
         {
-            KCTDebug.Log(input);
+            KCTDebug.Log("Input_raw: " + input);
             foreach (KeyValuePair<string, string> kvp in variables)
             {
                 if (input.Contains("["+kvp.Key+"]"))
@@ -1631,7 +1631,7 @@ namespace KerbalConstructionTime
                     input = input.Replace("[" + kvp.Key + "]", kvp.Value);
                 }
             }
-            KCTDebug.Log("Input: "+input);
+            KCTDebug.Log("Input_replaced: "+input);
 
             double currentVal = 0;
             string stack = "";
@@ -1641,7 +1641,7 @@ namespace KerbalConstructionTime
             {
                 string ch = input[i].ToString();
                 bool isOp = false;
-                KCTDebug.Log(ch);
+              //  KCTDebug.Log(ch);
                 foreach (string op in ops)
                 {
                     if (op == ch)
@@ -1714,7 +1714,7 @@ namespace KerbalConstructionTime
             double newValue = 0;
             if (!double.TryParse(newVal, out newValue))
             {
-                Debug.Log("[KCT] Tried to parse a non-double value: " + newVal);
+                Debug.LogError("[KCT] Tried to parse a non-double value: " + newVal);
                 return currentVal;
             }
             switch (operation)
