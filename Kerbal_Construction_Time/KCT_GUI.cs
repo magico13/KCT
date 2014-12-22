@@ -1217,7 +1217,7 @@ namespace KerbalConstructionTime
                             int amt = 1;
                             if (KCT_Utilities.PartIsProcedural(cn))
                             {
-                                amt = (int)(1000 * KCT_Utilities.GetPartCostFromNode(cn));
+                                amt = (int)(1000 * KCT_Utilities.GetPartCostFromNode(cn, false));
                             }
                             if (b.InventoryParts[name] >= amt)
                             {

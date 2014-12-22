@@ -1378,7 +1378,7 @@ namespace KerbalConstructionTime
                     }
                     else
                     {
-                        amt = (int)(1000 * GetPartCostFromNode(part));
+                        amt = (int)(1000 * GetPartCostFromNode(part, false));
                     }
                     if (!KCT_GUI.PartsInUse.ContainsKey(name))
                         KCT_GUI.PartsInUse.Add(name, amt);

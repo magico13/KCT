@@ -451,15 +451,15 @@ namespace KerbalConstructionTime
             {
                 KerbalRoster roster = HighLogic.CurrentGame.CrewRoster;
 
-                foreach (CrewedPart c in KCT_GameStates.launchedCrew)
+              /*  foreach (CrewedPart c in KCT_GameStates.launchedCrew)
                 {
                     KCTDebug.Log(c.partID);
-                }
+                }*/
 
                 for (int i = 0; i < FlightGlobals.ActiveVessel.parts.Count; i++)
                 {
                     Part p = FlightGlobals.ActiveVessel.parts[i];
-                    KCTDebug.Log("craft: " + p.craftID);
+                    //KCTDebug.Log("craft: " + p.craftID);
                     {
                         CrewedPart cP = KCT_GameStates.launchedCrew.Find(part => part.partID == p.craftID);
                         if (cP == null) continue;
