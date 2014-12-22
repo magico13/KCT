@@ -1924,7 +1924,7 @@ namespace KerbalConstructionTime
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Max BP: ");
+                GUILayout.Label("Max Recon.: ");
                 maxReconditioning = GUILayout.TextField(maxReconditioning, 10, GUILayout.Width(100));
                 GUILayout.EndHorizontal();
 
