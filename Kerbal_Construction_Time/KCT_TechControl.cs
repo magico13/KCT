@@ -13,7 +13,31 @@ namespace KerbalConstructionTime
         public double progress;
         public ProtoTechNode protoNode;
         public List<string> UnlockedParts;
-        public double BuildRate { get { return (Math.Pow(2, KCT_GameStates.TechUpgradesTotal + 1) / (86400.0 * KCT_GameStates.timeSettings.NodeModifier)); } } //0pts=1day/2sci, 1pt=1/4, 2=1/8, 3=1/16, 4=1/32...n=1/2^(n+1)
+       // public double BuildRate { get { return (Math.Pow(2, KCT_GameStates.TechUpgradesTotal + 1) / (86400.0 * KCT_GameStates.timeSettings.NodeModifier)); } } //0pts=1day/2sci, 1pt=1/4, 2=1/8, 3=1/16, 4=1/32...n=1/2^(n+1)
+        private double bRate_int = -1;
+        public double BuildRate
+        {
+            get
+            {
+                if (bRate_int < 0)
+                {
+                    double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
+                    double rate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula,
+                        new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", scienceCost.ToString() } });
+                    if (max > 0 && rate > max) rate = max;
+                    bRate_int = rate;
+                }
+                return bRate_int;
+            }
+            set
+            {
+                double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
+                double rate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula,
+                    new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", scienceCost.ToString() } });
+                if (max > 0 && rate > max) rate = max;
+                bRate_int = rate;
+            }
+        }
         public double TimeLeft { get { return (scienceCost - progress) / BuildRate; } }
         public bool isComplete { get { return progress >= scienceCost; } }
 
