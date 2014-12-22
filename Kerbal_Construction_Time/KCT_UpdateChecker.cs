@@ -16,7 +16,7 @@ namespace KerbalConstructionTime
 #if DEBUG
             string updateSite = "http://magico13.net/KCT/latest_beta";
 #else
-            string updateSite = versionSpecific ? "http://magico13.net/KCT/latest-0-25-0" : "http://magico13.net/KCT/latest";
+            string updateSite = versionSpecific ? "http://magico13.net/KCT/latest-0-90-0" : "http://magico13.net/KCT/latest";
 #endif
             if (ForceCheck || WebVersion == "")
             {
