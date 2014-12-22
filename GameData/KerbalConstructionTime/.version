@@ -1,0 +1,12 @@
+{
+    "NAME":"Kerbal Construction Time",
+    "URL":"http://magico13.net/KCT/.version",
+    "DOWNLOAD":"http://forum.kerbalspaceprogram.com/threads/92377-0-24-2-Kerbal-Construction-Time-Release-v1-0-2-%289-3-14%29",
+	"CHANGE_LOG_URL":"http://magico13.net/KCT/KCT_changelog",
+    "VERSION":"1.1.0.0",
+    "KSP_VERSION":{
+        "MAJOR":0,
+        "MINOR":90,
+        "PATCH":0
+    }
+}
