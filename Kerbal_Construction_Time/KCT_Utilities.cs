@@ -319,9 +319,7 @@ namespace KerbalConstructionTime
             }
             else if (type == KCT_BuildListVessel.ListType.TechNode)
             {
-                ret = ParseMath(KCT_GameStates.formulaSettings.NodeFormula, new Dictionary<string, string>() { {"N", KSC.RDUpgrades[1].ToString()} });//Math.Pow(2, KSC.RDUpgrades[1] + 1) / 86400.0;
-                double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
-                if (max > 0 && ret > max) ret = max;
+                ret = KCT_GameStates.TechList[index].BuildRate;
             }
             return ret;
         }

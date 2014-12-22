@@ -21,21 +21,9 @@ namespace KerbalConstructionTime
             {
                 if (bRate_int < 0)
                 {
-                    double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
-                    double rate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula,
-                        new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", scienceCost.ToString() } });
-                    if (max > 0 && rate > max) rate = max;
-                    bRate_int = rate;
+                    UpdateBuildRate();
                 }
                 return bRate_int;
-            }
-            set
-            {
-                double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
-                double rate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula,
-                    new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", scienceCost.ToString() } });
-                if (max > 0 && rate > max) rate = max;
-                bRate_int = rate;
             }
         }
         public double TimeLeft { get { return (scienceCost - progress) / BuildRate; } }
@@ -67,6 +55,16 @@ namespace KerbalConstructionTime
         }
 
         public KCT_TechItem() {}
+
+        public double UpdateBuildRate()
+        {
+            double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
+            double rate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula,
+                new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", scienceCost.ToString() } });
+            if (max > 0 && rate > max) rate = max;
+            bRate_int = rate;
+            return bRate_int;
+        }
 
         public void DisableTech()
         {

@@ -2290,12 +2290,19 @@ namespace KerbalConstructionTime
                         foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                             ksc.RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
 
-                        nodeRate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula, new Dictionary<string, string>() { { "N", KSC.RDUpgrades[1].ToString() } });
+                        nodeRate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula, 
+                            new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", "0" } });
                         double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
                         if (max > 0 && nodeRate > max) nodeRate = max;
 
-                        upNodeRate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula, new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[1] + 1).ToString() } });
+                        upNodeRate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula, 
+                            new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", "0" } });
                         if (max > 0 && upNodeRate > max) upNodeRate = max;
+
+                        foreach (KCT_TechItem tech in KCT_GameStates.TechList)
+                        {
+                            tech.UpdateBuildRate();
+                        }
                     }
                 }
                 GUILayout.EndHorizontal();
