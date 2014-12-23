@@ -258,11 +258,11 @@ namespace KerbalConstructionTime
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
             {
-                if (KCT_GameStates.settings.Debug && HighLogic.LoadedScene != GameScenes.TRACKSTATION && (v.wasControllable || v.protoPartSnapshots.Find(p => p.modules.Find(m => m.moduleName.ToLower() == "modulecommand") != null) != null))
+               /* if (KCT_GameStates.settings.Debug && HighLogic.LoadedScene != GameScenes.TRACKSTATION && (v.wasControllable || v.protoPartSnapshots.Find(p => p.modules.Find(m => m.moduleName.ToLower() == "modulecommand") != null) != null))
                 {
                     KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(v);
                 }
-                else
+                else*/
                 {
                     KCTDebug.Log("Adding recovered parts to Part Inventory");
                     foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
