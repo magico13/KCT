@@ -40,6 +40,7 @@ namespace KerbalConstructionTime
             GameEvents.onEditorShipModified.Add(ShipModifiedEvent);
             GameEvents.OnPartPurchased.Add(PartPurchasedEvent);
             GameEvents.OnVesselRecoveryRequested.Add(RecoveryRequested);
+            GameEvents.onGUIRnDComplexDespawn.Add(TechDisableEvent);
 
             eventAdded = true;
         }
@@ -145,7 +146,7 @@ namespace KerbalConstructionTime
                 if (ev.host != null) 
                     tech = new KCT_TechItem(ev.host);
 
-                if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime) tech.DisableTech();
+                //if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime) tech.DisableTech();
                 if (!tech.isInList())
                 {
                     ++KCT_GameStates.TotalUpgradePoints;
@@ -166,6 +167,17 @@ namespace KerbalConstructionTime
             }
         }
 
+        public void TechDisableEvent()
+        {
+            if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime)
+            {
+                foreach (KCT_TechItem tech in KCT_GameStates.TechList)
+                {
+                    tech.DisableTech();
+                }
+            }
+        }
+
         public void gameSceneEvent(GameScenes scene)
         {
             if (!KCT_GameStates.settings.enabledForSave) return;
@@ -177,6 +189,7 @@ namespace KerbalConstructionTime
                 {
                     KCT_Utilities.LoadSimulationSave();
                 }
+                TechDisableEvent();
             }
             if (!HighLogic.LoadedSceneIsFlight && scene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Backup save at simulation start
             {

@@ -446,59 +446,65 @@ namespace KerbalConstructionTime
                 }
             }
 
-            if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH
-                        && FlightGlobals.ActiveVessel.GetCrewCount() == 0 && KCT_GameStates.launchedCrew.Count > 0)
+            if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
             {
-                KerbalRoster roster = HighLogic.CurrentGame.CrewRoster;
+                KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == KCT_GameStates.launchedVessel.id.ToString());
+                if (rollout != null)
+                    KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);
 
-              /*  foreach (CrewedPart c in KCT_GameStates.launchedCrew)
+                if (FlightGlobals.ActiveVessel.GetCrewCount() == 0 && KCT_GameStates.launchedCrew.Count > 0)
                 {
-                    KCTDebug.Log(c.partID);
-                }*/
+                    KerbalRoster roster = HighLogic.CurrentGame.CrewRoster;
 
-                for (int i = 0; i < FlightGlobals.ActiveVessel.parts.Count; i++)
-                {
-                    Part p = FlightGlobals.ActiveVessel.parts[i];
-                    //KCTDebug.Log("craft: " + p.craftID);
+                    /*  foreach (CrewedPart c in KCT_GameStates.launchedCrew)
+                      {
+                          KCTDebug.Log(c.partID);
+                      }*/
+
+                    for (int i = 0; i < FlightGlobals.ActiveVessel.parts.Count; i++)
                     {
-                        CrewedPart cP = KCT_GameStates.launchedCrew.Find(part => part.partID == p.craftID);
-                        if (cP == null) continue;
-                        List<ProtoCrewMember> crewList = cP.crewList;
-                        foreach (ProtoCrewMember crewMember in crewList)
+                        Part p = FlightGlobals.ActiveVessel.parts[i];
+                        //KCTDebug.Log("craft: " + p.craftID);
                         {
-                            if (crewMember != null)
+                            CrewedPart cP = KCT_GameStates.launchedCrew.Find(part => part.partID == p.craftID);
+                            if (cP == null) continue;
+                            List<ProtoCrewMember> crewList = cP.crewList;
+                            foreach (ProtoCrewMember crewMember in crewList)
                             {
-                                ProtoCrewMember finalCrewMember = crewMember;
-                                foreach (ProtoCrewMember rosterCrew in roster.Crew)
+                                if (crewMember != null)
                                 {
-                                    if (rosterCrew.name == crewMember.name)
-                                        finalCrewMember = rosterCrew;
-                                }
-                                KCTDebug.Log("Assigning " + finalCrewMember.name + " to " + p.partInfo.name);
-                                try
-                                {
-                                    if (p.AddCrewmember(finalCrewMember))//p.AddCrewmemberAt(finalCrewMember, crewList.IndexOf(crewMember)))
+                                    ProtoCrewMember finalCrewMember = crewMember;
+                                    foreach (ProtoCrewMember rosterCrew in roster.Crew)
                                     {
-                                        finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Assigned;
-                                        if (finalCrewMember.seat != null)
-                                            finalCrewMember.seat.SpawnCrew();
+                                        if (rosterCrew.name == crewMember.name)
+                                            finalCrewMember = rosterCrew;
                                     }
-                                    else
+                                    KCTDebug.Log("Assigning " + finalCrewMember.name + " to " + p.partInfo.name);
+                                    try
+                                    {
+                                        if (p.AddCrewmember(finalCrewMember))//p.AddCrewmemberAt(finalCrewMember, crewList.IndexOf(crewMember)))
+                                        {
+                                            finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Assigned;
+                                            if (finalCrewMember.seat != null)
+                                                finalCrewMember.seat.SpawnCrew();
+                                        }
+                                        else
+                                        {
+                                            Debug.LogError("Error when assigning " + crewMember.name + " to " + p.partInfo.name);
+                                            finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Available;
+                                        }
+                                    }
+                                    catch
                                     {
                                         Debug.LogError("Error when assigning " + crewMember.name + " to " + p.partInfo.name);
                                         finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Available;
                                     }
                                 }
-                                catch
-                                {
-                                    Debug.LogError("Error when assigning " + crewMember.name + " to " + p.partInfo.name);
-                                    finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Available;
-                                }
                             }
                         }
                     }
+                    KCT_GameStates.launchedCrew.Clear();
                 }
-                KCT_GameStates.launchedCrew.Clear();
             }
         }
 
