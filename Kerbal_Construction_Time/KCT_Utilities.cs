@@ -395,6 +395,7 @@ namespace KerbalConstructionTime
                     foreach (KCT_Recon_Rollout rr in ksc.Recon_Rollout)
                     {
                         rr.progress += rr.AsBuildItem().GetBuildRate() * (UT - lastUT);
+                        if (rr.progress > rr.BP) rr.progress = rr.BP;
                     }
 
                     ksc.Recon_Rollout.RemoveAll(rr => !KCT_GameStates.settings.Reconditioning || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));

@@ -2379,6 +2379,10 @@ namespace KerbalConstructionTime
             {
                 KCT_Utilities.AddVesselToBuildList(b.NewCopy(true), b.InventoryParts.Count > 0);
             }
+            if (KCT_GameStates.ActiveKSC.Recon_Rollout.Find(rr => rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.associatedID == b.id.ToString()) != null && GUILayout.Button("Rollback"))
+            {
+                KCT_GameStates.ActiveKSC.Recon_Rollout.Find(rr => rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.associatedID == b.id.ToString()).SwapRolloutType();
+            }
             if (listWindow < 2 && GUILayout.Button("Warp To"))
             {
                 KCT_GameStates.targetedItem = b;

@@ -56,6 +56,7 @@ namespace KerbalConstructionTime
             associatedID = id;
             BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
             if (BP > KCT_GameStates.timeSettings.MaxReconditioning) BP = KCT_GameStates.timeSettings.MaxReconditioning;
+            progress = 0;
             if (type == RolloutReconType.Reconditioning) 
             {
                 BP *= (1 - KCT_GameStates.timeSettings.RolloutReconSplit);
@@ -70,6 +71,7 @@ namespace KerbalConstructionTime
             {
                 BP *= KCT_GameStates.timeSettings.RolloutReconSplit;
                 name = "Vessel Rollback";
+                progress = BP;
             }
             else if (type == RolloutReconType.Recovery)
             {
@@ -79,7 +81,6 @@ namespace KerbalConstructionTime
                 double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
                 BP += BP * (KSCDistance / maxDist);
             }
-            progress = 0;
         }
 
         public KCT_Recon_Rollout(KCT_BuildListVessel vessel, RolloutReconType type, string id)
@@ -88,6 +89,7 @@ namespace KerbalConstructionTime
             associatedID = id;
             BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
             if (BP > KCT_GameStates.timeSettings.MaxReconditioning) BP = KCT_GameStates.timeSettings.MaxReconditioning;
+            progress = 0;
             if (type == RolloutReconType.Reconditioning)
             {
                 BP *= (1 - KCT_GameStates.timeSettings.RolloutReconSplit);
@@ -101,6 +103,7 @@ namespace KerbalConstructionTime
             else if (type == RolloutReconType.Rollback)
             {
                 BP *= KCT_GameStates.timeSettings.RolloutReconSplit;
+                progress = BP;
                 name = "Vessel Rollback";
             }
             else if (type == RolloutReconType.Recovery)
@@ -110,15 +113,20 @@ namespace KerbalConstructionTime
                 double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
                 BP += BP * (vessel.DistanceFromKSC / maxDist);
             }
-            progress = 0;
         }
 
         public void SwapRolloutType()
         {
             if (RRType == RolloutReconType.Rollout)
+            {
                 RRType = RolloutReconType.Rollback;
+                name = "Vessel Rollback";
+            }
             else if (RRType == RolloutReconType.Rollback)
+            {
                 RRType = RolloutReconType.Rollout;
+                name = "Vessel Rollout";
+            }
         }
 
         public double ProgressPercent()
