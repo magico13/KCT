@@ -282,8 +282,8 @@ namespace KerbalConstructionTime
                             }
                             else
                             {
-                                if (rollout != null)
-                                    KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);
+                                /*if (rollout != null)
+                                    KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);*/
                                 KCT_GameStates.launchedVessel = b;
                                 if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "LaunchPad").Count == 0)//  ShipConstruction.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
                                 {
