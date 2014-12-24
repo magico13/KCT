@@ -242,13 +242,16 @@ namespace KerbalConstructionTime
                // KCT_GameStates.showWindows[0] = showBuildList;
             }
 
-            if (showBuildList || showSettings || showEditorGUI || showSimulationWindow)
+            if (!KCT_GameStates.settings.PreferBlizzyToolbar)
             {
-                KCT_Events.instance.KCTButtonStock.SetTrue(false);
-            }
-            else
-            {
-                KCT_Events.instance.KCTButtonStock.SetFalse(false);
+                if (showBuildList || showSettings || showEditorGUI || showSimulationWindow)
+                {
+                    KCT_Events.instance.KCTButtonStock.SetTrue(false);
+                }
+                else
+                {
+                    KCT_Events.instance.KCTButtonStock.SetFalse(false);
+                }
             }
         }
 

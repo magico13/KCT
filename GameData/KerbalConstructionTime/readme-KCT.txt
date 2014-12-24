@@ -19,6 +19,15 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.1.2.0 (12/24/14)
+ - Fixed issue when toolbar mod is used instead of Stock AppLauncher
+ - Fixed issue when recovering parts that have no modules on them
+ - Fixed rollback that's happening after launch when rolling out new vessel
+
+v1.1.1.0 (12/23/14)
+ - Fixed tech tree issues with TechManager trees
+ - Fixed several issues with rollout and rollback, but added new ones it seems
+
 v1.1.0.0 (12/22/14)
  - Update for KSP 0.90
  - Build List got a redesign

@@ -1609,6 +1609,8 @@ namespace KerbalConstructionTime
         public static bool PartIsProcedural(ConfigNode part)
         {
             ConfigNode[] modules = part.GetNodes("MODULE");
+            if (modules == null)
+                return false;
             foreach (ConfigNode mod in modules)
             {
                 if (mod.GetValue("name").ToLower().Contains("procedural"))
@@ -1619,7 +1621,9 @@ namespace KerbalConstructionTime
 
         public static bool PartIsProcedural(ProtoPartSnapshot part)
         {
-            return part.modules.Find(m => m.moduleName.ToLower().Contains("procedural")) != null;
+            if (part.modules != null)
+                return part.modules.Find(m => m.moduleName.ToLower().Contains("procedural")) != null;
+            return false;
         }
 
         public static double ParseMath(string input, Dictionary<string, string> variables)

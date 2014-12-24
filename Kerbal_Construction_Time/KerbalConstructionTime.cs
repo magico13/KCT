@@ -448,10 +448,6 @@ namespace KerbalConstructionTime
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
             {
-                KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == KCT_GameStates.launchedVessel.id.ToString());
-                if (rollout != null)
-                    KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);
-
                 if (FlightGlobals.ActiveVessel.GetCrewCount() == 0 && KCT_GameStates.launchedCrew.Count > 0)
                 {
                     KerbalRoster roster = HighLogic.CurrentGame.CrewRoster;
@@ -748,6 +744,10 @@ namespace KerbalConstructionTime
                         KCT_Utilities.AddFunds(KCT_Utilities.GetTotalVesselCost(FlightGlobals.ActiveVessel.protoVessel), TransactionReasons.VesselRollout);
                         FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
                     }
+
+                    KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == KCT_GameStates.launchedVessel.id.ToString());
+                    if (rollout != null)
+                        KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);
                 }
             }
            
