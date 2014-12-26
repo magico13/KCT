@@ -1613,7 +1613,7 @@ namespace KerbalConstructionTime
                 return false;
             foreach (ConfigNode mod in modules)
             {
-                if (mod.GetValue("name").ToLower().Contains("procedural"))
+                if (mod.HasValue("name") && mod.GetValue("name").ToLower().Contains("procedural"))
                     return true;
             }
             return false;
@@ -1622,7 +1622,7 @@ namespace KerbalConstructionTime
         public static bool PartIsProcedural(ProtoPartSnapshot part)
         {
             if (part.modules != null)
-                return part.modules.Find(m => m.moduleName.ToLower().Contains("procedural")) != null;
+                return part.modules.Find(m => m != null && m.moduleName != null && m.moduleName.ToLower().Contains("procedural")) != null;
             return false;
         }
 

@@ -292,7 +292,11 @@ namespace KerbalConstructionTime
                 {
                     if (module.GetValue("name") == "ModuleFuelTanks")
                     {
-                        module.SetValue("timestamp", Planetarium.GetUniversalTime().ToString());
+                        if (module.HasValue("timestamp"))
+                        {
+                            KCTDebug.Log("Updating RF timestamp on a part");
+                            module.SetValue("timestamp", Planetarium.GetUniversalTime().ToString());
+                        }
                     }
                 }
             }
