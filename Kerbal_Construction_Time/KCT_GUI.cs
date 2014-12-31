@@ -1058,11 +1058,11 @@ namespace KerbalConstructionTime
                 }
             }
 
-            if ((KCT_GameStates.settings.NoCostSimulations || Funding.Instance.Funds >= (KCT_GameStates.SimulationCost*1.1))
-                && GUILayout.Button("Purchase Additional Time\n" + (KCT_GameStates.settings.NoCostSimulations ? "Free" : Math.Round(KCT_GameStates.SimulationCost * 1.1).ToString() + " funds")))
+            if ((!KCT_Utilities.CurrentGameIsCareer() || KCT_GameStates.settings.NoCostSimulations || Funding.Instance.Funds >= (KCT_GameStates.SimulationCost*1.1))
+                && GUILayout.Button("Purchase Additional Time\n" + ((KCT_GameStates.settings.NoCostSimulations || !KCT_Utilities.CurrentGameIsCareer()) ? "Free" : Math.Round(KCT_GameStates.SimulationCost * 1.1).ToString() + " funds")))
             {
                 showSimulationCompleteFlight = false;
-                if (!KCT_GameStates.settings.NoCostSimulations)
+                if (KCT_Utilities.CurrentGameIsCareer() && !KCT_GameStates.settings.NoCostSimulations)
                 {
                     KCT_GameStates.FundsToChargeAtSimEnd += KCT_GameStates.SimulationCost * 1.1F;
                     KCT_Utilities.SpendFunds(KCT_GameStates.SimulationCost * 1.1F, TransactionReasons.None);
