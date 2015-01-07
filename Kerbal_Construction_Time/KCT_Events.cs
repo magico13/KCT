@@ -41,20 +41,30 @@ namespace KerbalConstructionTime
             GameEvents.OnPartPurchased.Add(PartPurchasedEvent);
             GameEvents.OnVesselRecoveryRequested.Add(RecoveryRequested);
             GameEvents.onGUIRnDComplexDespawn.Add(TechDisableEvent);
-            GameEvents.OnKSCFacilityUpgrading.Add(FacilityUpgradingEvent);
+            GameEvents.OnKSCFacilityUpgraded.Add(FacilityUpgradedEvent);
             GameEvents.OnKSCStructureRepairing.Add(FacilityRepairingEvent);
 
             eventAdded = true;
         }
 
-        public void FacilityUpgradingEvent(Upgradeables.UpgradeableFacility facility, int lvl)
+        private static int lastLvl = -1;
+        public void FacilityUpgradedEvent(Upgradeables.UpgradeableFacility facility, int lvl)
         {
             if (KCT_GUI.PrimarilyDisabled)
                 return;
+            if (lvl <= lastLvl)
+            {
+                lastLvl = -1;
+                return;
+            }
+            facility.SetLevel(lvl - 1);
+            lastLvl = lvl;
             double cost = facility.GetUpgradeCost();
             double BP = Math.Sqrt(cost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
-            KCTDebug.Log("Facility being upgraded for " + cost + " funds, resulting in a BP of " + BP);
-            facility.SetLevel(lvl - 1);
+            KCTDebug.Log("Facility being upgraded to lvl "+lvl+" for " + cost + " funds, resulting in a BP of " + BP);
+           // KCTDebug.Log(facility.GetNormLevel());
+            
+            
         }
 
         public void FacilityRepairingEvent(DestructibleBuilding facility)
