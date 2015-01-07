@@ -25,17 +25,17 @@ namespace KerbalConstructionTime
         
     }
 
-    [KSPAddon(KSPAddon.Startup.EditorVAB, false)]
-    public class KCT_VABEditor : KerbalConstructionTime
+    [KSPAddon(KSPAddon.Startup.EditorAny, false)]
+    public class KCT_Editor : KerbalConstructionTime
     {
 
     }
 
-    [KSPAddon(KSPAddon.Startup.EditorSPH, false)]
+   /* [KSPAddon(KSPAddon.Startup.EditorSPH, false)]
     public class KCT_SPHEditor : KerbalConstructionTime
     {
 
-    }
+    }*/
 
     public class KerbalConstructionTimeData : ScenarioModule
     {
