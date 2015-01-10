@@ -524,8 +524,7 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Save Edits"))
                 {
-                    KCT_Utilities.AddFunds(ship.cost, TransactionReasons.VesselRollout);
-                    ship.RemoveFromBuildList();
+                    
 
                     Dictionary<string, int> partsForInventory = new Dictionary<string, int>();
                     //List<string> partsForInventory = new List<string>();
@@ -580,8 +579,15 @@ namespace KerbalConstructionTime
                     foreach (KeyValuePair<string, int> kvp in ship.InventoryParts)
                         KCT_Utilities.AddToDict(partsForInventory, kvp.Key, kvp.Value);
 
-
+                    KCT_Utilities.AddFunds(ship.cost, TransactionReasons.VesselRollout);
                     KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(partsForInventory);//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
+                    if (newShip == null)
+                    {
+                        KCT_Utilities.SpendFunds(ship.cost, TransactionReasons.VesselRollout);
+                        return;
+                    }
+                    
+                    ship.RemoveFromBuildList();
                     newShip.progress = newProgress;
                     KCTDebug.Log("Finished? " + ship.isFinished);
                     if (ship.isFinished)

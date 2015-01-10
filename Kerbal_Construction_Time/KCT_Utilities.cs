@@ -1008,7 +1008,7 @@ namespace KerbalConstructionTime
                 {
                     ScreenMessages.PostScreenMessage("Did not pass editor checks!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     ScreenMessages.PostScreenMessage(failedReason, 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                    return blv;
+                    return null;
                 }
 
 
@@ -1021,7 +1021,7 @@ namespace KerbalConstructionTime
                     KCTDebug.Log("Vessel cost: " + GetTotalVesselCost(blv.shipNode) + ", Current funds: " + newFunds);
                     var msg = new ScreenMessage("Not Enough Funds To Build!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     ScreenMessages.PostScreenMessage(msg, true);
-                    return blv;
+                    return null;
                 }
             }
             string type = "";

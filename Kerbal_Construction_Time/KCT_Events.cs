@@ -41,8 +41,8 @@ namespace KerbalConstructionTime
             GameEvents.OnPartPurchased.Add(PartPurchasedEvent);
             GameEvents.OnVesselRecoveryRequested.Add(RecoveryRequested);
             GameEvents.onGUIRnDComplexDespawn.Add(TechDisableEvent);
-            GameEvents.OnKSCFacilityUpgraded.Add(FacilityUpgradedEvent);
-            GameEvents.OnKSCStructureRepairing.Add(FacilityRepairingEvent);
+        //    GameEvents.OnKSCFacilityUpgraded.Add(FacilityUpgradedEvent);
+       //     GameEvents.OnKSCStructureRepairing.Add(FacilityRepairingEvent);
 
             eventAdded = true;
         }
