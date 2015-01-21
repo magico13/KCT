@@ -5,6 +5,69 @@ using System.Text;
 
 namespace KerbalConstructionTime
 {
+    public class KCT_KSCUpgrade : IKCTBuildItem
+    {
+        [Persistent] public string Name = "";
+        [Persistent] public double progress = 0, BP = 0;
+
+        private KCT_KSC _KSC = null;
+        public KCT_KSC KSC
+        {
+            get
+            {
+                if (_KSC == null)
+                    _KSC = KCT_GameStates.KSCs.Find(ksc => ksc.KSCUpgrades.Contains(this));
+                return _KSC;
+            }
+        }
+
+        string IKCTBuildItem.GetItemName()
+        {
+            return Name;
+        }
+        double IKCTBuildItem.GetBuildRate()
+        {
+            double rateTotal = 0;
+            if (KSC != null)
+            {
+                foreach (double rate in KCT_Utilities.BuildRatesSPH(KSC))
+                    rateTotal += rate;
+                foreach (double rate in KCT_Utilities.BuildRatesVAB(KSC))
+                    rateTotal += rate;
+            }
+            return rateTotal;
+        }
+        double IKCTBuildItem.GetTimeLeft()
+        {
+            return (BP - progress)/((IKCTBuildItem)this).GetBuildRate();
+        }
+        KCT_BuildListVessel.ListType IKCTBuildItem.GetListType()
+        {
+            return KCT_BuildListVessel.ListType.Reconditioning;
+        }
+        bool IKCTBuildItem.IsComplete()
+        {
+            return progress >= BP;
+        }
+        public IKCTBuildItem AsIKCTBuildItem()
+        {
+            return (IKCTBuildItem)this;
+        }
+        public void AddProgress(double amt)
+        {
+            progress += amt;
+        }
+
+        public void ActivateUpgrade()
+        {
+
+        }
+        public bool IsInListAlready(KCT_KSCUpgrade up)
+        {
+            return (KSC != null && KSC.KSCUpgrades.Find(u => u.Name == up.Name) != null);
+        }
+    }
+
     public class KCT_KSC
     {
         public string KSCName;
@@ -12,6 +75,7 @@ namespace KerbalConstructionTime
         public List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> SPHWarehouse = new List<KCT_BuildListVessel>();
+        public List<KCT_KSCUpgrade> KSCUpgrades = new List<KCT_KSCUpgrade>();
         //public List<KCT_TechItem> TechList = new List<KCT_TechItem>();
         public List<int> VABUpgrades = new List<int>() { 0 };
         public List<int> SPHUpgrades = new List<int>() { 0 };

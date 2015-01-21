@@ -606,7 +606,7 @@ namespace KerbalConstructionTime
                     KCT_Utilities.SetActiveKSCToRSS();
                 }
 
-                if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.recoveredVessel != null)
+               /* if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.recoveredVessel != null)
                 {
                     InputLockManager.SetControlLock(ControlTypes.All, "KCTPopupLock");
                     DialogOption[] options = new DialogOption[3];
@@ -615,7 +615,7 @@ namespace KerbalConstructionTime
                     options[2] = new DialogOption("The Scrapyard", RecoverToScrapyard);
                     MultiOptionDialog diag = new MultiOptionDialog("Send recovered vessel to", windowTitle: "Vessel Recovery", options: options);
                     PopupDialog.SpawnPopupDialog(diag, false, HighLogic.Skin);
-                }
+                }*/
 
                 if (!KCT_GUI.PrimarilyDisabled)
                     KCT_Utilities.ProgressBuildTime();
@@ -628,7 +628,7 @@ namespace KerbalConstructionTime
 
         }
         
-        private void RecoverToVAB()
+       /* private void RecoverToVAB()
         {
             KCT_Utilities.SpendFunds(KCT_GameStates.recoveredVessel.cost, TransactionReasons.VesselRollout);
             KCT_GameStates.recoveredVessel.UpdateShipType(KCT_BuildListVessel.ListType.VAB);
@@ -658,7 +658,7 @@ namespace KerbalConstructionTime
             KCT_GameStates.recoveredVessel = null;
             InputLockManager.RemoveControlLock("KCTPopupLock");
 
-        }
+        }*/
 
         private static DateTime loadDeferTime = DateTime.MaxValue;
         private static int lastSeconds = 0;

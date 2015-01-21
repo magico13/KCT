@@ -290,11 +290,19 @@ namespace KerbalConstructionTime
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
             {
-               /* if (KCT_GameStates.settings.Debug && HighLogic.LoadedScene != GameScenes.TRACKSTATION && (v.wasControllable || v.protoPartSnapshots.Find(p => p.modules.Find(m => m.moduleName.ToLower() == "modulecommand") != null) != null))
+               // if (KCT_GameStates.settings.Debug && HighLogic.LoadedScene != GameScenes.TRACKSTATION && (v.wasControllable || v.protoPartSnapshots.Find(p => p.modules.Find(m => m.moduleName.ToLower() == "modulecommand") != null) != null))
+                if (v.vesselName == KCT_GameStates.recoveredVessel.shipName)
                 {
-                    KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(v);
+                    //KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(v);
+                    KCT_Utilities.SpendFunds(KCT_GameStates.recoveredVessel.cost, TransactionReasons.VesselRollout);
+                    if (KCT_GameStates.recoveredVessel.type == KCT_BuildListVessel.ListType.VAB)
+                        KCT_GameStates.ActiveKSC.VABWarehouse.Add(KCT_GameStates.recoveredVessel);
+                    else
+                        KCT_GameStates.ActiveKSC.SPHWarehouse.Add(KCT_GameStates.recoveredVessel);
+                    KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(KCT_GameStates.recoveredVessel, KCT_Recon_Rollout.RolloutReconType.Recovery, KCT_GameStates.recoveredVessel.id.ToString()));
+                    KCT_GameStates.recoveredVessel = null;
                 }
-                else*/
+                else
                 {
                     KCTDebug.Log("Adding recovered parts to Part Inventory");
                     foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
@@ -303,6 +311,8 @@ namespace KerbalConstructionTime
                         
                         KCT_Utilities.AddPartToInventory(p);
                     }
+
+
                 }
             }
         }

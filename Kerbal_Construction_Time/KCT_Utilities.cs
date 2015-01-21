@@ -348,13 +348,14 @@ namespace KerbalConstructionTime
             return rates;
         }
 
-        public static List<double> BuildRatesSPH()
+        public static List<double> BuildRatesSPH(KCT_KSC KSC)
         {
+            if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
             List<double> rates = new List<double>();
-            if (KCT_GameStates.ActiveKSC.SPHUpgrades.Count > 0)
+            if (KSC.SPHUpgrades.Count > 0)
             {
-                for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHUpgrades.Count; i++)
-                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, null));
+                for (int i = 0; i < KSC.SPHUpgrades.Count; i++)
+                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, KSC));
             }
             else
                 rates.Add(0.1);

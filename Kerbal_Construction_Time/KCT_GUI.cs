@@ -406,7 +406,7 @@ namespace KerbalConstructionTime
                 GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
                 if (type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB(null);
-                else rates = KCT_Utilities.BuildRatesSPH();
+                else rates = KCT_Utilities.BuildRatesSPH(null);
                 double bR;
                 if (double.TryParse(buildRateForDisplay, out bR))
                 {
@@ -439,12 +439,13 @@ namespace KerbalConstructionTime
                         switch (currentCategoryInt)
                         {
                             case 0: CategoryCurrent = PartCategories.Pods; break;
-                            case 1: CategoryCurrent = PartCategories.Propulsion; break;
-                            case 2: CategoryCurrent = PartCategories.Control; break;
-                            case 3: CategoryCurrent = PartCategories.Structural; break;
-                            case 4: CategoryCurrent = PartCategories.Aero; break;
-                            case 5: CategoryCurrent = PartCategories.Utility; break;
-                            case 6: CategoryCurrent = PartCategories.Science; break;
+                            case 1: CategoryCurrent = PartCategories.FuelTank; break;
+                            case 2: CategoryCurrent = PartCategories.Engine; break;
+                            case 3: CategoryCurrent = PartCategories.Control; break;
+                            case 4: CategoryCurrent = PartCategories.Structural; break;
+                            case 5: CategoryCurrent = PartCategories.Aero; break;
+                            case 6: CategoryCurrent = PartCategories.Utility; break;
+                            case 7: CategoryCurrent = PartCategories.Science; break;
                             default: CategoryCurrent = PartCategories.none; break;
                         }
                         InventoryCategoryChanged(CategoryCurrent);
@@ -498,7 +499,7 @@ namespace KerbalConstructionTime
                 GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
                 if (ship.type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB(null);
-                else rates = KCT_Utilities.BuildRatesSPH();
+                else rates = KCT_Utilities.BuildRatesSPH(null);
                 double bR;
                 if (double.TryParse(buildRateForDisplay, out bR))
                 {
@@ -648,7 +649,7 @@ namespace KerbalConstructionTime
 
             if (showInventory)
             {
-                List<string> categories = new List<string> { "Pods", "Prop.", "Ctl.", "Struct.", "Aero", "Util.", "Sci." };
+                List<string> categories = new List<string> { "Pods", "Fuel.", "Eng.", "Ctl.", "Struct.", "Aero", "Util.", "Sci." };
                 int lastCat = currentCategoryInt;
                 currentCategoryInt = GUILayout.Toolbar(currentCategoryInt, categories.ToArray(), GUILayout.ExpandWidth(false));
                 
@@ -656,12 +657,13 @@ namespace KerbalConstructionTime
                 switch (currentCategoryInt)
                 {
                     case 0: CategoryCurrent = PartCategories.Pods; break;
-                    case 1: CategoryCurrent = PartCategories.Propulsion; break;
-                    case 2: CategoryCurrent = PartCategories.Control; break;
-                    case 3: CategoryCurrent = PartCategories.Structural; break;
-                    case 4: CategoryCurrent = PartCategories.Aero; break;
-                    case 5: CategoryCurrent = PartCategories.Utility; break;
-                    case 6: CategoryCurrent = PartCategories.Science; break;
+                    case 1: CategoryCurrent = PartCategories.FuelTank; break;
+                    case 2: CategoryCurrent = PartCategories.Engine; break;
+                    case 3: CategoryCurrent = PartCategories.Control; break;
+                    case 4: CategoryCurrent = PartCategories.Structural; break;
+                    case 5: CategoryCurrent = PartCategories.Aero; break;
+                    case 6: CategoryCurrent = PartCategories.Utility; break;
+                    case 7: CategoryCurrent = PartCategories.Science; break;
                     default: CategoryCurrent = PartCategories.none; break;
                 }
 

@@ -214,6 +214,14 @@ namespace KerbalConstructionTime
                     buildList = KCT_GameStates.ActiveKSC.VABWarehouse;
                     GUILayout.Label("__________________________________________________");
                     GUILayout.Label("VAB Storage");
+                    if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel != null && FlightGlobals.ActiveVessel.IsRecoverable && FlightGlobals.ActiveVessel.IsClearToSave() == ClearToSaveStatus.CLEAR && GUILayout.Button("Recover Active Vessel"))
+                    {
+                        KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
+                        KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.VAB;
+                       // HighLogic.LoadScene(GameScenes.SPACECENTER);
+                        //ShipConstruction.RecoverVesselFromFlight(FlightGlobals.ActiveVessel.protoVessel, HighLogic.CurrentGame.flightState);
+                        GameEvents.OnVesselRecoveryRequested.Fire(FlightGlobals.ActiveVessel);
+                    }
                     if (buildList.Count == 0)
                     {
                         GUILayout.Label("No vessels in storage!\nThey will be stored here when they are complete.");
@@ -407,6 +415,14 @@ namespace KerbalConstructionTime
                     buildList = KCT_GameStates.ActiveKSC.SPHWarehouse;
                     GUILayout.Label("__________________________________________________");
                     GUILayout.Label("SPH Storage");
+                    if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel != null && FlightGlobals.ActiveVessel.IsRecoverable && FlightGlobals.ActiveVessel.IsClearToSave() == ClearToSaveStatus.CLEAR && GUILayout.Button("Recover Active Vessel"))
+                    {
+                        KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
+                        KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.SPH;
+                        //ShipConstruction.RecoverVesselFromFlight(FlightGlobals.ActiveVessel.protoVessel, HighLogic.CurrentGame.flightState);
+                        GameEvents.OnVesselRecoveryRequested.Fire(FlightGlobals.ActiveVessel);
+                    }
+
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];
