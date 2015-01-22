@@ -148,7 +148,7 @@ namespace KerbalConstructionTime
                         DummyVoid,
                         DummyVoid,
                         ApplicationLauncher.AppScenes.ALWAYS,
-                        GameDatabase.Instance.GetTexture("KerbalConstructionTime/icons/KCT_on", false));
+                        GameDatabase.Instance.GetTexture("KerbalConstructionTime/Icons/KCT_on", false));
 
                 ApplicationLauncher.Instance.EnableMutuallyExclusive(KCTButtonStock);
             }
