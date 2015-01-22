@@ -491,20 +491,20 @@ namespace KerbalConstructionTime
             String textureReturn;
 
             if (!KCT_GameStates.settings.enabledForSave)
-                return "KerbalConstructionTime/icons/KCT_off";
+                return "KerbalConstructionTime/Icons/KCT_off";
 
             //Flash for up to 3 seconds, at half second intervals per icon
             if (KCT_GameStates.kctToolbarButton.Important && (DateTime.Now.CompareTo(startedFlashing.AddSeconds(3))) < 0 && DateTime.Now.Millisecond < 500)
-                textureReturn = "KerbalConstructionTime/icons/KCT_off";
+                textureReturn = "KerbalConstructionTime/Icons/KCT_off";
             //If it's been longer than 3 seconds, set Important to false and stop flashing
             else if (KCT_GameStates.kctToolbarButton.Important && (DateTime.Now.CompareTo(startedFlashing.AddSeconds(3))) > 0)
             {
                 KCT_GameStates.kctToolbarButton.Important = false;
-                textureReturn = "KerbalConstructionTime/icons/KCT_on";
+                textureReturn = "KerbalConstructionTime/Icons/KCT_on";
             }
             //The normal icon
             else
-                textureReturn = "KerbalConstructionTime/icons/KCT_on";
+                textureReturn = "KerbalConstructionTime/Icons/KCT_on";
 
             return textureReturn;
         }

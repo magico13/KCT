@@ -2067,7 +2067,7 @@ namespace KerbalConstructionTime
                     KCT_Events.instance.DummyVoid,
                     KCT_Events.instance.DummyVoid,
                     ApplicationLauncher.AppScenes.ALWAYS,
-                    GameDatabase.Instance.GetTexture("KerbalConstructionTime/icons/KCT_on", false));
+                    GameDatabase.Instance.GetTexture("KerbalConstructionTime/Icons/KCT_on", false));
 
                 ApplicationLauncher.Instance.EnableMutuallyExclusive(KCT_Events.instance.KCTButtonStock);
             }
