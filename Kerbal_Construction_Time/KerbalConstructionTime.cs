@@ -842,6 +842,10 @@ namespace KerbalConstructionTime
             {
                 KCT_GUI.showLaunchAlert = true;
                 EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
+
+                // This is how you hide tooltips.
+                EditorTooltip.Instance.HideToolTip();
+                GameEvents.onTooltipDestroyRequested.Fire();
             }
         }
     }
