@@ -401,6 +401,13 @@ namespace KerbalConstructionTime
 
                     ksc.Recon_Rollout.RemoveAll(rr => !KCT_GameStates.settings.Reconditioning || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));
 
+                    foreach (KCT_KSCTech kscTech in ksc.KSCTech)
+                    {
+                        kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
+                        if (kscTech.AsIKCTBuildItem().IsComplete())
+                            kscTech.ActivateTech();
+                    }
+
                 }
                 for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
                 {

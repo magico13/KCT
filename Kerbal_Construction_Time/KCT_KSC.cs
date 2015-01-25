@@ -5,9 +5,9 @@ using System.Text;
 
 namespace KerbalConstructionTime
 {
-    public class KCT_KSCUpgrade : IKCTBuildItem
+    public class KCT_KSCTech : IKCTBuildItem
     {
-        [Persistent] public string Name = "";
+        [Persistent] public string Name = ""; //ex: VAB Upgrade LVL 2, LaunchPad Repair
         [Persistent] public double progress = 0, BP = 0;
 
         private KCT_KSC _KSC = null;
@@ -16,7 +16,7 @@ namespace KerbalConstructionTime
             get
             {
                 if (_KSC == null)
-                    _KSC = KCT_GameStates.KSCs.Find(ksc => ksc.KSCUpgrades.Contains(this));
+                    _KSC = KCT_GameStates.KSCs.Find(ksc => ksc.KSCTech.Contains(this));
                 return _KSC;
             }
         }
@@ -56,15 +56,88 @@ namespace KerbalConstructionTime
         public void AddProgress(double amt)
         {
             progress += amt;
+            if (progress > BP) progress = BP;
         }
 
-        public void ActivateUpgrade()
+        public void ActivateTech()
         {
+           // SpaceCenterFacility facility = GetFacility();
+            string fName = GetFacilityName();
+            Upgradeables.UpgradeableFacility upFacil = null;
+            if (ScenarioUpgradeableFacilities.protoUpgradeables.ContainsKey(fName))
+                upFacil = ScenarioUpgradeableFacilities.protoUpgradeables[fName].facilityRefs.Find(f => f.name == fName);
+            if (upFacil != null)
+            {
+                int lvl = GetLevel();
+                if (lvl > 0)
+                    upFacil.SetLevel(lvl);
+            }
 
         }
-        public bool IsInListAlready(KCT_KSCUpgrade up)
+
+        public bool IsInListAlready(KCT_KSCTech up)
         {
-            return (KSC != null && KSC.KSCUpgrades.Find(u => u.Name == up.Name) != null);
+            return (KSC != null || KCT_GameStates.ActiveKSC.KSCTech.Find(u => u.Name == up.Name) != null);
+        }
+
+        public SpaceCenterFacility GetFacility()
+        {
+            if (Name.Contains("Admin"))
+                return SpaceCenterFacility.Administration;
+            else if (Name.Contains("Astronaut"))
+                return SpaceCenterFacility.AstronautComplex;
+            else if (Name.Contains("LaunchPad"))
+                return SpaceCenterFacility.LaunchPad;
+            else if (Name.Contains("Mission"))
+                return SpaceCenterFacility.MissionControl;
+            else if (Name.Contains("R&D"))
+                return SpaceCenterFacility.ResearchAndDevelopment;
+            else if (Name.Contains("Runway"))
+                return SpaceCenterFacility.Runway;
+            else if (Name.Contains("SPH"))
+                return SpaceCenterFacility.SpaceplaneHangar;
+            else if (Name.Contains("Tracking"))
+                return SpaceCenterFacility.TrackingStation;
+            else if (Name.Contains("VAB"))
+                return SpaceCenterFacility.VehicleAssemblyBuilding;
+            else
+                return SpaceCenterFacility.Administration;
+        }
+
+        public string GetFacilityName()
+        {
+            if (Name.Contains("Admin"))
+                return "Administration";
+            else if (Name.Contains("Astronaut"))
+                return "AstronautComplex";
+            else if (Name.Contains("LaunchPad"))
+                return "LaunchPad";
+            else if (Name.Contains("Mission"))
+                return "MissionControl";
+            else if (Name.Contains("R&D"))
+                return "ResearchAndDevelopment";
+            else if (Name.Contains("Runway"))
+                return "Runway";
+            else if (Name.Contains("SPH"))
+                return "SpaceplaneHangar";
+            else if (Name.Contains("Tracking"))
+                return "TrackingStation";
+            else if (Name.Contains("VAB"))
+                return "VehicleAssemblyBuilding";
+            else
+                return "";
+        }
+
+        public int GetLevel()
+        {
+            int lvl = 0;
+            if (Name.Contains("LVL"))
+            {
+                string[] split = Name.Split(' ');
+                int.TryParse(split[split.Count() - 1], out lvl);
+            }
+
+            return lvl;
         }
     }
 
@@ -75,7 +148,7 @@ namespace KerbalConstructionTime
         public List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> SPHWarehouse = new List<KCT_BuildListVessel>();
-        public List<KCT_KSCUpgrade> KSCUpgrades = new List<KCT_KSCUpgrade>();
+        public List<KCT_KSCTech> KSCTech = new List<KCT_KSCTech>();
         //public List<KCT_TechItem> TechList = new List<KCT_TechItem>();
         public List<int> VABUpgrades = new List<int>() { 0 };
         public List<int> SPHUpgrades = new List<int>() { 0 };
