@@ -666,8 +666,8 @@ namespace KerbalConstructionTime
         public static void DelayedStart()
         {
 
-            KCTDebug.Log(ScenarioUpgradeableFacilities.protoUpgradeables.Keys);
-            KCTDebug.Log(ScenarioUpgradeableFacilities.protoUpgradeables.Values.ElementAt(0).facilityRefs[0].name);
+        //    KCTDebug.Log(ScenarioUpgradeableFacilities.protoUpgradeables.Keys);
+          //  KCTDebug.Log(ScenarioUpgradeableFacilities.protoUpgradeables.Values.ElementAt(0).facilityRefs[0].name);
 
 
 

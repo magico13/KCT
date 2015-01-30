@@ -200,16 +200,7 @@ namespace KerbalConstructionTime
         private void SanitizeNode(ConfigNode module)
         {
             string name = module.GetValue("name");
-            if (name == "ModuleEngines")
-            {
-                module.SetValue("staged", "False");
-                module.SetValue("flameout", "False");
-                module.SetValue("EngineIgnited", "False");
-                module.SetValue("engineShutdown", "False");
-                module.SetValue("currentThrottle", "0");
-                module.SetValue("manuallyOverridden", "False");
-            }
-            else if (name == "ModuleEnginesFX")
+            if (name.Contains("ModuleEngines"))
             {
                 module.SetValue("staged", "False");
                 module.SetValue("flameout", "False");
@@ -222,11 +213,6 @@ namespace KerbalConstructionTime
             {
                 module.SetValue("Deployed", "False");
                 module.SetValue("Inoperable", "False");
-                module.RemoveNodes("ScienceData");
-            }
-            else if (name == "ModuleScienceContainer")
-            {
-                module.RemoveNodes("ScienceData");
             }
             else if (name == "ModuleParachute")
             {
@@ -236,6 +222,11 @@ namespace KerbalConstructionTime
             else if (name == "Log")
             {
                 module.ClearValues();
+            }
+
+            if (module.HasNode("ScienceData"))
+            {
+                module.RemoveNodes("ScienceData");
             }
 
             foreach (ConfigNode node in module.GetNodes("MODULE"))
@@ -280,7 +271,7 @@ namespace KerbalConstructionTime
 
         private void UpdateRFTanks()
         {
-            foreach (ConfigNode cn in ExtractedPartNodes)
+            foreach (ConfigNode cn in shipNode.GetNodes("PART"))
             {
                 foreach (ConfigNode module in cn.GetNodes("MODULE"))
                 {
