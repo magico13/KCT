@@ -511,6 +511,11 @@ namespace KerbalConstructionTime
             if (!KCT_GameStates.settings.enabledForSave)
                 return;
 
+            if (KCT_Events.instance != null)
+            {
+                KCT_Events.instance.editorRecalculationThrottle = false;
+            }
+
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
