@@ -805,12 +805,15 @@ namespace KerbalConstructionTime
 
             //simLength = GUILayout.TextField(simLength);
             float nullFloat, nF2;
-            float cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 1);
-            cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
-            GUILayout.Label("Cost: " + Math.Round(cost, 1));
-
-            if (KCT_GameStates.settings.NoCostSimulations)
-                cost = 0;
+            
+            float cost = 0;
+            if (!KCT_GameStates.settings.NoCostSimulations)
+            {
+                cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 1);
+                cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
+                GUILayout.Label("Cost: " + Math.Round(cost, 1));
+            }
+            
 
             bool tmp = advancedSimConfig;
             advancedSimConfig = GUILayout.Toggle(advancedSimConfig, " Show Advanced Options");

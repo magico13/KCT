@@ -1020,16 +1020,20 @@ namespace KerbalConstructionTime
                 }
 
 
-                float totalCost = GetTotalVesselCost(blv.shipNode);
+                double totalCost = blv.GetTotalCost();
                 double prevFunds = Funding.Instance.Funds;
-                double newFunds = SpendFunds(totalCost, TransactionReasons.VesselRollout);
-                if (prevFunds == newFunds)
+                //double newFunds = SpendFunds(totalCost, TransactionReasons.VesselRollout);
+                if (totalCost > prevFunds)
                 {
                     KCTDebug.Log("Tried to add " + blv.shipName + " to build list but not enough funds.");
-                    KCTDebug.Log("Vessel cost: " + GetTotalVesselCost(blv.shipNode) + ", Current funds: " + newFunds);
+                    KCTDebug.Log("Vessel cost: " + GetTotalVesselCost(blv.shipNode) + ", Current funds: " + prevFunds);
                     var msg = new ScreenMessage("Not Enough Funds To Build!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     ScreenMessages.PostScreenMessage(msg, true);
                     return null;
+                }
+                else
+                {
+                    SpendFunds(totalCost, TransactionReasons.VesselRollout);
                 }
             }
             string type = "";

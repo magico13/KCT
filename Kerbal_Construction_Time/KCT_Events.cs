@@ -66,7 +66,6 @@ namespace KerbalConstructionTime
             KCTDebug.Log("Facility being upgraded to lvl "+lvl+" for " + cost + " funds, resulting in a BP of " + BP);
            // KCTDebug.Log(facility.GetNormLevel());
             
-            
         }
 
         public void FacilityRepairingEvent(DestructibleBuilding facility)

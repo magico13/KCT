@@ -87,7 +87,7 @@ namespace KerbalConstructionTime
             GUILayout.EndHorizontal();
 
             //Buttons for VAB/SPH lists
-            List<string> buttonList = new List<string> { "VAB", "SPH" };
+            List<string> buttonList = new List<string> { "VAB", "SPH", "KSC" };
             if (KCT_Utilities.CurrentGameHasScience() && !KCT_GameStates.settings.InstantTechUnlock) buttonList.Add("Tech");
             GUILayout.BeginHorizontal();
             //if (HighLogic.LoadedScene == GameScenes.SPACECENTER) { buttonList.Add("Upgrades"); buttonList.Add("Settings"); }
@@ -497,7 +497,15 @@ namespace KerbalConstructionTime
                 }
                 GUILayout.EndScrollView();
             }
-            else if (listWindow == 2) //Tech nodes
+            else if (listWindow == 2) //KSC things
+            {
+                List<KCT_KSCTech> KSCList = KCT_GameStates.ActiveKSC.KSCTech;
+                foreach (KCT_KSCTech KCTTech in KSCList)
+                {
+                    GUILayout.Label(KCTTech.AsIKCTBuildItem().GetItemName());
+                }
+            }
+            else if (listWindow == 3) //Tech nodes
             {
                 List<KCT_TechItem> techList = KCT_GameStates.TechList;
                 //GUILayout.Label("Tech Node Research");
@@ -630,6 +638,18 @@ namespace KerbalConstructionTime
                     b.RemoveFromBuildList();
                     KCT_GameStates.ActiveKSC.SPHList.Insert(0, b);
                 }
+            }
+            if (GUILayout.Button("Rush Build 20%\n√"+Math.Round(0.2*b.GetTotalCost())))
+            {
+                double cost = b.GetTotalCost();
+                cost *= 0.2;
+                double remainingBP = b.buildPoints - b.progress;
+                if (Funding.Instance.Funds >= cost)
+                {
+                    b.AddProgress(remainingBP * 0.2);
+                    KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
+                }
+
             }
             if (GUILayout.Button("Close"))
             {

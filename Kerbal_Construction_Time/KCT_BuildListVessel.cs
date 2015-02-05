@@ -318,6 +318,12 @@ namespace KerbalConstructionTime
             return mass;
         }
 
+        public double GetTotalCost()
+        {
+            if (cost != 0) return cost;
+            return KCT_Utilities.GetTotalVesselCost(shipNode);
+        }
+
         public bool RemoveFromBuildList()
         {
             string typeName="";
