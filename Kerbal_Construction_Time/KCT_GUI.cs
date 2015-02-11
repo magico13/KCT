@@ -1649,6 +1649,7 @@ namespace KerbalConstructionTime
 
         private static List<ProtoCrewMember> CrewAvailable()
         {
+            CrewQ_Integrator.SuppressCrew();
             List<ProtoCrewMember> availableCrew = new List<ProtoCrewMember>();
             foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Crew) //Initialize available crew list
             {
@@ -1666,6 +1667,7 @@ namespace KerbalConstructionTime
                 if (available)
                     availableCrew.Add(crewMember);
             }
+            CrewQ_Integrator.ReleaseCrew();
             return availableCrew;
         }
 
@@ -2077,8 +2079,8 @@ namespace KerbalConstructionTime
         }
 
         private static int upgradeWindowHolder = 0;
-        private static int sciCost = 0, fundsCost = 0;
-        private static double nodeRate = 0, upNodeRate = 0;
+        public static int sciCost = 0, fundsCost = 0;
+        public static double nodeRate = 0, upNodeRate = 0;
         private static void DrawUpgradeWindow(int windowID)
         {
             int spentPoints = KCT_Utilities.TotalSpentUpgrades(null);
@@ -2086,6 +2088,8 @@ namespace KerbalConstructionTime
             GUILayout.BeginHorizontal();
             GUILayout.Label("Total Points: " + KCT_GameStates.TotalUpgradePoints);
             GUILayout.Label("Available: " + (KCT_GameStates.TotalUpgradePoints - spentPoints));
+          //  if (KCT_Utilities.RSSActive)
+           //     GUILayout.Label("Minimum Available: ");
             GUILayout.EndHorizontal();
 
             if (KCT_Utilities.CurrentGameHasScience())
@@ -2166,6 +2170,8 @@ namespace KerbalConstructionTime
                     KCT_GameStates.TechUpgradesTotal = 0;
                     foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                         ksc.RDUpgrades[1] = 0;
+                    nodeRate = 0;
+                    upNodeRate = 0;
                 }
             }
             GUILayout.EndHorizontal();

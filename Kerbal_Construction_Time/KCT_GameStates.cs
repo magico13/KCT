@@ -84,7 +84,10 @@ namespace KerbalConstructionTime
             PurchasedUpgrades = new List<int>() { 0, 0 };
            // LaunchPadReconditioning = null;
             targetedItem = null;
-
+            KCT_GUI.fundsCost = 0;
+            KCT_GUI.sciCost = 0;
+            KCT_GUI.nodeRate = 0;
+            KCT_GUI.upNodeRate = 0;
             //ActiveKSC = new KCT_KSC("Stock");
             //KSCs = new List<KCT_KSC>() {ActiveKSC};
 
