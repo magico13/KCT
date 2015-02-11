@@ -12,8 +12,6 @@ namespace KerbalConstructionTime
         public static KCT_Events instance = new KCT_Events();
         public bool eventAdded;
 
-        public int editorRecalculationThrottle;
-
         public KCT_Events()
         {
             eventAdded = false;
@@ -130,11 +128,8 @@ namespace KerbalConstructionTime
 
         private void ShipModifiedEvent(ShipConstruct vessel)
         {
-            if (editorRecalculationThrottle % 30 == 0)
-            {
-                KCT_Utilities.RecalculateEditorBuildTime(vessel);
-                editorRecalculationThrottle = 0;
-            }       
+            KerbalConstructionTime instance = (KerbalConstructionTime)KerbalConstructionTime.instance;
+            instance.editorRecalcuationRequired = true;
         }
 
         public ApplicationLauncherButton KCTButtonStock = null;

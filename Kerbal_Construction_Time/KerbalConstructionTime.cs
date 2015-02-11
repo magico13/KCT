@@ -294,6 +294,9 @@ namespace KerbalConstructionTime
 
     public class KerbalConstructionTime : MonoBehaviour
     {
+        public bool editorRecalcuationRequired;
+        public int updateRateThrottle;
+
         public static MonoBehaviour instance;
         internal KerbalConstructionTime()
         {
@@ -355,6 +358,12 @@ namespace KerbalConstructionTime
             KCT_GameStates.timeSettings.Save(); //Save the time settings
             KCT_GameStates.formulaSettings.Load();
             KCT_GameStates.formulaSettings.Save();
+
+            // Ghetto event queue
+            if (HighLogic.LoadedScene == GameScenes.EDITOR)
+            {
+                InvokeRepeating("EditorRecalculation", 1, 1);
+            }
             
             //Code for saving to the persistence.sfs
             ProtoScenarioModule scenario = HighLogic.CurrentGame.scenarios.Find(s => s.moduleName == typeof(KerbalConstructionTimeData).Name);
@@ -504,17 +513,21 @@ namespace KerbalConstructionTime
             }
         }
 
+        private void EditorRecalculation()
+        {
+            if (editorRecalcuationRequired)
+            {
+                KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
+                editorRecalcuationRequired = false;
+            }
+        }
+
         public static bool moved = false;
         private static bool updateChecked = false;
         public void FixedUpdate()
         {
             if (!KCT_GameStates.settings.enabledForSave)
                 return;
-
-            if (KCT_Events.instance != null)
-            {
-                KCT_Events.instance.editorRecalculationThrottle++;
-            }
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
