@@ -12,7 +12,7 @@ namespace KerbalConstructionTime
         public static KCT_Events instance = new KCT_Events();
         public bool eventAdded;
 
-        public bool editorRecalculationThrottle;
+        public int editorRecalculationThrottle;
 
         public KCT_Events()
         {
@@ -130,10 +130,10 @@ namespace KerbalConstructionTime
 
         private void ShipModifiedEvent(ShipConstruct vessel)
         {
-            if (!editorRecalculationThrottle)
+            if (editorRecalculationThrottle % 30 == 0)
             {
                 KCT_Utilities.RecalculateEditorBuildTime(vessel);
-                editorRecalculationThrottle = true;
+                editorRecalculationThrottle = 0;
             }       
         }
 

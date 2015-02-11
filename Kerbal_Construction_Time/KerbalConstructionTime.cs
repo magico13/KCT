@@ -513,7 +513,7 @@ namespace KerbalConstructionTime
 
             if (KCT_Events.instance != null)
             {
-                KCT_Events.instance.editorRecalculationThrottle = false;
+                KCT_Events.instance.editorRecalculationThrottle++;
             }
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
