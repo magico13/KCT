@@ -414,6 +414,7 @@ namespace KerbalConstructionTime
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
 
             KCT_GUI.guiDataSaver.Load();
+            KCT_GameStates.reset();
 
             if (HighLogic.LoadedSceneIsEditor)
             {
@@ -439,7 +440,6 @@ namespace KerbalConstructionTime
             else if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
                 KCT_GUI.hideAll();
-                KCT_GameStates.reset();
                 if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
                 {
                     KCT_GameStates.TotalUpgradePoints = KCT_GameStates.settings.SandboxUpgrades;
