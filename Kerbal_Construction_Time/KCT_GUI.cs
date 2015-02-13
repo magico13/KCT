@@ -1679,7 +1679,11 @@ namespace KerbalConstructionTime
 
         private static List<ProtoCrewMember> CrewAvailable()
         {
-            CrewQ_Integrator.SuppressCrew();
+            if (CrewQ.API.Available)
+            {
+                return CrewQ.API.AvailableCrew.ToList();
+            }
+
             List<ProtoCrewMember> availableCrew = new List<ProtoCrewMember>();
             foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Crew) //Initialize available crew list
             {
@@ -1697,7 +1701,7 @@ namespace KerbalConstructionTime
                 if (available)
                     availableCrew.Add(crewMember);
             }
-            CrewQ_Integrator.ReleaseCrew();
+
             return availableCrew;
         }
 

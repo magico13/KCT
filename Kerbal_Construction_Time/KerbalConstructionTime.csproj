@@ -38,7 +38,10 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\..\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,11 +51,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\UnityEngine.dll</HintPath>
+      <HintPath>..\..\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CrewQ_Integrator.cs" />
+    <Compile Include="CrewQAPI.cs" />
     <Compile Include="IKCTBuildItem.cs" />
     <Compile Include="KACWrapper.cs" />
     <Compile Include="KCTDebug.cs" />
