@@ -41,18 +41,50 @@ namespace KerbalConstructionTime
             GameEvents.OnPartPurchased.Add(PartPurchasedEvent);
             GameEvents.OnVesselRecoveryRequested.Add(RecoveryRequested);
             GameEvents.onGUIRnDComplexDespawn.Add(TechDisableEvent);
-        //    GameEvents.OnKSCFacilityUpgraded.Add(FacilityUpgradedEvent);
+            GameEvents.OnKSCFacilityUpgraded.Add(FacilityUpgradedEvent);
        //     GameEvents.OnKSCStructureRepairing.Add(FacilityRepairingEvent);
 
             eventAdded = true;
         }
 
-        private static int lastLvl = -1;
+        //private static int lastLvl = -1;
+        public static bool allowedToUpgrade = false;
         public void FacilityUpgradedEvent(Upgradeables.UpgradeableFacility facility, int lvl)
         {
             if (KCT_GUI.PrimarilyDisabled)
                 return;
-            if (lvl <= lastLvl)
+
+
+            if (!allowedToUpgrade)
+            {
+                KCT_UpgradingBuilding upgrading = new KCT_UpgradingBuilding(facility, lvl, lvl - 1, facility.id.Split('/').Last());
+                
+                if (!upgrading.AlreadyInProgress())
+                {
+                    upgrading.Downgrade();
+                    double cost = facility.GetUpgradeCost();
+                    upgrading.SetBP(cost);
+                    upgrading.cost = cost;
+                    KCT_GameStates.ActiveKSC.KSCTech.Add(upgrading);
+                    ScreenMessages.PostScreenMessage("Facility upgrade requested!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                    KCTDebug.Log("Facility " + facility.id + " upgrade requested to lvl " + lvl + " for " + cost + " funds, resulting in a BP of " + upgrading.BP);
+                }
+                else if (lvl != upgrading.currentLevel)
+                {
+                    //
+                    KCT_UpgradingBuilding listBuilding = upgrading.KSC.KSCTech.Find(b => b.id == upgrading.id);
+                    listBuilding.Downgrade();
+                    KCT_Utilities.AddFunds(listBuilding.cost, TransactionReasons.None);
+                    ScreenMessages.PostScreenMessage("Facility is already being upgraded!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                    KCTDebug.Log("Facility " + facility.id + " tried to upgrade to lvl " + lvl + " but already in list!");
+                }
+            }
+            else
+            {
+                KCTDebug.Log("Facility " + facility.id + " upgraded to lvl " + lvl);
+                allowedToUpgrade = false;
+            }
+           /* if (lvl <= lastLvl)
             {
                 lastLvl = -1;
                 return;
@@ -60,8 +92,8 @@ namespace KerbalConstructionTime
             facility.SetLevel(lvl - 1);
             lastLvl = lvl;
             double cost = facility.GetUpgradeCost();
-            double BP = Math.Sqrt(cost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
-            KCTDebug.Log("Facility being upgraded to lvl "+lvl+" for " + cost + " funds, resulting in a BP of " + BP);
+            double BP = Math.Sqrt(cost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;*/
+            
            // KCTDebug.Log(facility.GetNormLevel());
             
         }
@@ -523,6 +555,111 @@ namespace KerbalConstructionTime
                     }
                 }
             }
+        }
+    }
+
+    public class KCT_UpgradingBuilding : IKCTBuildItem
+    {
+        [Persistent] public int upgradeLevel, currentLevel;
+        [Persistent] public string id, commonName;
+        [Persistent] public double progress=0, BP=0, cost=0;
+        //public bool allowUpgrade = false;
+        private KCT_KSC _KSC = null;
+        public KCT_UpgradingBuilding(Upgradeables.UpgradeableFacility facility, int newLevel, int oldLevel, string name)
+        {
+            id = facility.id;
+            upgradeLevel = newLevel;
+            currentLevel = oldLevel;
+            commonName = name;
+        }
+
+        public KCT_UpgradingBuilding()
+        {
+
+        }
+
+        public void Downgrade()
+        {
+            foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
+            {
+                KCT_Events.allowedToUpgrade = true;
+                facility.SetLevel(currentLevel);
+            }
+            //KCT_Events.allowedToUpgrade = false;
+        }
+
+        public void Upgrade()
+        {
+            
+            foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
+            {
+                KCT_Events.allowedToUpgrade = true;
+                facility.SetLevel(upgradeLevel);
+            }
+            //KCT_Events.allowedToUpgrade = false;
+        }
+
+        List<Upgradeables.UpgradeableFacility> GetFacilityReferences()
+        {
+            return ScenarioUpgradeableFacilities.protoUpgradeables[id].facilityRefs;
+        }
+
+        public void SetBP(double cost)
+        {
+            BP = Math.Sqrt(cost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
+        }
+
+        public bool AlreadyInProgress()
+        {
+            return (KSC != null);
+        }
+
+        public KCT_KSC KSC
+        {
+            get
+            {
+                if (_KSC == null)
+                    _KSC = KCT_GameStates.KSCs.Find(ksc => ksc.KSCTech.Find(ub => ub.id == this.id) != null);
+                return _KSC;
+            }
+        }
+
+        string IKCTBuildItem.GetItemName()
+        {
+            return commonName;
+        }
+        double IKCTBuildItem.GetBuildRate()
+        {
+            double rateTotal = 0;
+            if (KSC != null)
+            {
+                foreach (double rate in KCT_Utilities.BuildRatesSPH(KSC))
+                    rateTotal += rate;
+                foreach (double rate in KCT_Utilities.BuildRatesVAB(KSC))
+                    rateTotal += rate;
+            }
+            return rateTotal;
+        }
+        double IKCTBuildItem.GetTimeLeft()
+        {
+            return (BP - progress) / ((IKCTBuildItem)this).GetBuildRate();
+        }
+        bool IKCTBuildItem.IsComplete()
+        {
+            return progress >= BP;
+        }
+        KCT_BuildListVessel.ListType IKCTBuildItem.GetListType()
+        {
+            return KCT_BuildListVessel.ListType.KSC;
+        }
+        public IKCTBuildItem AsIKCTBuildItem()
+        {
+            return (IKCTBuildItem)this;
+        }
+        public void AddProgress(double amt)
+        {
+            progress += amt;
+            if (progress > BP) progress = BP;
         }
     }
 }

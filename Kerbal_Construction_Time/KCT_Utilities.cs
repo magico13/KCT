@@ -401,12 +401,15 @@ namespace KerbalConstructionTime
 
                     ksc.Recon_Rollout.RemoveAll(rr => !KCT_GameStates.settings.Reconditioning || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));
 
-                    foreach (KCT_KSCTech kscTech in ksc.KSCTech)
+                    foreach (KCT_UpgradingBuilding kscTech in ksc.KSCTech)
                     {
                         kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
                         if (kscTech.AsIKCTBuildItem().IsComplete())
-                            kscTech.ActivateTech();
+                        {
+                            kscTech.Upgrade();
+                        }
                     }
+                    ksc.KSCTech.RemoveAll(ub => ub.AsIKCTBuildItem().IsComplete());
 
                 }
                 for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
@@ -705,7 +708,7 @@ namespace KerbalConstructionTime
         }
 
 
-        public static bool RemovePartFromInventory(Part part)
+        public static int RemovePartFromInventory(Part part)
         {
             string name = part.partInfo.name;
             int amt = 1;
@@ -725,7 +728,7 @@ namespace KerbalConstructionTime
             return RemovePartFromInventory(nameToStore);*/
             return RemovePartFromInventory(name, amt);
         }
-        public static bool RemovePartFromInventory(Part part, Dictionary<String, int> inventory)
+        public static int RemovePartFromInventory(Part part, Dictionary<String, int> inventory)
         {
             string name = part.partInfo.name;
             int amt = 1;
@@ -744,7 +747,7 @@ namespace KerbalConstructionTime
             string nameToStore = part.partInfo.name + tweakscale;*/
             return RemovePartFromInventory(name, inventory, amt);
         }
-        public static bool RemovePartFromInventory(ConfigNode part)
+        public static int RemovePartFromInventory(ConfigNode part)
         {
             string name = PartNameFromNode(part) + GetTweakScaleSize(part);
             int amt = 1;
@@ -756,7 +759,7 @@ namespace KerbalConstructionTime
             //return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part));
             return RemovePartFromInventory(name, amt);
         }
-        public static bool RemovePartFromInventory(ConfigNode part, Dictionary<String, int> inventory)
+        public static int RemovePartFromInventory(ConfigNode part, Dictionary<String, int> inventory)
         {
             string name = PartNameFromNode(part) + GetTweakScaleSize(part);
             int amt = 1;
@@ -768,23 +771,24 @@ namespace KerbalConstructionTime
             //return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part), inventory, 1);
             return RemovePartFromInventory(name, inventory, amt);
         }
-        public static bool RemovePartFromInventory(String name, int amt)
+        public static int RemovePartFromInventory(String name, int amt)
         {
             return RemovePartFromInventory(name, KCT_GameStates.PartInventory, amt);
         }
-        public static bool RemovePartFromInventory(String name, Dictionary<String, int> inventory, int amt)
+        public static int RemovePartFromInventory(String name, Dictionary<String, int> inventory, int amt)
         {
-            if (inventory.ContainsKey(name) && inventory[name] >= amt)
+            int removed = 0;
+            if (inventory.ContainsKey(name))
             {
-                inventory[name] -= amt;
+                removed = inventory[name] >= amt ? amt : inventory[name];
+                inventory[name] -= removed;
                 if (inventory[name] == 0)
                 {
                     inventory.Remove(name);
                 }
-                KCTDebug.Log("Removed " + amt + "x" + name + " from part inventory");
-                return true;
+                KCTDebug.Log("Removed " + removed + "x" + name + " from part inventory");
             }
-            return false;
+            return removed;
         }
 
         public static void AddPartToTracker(Part part)
@@ -1051,13 +1055,13 @@ namespace KerbalConstructionTime
             {
                 foreach (ConfigNode p in blv.ExtractedPartNodes)
                 {
-                    if (KCT_Utilities.RemovePartFromInventory(p, inventory))
+                   // if (KCT_Utilities.RemovePartFromInventory(p, inventory))
                     {
                         if (!KCT_Utilities.PartIsProcedural(p))
-                            AddToDict(blv.InventoryParts, PartNameFromNode(p) + GetTweakScaleSize(p), 1);
+                            AddToDict(blv.InventoryParts, PartNameFromNode(p) + GetTweakScaleSize(p), KCT_Utilities.RemovePartFromInventory(p, inventory));
                            // blv.InventoryParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p), 1);
                         else
-                            AddToDict(blv.InventoryParts, PartNameFromNode(p), (int)(1000 * GetPartCostFromNode(p, false)));
+                            AddToDict(blv.InventoryParts, PartNameFromNode(p), KCT_Utilities.RemovePartFromInventory(p, inventory));
                            // blv.InventoryParts.Add(PartNameFromNode(p), (int)(1000 * GetPartCostFromNode(p, false)));
                     }
                 }
@@ -1075,42 +1079,48 @@ namespace KerbalConstructionTime
             if (KCT_GameStates.ActiveKSC == null)
                 return null;
             double shortestTime = double.PositiveInfinity;
-            foreach (IKCTBuildItem blv in KCT_GameStates.ActiveKSC.VABList)
+            foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
             {
-                double time = blv.GetTimeLeft();
-                if (time < shortestTime)
+                foreach (IKCTBuildItem blv in KSC.VABList)
                 {
-                    thing = blv;
-                    shortestTime = time;
+                    double time = blv.GetTimeLeft();
+                    if (time < shortestTime)
+                    {
+                        thing = blv;
+                        shortestTime = time;
+                    }
                 }
-            }
-            foreach (IKCTBuildItem blv in KCT_GameStates.ActiveKSC.SPHList)
-            {
-                double time = blv.GetTimeLeft();
-                if (time < shortestTime)
+                foreach (IKCTBuildItem blv in KSC.SPHList)
                 {
-                    thing = blv;
-                    shortestTime = time;
+                    double time = blv.GetTimeLeft();
+                    if (time < shortestTime)
+                    {
+                        thing = blv;
+                        shortestTime = time;
+                    }
                 }
-            }
-            foreach (IKCTBuildItem blv in KCT_GameStates.TechList)
-            {
-                double time = blv.GetTimeLeft();
-                if (time < shortestTime)
+                
+                foreach (IKCTBuildItem rr in KSC.Recon_Rollout)
                 {
-                    thing = blv;
-                    shortestTime = time;
+                    if (rr.IsComplete())
+                        continue;
+                    double time = rr.GetTimeLeft();
+                    if (time < shortestTime)
+                    {
+                        thing = rr;
+                        shortestTime = time;
+                    }
                 }
-            }
-            foreach (IKCTBuildItem rr in KCT_GameStates.ActiveKSC.Recon_Rollout)
-            {
-                if (rr.IsComplete())
-                    continue;
-                double time = rr.GetTimeLeft();
-                if (time < shortestTime)
+                foreach (IKCTBuildItem ub in KSC.KSCTech)
                 {
-                    thing = rr;
-                    shortestTime = time;
+                    if (ub.IsComplete())
+                        continue;
+                    double time = ub.GetTimeLeft();
+                    if (time < shortestTime)
+                    {
+                        thing = ub;
+                        shortestTime = time;
+                    }
                 }
             }
             /*if (KCT_Utilities.ReconditioningActive(null))
@@ -1123,6 +1133,15 @@ namespace KerbalConstructionTime
                     shortestTime = time;
                 }
             }*/
+            foreach (IKCTBuildItem blv in KCT_GameStates.TechList)
+            {
+                double time = blv.GetTimeLeft();
+                if (time < shortestTime)
+                {
+                    thing = blv;
+                    shortestTime = time;
+                }
+            }
             return thing;
         }
 
@@ -1598,6 +1617,7 @@ namespace KerbalConstructionTime
 
         public static void AddToDict(Dictionary<string, int> dict, string key, int value)
         {
+            if (value <= 0) return;
             if (!dict.ContainsKey(key))
                 dict.Add(key, value);
             else

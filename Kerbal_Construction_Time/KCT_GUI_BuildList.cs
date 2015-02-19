@@ -43,6 +43,11 @@ namespace KerbalConstructionTime
                     GUILayout.Label("Tech", windowSkin.label);
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
                 }
+                else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.KSC)
+                {
+                    GUILayout.Label("KSC", windowSkin.label);
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
+                }
 
                 if (!HighLogic.LoadedSceneIsEditor && TimeWarp.CurrentRateIndex == 0 && GUILayout.Button("Warp to" + System.Environment.NewLine + "Complete"))
                 {
@@ -274,7 +279,7 @@ namespace KerbalConstructionTime
                                 GUILayout.Label(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
                             }
                         }
-                        else if (!HighLogic.LoadedSceneIsEditor && HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && (!reconActive || (rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
+                        else if (HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && (!reconActive || (rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
                             bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
                             if (!operational)
@@ -499,8 +504,8 @@ namespace KerbalConstructionTime
             }
             else if (listWindow == 2) //KSC things
             {
-                List<KCT_KSCTech> KSCList = KCT_GameStates.ActiveKSC.KSCTech;
-                foreach (KCT_KSCTech KCTTech in KSCList)
+                List<KCT_UpgradingBuilding> KSCList = KCT_GameStates.ActiveKSC.KSCTech;
+                foreach (KCT_UpgradingBuilding KCTTech in KSCList)
                 {
                     GUILayout.Label(KCTTech.AsIKCTBuildItem().GetItemName());
                 }

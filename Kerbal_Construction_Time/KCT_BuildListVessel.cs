@@ -13,7 +13,7 @@ namespace KerbalConstructionTime
         public double progress, buildPoints;
         public String launchSite, flag, shipName;
         public ListType type;
-        public enum ListType { VAB, SPH, TechNode, Reconditioning };
+        public enum ListType { VAB, SPH, TechNode, Reconditioning, KSC };
         //public List<string> InventoryParts;
         public Dictionary<string, int> InventoryParts;
         public ConfigNode shipNode;

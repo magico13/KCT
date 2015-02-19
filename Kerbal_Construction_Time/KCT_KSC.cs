@@ -5,7 +5,7 @@ using System.Text;
 
 namespace KerbalConstructionTime
 {
-    public class KCT_KSCTech : IKCTBuildItem
+   /* public class KCT_KSCTech : IKCTBuildItem
     {
         [Persistent] public string Name = ""; //ex: VAB Upgrade LVL 2, LaunchPad Repair
         [Persistent] public double progress = 0, BP = 0;
@@ -139,7 +139,7 @@ namespace KerbalConstructionTime
 
             return lvl;
         }
-    }
+    }*/
 
     public class KCT_KSC
     {
@@ -148,7 +148,7 @@ namespace KerbalConstructionTime
         public List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> SPHWarehouse = new List<KCT_BuildListVessel>();
-        public List<KCT_KSCTech> KSCTech = new List<KCT_KSCTech>();
+        public List<KCT_UpgradingBuilding> KSCTech = new List<KCT_UpgradingBuilding>();
         //public List<KCT_TechItem> TechList = new List<KCT_TechItem>();
         public List<int> VABUpgrades = new List<int>() { 0 };
         public List<int> SPHUpgrades = new List<int>() { 0 };
@@ -258,6 +258,15 @@ namespace KerbalConstructionTime
             }
             node.AddNode(sphwh);
 
+            ConfigNode upgradeables = new ConfigNode("KSCTech");
+            foreach (KCT_UpgradingBuilding buildingTech in KSCTech)
+            {
+                ConfigNode bT = new ConfigNode("UpgradingBuilding");
+                bT = ConfigNode.CreateConfigFromObject(buildingTech, bT);
+                upgradeables.AddNode(bT);
+            }
+            node.AddNode(upgradeables);
+
             /*ConfigNode tech = new ConfigNode("TechList");
             foreach (KCT_TechItem techItem in TechList)
             {
@@ -292,6 +301,7 @@ namespace KerbalConstructionTime
             VABWarehouse.Clear();
             SPHList.Clear();
             SPHWarehouse.Clear();
+            KSCTech.Clear();
             //TechList.Clear();
             Recon_Rollout.Clear();
 
@@ -369,6 +379,14 @@ namespace KerbalConstructionTime
                 KCT_Recon_Rollout tempRR = new KCT_Recon_Rollout();
                 ConfigNode.LoadObjectFromConfig(tempRR, RRCN);
                 Recon_Rollout.Add(tempRR);
+            }
+
+            tmp = node.GetNode("KSCTech");
+            foreach (ConfigNode upBuild in tmp.GetNodes("UpgradingBuilding"))
+            {
+                KCT_UpgradingBuilding tempUP = new KCT_UpgradingBuilding();
+                ConfigNode.LoadObjectFromConfig(tempUP, upBuild);
+                KSCTech.Add(tempUP);
             }
 
             return this;
