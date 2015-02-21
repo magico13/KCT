@@ -448,6 +448,10 @@ namespace KerbalConstructionTime
             }
             else if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
+                if (System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
+                {
+                    KCT_Utilities.LoadSimulationSave();
+                }
                 KCT_GUI.hideAll();
                 if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
                 {
