@@ -2413,7 +2413,7 @@ namespace KerbalConstructionTime
                 GUILayout.Label("Due to your settings, automatic update checking is enabled. You can disable it in the Settings menu!");
             else
                 GUILayout.Label("Due to your settings, automatic update checking is disabled. You can enable it in the Settings menu!");
-            GUILayout.Label("\nNote: 0.24 introduced a bug that causes time to freeze while hovering over the Build List with the mouse cursor. Just move the cursor off of the window and time will resume.");
+            //GUILayout.Label("\nNote: 0.24 introduced a bug that causes time to freeze while hovering over the Build List with the mouse cursor. Just move the cursor off of the window and time will resume.");
             if (GUILayout.Button("Spend Upgrades"))
             {
                 showFirstRun = false;

@@ -289,6 +289,7 @@ namespace KerbalConstructionTime
 
             KerbalConstructionTime.DelayedStart();
             KCT_GUI.CheckToolbar();
+            KCT_GameStates.erroredDuringOnLoad = false;
         }
     }
 
@@ -515,6 +516,8 @@ namespace KerbalConstructionTime
                     KCT_GameStates.launchedCrew.Clear();
                 }
             }
+
+            KCT_GameStates.erroredDuringOnLoad = true;
         }
 
         private void EditorRecalculation()

@@ -381,12 +381,15 @@ namespace KerbalConstructionTime
                 Recon_Rollout.Add(tempRR);
             }
 
-            tmp = node.GetNode("KSCTech");
-            foreach (ConfigNode upBuild in tmp.GetNodes("UpgradingBuilding"))
+            if (node.HasNode("KSCTech"))
             {
-                KCT_UpgradingBuilding tempUP = new KCT_UpgradingBuilding();
-                ConfigNode.LoadObjectFromConfig(tempUP, upBuild);
-                KSCTech.Add(tempUP);
+                tmp = node.GetNode("KSCTech");
+                foreach (ConfigNode upBuild in tmp.GetNodes("UpgradingBuilding"))
+                {
+                    KCT_UpgradingBuilding tempUP = new KCT_UpgradingBuilding();
+                    ConfigNode.LoadObjectFromConfig(tempUP, upBuild);
+                    KSCTech.Add(tempUP);
+                }
             }
 
             return this;
