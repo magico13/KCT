@@ -289,7 +289,7 @@ namespace KerbalConstructionTime
 
             KerbalConstructionTime.DelayedStart();
             KCT_GUI.CheckToolbar();
-            KCT_GameStates.erroredDuringOnLoad = false;
+            KCT_GameStates.erroredDuringOnLoad.OnLoadFinish();
         }
     }
 
@@ -516,8 +516,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.launchedCrew.Clear();
                 }
             }
-
-            KCT_GameStates.erroredDuringOnLoad = true;
+            KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
         }
 
         private void EditorRecalculation()
@@ -535,6 +534,11 @@ namespace KerbalConstructionTime
         {
             if (!KCT_GameStates.settings.enabledForSave)
                 return;
+
+            if (!KCT_GameStates.erroredDuringOnLoad.AlertFired && KCT_GameStates.erroredDuringOnLoad.HasErrored())
+            {
+                KCT_GameStates.erroredDuringOnLoad.FireAlert();
+            }
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
@@ -693,9 +697,6 @@ namespace KerbalConstructionTime
 
         //    KCTDebug.Log(ScenarioUpgradeableFacilities.protoUpgradeables.Keys);
           //  KCTDebug.Log(ScenarioUpgradeableFacilities.protoUpgradeables.Values.ElementAt(0).facilityRefs[0].name);
-
-
-
 
 
             if (!updateChecked)

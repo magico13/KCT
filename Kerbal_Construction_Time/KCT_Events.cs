@@ -42,9 +42,16 @@ namespace KerbalConstructionTime
             GameEvents.OnVesselRecoveryRequested.Add(RecoveryRequested);
             GameEvents.onGUIRnDComplexDespawn.Add(TechDisableEvent);
             GameEvents.OnKSCFacilityUpgraded.Add(FacilityUpgradedEvent);
+            GameEvents.onGameStateLoad.Add(PersistenceLoadEvent);
        //     GameEvents.OnKSCStructureRepairing.Add(FacilityRepairingEvent);
 
             eventAdded = true;
+        }
+
+
+        public void PersistenceLoadEvent(ConfigNode node)
+        {
+            KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
         }
 
         //private static int lastLvl = -1;
