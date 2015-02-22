@@ -404,7 +404,7 @@ namespace KerbalConstructionTime
                     foreach (KCT_UpgradingBuilding kscTech in ksc.KSCTech)
                     {
                         kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
-                        if (kscTech.AsIKCTBuildItem().IsComplete())
+                        if (kscTech.AsIKCTBuildItem().IsComplete() || KCT_GameStates.settings.InstantKSCUpgrades)
                         {
                             kscTech.Upgrade();
                         }

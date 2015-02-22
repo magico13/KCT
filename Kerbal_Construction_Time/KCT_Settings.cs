@@ -20,6 +20,7 @@ namespace KerbalConstructionTime
         [Persistent] public float RecoveryModifierDefault;
         [Persistent] public bool NoCostSimulationsDefault;
         [Persistent] public bool InstantTechUnlockDefault;
+        [Persistent] public bool InstantKSCUpgradeDefault;
         [Persistent] public bool DisableBuildTimeDefault;
         [Persistent] public bool EnableAllBodiesDefault;
         [Persistent] public bool ReconditioningDefault;
@@ -28,11 +29,15 @@ namespace KerbalConstructionTime
         [Persistent] public bool PreferBlizzyToolbar;
         [Persistent] public bool AllowParachuteRecovery;
 
+        [Persistent] public bool RandomizeCrew;
+        [Persistent] public bool AutoHireCrew;
+
         //Game specific settings
         public bool enabledForSave = true;
         public float RecoveryModifier;
         public bool NoCostSimulations;
         public bool InstantTechUnlock;
+        public bool InstantKSCUpgrades;
         public bool DisableBuildTime;
         public bool EnableAllBodies;
         public bool Reconditioning;
@@ -64,6 +69,7 @@ namespace KerbalConstructionTime
             RecoveryModifierDefault = 0.75f;
             NoCostSimulationsDefault = false;
             InstantTechUnlockDefault = false;
+            InstantKSCUpgradeDefault = false;
             DisableBuildTimeDefault = false;
             EnableAllBodiesDefault = false;
             ReconditioningDefault = true;
@@ -87,10 +93,14 @@ namespace KerbalConstructionTime
                     RecoveryModifier = RecoveryModifierDefault;
                     NoCostSimulations = NoCostSimulationsDefault;
                     InstantTechUnlock = InstantTechUnlockDefault;
+                    InstantKSCUpgrades = InstantKSCUpgradeDefault;
                     DisableBuildTime = DisableBuildTimeDefault;
                     EnableAllBodies = EnableAllBodiesDefault;
                     Reconditioning = ReconditioningDefault;
                 }
+
+                KCT_GUI.autoHire = AutoHireCrew;
+                KCT_GUI.randomCrew = RandomizeCrew;
             }
         }
 

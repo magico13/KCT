@@ -62,7 +62,7 @@ namespace KerbalConstructionTime
                 return;
 
 
-            if (!allowedToUpgrade)
+            if (!(allowedToUpgrade || KCT_GameStates.settings.InstantKSCUpgrades))
             {
                 KCT_UpgradingBuilding upgrading = new KCT_UpgradingBuilding(facility, lvl, lvl - 1, facility.id.Split('/').Last());
                 
