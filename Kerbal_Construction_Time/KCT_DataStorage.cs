@@ -70,7 +70,8 @@ namespace KerbalConstructionTime
     }
     public class KCT_DataStorage : ConfigNodeStorage
     {
-        [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && KCT_GameStates.settings.SandboxEnabled));
+        [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX
+            || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && KCT_GameStates.settings.SandboxEnabled));
         [Persistent] public float RecoveryModifier = 0.75f;
         [Persistent] public bool NoCostSimulations = false;
         [Persistent] public bool DisableBuildTime = false;
@@ -92,6 +93,7 @@ namespace KerbalConstructionTime
         [Persistent] List<String> PartTracker = new List<String>();
         [Persistent] List<String> PartInventory = new List<String>();
         [Persistent] string activeKSC = "";
+        [Persistent] string SimulationTime = "";
 
         public override void OnDecodeFromConfigNode()
         {
@@ -106,6 +108,7 @@ namespace KerbalConstructionTime
             KCT_GameStates.FundsGivenForVessel = fundsFromSimulation;
             KCT_GameStates.TechUpgradesTotal = TechUpgrades;
             KCT_GameStates.activeKSCName = activeKSC;
+            KCT_GUI.simLength = SimulationTime;
 
             SetSettings();
             //Fix for change to number of upgrades at start.
@@ -135,6 +138,7 @@ namespace KerbalConstructionTime
             fundsFromSimulation = KCT_GameStates.FundsGivenForVessel;
             firstStart = KCT_GameStates.firstStart;
             activeKSC = KCT_GameStates.ActiveKSC.KSCName;
+            SimulationTime = KCT_GUI.simLength;
             GetSettings();
         }
 

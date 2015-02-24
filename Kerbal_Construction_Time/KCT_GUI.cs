@@ -750,10 +750,18 @@ namespace KerbalConstructionTime
                 GUI.DragWindow();
         }
 
-        private static string orbitAltString = "", orbitIncString = "", simLength = "0.25", UTString = "";
+        private static string orbitAltString = "", orbitIncString = "", UTString = "";
+        public static string simLength = "";
         private static bool advancedSimConfig = false;
         public static void DrawSimulationConfigure(int windowID)
         {
+            if (simLength == "")
+            {
+                if (KCT_GameStates.settings.NoCostSimulations)
+                    simLength = "0";
+                else
+                    simLength = "0.25";
+            }
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
             GUILayout.Label("Body: ");
