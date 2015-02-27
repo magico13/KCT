@@ -849,7 +849,7 @@ namespace KerbalConstructionTime
 
 
             GUILayout.BeginHorizontal();
-            if (((KCT_Utilities.CurrentGameIsCareer() && (Funding.Instance.Funds >= cost))
+            if (((KCT_Utilities.CurrentGameIsCareer() && Funding.Instance.Funds >= cost)
                 || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
             {
                 if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
@@ -2144,8 +2144,9 @@ namespace KerbalConstructionTime
         }
 
         private static int upgradeWindowHolder = 0;
-        public static int sciCost = 0, fundsCost = 0;
+        public static double sciCost = 0, fundsCost = 0;
         public static double nodeRate = 0, upNodeRate = 0;
+        public static double researchRate = 0, upResearchRate = 0;
         private static void DrawUpgradeWindow(int windowID)
         {
             int spentPoints = KCT_Utilities.TotalSpentUpgrades(null);
@@ -2162,32 +2163,34 @@ namespace KerbalConstructionTime
                 //int cost = (int)Math.Min(Math.Pow(2, KCT_GameStates.PurchasedUpgrades[0]+2), 512);
                 if (sciCost == 0)
                 {
-                    sciCost = (int)KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.UpgradeScienceFormula, new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[0].ToString() } });
-                    int max = int.Parse(KCT_GameStates.formulaSettings.UpgradeScienceMax);
+                    sciCost = KCT_MathParsing.GetStandardFormulaValue("UpgradeScience", new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[0].ToString() } });
+                    double max = double.Parse(KCT_GameStates.formulaSettings.UpgradeScienceMax);
                     if (max > 0 && sciCost > max) sciCost = max;
                 }
-                int cost = sciCost;
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Buy Point: ");
-                if (GUILayout.Button(cost + " Sci", GUILayout.ExpandWidth(false)))
+                double cost = sciCost;
+                if (cost >= 0)
                 {
-                    sciCost = (int)KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.UpgradeScienceFormula, new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[0].ToString() } });
-                    int max = int.Parse(KCT_GameStates.formulaSettings.UpgradeScienceMax);
-                    if (max > 0 && sciCost > max) sciCost = max;
-                    cost = sciCost;
-
-                    if (ResearchAndDevelopment.Instance.Science >= cost)
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Buy Point: ");
+                    if (GUILayout.Button(Math.Round(cost, 0) + " Sci", GUILayout.ExpandWidth(false)))
                     {
-                        //ResearchAndDevelopment.Instance.Science -= cost;
-                        ResearchAndDevelopment.Instance.AddScience(-cost, TransactionReasons.None);
-                        ++KCT_GameStates.TotalUpgradePoints;
-                        ++KCT_GameStates.PurchasedUpgrades[0];
-
-                        sciCost = (int)KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.UpgradeScienceFormula, new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[0].ToString() } });
+                        sciCost = KCT_MathParsing.GetStandardFormulaValue("UpgradeScience", new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[0].ToString() } });
+                        double max = double.Parse(KCT_GameStates.formulaSettings.UpgradeScienceMax);
                         if (max > 0 && sciCost > max) sciCost = max;
+                        cost = sciCost;
+
+                        if (ResearchAndDevelopment.Instance.Science >= cost)
+                        {
+                            //ResearchAndDevelopment.Instance.Science -= cost;
+                            ResearchAndDevelopment.Instance.AddScience((float)cost, TransactionReasons.None);
+                            ++KCT_GameStates.TotalUpgradePoints;
+                            ++KCT_GameStates.PurchasedUpgrades[0];
+
+                            sciCost = 0;
+                        }
                     }
+                    GUILayout.EndHorizontal();
                 }
-                GUILayout.EndHorizontal();
             }
 
             if (KCT_Utilities.CurrentGameIsCareer())
@@ -2195,32 +2198,34 @@ namespace KerbalConstructionTime
                 //double cost = Math.Min(Math.Pow(2, KCT_GameStates.PurchasedUpgrades[1]+4), 1024) * 1000;
                 if (fundsCost == 0)
                 {
-                    fundsCost = (int)KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.UpgradeFundsFormula, new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[1].ToString() } });
-                    int max = int.Parse(KCT_GameStates.formulaSettings.UpgradeFundsMax);
+                    fundsCost = KCT_MathParsing.GetStandardFormulaValue("UpgradeFunds", new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[1].ToString() } });
+                    double max = double.Parse(KCT_GameStates.formulaSettings.UpgradeFundsMax);
                     if (max > 0 && fundsCost > max) fundsCost = max;
                 }
-                int cost = fundsCost;
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Buy Point: ");
-                if (GUILayout.Button(cost + " Funds", GUILayout.ExpandWidth(false)))
+                double cost = fundsCost;
+                if (cost >= 0)
                 {
-                    fundsCost = (int)KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.UpgradeFundsFormula, new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[1].ToString() } });
-                    int max = int.Parse(KCT_GameStates.formulaSettings.UpgradeFundsMax);
-                    if (max > 0 && fundsCost > max) fundsCost = max;
-                    cost = fundsCost;
-
-                    if (Funding.Instance.Funds >= cost)
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Buy Point: ");
+                    if (GUILayout.Button(Math.Round(cost, 0) + " Funds", GUILayout.ExpandWidth(false)))
                     {
-                        KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
-                        ++KCT_GameStates.TotalUpgradePoints;
-                        ++KCT_GameStates.PurchasedUpgrades[1];
-
-
-                        fundsCost = (int)KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.UpgradeFundsFormula, new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[1].ToString() } });
+                        fundsCost = KCT_MathParsing.GetStandardFormulaValue("UpgradeFunds", new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[1].ToString() } });
+                        double max = int.Parse(KCT_GameStates.formulaSettings.UpgradeFundsMax);
                         if (max > 0 && fundsCost > max) fundsCost = max;
+                        cost = fundsCost;
+
+                        if (Funding.Instance.Funds >= cost)
+                        {
+                            KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
+                            ++KCT_GameStates.TotalUpgradePoints;
+                            ++KCT_GameStates.PurchasedUpgrades[1];
+
+
+                            fundsCost = 0;
+                        }
                     }
+                    GUILayout.EndHorizontal();
                 }
-                GUILayout.EndHorizontal();
             }
 
             GUILayout.BeginHorizontal();
@@ -2329,26 +2334,37 @@ namespace KerbalConstructionTime
                 GUILayout.Label("R&D Upgrades");
                 GUILayout.EndHorizontal();
 
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Research");
-                GUILayout.Label((KSC.RDUpgrades[0] * 0.5) + " sci/86400 BP");
-                if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
+                if (researchRate == 0)
                 {
-                    if (GUILayout.Button("+0.5", GUILayout.Width(45)))
-                    {
-                        ++KSC.RDUpgrades[0];
-                    }
+                    researchRate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[0].ToString() } });
+
+                    upResearchRate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[0]+1).ToString() } });
                 }
-                GUILayout.EndHorizontal();
+
+                if (researchRate >= 0)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Research");
+                    GUILayout.Label(Math.Round(researchRate * 86400, 2) + " sci/86400 BP");
+                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
+                    {
+                        if (GUILayout.Button("+" + Math.Round((upResearchRate - researchRate) * 86400, 2), GUILayout.Width(45)))
+                        {
+                            ++KSC.RDUpgrades[0];
+                            researchRate = 0;
+                        }
+                    }
+                    GUILayout.EndHorizontal();
+                }
 
                 double days = GameSettings.KERBIN_TIME ? 4 : 1;
                 if (nodeRate == 0)
                 {
-                    nodeRate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula, new Dictionary<string, string>() { {"N", KSC.RDUpgrades[1].ToString()} });
+                    nodeRate = KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { {"N", KSC.RDUpgrades[1].ToString()} });
                     double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
                     if (max > 0 && nodeRate > max) nodeRate = max;
 
-                    upNodeRate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula, new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[1]+1).ToString() } });
+                    upNodeRate = KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[1]+1).ToString() } });
                     if (max > 0 && upNodeRate > max) upNodeRate = max;
                 }
                 double sci = 86400 * nodeRate;
@@ -2375,14 +2391,7 @@ namespace KerbalConstructionTime
                         foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                             ksc.RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
 
-                        nodeRate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula, 
-                            new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", "0" } });
-                        double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
-                        if (max > 0 && nodeRate > max) nodeRate = max;
-
-                        upNodeRate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula, 
-                            new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", "0" } });
-                        if (max > 0 && upNodeRate > max) upNodeRate = max;
+                        nodeRate = 0;
 
                         foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                         {

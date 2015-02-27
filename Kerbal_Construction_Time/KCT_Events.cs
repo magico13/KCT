@@ -44,10 +44,19 @@ namespace KerbalConstructionTime
             GameEvents.OnKSCFacilityUpgraded.Add(FacilityUpgradedEvent);
             GameEvents.onGameStateLoad.Add(PersistenceLoadEvent);
        //     GameEvents.OnKSCStructureRepairing.Add(FacilityRepairingEvent);
+          //  GameEvents.onLevelWasLoaded.Add(LevelLoadedEvent);
 
             eventAdded = true;
         }
 
+       /* public void LevelLoadedEvent(GameScenes scene)
+        {
+            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
+            if (validScenes.Contains(scene) && System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
+            {
+                KCT_Utilities.LoadSimulationSave();
+            }
+        }*/
 
         public void PersistenceLoadEvent(ConfigNode node)
         {
@@ -256,10 +265,10 @@ namespace KerbalConstructionTime
             if (validScenes.Contains(scene))
             {
                 //Check for simulation save and load it.
-                if (System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
+              /*  if (System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
                 {
                     KCT_Utilities.LoadSimulationSave();
-                }
+                }*/
                 TechDisableEvent();
             }
             if (!HighLogic.LoadedSceneIsFlight && scene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Backup save at simulation start

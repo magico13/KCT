@@ -91,6 +91,8 @@ namespace KerbalConstructionTime
             KCT_GUI.sciCost = 0;
             KCT_GUI.nodeRate = 0;
             KCT_GUI.upNodeRate = 0;
+            KCT_GUI.researchRate = 0;
+            KCT_GUI.upResearchRate = 0;
             //ActiveKSC = new KCT_KSC("Stock");
             //KSCs = new List<KCT_KSC>() {ActiveKSC};
 

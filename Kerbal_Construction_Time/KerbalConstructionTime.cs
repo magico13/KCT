@@ -423,8 +423,15 @@ namespace KerbalConstructionTime
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
 
+           /* List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
+            if (validScenes.Contains(HighLogic.LoadedScene) && System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
+            {
+                KCT_Utilities.LoadSimulationSave();
+            }*/
+
             KCT_GUI.guiDataSaver.Load();
-            KCT_GameStates.reset();
+            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
+                KCT_GameStates.reset();
 
             if (HighLogic.LoadedSceneIsEditor)
             {
@@ -449,10 +456,10 @@ namespace KerbalConstructionTime
             }
             else if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
-                if (System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
+               /* if (System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
                 {
                     KCT_Utilities.LoadSimulationSave();
-                }
+                }*/
                 KCT_GUI.hideAll();
                 if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
                 {
@@ -538,6 +545,10 @@ namespace KerbalConstructionTime
             if (!KCT_GameStates.erroredDuringOnLoad.AlertFired && KCT_GameStates.erroredDuringOnLoad.HasErrored())
             {
                 KCT_GameStates.erroredDuringOnLoad.FireAlert();
+            }
+            if (KCT_GameStates.LoadingSimulationSave)
+            {
+                KCT_Utilities.LoadSimulationSave();
             }
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
@@ -709,19 +720,20 @@ namespace KerbalConstructionTime
             if (!KCT_GameStates.settings.enabledForSave)
                 return;
 
-            /*List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.SPH, GameScenes.EDITOR };
+            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
             if (validScenes.Contains(HighLogic.LoadedScene))
             {
                 //Check for simulation save and load it.
                 string backupFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs";
                 if (System.IO.File.Exists(backupFile))
                 {
-                    if (!KCT_GameStates.LoadingSimulationSave)
+                    KCT_GameStates.LoadingSimulationSave = true;
+                  /*  if (!KCT_GameStates.LoadingSimulationSave)
                         KCT_Utilities.LoadSimulationSave();
                     else
-                        System.IO.File.Delete(backupFile);
+                        System.IO.File.Delete(backupFile);*/
                 }
-            }*/
+            }
 
             if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
             {

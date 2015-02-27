@@ -582,8 +582,9 @@ namespace KerbalConstructionTime
             }
 
             //Assign science based on science rate
-            if (CurrentGameHasScience() && !vessel.cannotEarnScience)
-                AddScienceWithMessage((float)(KSC.RDUpgrades[0] * 0.5 * vessel.buildPoints / 86400), TransactionReasons.None);
+            double rate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string,string>() {{"N", KSC.RDUpgrades[0].ToString()}});
+            if (CurrentGameHasScience() && !vessel.cannotEarnScience && rate > 0)
+                AddScienceWithMessage((float)(rate*vessel.buildPoints), TransactionReasons.None);
 
             //Add parts to the tracker
             if (!vessel.cannotEarnScience)
@@ -856,11 +857,36 @@ namespace KerbalConstructionTime
             KerbalConstructionTime.moved = false;
             KCT_GameStates.simulationEndTime = 0;
             KCTDebug.Log("Swapping persistent.sfs with simulation backup file.");
-            System.IO.File.Copy(backupFile, saveFile, true);
+
+            ConfigNode lastShip = ShipConstruction.ShipConfig;
+            EditorFacility lastEditor = HighLogic.CurrentGame.editorFacility;
+
+            Game newGame = GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
+            GamePersistence.SaveGame(newGame, "persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+            GameScenes targetScene = HighLogic.LoadedScene;
+            newGame.startScene = targetScene;
+
+            // This has to be before... newGame.Start()
+            if (targetScene == GameScenes.EDITOR)
+            {
+                newGame.editorFacility = lastEditor;
+            }
+
+
+            newGame.Start();
+
+            // ... And this has to be after. <3 KSP
+            if (targetScene == GameScenes.EDITOR)
+            {
+                EditorDriver.StartupBehaviour = EditorDriver.StartupBehaviours.LOAD_FROM_CACHE;
+                ShipConstruction.ShipConfig = lastShip;
+            }
+           /* System.IO.File.Copy(backupFile, saveFile, true);*/
             System.IO.File.Delete(backupFile);
+            
             //GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
             //System.IO.File.Delete(backupFile);
-            KCT_GameStates.LoadingSimulationSave = true;
+            KCT_GameStates.LoadingSimulationSave = false;
         }
 
 
@@ -1656,116 +1682,6 @@ namespace KerbalConstructionTime
             if (part.modules != null)
                 return part.modules.Find(m => m != null && m.moduleName != null && m.moduleName.ToLower().Contains("procedural")) != null;
             return false;
-        }
-
-        public static double ParseMath(string input, Dictionary<string, string> variables)
-        {
-            KCTDebug.Log("Input_raw: " + input);
-            foreach (KeyValuePair<string, string> kvp in variables)
-            {
-                if (input.Contains("["+kvp.Key+"]"))
-                {
-                    input = input.Replace("[" + kvp.Key + "]", kvp.Value);
-                }
-            }
-            KCTDebug.Log("Input_replaced: "+input);
-
-            double currentVal = 0;
-            string stack = "";
-            string lastOp = "+";
-            string[] ops = { "+", "-", "*", "/", "%", "^", "(", "e" };
-            for (int i = 0; i < input.Length; ++i )
-            {
-                string ch = input[i].ToString();
-                bool isOp = false;
-              //  KCTDebug.Log(ch);
-                foreach (string op in ops)
-                {
-                    if (op == ch)
-                    {
-                        isOp = true;
-                        break;
-                    }
-                }
-                if (isOp)
-                {
-                    if (ch == "-" && (stack.Trim() == ""))
-                    {
-                        stack += ch;
-                    }
-                    else if (ch == "e" || ch == "E")
-                    {
-                        int index;
-                        for (index = i; index < input.Length; ++index)
-                        {
-                            string ch2 = input[index].ToString();
-                            if (ops.Contains(ch2))
-                                break;
-                        }
-                        string sub = input.Substring(i + 1, index - i - 1);
-                        double exp = ParseMath(sub, variables);
-                        double newVal = double.Parse(stack) * Math.Pow(10, exp);
-                        currentVal = DoMath(currentVal, lastOp, newVal.ToString());
-                        stack = "0";
-                        lastOp = "+";
-                        i = index - 1;
-                    }
-                    else if (ch == "(")
-                    {
-                        int depth = 0;
-                        int j = 0;
-                        for (j = i + 1; j < input.Length; ++j)
-                        {
-                            if (input[j] == '(') depth++;
-                            if (input[j] == ')') depth--;
-
-                            if (depth < 0)
-                            {
-                                break;
-                            }
-                        }
-                        string sub = input.Substring(i + 1, j - i - 1);
-                        string val = ParseMath(sub, variables).ToString();
-                        input = input.Substring(0, i) + val + input.Substring(j + 1);
-                        --i;
-                    }
-                    else
-                    {
-                        currentVal = DoMath(currentVal, lastOp, stack);
-                        lastOp = ch;
-                        stack = "";
-                    }
-                }
-                else
-                {
-                    stack += ch;
-                }
-            }
-            currentVal = DoMath(currentVal, lastOp, stack);
-            KCTDebug.Log("Result: " + currentVal);
-            return currentVal;
-        }
-
-        private static double DoMath(double currentVal, string operation, string newVal)
-        {
-            double newValue = 0;
-            if (!double.TryParse(newVal, out newValue))
-            {
-                Debug.LogError("[KCT] Tried to parse a non-double value: " + newVal);
-                return currentVal;
-            }
-            switch (operation)
-            {
-                case "+": currentVal += newValue; break;
-                case "-": currentVal -= newValue; break;
-                case "*": currentVal *= newValue; break;
-                case "/": currentVal /= newValue; break;
-                case "%": currentVal = currentVal % long.Parse(newVal); break;
-                case "^": currentVal = Math.Pow(currentVal, newValue); break;
-                default: break;
-            }
-
-            return currentVal;
         }
     }
 }

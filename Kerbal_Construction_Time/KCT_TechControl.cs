@@ -59,7 +59,7 @@ namespace KerbalConstructionTime
         public double UpdateBuildRate()
         {
             double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
-            double rate = KCT_Utilities.ParseMath(KCT_GameStates.formulaSettings.NodeFormula,
+            double rate = KCT_MathParsing.GetStandardFormulaValue("Node",
                 new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", scienceCost.ToString() } });
             if (max > 0 && rate > max) rate = max;
             bRate_int = rate;
