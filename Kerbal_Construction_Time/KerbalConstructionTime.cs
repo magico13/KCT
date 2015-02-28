@@ -781,7 +781,7 @@ namespace KerbalConstructionTime
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
             {
                 KCT_GUI.hideAll();
-                if (FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
+                if (FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH && KCT_GameStates.launchedVessel != null)
                 {
                     bool removed = KCT_GameStates.launchedVessel.RemoveFromBuildList();
                     if (removed) //Only do these when the vessel is first removed from the list
