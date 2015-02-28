@@ -105,9 +105,9 @@ namespace KerbalConstructionTime
                     {
                         int j = FindEndParenthesis(input, i + 4);
                         string[] parts = input.Substring(i + 4, j - i - 4).Split(',');
-                        if (parts.Length != 2)
+                        if (parts.Length > 2)
                         {
-                            for (int k = 0; k < parts.Length; k++)
+                            for (int k = 2; k < parts.Length; k++)
                                 parts[1] += "," + parts[k];
                         }
                         //KCTDebug.Log(parts[0]);
