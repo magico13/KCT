@@ -38,7 +38,7 @@ namespace KerbalConstructionTime
             double currentVal = 0;
             string stack = "";
             string lastOp = "+";
-            string[] ops = { "+", "-", "*", "/", "%", "^", "(", "e", "l", "L" };
+            string[] ops = { "+", "-", "*", "/", "%", "^", "(", "e", "l", "L", "m" };
             for (int i = 0; i < input.Length; ++i)
             {
                 string ch = input[i].ToString();
@@ -98,6 +98,27 @@ namespace KerbalConstructionTime
                         string sub = input.Substring(i + 2, j - i - 2);
                         double val = ParseMath(sub, variables);
                         val = Math.Log10(val);
+                        input = input.Substring(0, i) + val.ToString() + input.Substring(j + 1);
+                        --i;
+                    }
+                    else if (ch == "m")
+                    {
+                        int j = FindEndParenthesis(input, i + 4);
+                        string[] parts = input.Substring(i + 4, j - i - 4).Split(',');
+                        if (parts.Length != 2)
+                        {
+                            for (int k = 0; k < parts.Length; k++)
+                                parts[1] += "," + parts[k];
+                        }
+                        //KCTDebug.Log(parts[0]);
+                        double sub1 = ParseMath(parts[0], variables);
+                        double sub2 = ParseMath(parts[1], variables);
+                        double val = 0;
+                        if (input.Substring(i, 4) == "max(")
+                            val = Math.Max(sub1, sub2);
+                        else if (input.Substring(i, 4) == "min(")
+                            val = Math.Min(sub1, sub2);
+
                         input = input.Substring(0, i) + val.ToString() + input.Substring(j + 1);
                         --i;
                     }

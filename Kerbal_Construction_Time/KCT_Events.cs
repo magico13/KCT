@@ -265,10 +265,10 @@ namespace KerbalConstructionTime
             if (validScenes.Contains(scene))
             {
                 //Check for simulation save and load it.
-              /*  if (System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
+                if (System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
                 {
-                    KCT_Utilities.LoadSimulationSave();
-                }*/
+                    KCT_Utilities.LoadSimulationSave(false);
+                }
                 TechDisableEvent();
             }
             if (!HighLogic.LoadedSceneIsFlight && scene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Backup save at simulation start

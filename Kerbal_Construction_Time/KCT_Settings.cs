@@ -153,18 +153,18 @@ namespace KerbalConstructionTime
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Formulas.cfg";
         [Persistent] public string NodeFormula, UpgradeFundsFormula, UpgradeScienceFormula, ResearchFormula, EffectivePartFormula, ProceduralPartFormula, BPFormula;
-        [Persistent] public string NodeMax, UpgradeFundsMax, UpgradeScienceMax;
+       // [Persistent] public string NodeMax, UpgradeFundsMax, UpgradeScienceMax;
         public KCT_FormulaSettings()
         {
             NodeFormula = "2^([N]+1) / 86400"; //Rate = 2^(N+1)/86400 BP/s
-            NodeMax = "0";
-            UpgradeFundsFormula = "2^([N]+4) * 1000";
-            UpgradeFundsMax = "1024000";
-            UpgradeScienceFormula = "2^([N]+2) * 1.0";
-            UpgradeScienceMax = "512";
+        //    NodeMax = "0";
+            UpgradeFundsFormula = "min(2^([N]+4) * 1000, 1024000)";
+        //    UpgradeFundsMax = "1024000";
+            UpgradeScienceFormula = "min(2^([N]+2) * 1.0, 512)";
+       //     UpgradeScienceMax = "512";
             ResearchFormula = "[N]*0.5/86400";
-            EffectivePartFormula = "[C]/([I] + ([B]*([U]+1)))";
-            ProceduralPartFormula = "";
+            EffectivePartFormula = "min([C]/([I] + ([B]*([U]+1))), [C])";
+            ProceduralPartFormula = "(([C]-[A]) + ([A]*10/max([I],1))) / max([B]*([U]+1),1)";
             BPFormula = "([E]^(1/2))*2000*[O]";
         }
 

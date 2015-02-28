@@ -230,9 +230,23 @@ namespace KerbalConstructionTime
                 String name = PartNameFromNode(p) + GetTweakScaleSize(p);
                 double effectiveCost = 0;
                 double cost = GetPartCostFromNode(p);
+                double wetmass = GetPartMassFromNode(p, true);
+                double drymass = GetPartMassFromNode(p, false);
                 if (!KCT_Utilities.PartIsProcedural(p))
                 {
-                    if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
+                    //C=cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string,string>() { {"C", cost.ToString()}, {"M",wetmass.ToString()},
+                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+
+                    if (InvEff != 0)
+                    {
+                        --invCopy[name];
+                        if (invCopy[name] == 0)
+                            invCopy.Remove(name);
+                    }
+                   /* if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
                     {
                         // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
                         if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
@@ -250,7 +264,7 @@ namespace KerbalConstructionTime
                     else // If the part has never been used, it takes the maximal time
                     {
                         effectiveCost = cost;
-                    }
+                    }*/
                 }
                 else //Procedural parts get handled differently
                 {
@@ -258,7 +272,22 @@ namespace KerbalConstructionTime
                     double costRemaining = cost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
                     costRemaining = Math.Max(costRemaining, 0);
                     double costRemoved = cost - costRemaining;
+                    //C=cost, A=cost covered by inv, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
 
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
+
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"M",wetmass.ToString()},
+                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+
+                    if (InvEff != 0)
+                    {
+                        invCopy[name] -= (int)(costRemoved * 1000);
+                        if (invCopy[name] == 0)
+                            invCopy.Remove(name);
+                    }
+
+                    /*
                     if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0)
                     {
                         // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
@@ -277,14 +306,15 @@ namespace KerbalConstructionTime
                     else // If the part has never been used, it takes the maximal time
                     {
                         effectiveCost = cost;
-                    }
+                    }*/
                 }
 
                 if (effectiveCost < 0) effectiveCost = 0;
                 totalEffectiveCost += effectiveCost;
             }
-
-            return Math.Sqrt(totalEffectiveCost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
+            double finalBP = KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string,string>() { {"E", totalEffectiveCost.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}});
+            return finalBP;
+            //return Math.Sqrt(totalEffectiveCost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
         }
 
         public static string PartNameFromNode(ConfigNode part)
@@ -458,6 +488,33 @@ namespace KerbalConstructionTime
             float total = ShipConstruction.GetPartCosts(part, GetAvailablePartByName(name), out dry, out wet);
             if (includeFuel)
                 return total;
+            else
+                return dry;
+        }
+
+        public static float GetPartMassFromNode(ConfigNode part, bool includeFuel = true)
+        {
+            float dry = 0, wet = 0;
+            if (float.TryParse(part.GetValue("mass"), out dry))
+            {
+                //mass += p.GetResourceMass();
+                foreach (ConfigNode rsc in part.GetNodes("RESOURCE"))
+                {
+                    PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.GetValue("name"));
+                    wet = dry + def.density * float.Parse(rsc.GetValue("amount"));
+                }
+            }
+            else
+            {
+                AvailablePart p = KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(part));
+                if (part != null)
+                {
+                    dry = p.partPrefab.mass;
+                    wet = dry + p.partPrefab.GetResourceMass();
+                }
+            }
+            if (includeFuel)
+                return wet;
             else
                 return dry;
         }
@@ -848,7 +905,7 @@ namespace KerbalConstructionTime
             System.IO.File.Copy(saveFile, backupFile, true);
         }
 
-        public static void LoadSimulationSave()
+        public static void LoadSimulationSave(bool newMethod)
         {
             string backupFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs";
             string saveFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/persistent.sfs";
@@ -857,31 +914,36 @@ namespace KerbalConstructionTime
             KerbalConstructionTime.moved = false;
             KCT_GameStates.simulationEndTime = 0;
             KCTDebug.Log("Swapping persistent.sfs with simulation backup file.");
-
-            ConfigNode lastShip = ShipConstruction.ShipConfig;
-            EditorFacility lastEditor = HighLogic.CurrentGame.editorFacility;
-
-            Game newGame = GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
-            GamePersistence.SaveGame(newGame, "persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
-            GameScenes targetScene = HighLogic.LoadedScene;
-            newGame.startScene = targetScene;
-
-            // This has to be before... newGame.Start()
-            if (targetScene == GameScenes.EDITOR)
+            if (newMethod)
             {
-                newGame.editorFacility = lastEditor;
+                ConfigNode lastShip = ShipConstruction.ShipConfig;
+                EditorFacility lastEditor = HighLogic.CurrentGame.editorFacility;
+
+                Game newGame = GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
+                GamePersistence.SaveGame(newGame, "persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+                GameScenes targetScene = HighLogic.LoadedScene;
+                newGame.startScene = targetScene;
+
+                // This has to be before... newGame.Start()
+                if (targetScene == GameScenes.EDITOR)
+                {
+                    newGame.editorFacility = lastEditor;
+                }
+
+
+                newGame.Start();
+
+                // ... And this has to be after. <3 KSP
+                if (targetScene == GameScenes.EDITOR)
+                {
+                    EditorDriver.StartupBehaviour = EditorDriver.StartupBehaviours.LOAD_FROM_CACHE;
+                    ShipConstruction.ShipConfig = lastShip;
+                }
             }
-
-
-            newGame.Start();
-
-            // ... And this has to be after. <3 KSP
-            if (targetScene == GameScenes.EDITOR)
+            else
             {
-                EditorDriver.StartupBehaviour = EditorDriver.StartupBehaviours.LOAD_FROM_CACHE;
-                ShipConstruction.ShipConfig = lastShip;
+                System.IO.File.Copy(backupFile, saveFile, true);
             }
-           /* System.IO.File.Copy(backupFile, saveFile, true);*/
             System.IO.File.Delete(backupFile);
             
             //GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);

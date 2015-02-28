@@ -548,7 +548,7 @@ namespace KerbalConstructionTime
             }
             if (KCT_GameStates.LoadingSimulationSave)
             {
-                KCT_Utilities.LoadSimulationSave();
+                KCT_Utilities.LoadSimulationSave(true);
             }
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
@@ -720,7 +720,7 @@ namespace KerbalConstructionTime
             if (!KCT_GameStates.settings.enabledForSave)
                 return;
 
-            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
+            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER };
             if (validScenes.Contains(HighLogic.LoadedScene))
             {
                 //Check for simulation save and load it.
