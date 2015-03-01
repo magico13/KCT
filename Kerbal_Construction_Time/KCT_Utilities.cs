@@ -133,12 +133,13 @@ namespace KerbalConstructionTime
 
         public static AvailablePart GetAvailablePartByName(string partName)
         {
-            foreach (AvailablePart a in PartLoader.LoadedPartsList)
+            /*foreach (AvailablePart a in PartLoader.LoadedPartsList)
             {
                 if (a.name == partName)
                     return a;
             }
-            return null;
+            return null;*/
+            return PartLoader.getPartInfoByName(partName);
         }
 
        /* public static double GetBuildTime(List<string> partNames, bool useTracker, bool useInventory)
@@ -158,14 +159,14 @@ namespace KerbalConstructionTime
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, List<String> inventory)
         {
-            List<ConfigNode> aParts = new List<ConfigNode>();
+           /* List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
             {
                 ConfigNode partNode = new ConfigNode();
                 p.protoPartSnapshot.Save(partNode);
                 aParts.Add(partNode);
-            }
-            return GetBuildTime(aParts, useTracker, PartListToDict(inventory));
+            }*/
+            return GetBuildTime(parts, useTracker, PartListToDict(inventory));
         }
 
         /*public static double GetBuildTime(List<String> parts, bool useTracker, List<String> inventory)
@@ -183,38 +184,95 @@ namespace KerbalConstructionTime
 
         public static double GetBuildTime(List<Part> parts)
         {
-            List<ConfigNode> aParts = new List<ConfigNode>();
+            /*List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
             {
                 ConfigNode partNode = new ConfigNode();
                 p.protoPartSnapshot.Save(partNode);
                 aParts.Add(partNode);
             }
-            return GetBuildTime(aParts, true, true);
+            return GetBuildTime(aParts, true, true);*/
+            return GetBuildTime(parts, true, true);
         }
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, bool useInventory)
         {
-            List<ConfigNode> aParts = new List<ConfigNode>();
+            /*List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
             {
                 ConfigNode partNode = new ConfigNode();
                 p.protoPartSnapshot.Save(partNode);
                 aParts.Add(partNode);
             }
-            return GetBuildTime(aParts, useTracker, useInventory);
+            return GetBuildTime(aParts, useTracker, useInventory);*/
+            return GetBuildTime(parts, useTracker, KCT_GameStates.PartInventory);
         }
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, Dictionary<String, int> inventory)
         {
-            List<ConfigNode> aParts = new List<ConfigNode>();
+           /* List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
             {
                 ConfigNode partNode = new ConfigNode();
                 p.protoPartSnapshot.Save(partNode);
                 aParts.Add(partNode);
             }
-            return GetBuildTime(aParts, useTracker, inventory);
+            return GetBuildTime(aParts, useTracker, inventory);*/
+
+            //Let's make this one actually work as well.
+            Dictionary<String, int> invCopy = new Dictionary<string, int>(inventory);
+            double totalEffectiveCost = 0;
+            float wC, dC;
+            foreach (Part p in parts)
+            {
+                String name = p.partInfo.name;
+                double effectiveCost = 0;
+                double cost = ShipConstruction.GetPartCosts(p.protoPartSnapshot, p.partInfo, out dC, out wC);
+                
+                double drymass = p.mass;
+                double wetmass = p.GetResourceMass() + drymass;
+                if (!KCT_Utilities.PartIsProcedural(p.protoPartSnapshot))
+                {
+                    name += GetTweakScaleSize(p.protoPartSnapshot);
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
+                    //C=cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"M",wetmass.ToString()},
+                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+
+                    if (InvEff != 0)
+                    {
+                        --invCopy[name];
+                        if (invCopy[name] == 0)
+                            invCopy.Remove(name);
+                    }
+                }
+                else //Procedural parts get handled differently
+                {
+                    double costRemaining = cost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
+                    costRemaining = Math.Max(costRemaining, 0);
+                    double costRemoved = cost - costRemaining;
+                    //C=cost, A=cost covered by inv, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
+
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
+
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"M",wetmass.ToString()},
+                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+
+                    if (InvEff != 0)
+                    {
+                        invCopy[name] -= (int)(costRemoved * 1000);
+                        if (invCopy[name] == 0)
+                            invCopy.Remove(name);
+                    }
+                }
+
+                if (effectiveCost < 0) effectiveCost = 0;
+                totalEffectiveCost += effectiveCost;
+            }
+            double finalBP = KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string, string>() { { "E", totalEffectiveCost.ToString() }, { "O", KCT_GameStates.timeSettings.OverallMultiplier.ToString() } });
+            return finalBP;
         }
 
         public static double GetBuildTime(List<ConfigNode> parts, bool useTracker, Dictionary<String, int> inventory)
@@ -227,18 +285,22 @@ namespace KerbalConstructionTime
             double totalEffectiveCost = 0;
             foreach (ConfigNode p in parts)
             {
-                String name = PartNameFromNode(p) + GetTweakScaleSize(p);
+                String name = PartNameFromNode(p);
                 double effectiveCost = 0;
                 double cost = GetPartCostFromNode(p);
-                double wetmass = GetPartMassFromNode(p, true);
-                double drymass = GetPartMassFromNode(p, false);
+                //double wetmass = GetPartMassFromNode(p, true);
+                //double drymass = GetPartMassFromNode(p, false);
+                float dryMass, fuelMass;
+                float wetMass = ShipConstruction.GetPartTotalMass(p, GetAvailablePartByName(name), out dryMass, out fuelMass);
+                    
                 if (!KCT_Utilities.PartIsProcedural(p))
                 {
+                    name += GetTweakScaleSize(p);
                     double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
                     //C=cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
-                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string,string>() { {"C", cost.ToString()}, {"M",wetmass.ToString()},
-                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"M",wetMass.ToString()},
+                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
 
                     if (InvEff != 0)
                     {
@@ -268,7 +330,7 @@ namespace KerbalConstructionTime
                 }
                 else //Procedural parts get handled differently
                 {
-                    name = PartNameFromNode(p);
+                   // name = PartNameFromNode(p);
                     double costRemaining = cost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
                     costRemaining = Math.Max(costRemaining, 0);
                     double costRemoved = cost - costRemaining;
@@ -277,8 +339,8 @@ namespace KerbalConstructionTime
                     double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
 
-                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"M",wetmass.ToString()},
-                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"M",wetMass.ToString()},
+                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
 
                     if (InvEff != 0)
                     {
@@ -494,8 +556,8 @@ namespace KerbalConstructionTime
 
         public static float GetPartMassFromNode(ConfigNode part, bool includeFuel = true)
         {
-            float dry = 0, wet = 0;
-            if (float.TryParse(part.GetValue("mass"), out dry))
+            float dry = 0, total = 0, wet = 0;
+           /* if (float.TryParse(part.GetValue("mass"), out dry))
             {
                 //mass += p.GetResourceMass();
                 foreach (ConfigNode rsc in part.GetNodes("RESOURCE"))
@@ -512,9 +574,11 @@ namespace KerbalConstructionTime
                     dry = p.partPrefab.mass;
                     wet = dry + p.partPrefab.GetResourceMass();
                 }
-            }
+            }*/
+
+            ShipConstruction.GetPartTotalMass(part, GetAvailablePartByName(PartNameFromNode(part)), out dry, out wet);
             if (includeFuel)
-                return wet;
+                return total;
             else
                 return dry;
         }
@@ -1484,21 +1548,23 @@ namespace KerbalConstructionTime
             if (!HighLogic.LoadedSceneIsEditor)
                 return;
             //KCTDebug.Log("Recalculating build time");
-            List<ConfigNode> partNodes = ship.SaveShip().GetNodes("PART").ToList();
+            //List<ConfigNode> partNodes = ship.SaveShip().GetNodes("PART").ToList();
             KCT_GUI.PartsInUse.Clear();
             if (KCT_GUI.useInventory)
             {
-                foreach (ConfigNode part in partNodes)
+                foreach (Part part in ship.parts)
                 {
-                    string name = PartNameFromNode(part);
+                    string name = part.partInfo.name;
                     int amt = 1;
-                    if (!PartIsProcedural(part))
+                    if (!PartIsProcedural(part.protoPartSnapshot))
                     {
-                        name += GetTweakScaleSize(part);
+                        name += GetTweakScaleSize(part.protoPartSnapshot);
                     }
                     else
                     {
-                        amt = (int)(1000 * GetPartCostFromNode(part, false));
+                        float dryCost, fuelCost;
+                        ShipConstruction.GetPartCosts(part.protoPartSnapshot, part.partInfo, out dryCost, out fuelCost);
+                        amt = (int)(1000 * dryCost);
                     }
                     if (!KCT_GUI.PartsInUse.ContainsKey(name))
                         KCT_GUI.PartsInUse.Add(name, amt);
@@ -1508,7 +1574,7 @@ namespace KerbalConstructionTime
             }
 
             if (!KCT_GameStates.EditorShipEditingMode)
-                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(partNodes, true, KCT_GUI.useInventory);
+                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(ship.Parts, true, KCT_GUI.useInventory);
             else
             {
                 //List<string> partsForInventory = new List<string>();
@@ -1559,7 +1625,7 @@ namespace KerbalConstructionTime
                 foreach (KeyValuePair<string, int> kvp in KCT_GameStates.editedVessel.InventoryParts)
                     KCT_Utilities.AddToDict(partsForInventory, kvp.Key, kvp.Value);
 
-                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(partNodes, true, partsForInventory);
+                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(ship.parts, true, partsForInventory);
             }
         }
 

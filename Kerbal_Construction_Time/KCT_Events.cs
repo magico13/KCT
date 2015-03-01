@@ -622,7 +622,8 @@ namespace KerbalConstructionTime
 
         public void SetBP(double cost)
         {
-            BP = Math.Sqrt(cost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
+           // BP = Math.Sqrt(cost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
+            BP = KCT_MathParsing.GetStandardFormulaValue("KSCUpgrade", new Dictionary<string, string>() { { "C", cost.ToString() }, { "O", KCT_GameStates.timeSettings.OverallMultiplier.ToString() } });
         }
 
         public bool AlreadyInProgress()

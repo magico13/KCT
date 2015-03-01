@@ -152,7 +152,8 @@ namespace KerbalConstructionTime
     public class KCT_FormulaSettings
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Formulas.cfg";
-        [Persistent] public string NodeFormula, UpgradeFundsFormula, UpgradeScienceFormula, ResearchFormula, EffectivePartFormula, ProceduralPartFormula, BPFormula;
+        [Persistent] public string NodeFormula, UpgradeFundsFormula, UpgradeScienceFormula, ResearchFormula, EffectivePartFormula, ProceduralPartFormula, BPFormula,
+            KSCUpgradeFormula;
        // [Persistent] public string NodeMax, UpgradeFundsMax, UpgradeScienceMax;
         public KCT_FormulaSettings()
         {
@@ -166,6 +167,7 @@ namespace KerbalConstructionTime
             EffectivePartFormula = "min([C]/([I] + ([B]*([U]+1))), [C])";
             ProceduralPartFormula = "(([C]-[A]) + ([A]*10/max([I],1))) / max([B]*([U]+1),1)";
             BPFormula = "([E]^(1/2))*2000*[O]";
+            KSCUpgradeFormula = "([C]^(1/2))*2000*[O]";
         }
 
         public void Load()
