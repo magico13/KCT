@@ -227,13 +227,14 @@ namespace KerbalConstructionTime
             {
                 String name = p.partInfo.name;
                 double effectiveCost = 0;
-                double cost = ShipConstruction.GetPartCosts(p.protoPartSnapshot, p.partInfo, out dC, out wC);
+                //double cost = ShipConstruction.GetPartCosts(p.protoPartSnapshot, p.partInfo, out dC, out wC);
+                double cost = GetPartCosts(p);
                 
                 double drymass = p.mass;
                 double wetmass = p.GetResourceMass() + drymass;
-                if (!KCT_Utilities.PartIsProcedural(p.protoPartSnapshot))
+                if (!KCT_Utilities.PartIsProcedural(p))
                 {
-                    name += GetTweakScaleSize(p.protoPartSnapshot);
+                    name += GetTweakScaleSize(p);
                     double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
                     //C=cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
@@ -387,6 +388,19 @@ namespace KerbalConstructionTime
             else
                 name = part.GetValue("name");
             return name;
+        }
+
+        public static double GetPartCosts(Part part)
+        {
+            double cost = 0;
+            cost = part.partInfo.cost + part.GetModuleCosts(part.partInfo.cost);
+
+            foreach (PartResource rsc in part.Resources)
+            {
+                PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.resourceName);
+                cost -= rsc.amount * def.unitCost;
+            }
+            return cost;
         }
 
         public static double GetBuildRate(int index, KCT_BuildListVessel.ListType type, KCT_KSC KSC)
@@ -586,14 +600,17 @@ namespace KerbalConstructionTime
         public static string GetTweakScaleSize(ProtoPartSnapshot part)
         {
             string partSize = "";
-            ProtoPartModuleSnapshot tweakscale = part.modules.Find(mod => mod.moduleName == "TweakScale");
-            if (tweakscale != null)
+            if (part.modules != null)
             {
-                ConfigNode tsCN = tweakscale.moduleValues;
-                string defaultScale = tsCN.GetValue("defaultScale");
-                string currentScale = tsCN.GetValue("currentScale");
-                if (!defaultScale.Equals(currentScale))
-                    partSize = "," + currentScale;
+                ProtoPartModuleSnapshot tweakscale = part.modules.Find(mod => mod.moduleName == "TweakScale");
+                if (tweakscale != null)
+                {
+                    ConfigNode tsCN = tweakscale.moduleValues;
+                    string defaultScale = tsCN.GetValue("defaultScale");
+                    string currentScale = tsCN.GetValue("currentScale");
+                    if (!defaultScale.Equals(currentScale))
+                        partSize = "," + currentScale;
+                }
             }
             return partSize;
         }
@@ -612,6 +629,21 @@ namespace KerbalConstructionTime
                     if (!defaultScale.Equals(currentScale))
                         partSize = "," + currentScale;
                 }
+            }
+            return partSize;
+        }
+
+        public static string GetTweakScaleSize(Part part)
+        {
+            string partSize = "";
+            if (part.Modules != null && part.Modules.Contains("TweakScale"))
+            {
+                PartModule tweakscale = part.Modules["TweakScale"];
+                ConfigNode tsCN = tweakscale.snapshot.moduleValues;
+                string defaultScale = tsCN.GetValue("defaultScale");
+                string currentScale = tsCN.GetValue("currentScale");
+                if (!defaultScale.Equals(currentScale))
+                    partSize = "," + currentScale;
             }
             return partSize;
         }
@@ -779,7 +811,7 @@ namespace KerbalConstructionTime
         {
             string name = part.partInfo.name;
             int amt = 1;
-            if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
+            if (KCT_Utilities.PartIsProcedural(part))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts(0);
                 KCTDebug.Log("PP cost: " + cost);
@@ -834,7 +866,7 @@ namespace KerbalConstructionTime
         {
             string name = part.partInfo.name;
             int amt = 1;
-            if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
+            if (KCT_Utilities.PartIsProcedural(part))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts(0);
                 foreach (PartResource resource in part.Resources.list)
@@ -854,7 +886,7 @@ namespace KerbalConstructionTime
         {
             string name = part.partInfo.name;
             int amt = 1;
-            if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
+            if (KCT_Utilities.PartIsProcedural(part))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts(0);
                 foreach (PartResource resource in part.Resources.list)
@@ -1556,15 +1588,16 @@ namespace KerbalConstructionTime
                 {
                     string name = part.partInfo.name;
                     int amt = 1;
-                    if (!PartIsProcedural(part.protoPartSnapshot))
+                    if (!PartIsProcedural(part))
                     {
-                        name += GetTweakScaleSize(part.protoPartSnapshot);
+                        name += GetTweakScaleSize(part);
                     }
                     else
                     {
-                        float dryCost, fuelCost;
-                        ShipConstruction.GetPartCosts(part.protoPartSnapshot, part.partInfo, out dryCost, out fuelCost);
-                        amt = (int)(1000 * dryCost);
+                        
+                       /* float dryCost, fuelCost;
+                        ShipConstruction.GetPartCosts(partNode, part.partInfo, out dryCost, out fuelCost);*/
+                        amt = (int)(1000 * GetPartCosts(part));
                     }
                     if (!KCT_GUI.PartsInUse.ContainsKey(name))
                         KCT_GUI.PartsInUse.Add(name, amt);
@@ -1809,6 +1842,19 @@ namespace KerbalConstructionTime
         {
             if (part.modules != null)
                 return part.modules.Find(m => m != null && m.moduleName != null && m.moduleName.ToLower().Contains("procedural")) != null;
+            return false;
+        }
+
+        public static bool PartIsProcedural(Part part)
+        {
+            if (part.Modules != null)
+            {
+                for (int i = 0; i < part.Modules.Count; i++ )
+                {
+                    if (part.Modules[i].moduleName.ToLower().Contains("procedural"))
+                        return true;
+                }
+            }
             return false;
         }
     }

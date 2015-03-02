@@ -134,7 +134,7 @@ namespace KerbalConstructionTime
             {
                 List<KCT_BuildListVessel> buildList = KCT_GameStates.ActiveKSC.VABList;
                 GUILayout.BeginHorizontal();
-                GUILayout.Space((butW + 4) * 3);
+              //  GUILayout.Space((butW + 4) * 3);
                 GUILayout.Label("Name:");
                 GUILayout.Label("Progress:", GUILayout.Width(width1 / 2));
                 GUILayout.Label("Time Left:", GUILayout.Width(width2));
@@ -208,7 +208,7 @@ namespace KerbalConstructionTime
                         }
                         else if (i == 0)
                         {
-                            GUILayout.Space(butW + 4);
+                      //      GUILayout.Space(butW + 4);
                         }
                         if (i < buildList.Count - 1 && GUILayout.Button("v", GUILayout.Width(butW)))
                         {
@@ -224,7 +224,7 @@ namespace KerbalConstructionTime
                         }
                         else if (i >= buildList.Count - 1)
                         {
-                            GUILayout.Space(butW + 4);
+                      //      GUILayout.Space(butW + 4);
                         }
 
 
@@ -395,7 +395,7 @@ namespace KerbalConstructionTime
             {
                 List<KCT_BuildListVessel> buildList = KCT_GameStates.ActiveKSC.SPHList;
                 GUILayout.BeginHorizontal();
-                GUILayout.Space((butW + 4) * 3);
+              //  GUILayout.Space((butW + 4) * 3);
                 GUILayout.Label("Name:");
                 GUILayout.Label("Progress:", GUILayout.Width(width1 / 2));
                 GUILayout.Label("Time Left:", GUILayout.Width(width2));
@@ -448,7 +448,7 @@ namespace KerbalConstructionTime
                         }
                         else if (i == 0)
                         {
-                            GUILayout.Space(butW + 4);
+                  //          GUILayout.Space(butW + 4);
                         }
                         if (i < buildList.Count - 1 && GUILayout.Button("v", GUILayout.Width(butW)))
                         {
@@ -464,7 +464,7 @@ namespace KerbalConstructionTime
                         }
                         else if (i >= buildList.Count - 1)
                         {
-                            GUILayout.Space(butW + 4);
+                   //         GUILayout.Space(butW + 4);
                         }
                         
                         GUILayout.Label(b.shipName);

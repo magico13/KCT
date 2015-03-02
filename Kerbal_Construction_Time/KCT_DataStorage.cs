@@ -100,9 +100,9 @@ namespace KerbalConstructionTime
             KCT_GameStates.PartTracker = ListToDict(PartTracker);
             KCT_GameStates.PartInventory = ListToDict(PartInventory);
             KCT_GameStates.BodiesVisited = BodiesVisited;
-            KCT_GameStates.ActiveKSC.VABUpgrades = VABUpgrades;
+          /*  KCT_GameStates.ActiveKSC.VABUpgrades = VABUpgrades;
             KCT_GameStates.ActiveKSC.SPHUpgrades = SPHUpgrades;
-            KCT_GameStates.ActiveKSC.RDUpgrades = RDUpgrades;
+            KCT_GameStates.ActiveKSC.RDUpgrades = RDUpgrades;*/
             KCT_GameStates.PurchasedUpgrades = PurchasedUpgrades;
             KCT_GameStates.TotalUpgradePoints = TotalUpgradePoints;
             KCT_GameStates.FundsGivenForVessel = fundsFromSimulation;
@@ -115,9 +115,9 @@ namespace KerbalConstructionTime
             if (firstStart)
             {
                 KCT_GameStates.TotalUpgradePoints += 15;
-                KCT_GameStates.ActiveKSC.VABUpgrades = new List<int>() { 0 };
+            /*    KCT_GameStates.ActiveKSC.VABUpgrades = new List<int>() { 0 };
                 KCT_GameStates.ActiveKSC.SPHUpgrades = new List<int>() { 0 };
-                KCT_GameStates.ActiveKSC.RDUpgrades = new List<int>() { 0, 0 };
+                KCT_GameStates.ActiveKSC.RDUpgrades = new List<int>() { 0, 0 };*/
                 //firstStart = false;
             }
             KCT_GameStates.firstStart = firstStart;

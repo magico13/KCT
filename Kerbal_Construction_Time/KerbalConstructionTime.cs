@@ -45,76 +45,12 @@ namespace KerbalConstructionTime
             KCTDebug.Log("Writing to persistence.");
             base.OnSave(node);
             KCT_DataStorage kctVS = new KCT_DataStorage();
-            //KCT_BuildListStorage bls = new KCT_BuildListStorage();
-            //KCT_TechStorage tS = new KCT_TechStorage();
             node.AddNode(kctVS.AsConfigNode());
-            //node.AddNode(bls.AsConfigNode());
-            //node.AddNode(tS.AsConfigNode());
             foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
             {
                 if (KSC != null && KSC.KSCName != null && KSC.KSCName.Length > 0)
                     node.AddNode(KSC.AsConfigNode());
             }
-            /*for (int i=0; i<KCT_GameStates.VABList.Count; i++)
-            {
-                KCTDebug.Log("VAB"+i);
-                ConfigNode CN = new ConfigNode();
-                if (KCT_GameStates.VABList[i].shipNode != null)
-                {
-                    KCT_GameStates.VABList[i].shipNode.CopyTo(CN, "VAB" + i);
-                    node.AddNode(CN);
-                }
-                else
-                {
-                    Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE VAB" + i);
-                    error = true;
-                }
-            }
-            for (int i = 0; i < KCT_GameStates.SPHList.Count; i++)
-            {
-                KCTDebug.Log("SPH" + i);
-                ConfigNode CN = new ConfigNode();
-                if (KCT_GameStates.SPHList[i].shipNode != null)
-                {
-                    KCT_GameStates.SPHList[i].shipNode.CopyTo(CN, "SPH" + i);
-                    node.AddNode(CN);
-                }
-                else
-                {
-                    Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE SPH" + i);
-                    error = true;
-                }
-            }
-            for (int i = 0; i < KCT_GameStates.VABWarehouse.Count; i++)
-            {
-                KCTDebug.Log("VABWH" + i);
-                ConfigNode CN = new ConfigNode();
-                if (KCT_GameStates.VABWarehouse[i].shipNode != null)
-                {
-                    KCT_GameStates.VABWarehouse[i].shipNode.CopyTo(CN, "VABWH" + i);
-                    node.AddNode(CN);
-                }
-                else
-                {
-                    Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE VABWH" + i);
-                    error = true;
-                }
-            }
-            for (int i = 0; i < KCT_GameStates.SPHWarehouse.Count; i++)
-            {
-                KCTDebug.Log("SPHWH" + i);
-                ConfigNode CN = new ConfigNode();
-                if (KCT_GameStates.SPHWarehouse[i].shipNode != null)
-                {
-                    KCT_GameStates.SPHWarehouse[i].shipNode.CopyTo(CN, "SPHWH" + i);
-                    node.AddNode(CN);
-                }
-                else
-                {
-                    Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE SPHWH" + i);
-                    error = true;
-                }
-            }*/
             ConfigNode tech = new ConfigNode("TechList");
             foreach (KCT_TechItem techItem in KCT_GameStates.TechList)
             {
@@ -128,26 +64,6 @@ namespace KerbalConstructionTime
                 tech.AddNode(cnTemp);
             }
             node.AddNode(tech);
-            /*for (int i=0; i< KCT_GameStates.TechList.Count; i++)
-            {
-                KCTDebug.Log("Tech" + i);
-                ConfigNode CN = new ConfigNode("Tech"+i);
-                if (KCT_GameStates.TechList[i].protoNode != null)
-                {
-                    KCT_GameStates.TechList[i].protoNode.Save(CN);
-                    node.AddNode(CN);
-                }
-                else
-                {
-                    Debug.LogError("[KCT] WARNING! DATA FAILURE EVENT ON CONFIGNODE Tech" + i);
-                    error = true;
-                }
-            }
-
-            if (error)
-            {
-                //TODO: Popup with error message
-            }*/
         }
         public override void OnLoad(ConfigNode node)
         {
@@ -155,108 +71,15 @@ namespace KerbalConstructionTime
             base.OnLoad(node);
             KCT_GameStates.KSCs.Clear();
             KCT_GameStates.ActiveKSC = null;
-            KCT_Utilities.SetActiveKSC("Stock");
+            //KCT_Utilities.SetActiveKSC("Stock");
             KCT_GameStates.TechList.Clear();
-
+            KCT_GameStates.TechUpgradesTotal = 0;
 
             KCT_DataStorage kctVS = new KCT_DataStorage();
-            KCT_BuildListStorage bls = new KCT_BuildListStorage();
-            KCT_TechStorage tS = new KCT_TechStorage();
             ConfigNode CN = node.GetNode(kctVS.GetType().Name);
             if (CN != null)
                 ConfigNode.LoadObjectFromConfig(kctVS, CN);
 
-            CN = node.GetNode(bls.GetType().Name);
-            if (CN != null)
-                ConfigNode.LoadObjectFromConfig(bls, CN);
-
-            CN = node.GetNode(tS.GetType().Name);
-            if (CN != null)
-                ConfigNode.LoadObjectFromConfig(tS, CN);
-
-            bool doUpgrade = false;
-
-            for (int i = 0; i < KCT_GameStates.ActiveKSC.VABList.Count; i++)
-            {
-                ConfigNode loaded = node.GetNode("VAB" + i);
-                if (loaded != null)
-                {
-                    KCT_GameStates.ActiveKSC.VABList[i].shipNode = loaded;
-                    doUpgrade = true;
-                }
-            }
-            for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHList.Count; i++)
-            {
-                ConfigNode loaded = node.GetNode("SPH" + i);
-                if (loaded != null)
-                { 
-                    KCT_GameStates.ActiveKSC.SPHList[i].shipNode = loaded;
-                    doUpgrade = true;
-                }
-            }
-            for (int i = 0; i < KCT_GameStates.ActiveKSC.VABWarehouse.Count; i++)
-            {
-                ConfigNode loaded = node.GetNode("VABWH" + i);
-                if (loaded != null)
-                { 
-                    KCT_GameStates.ActiveKSC.VABWarehouse[i].shipNode = loaded;
-                    doUpgrade = true;
-                }
-            }
-            for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHWarehouse.Count; i++)
-            {
-                ConfigNode loaded = node.GetNode("SPHWH" + i);
-                if (loaded != null)
-                { 
-                    KCT_GameStates.ActiveKSC.SPHWarehouse[i].shipNode = loaded;
-                    doUpgrade = true;
-                }
-            }
-            for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
-            {
-                ConfigNode loaded = node.GetNode("Tech" + i);
-                if (loaded != null)
-                { 
-                    KCT_GameStates.TechList[i].protoNode = new ProtoTechNode(loaded);
-                    doUpgrade = true;
-                }
-            }
-
-            KCT_KSC backedUp = null;
-            if (doUpgrade)
-            {
-                KCTDebug.Log("An old save is being converted to the new system.");
-                backedUp = KCT_GameStates.ActiveKSC;
-            }
-
-            //New format
-            /*KCT_GameStates.KSCs.Clear();
-            KCT_GameStates.ActiveKSC = null;
-            foreach (ConfigNode ksc in node.GetNodes("KSC"))
-            {
-                string name = ksc.GetValue("KSCName");
-                KCT_KSC loaded_KSC = new KCT_KSC(name);
-                loaded_KSC.FromConfigNode(ksc);
-                if (loaded_KSC != null && loaded_KSC.KSCName != null && loaded_KSC.KSCName.Length > 0)
-                {
-                    loaded_KSC.RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
-                    KCT_GameStates.KSCs.Add(loaded_KSC);
-                }
-            }
-            //KCT_Utilities.SetActiveKSCToRSS();
-            KCT_Utilities.SetActiveKSC(KCT_GameStates.activeKSCName);*/
-
-            //New format
-            //KCT_GameStates.activeKSCName = "";
-            KCT_GameStates.KSCs.Clear();
-            KCT_GameStates.ActiveKSC = null;
-            if (backedUp != null)
-            {
-                KCTDebug.Log("doing the backup thing");
-                KCT_GameStates.KSCs.Add(backedUp);
-                KCT_GameStates.activeKSCName = backedUp.KSCName;
-                KCT_GameStates.ActiveKSC = backedUp;
-            }
             foreach (ConfigNode ksc in node.GetNodes("KSC"))
             {
                 string name = ksc.GetValue("KSCName");
@@ -285,7 +108,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.TechList.Add(techItem);
                 }
             }
-            KCT_GameStates.ActiveKSC.AsConfigNode().Save(KSPUtil.ApplicationRootPath + "/KSC.node");
+            //KCT_GameStates.ActiveKSC.AsConfigNode().Save(KSPUtil.ApplicationRootPath + "/KSC.node");
 
             KerbalConstructionTime.DelayedStart();
             KCT_GUI.CheckToolbar();

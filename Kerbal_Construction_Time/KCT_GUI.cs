@@ -2182,7 +2182,7 @@ namespace KerbalConstructionTime
                         if (ResearchAndDevelopment.Instance.Science >= cost)
                         {
                             //ResearchAndDevelopment.Instance.Science -= cost;
-                            ResearchAndDevelopment.Instance.AddScience((float)cost, TransactionReasons.None);
+                            ResearchAndDevelopment.Instance.AddScience(-(float)cost, TransactionReasons.None);
                             ++KCT_GameStates.TotalUpgradePoints;
                             ++KCT_GameStates.PurchasedUpgrades[0];
 

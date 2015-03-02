@@ -39,7 +39,7 @@ namespace KerbalConstructionTime
             double currentVal = 0;
             string stack = "";
             string lastOp = "+";
-            string[] ops = { "+", "-", "*", "/", "%", "^", "(", "e", "l", "L", "m" };
+            string[] ops = { "+", "-", "*", "/", "%", "^", "(", "e", "E", "l", "L", "m" };
             for (int i = 0; i < input.Length; ++i)
             {
                 string ch = input[i].ToString();
@@ -62,7 +62,7 @@ namespace KerbalConstructionTime
                     else if (ch == "e" || ch == "E")
                     {
                         int index;
-                        for (index = i; index < input.Length; ++index)
+                        for (index = i+2; index < input.Length; ++index)
                         {
                             string ch2 = input[index].ToString();
                             if (ops.Contains(ch2))
