@@ -19,6 +19,34 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.1.5.0 (3/X/15)
+New Features:
+ - The Most Requested Feature: Recovering directly to storage. Be warned that it likely has bugs, especially with mod parts. Requires manual refuelling of ships.
+ - KSC Upgrades now have time requirements associated with them.
+ - Several new formulae have been exposed for editing, including the entire BP calculation formula. KCT_Formulas.cfg must be deleted for this update.
+ - Rush builds 10% by spending 20% of the total vessel cost.
+Interface Changes:
+ - Moved buttons in the build list to before the vessel name
+ - You can CTRL+Click the arrow buttons to move a vessel to top/bottom of the list
+ - Lines in storage are colored according to their current status
+ - Vessels that are rolled out can be launched from the Editor (should save a scene change for KK users)
+ - Crew Select GUI now displays Kerbal class and level
+ - Crew Select GUI options now persist
+ - Simulation time limit selection now persists per save. Defaults to infinite time if "free simulations" is active.
+ - Added support for CrewQ mod (enneract)
+Bug Fixes:
+ - Added a popup that occurs when KCT doesn't load save data properly.
+ - Fixed issues with editing a ship past VAB/launchpad limits.
+ - Possibly fixed issues with costs being incorrectly calculated in some instances
+ - Made the launch tooltip not get stuck when pressing the launch button (enneract)
+ - Fixed several issues with upgrade point purchases/resetting.
+ - Fix loading a save after a crash during a simulation.
+ - Throttled editor recalculations to reduce lag, especially with procedural parts (enneract)
+ - Fix for Real Fuels boiling off during construction
+Miscellaneous:
+ - "icons" folder renamed to "Icons"
+ - Added min(x,y), max(x,y), l(x), and L(x) functions to math parser (l=natural log, L=log base 10)
+
 v1.1.2.0 (12/26/14)
  - Fixed issue when toolbar mod is used instead of Stock AppLauncher
  - Fixed issue when recovering parts that have no modules on them

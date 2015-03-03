@@ -222,7 +222,6 @@ namespace KerbalConstructionTime
             //Let's make this one actually work as well.
             Dictionary<String, int> invCopy = new Dictionary<string, int>(inventory);
             double totalEffectiveCost = 0;
-            float wC, dC;
             foreach (Part p in parts)
             {
                 String name = p.partInfo.name;
