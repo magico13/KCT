@@ -2397,7 +2397,8 @@ namespace KerbalConstructionTime
                         foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                             ksc.RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
 
-                        nodeRate = 0;
+                        nodeRate = -13;
+                        upNodeRate = -13;
 
                         foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                         {
