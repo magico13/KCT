@@ -639,11 +639,12 @@ namespace KerbalConstructionTime
             if (part.Modules != null && part.Modules.Contains("TweakScale"))
             {
                 PartModule tweakscale = part.Modules["TweakScale"];
-                ConfigNode tsCN = tweakscale.snapshot.moduleValues;
-                string defaultScale = tsCN.GetValue("defaultScale");
-                string currentScale = tsCN.GetValue("currentScale");
+                //ConfigNode tsCN = tweakscale.snapshot.moduleValues;
+
+                object defaultScale = tweakscale.Fields.GetValue("defaultScale");//tsCN.GetValue("defaultScale");
+                object currentScale = tweakscale.Fields.GetValue("currentScale");//tsCN.GetValue("currentScale");
                 if (!defaultScale.Equals(currentScale))
-                    partSize = "," + currentScale;
+                    partSize = "," + currentScale.ToString();
             }
             return partSize;
         }

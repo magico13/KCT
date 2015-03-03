@@ -2132,14 +2132,14 @@ namespace KerbalConstructionTime
                 KCT_Events.instance.KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
                     KCT_GUI.onClick,
                     KCT_GUI.onClick,
+                    KCT_GUI.onHoverOn,
+                    KCT_GUI.onHoverOff,
                     KCT_Events.instance.DummyVoid, //TODO: List next ship here?
-                    KCT_Events.instance.DummyVoid,
-                    KCT_Events.instance.DummyVoid,
                     KCT_Events.instance.DummyVoid,
                     ApplicationLauncher.AppScenes.ALWAYS,
                     GameDatabase.Instance.GetTexture("KerbalConstructionTime/Icons/KCT_on", false));
 
-                ApplicationLauncher.Instance.EnableMutuallyExclusive(KCT_Events.instance.KCTButtonStock);
+              //  ApplicationLauncher.Instance.EnableMutuallyExclusive(KCT_Events.instance.KCTButtonStock);
             }
         }
 
@@ -2242,6 +2242,9 @@ namespace KerbalConstructionTime
                         ksc.RDUpgrades[1] = 0;
                     nodeRate = 0;
                     upNodeRate = 0;
+
+                    foreach (KCT_TechItem tech in KCT_GameStates.TechList)
+                        tech.UpdateBuildRate();
                 }
             }
             GUILayout.EndHorizontal();
@@ -2424,6 +2427,7 @@ namespace KerbalConstructionTime
             {
                 KCT_BuildListVessel b = KCT_Utilities.FindBLVesselByID(IDSelected);
                 b.shipName = newName; //Change the name from our point of view
+                b.shipNode.SetValue("ship", newName);
                 showRename = false;
                 centralWindowPosition.width = 150;
                 centralWindowPosition.x = (Screen.width - 150) / 2;

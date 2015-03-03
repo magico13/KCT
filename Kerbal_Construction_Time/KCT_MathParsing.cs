@@ -26,7 +26,8 @@ namespace KerbalConstructionTime
 
         public static double ParseMath(string input, Dictionary<string, string> variables)
         {
-            KCTDebug.Log("Input_raw: " + input);
+           // KCTDebug.Log("Input_raw: " + input);
+            string raw = input;
             foreach (KeyValuePair<string, string> kvp in variables)
             {
                 if (input.Contains("[" + kvp.Key + "]"))
@@ -34,7 +35,7 @@ namespace KerbalConstructionTime
                     input = input.Replace("[" + kvp.Key + "]", kvp.Value);
                 }
             }
-            KCTDebug.Log("Input_replaced: " + input);
+            //KCTDebug.Log("Input_replaced: " + input);
 
             double currentVal = 0;
             string stack = "";
@@ -136,7 +137,8 @@ namespace KerbalConstructionTime
                 }
             }
             currentVal = DoMath(currentVal, lastOp, stack);
-            KCTDebug.Log("Result: " + currentVal);
+           // KCTDebug.Log("Result: " + currentVal);
+            KCTDebug.Log("(" + raw + ")=(" + input + ")=" + currentVal);
             return currentVal;
         }
 
