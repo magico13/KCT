@@ -187,19 +187,46 @@ namespace KerbalConstructionTime
         private ConfigNode SanitizeShipNode(ConfigNode node)
         {
             //PART, MODULE -> clean experiments, repack chutes, disable engines
+            String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_ModuleTemplates.cfg";
+            if (!File.Exists(filePath))
+            {
+                CreateInitialTemplates();
+            }
+            ConfigNode ModuleTemplates = ConfigNode.Load(filePath);
+            ConfigNode[] templates = ModuleTemplates.GetNodes("MODULE");
             foreach(ConfigNode part in node.GetNodes("PART"))
             {
                 foreach(ConfigNode module in part.GetNodes("MODULE"))
                 {
-                    SanitizeNode(module);
+                    SanitizeNode(module, templates);
                 }
             }
             return node;
         }
 
-        private void SanitizeNode(ConfigNode module)
+        private void SanitizeNode(ConfigNode module, ConfigNode[] templates)
         {
             string name = module.GetValue("name");
+
+            if (module.HasNode("ScienceData"))
+            {
+                module.RemoveNodes("ScienceData");
+            }
+            if (name == "Log")
+                module.ClearValues();
+
+            ConfigNode template = templates.FirstOrDefault(t => t.GetValue("name") == name);
+            if (template == null) return;
+            ConfigNode.ValueList values = template.values;
+            foreach (ConfigNode.Value val in values)
+            {
+                module.SetValue(val.name, val.value);
+            }
+
+            
+            foreach (ConfigNode node in module.GetNodes("MODULE"))
+                SanitizeNode(node, templates);
+            /*
             if (name.Contains("ModuleEngines"))
             {
                 module.SetValue("staged", "False");
@@ -228,9 +255,52 @@ namespace KerbalConstructionTime
             {
                 module.RemoveNodes("ScienceData");
             }
+            */
+            
+        }
 
-            foreach (ConfigNode node in module.GetNodes("MODULE"))
-                SanitizeNode(node);
+        private void CreateInitialTemplates()
+        {
+            ConfigNode templates = new ConfigNode("KCT_ModuleTemplates");
+            ConfigNode module;
+            
+            //ModuleEngines
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleEngines");
+            module.AddValue("staged", "False");
+            module.AddValue("flameout", "False");
+            module.AddValue("EngineIgnited", "False");
+            module.AddValue("engineShutdown", "False");
+            module.AddValue("currentThrottle", "0");
+            module.AddValue("manuallyOverridden", "False");
+            templates.AddNode(module);
+
+            //ModuleEnginesFX
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleEnginesFX");
+            module.AddValue("staged", "False");
+            module.AddValue("flameout", "False");
+            module.AddValue("EngineIgnited", "False");
+            module.AddValue("engineShutdown", "False");
+            module.AddValue("currentThrottle", "0");
+            module.AddValue("manuallyOverridden", "False");
+            templates.AddNode(module);
+
+            //ModuleScienceExperiment
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleScienceExperiment");
+            module.AddValue("Deployed", "False");
+            module.AddValue("Inoperable", "False");
+            templates.AddNode(module);
+
+            //ModuleParachute
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleParachute");
+            module.AddValue("staged", "False");
+            module.AddValue("persistentState", "STOWED");
+            templates.AddNode(module);
+
+            templates.Save(KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_ModuleTemplates.cfg");
         }
 
         public KCT_BuildListVessel NewCopy(bool RecalcTime)
@@ -294,26 +364,8 @@ namespace KerbalConstructionTime
             double mass = 0;
             foreach (ConfigNode p in this.ExtractedPartNodes)
             {
-                float massTmp;
-                if (float.TryParse(p.GetValue("mass"), out massTmp))
-                {
-                    mass += massTmp;
-                    //mass += p.GetResourceMass();
-                    foreach (ConfigNode rsc in p.GetNodes("RESOURCE"))
-                    {
-                        PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.GetValue("name"));
-                        mass += def.density * float.Parse(rsc.GetValue("amount"));
-                    }
-                }
-                else
-                {
-                    AvailablePart part = KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(p));
-                    if (part != null)
-                    {
-                        mass += part.partPrefab.mass;
-                        mass += part.partPrefab.GetResourceMass();
-                    }
-                }
+                float n1, n2;
+                mass += ShipConstruction.GetPartTotalMass(p, KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(p)), out n1, out n2);
             }
             return mass;
         }

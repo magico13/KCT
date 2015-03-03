@@ -2144,9 +2144,9 @@ namespace KerbalConstructionTime
         }
 
         private static int upgradeWindowHolder = 0;
-        public static double sciCost = 0, fundsCost = 0;
-        public static double nodeRate = 0, upNodeRate = 0;
-        public static double researchRate = 0, upResearchRate = 0;
+        public static double sciCost = -13, fundsCost = -13;
+        public static double nodeRate = -13, upNodeRate = -13;
+        public static double researchRate = -13, upResearchRate = -13;
         private static void DrawUpgradeWindow(int windowID)
         {
             int spentPoints = KCT_Utilities.TotalSpentUpgrades(null);
@@ -2161,7 +2161,7 @@ namespace KerbalConstructionTime
             if (KCT_Utilities.CurrentGameHasScience())
             {
                 //int cost = (int)Math.Min(Math.Pow(2, KCT_GameStates.PurchasedUpgrades[0]+2), 512);
-                if (sciCost == 0)
+                if (sciCost == -13)
                 {
                     sciCost = KCT_MathParsing.GetStandardFormulaValue("UpgradeScience", new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[0].ToString() } });
                  //   double max = double.Parse(KCT_GameStates.formulaSettings.UpgradeScienceMax);
@@ -2186,7 +2186,7 @@ namespace KerbalConstructionTime
                             ++KCT_GameStates.TotalUpgradePoints;
                             ++KCT_GameStates.PurchasedUpgrades[0];
 
-                            sciCost = 0;
+                            sciCost = -13;
                         }
                     }
                     GUILayout.EndHorizontal();
@@ -2196,7 +2196,7 @@ namespace KerbalConstructionTime
             if (KCT_Utilities.CurrentGameIsCareer())
             {
                 //double cost = Math.Min(Math.Pow(2, KCT_GameStates.PurchasedUpgrades[1]+4), 1024) * 1000;
-                if (fundsCost == 0)
+                if (fundsCost == -13)
                 {
                     fundsCost = KCT_MathParsing.GetStandardFormulaValue("UpgradeFunds", new Dictionary<string, string>() { { "N", KCT_GameStates.PurchasedUpgrades[1].ToString() } });
                    // double max = double.Parse(KCT_GameStates.formulaSettings.UpgradeFundsMax);
@@ -2221,7 +2221,7 @@ namespace KerbalConstructionTime
                             ++KCT_GameStates.PurchasedUpgrades[1];
 
 
-                            fundsCost = 0;
+                            fundsCost = -13;
                         }
                     }
                     GUILayout.EndHorizontal();
@@ -2240,8 +2240,11 @@ namespace KerbalConstructionTime
                     KCT_GameStates.TechUpgradesTotal = 0;
                     foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                         ksc.RDUpgrades[1] = 0;
-                    nodeRate = 0;
-                    upNodeRate = 0;
+                    nodeRate = -13;
+                    upNodeRate = -13;
+                    researchRate = -13;
+                    upResearchRate = -13;
+
 
                     foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                         tech.UpdateBuildRate();
@@ -2337,7 +2340,7 @@ namespace KerbalConstructionTime
                 GUILayout.Label("R&D Upgrades");
                 GUILayout.EndHorizontal();
 
-                if (researchRate == 0)
+                if (researchRate == -13)
                 {
                     researchRate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[0].ToString() } });
 
@@ -2354,14 +2357,14 @@ namespace KerbalConstructionTime
                         if (GUILayout.Button("+" + Math.Round((upResearchRate - researchRate) * 86400, 2), GUILayout.Width(45)))
                         {
                             ++KSC.RDUpgrades[0];
-                            researchRate = 0;
+                            researchRate = -13;
                         }
                     }
                     GUILayout.EndHorizontal();
                 }
 
                 double days = GameSettings.KERBIN_TIME ? 4 : 1;
-                if (nodeRate == 0)
+                if (nodeRate == -13)
                 {
                     nodeRate = KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { {"N", KSC.RDUpgrades[1].ToString()} });
                    // double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
@@ -2377,7 +2380,7 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Development");
                 GUILayout.Label(sciPerDay + " sci/day");
-                if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
+                if (upNodeRate != nodeRate && KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
                 {
                     bool everyKSCCanUpgrade = true;
                     foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
