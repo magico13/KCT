@@ -752,12 +752,12 @@ namespace KerbalConstructionTime
 
         private static string orbitAltString = "", orbitIncString = "", UTString = "";
         public static string simLength = "";
-        private static bool advancedSimConfig = false;
+        private static bool advancedSimConfig = false, fromCurrentUT = false;
         public static void DrawSimulationConfigure(int windowID)
         {
             if (simLength == "")
             {
-                if (KCT_GameStates.settings.NoCostSimulations)
+                if (KCT_GameStates.settings.NoCostSimulations || !KCT_Utilities.CurrentGameIsCareer())
                     simLength = "0";
                 else
                     simLength = "0.25";
@@ -791,13 +791,13 @@ namespace KerbalConstructionTime
                 orbitAltString = GUILayout.TextField(orbitAltString, GUILayout.Width(100));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Min: " + KCT_GameStates.simulationBody.maxAtmosphereAltitude/1000);
-                GUILayout.Label("Max: " + Math.Floor(KCT_GameStates.simulationBody.sphereOfInfluence)/1000);
+                GUILayout.Label("Min: " + KCT_GameStates.simulationBody.maxAtmosphereAltitude / 1000);
+                GUILayout.Label("Max: " + Math.Floor(KCT_GameStates.simulationBody.sphereOfInfluence) / 1000);
                 GUILayout.EndHorizontal();
 
                 if (!KCT_GameStates.simulateInOrbit) KCT_GameStates.simulateInOrbit = true;
             }
-            
+
             GUILayout.BeginHorizontal();
             GUILayout.Label("Simulation Length: ");
             GUILayout.Label(KCT_Utilities.GetColonFormattedTime(float.Parse(simLength) * 3600));
@@ -813,7 +813,7 @@ namespace KerbalConstructionTime
 
             //simLength = GUILayout.TextField(simLength);
             float nullFloat, nF2;
-            
+
             float cost = 0;
             if (!KCT_GameStates.settings.NoCostSimulations)
             {
@@ -821,7 +821,7 @@ namespace KerbalConstructionTime
                 cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
                 GUILayout.Label("Cost: " + Math.Round(cost, 1));
             }
-            
+
 
             bool tmp = advancedSimConfig;
             advancedSimConfig = GUILayout.Toggle(advancedSimConfig, " Show Advanced Options");
@@ -845,6 +845,7 @@ namespace KerbalConstructionTime
                 GUILayout.Label("UT: ");
                 UTString = GUILayout.TextField(UTString, GUILayout.Width(150));
                 GUILayout.EndHorizontal();
+                fromCurrentUT = GUILayout.Toggle(fromCurrentUT, " From Current UT");
             }
 
 
@@ -870,10 +871,18 @@ namespace KerbalConstructionTime
                     else
                         KCT_GameStates.simInclination = KCT_GameStates.simInclination % 360;
                 }
-                if (!advancedSimConfig || !double.TryParse(UTString, out KCT_GameStates.simulationUT))
-                    KCT_GameStates.simulationUT = Planetarium.GetUniversalTime();
-                else
-                    KCT_GameStates.simulationUT = Math.Max(0, KCT_GameStates.simulationUT);
+                //if (!advancedSimConfig || !double.TryParse(UTString, out KCT_GameStates.simulationUT))
+
+                double currentUT = HighLogic.CurrentGame.flightState.universalTime;
+                if (advancedSimConfig)
+                {
+                    if (fromCurrentUT)
+                        KCT_GameStates.simulationUT = currentUT + KCT_Utilities.ParseColonFormattedTime(UTString, false);
+                    else
+                        KCT_GameStates.simulationUT = KCT_Utilities.ParseColonFormattedTime(UTString, true);
+                }
+                if (!advancedSimConfig || KCT_GameStates.simulationUT < 0)
+                    KCT_GameStates.simulationUT = currentUT;
 
 
                 KCT_GameStates.flightSimulated = true;
@@ -905,7 +914,7 @@ namespace KerbalConstructionTime
                 unlockEditor = true;
             }
             GUILayout.EndHorizontal();
-            
+
             GUILayout.EndVertical();
 
             CheckEditorLock();

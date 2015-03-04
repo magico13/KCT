@@ -72,6 +72,41 @@ namespace KerbalConstructionTime
             }
         }
 
+        public static double ParseColonFormattedTime(string timeString, bool toUT=true)
+        {
+            double time = 0;
+            string[] parts = timeString.Split(':');
+            int len = parts.Length;
+            double sPerDay = GameSettings.KERBIN_TIME ? 6 * 3600 : 24 * 3600;
+            double sPerYear = GameSettings.KERBIN_TIME ? 426 * sPerDay : 365 * sPerDay;
+            try
+            {
+                time = double.Parse(parts[len - 1]);
+                if (len > 1)
+                    time += 60 * double.Parse(parts[len - 2]); //minutes
+                if (len > 2)
+                    time += 3600 * double.Parse(parts[len - 3]); //hours
+                if (len > 3)
+                { 
+                    time += sPerDay * double.Parse(parts[len - 4]); //days
+                    if (toUT)
+                        time -= sPerDay;
+                }
+                if (len > 4)
+                {
+                    time += sPerYear * double.Parse(parts[len - 5]); //years
+                    if (toUT)
+                        time -= sPerYear;
+                }
+            }
+            catch
+            {
+                KCTDebug.Log("Error parsing time string.");
+                time = -1;
+            }
+            return time;
+        }
+
         public static Dictionary<String, int> PartListToDict(List<String> list)
         {
             Dictionary<String, int> newInv = new Dictionary<String, int>();

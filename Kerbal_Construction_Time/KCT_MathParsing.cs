@@ -79,7 +79,7 @@ namespace KerbalConstructionTime
                     }
                     else if (ch == "(")
                     {
-                        int j = FindEndParenthesis(input, i);
+                        int j = FindEndParenthesis(input, i)[0];
                         string sub = input.Substring(i + 1, j - i - 1);
                         string val = ParseMath(sub, variables).ToString();
                         input = input.Substring(0, i) + val + input.Substring(j + 1);
@@ -87,7 +87,7 @@ namespace KerbalConstructionTime
                     }
                     else if (ch == "l" && input[i + 1].ToString() == "(")
                     {
-                        int j = FindEndParenthesis(input, i + 1);
+                        int j = FindEndParenthesis(input, i + 1)[0];
                         string sub = input.Substring(i + 2, j - i - 2);
                         double val = ParseMath(sub, variables);
                         val = Math.Log(val);
@@ -96,7 +96,7 @@ namespace KerbalConstructionTime
                     }
                     else if (ch == "L" && input[i + 1].ToString() == "(")
                     {
-                        int j = FindEndParenthesis(input, i + 1);
+                        int j = FindEndParenthesis(input, i + 1)[0];
                         string sub = input.Substring(i + 2, j - i - 2);
                         double val = ParseMath(sub, variables);
                         val = Math.Log10(val);
@@ -105,13 +105,17 @@ namespace KerbalConstructionTime
                     }
                     else if (ch == "m")
                     {
-                        int j = FindEndParenthesis(input, i + 4);
-                        string[] parts = input.Substring(i + 4, j - i - 4).Split(',');
+                        int[] parenComma = FindEndParenthesis(input, i + 4);
+                        int j = parenComma[0];
+                       /* string[] parts = input.Substring(i + 4, j - i - 4).Split(',');
                         if (parts.Length > 2)
                         {
                             for (int k = 2; k < parts.Length; k++)
                                 parts[1] += "," + parts[k];
-                        }
+                        }*/
+                        string[] parts = new string[2];
+                        parts[0] = input.Substring(i + 4, parenComma[1] - i - 4);
+                        parts[1] = input.Substring(parenComma[1] + 1, j - parenComma[1] - 1);
                         //KCTDebug.Log(parts[0]);
                         double sub1 = ParseMath(parts[0], variables);
                         double sub2 = ParseMath(parts[1], variables);
@@ -142,21 +146,24 @@ namespace KerbalConstructionTime
             return currentVal;
         }
 
-        private static int FindEndParenthesis(string str, int curPos)
+        private static int[] FindEndParenthesis(string str, int curPos)
         {
             int depth = 0;
-            int j = 0;
+            int j = 0, commaPos = -1;
             for (j = curPos + 1; j < str.Length; ++j)
             {
                 if (str[j] == '(') depth++;
                 if (str[j] == ')') depth--;
+
+                if (str[j] == ',' && depth == 0) 
+                    commaPos = j;
 
                 if (depth < 0)
                 {
                     break;
                 }
             }
-            return j;
+            return new int[] {j, commaPos};
         }
 
         private static double DoMath(double currentVal, string operation, string newVal)
