@@ -28,6 +28,7 @@ namespace KerbalConstructionTime
         [Persistent] public bool OverrideLaunchButton;
         [Persistent] public bool PreferBlizzyToolbar;
         [Persistent] public bool AllowParachuteRecovery;
+        [Persistent] public bool NoSimGUI;
 
         [Persistent] public bool RandomizeCrew;
         [Persistent] public bool AutoHireCrew;
@@ -65,6 +66,7 @@ namespace KerbalConstructionTime
             AutoKACAlarams = true;
             PreferBlizzyToolbar = false;
             AllowParachuteRecovery = true;
+            NoSimGUI = false;
 
             RecoveryModifierDefault = 0.75f;
             NoCostSimulationsDefault = false;

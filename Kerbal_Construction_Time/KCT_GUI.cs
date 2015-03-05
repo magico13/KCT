@@ -843,9 +843,9 @@ namespace KerbalConstructionTime
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("UT: ");
-                UTString = GUILayout.TextField(UTString, GUILayout.Width(150));
+                UTString = GUILayout.TextField(UTString, GUILayout.Width(100));
+                fromCurrentUT = GUILayout.Toggle(fromCurrentUT, " From Now");
                 GUILayout.EndHorizontal();
-                fromCurrentUT = GUILayout.Toggle(fromCurrentUT, " From Current UT");
             }
 
 
@@ -1160,6 +1160,13 @@ namespace KerbalConstructionTime
             GUILayout.Label("The flight scene is exited");
             GUILayout.Label(" ");
             GUILayout.Label("All progress is lost in a simulation.");
+            bool tmp = GUILayout.Toggle(KCT_GameStates.settings.NoSimGUI, " Do not show at start.");
+            if (tmp != KCT_GameStates.settings.NoSimGUI)
+            {
+                KCT_GameStates.settings.NoSimGUI = tmp;
+                KCT_GameStates.settings.Save();
+            }
+
             if (GUILayout.Button("Build It!"))
             {
                 KCT_GameStates.buildSimulatedVessel = true;

@@ -562,7 +562,7 @@ namespace KerbalConstructionTime
             {
                 KCTDebug.Log("Simulation started");
                 KCT_GUI.hideAll();
-                KCT_GUI.showSimulationWindow = true;
+                KCT_GUI.showSimulationWindow = !KCT_GameStates.settings.NoSimGUI;
                 KCT_GUI.showTimeRemaining = true;
                 Planetarium.SetUniversalTime(KCT_GameStates.simulationUT);
             }
