@@ -213,7 +213,7 @@ namespace KerbalConstructionTime
                         if (i < buildList.Count - 1 && GUILayout.Button("v", GUILayout.Width(butW)))
                         {
                             buildList.RemoveAt(i);
-                            if (Input.GetKey(KeyCode.LeftControl))
+                            if (GameSettings.MODIFIER_KEY.GetKey())
                             {
                                 buildList.Add(b);
                             }
@@ -331,7 +331,7 @@ namespace KerbalConstructionTime
                         }
                         else if (HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && (!reconActive || (rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())))
                         {
-                            if (Input.GetKey(KeyCode.LeftControl) && GUILayout.Button("Roll Back", GUILayout.ExpandWidth(false)))
+                            if (GameSettings.MODIFIER_KEY.GetKey() && GUILayout.Button("Roll Back", GUILayout.ExpandWidth(false)))
                             {
                                 rollout.SwapRolloutType();
                             }
@@ -437,7 +437,7 @@ namespace KerbalConstructionTime
                         if (i > 0 && GUILayout.Button("^", GUILayout.Width(butW)))
                         {
                             buildList.RemoveAt(i);
-                            if (Input.GetKey(KeyCode.LeftControl))
+                            if (GameSettings.MODIFIER_KEY.GetKey())
                             {
                                 buildList.Insert(0, b);
                             }
