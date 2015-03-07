@@ -389,6 +389,7 @@ namespace KerbalConstructionTime
         private static string buildRateForDisplay;
         private static int rateIndexHolder = 0;
         public static Dictionary<string, int> PartsInUse = new Dictionary<string, int>();
+        private static double finishedShipBP = -1;
         private static void DrawEditorGUI(int windowID)
         {
             GUILayout.BeginVertical();
@@ -481,7 +482,9 @@ namespace KerbalConstructionTime
                 }
 
                 KCT_BuildListVessel ship = KCT_GameStates.editedVessel;
-                double origBP = ship.isFinished ? KCT_Utilities.GetBuildTime(ship.ExtractedPartNodes, true, ship.InventoryParts) : ship.buildPoints; //If the ship is finished, recalculate times. Else, use predefined times.
+                if (finishedShipBP < 0 && ship.isFinished)
+                    finishedShipBP = KCT_Utilities.GetBuildTime(ship.ExtractedPartNodes, true, ship.InventoryParts);
+                double origBP = ship.isFinished ? finishedShipBP : ship.buildPoints; //If the ship is finished, recalculate times. Else, use predefined times.
                 double buildTime = KCT_GameStates.EditorBuildTime;
                 double difference = Math.Abs(buildTime - origBP);
                 double progress;
@@ -525,8 +528,8 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Save Edits"))
                 {
-                    
 
+                    finishedShipBP = -1;
                     Dictionary<string, int> partsForInventory = new Dictionary<string, int>();
                     //List<string> partsForInventory = new List<string>();
                     if (KCT_GUI.useInventory)
@@ -624,6 +627,7 @@ namespace KerbalConstructionTime
                 }
                 if (GUILayout.Button("Cancel Edits"))
                 {
+                    finishedShipBP = -1;
                     KCT_GameStates.EditorShipEditingMode = false;
 
                     InputLockManager.RemoveControlLock("KCTEditExit");
@@ -638,6 +642,7 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Simulate"))
                 {
+                    finishedShipBP = -1;
                     simulationConfigPosition.height = 1;
                     EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
                     showSimConfig = true;
