@@ -170,7 +170,7 @@ namespace KerbalConstructionTime
             ProceduralPartFormula = "(([C]-[A]) + ([A]*10/max([I],1))) / max([B]*([U]+1),1)";
             BPFormula = "([E]^(1/2))*2000*[O]";
             KSCUpgradeFormula = "([C]^(1/2))*2000*[O]";
-            ReconditioningFormula = "[M]*[O]*[E]";
+            ReconditioningFormula = "min([M]*[O]*[E], [X])";
         }
 
         public void Load()
