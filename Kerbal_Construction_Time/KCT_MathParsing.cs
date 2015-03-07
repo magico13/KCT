@@ -20,6 +20,7 @@ namespace KerbalConstructionTime
                 case "ProceduralPart": return ParseMath(KCT_GameStates.formulaSettings.ProceduralPartFormula, variables);
                 case "BP": return ParseMath(KCT_GameStates.formulaSettings.BPFormula, variables);
                 case "KSCUpgrade": return ParseMath(KCT_GameStates.formulaSettings.KSCUpgradeFormula, variables);
+                case "Reconditioning": return ParseMath(KCT_GameStates.formulaSettings.ReconditioningFormula, variables);
                 default: return 0;
             }
         }

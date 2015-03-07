@@ -54,7 +54,9 @@ namespace KerbalConstructionTime
         {
             RRType = type;
             associatedID = id;
-            BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
+            //BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
+            BP = KCT_MathParsing.GetStandardFormulaValue("Reconditioning", new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()},
+                {"E", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
             if (BP > KCT_GameStates.timeSettings.MaxReconditioning) BP = KCT_GameStates.timeSettings.MaxReconditioning;
             progress = 0;
             if (type == RolloutReconType.Reconditioning) 
@@ -87,7 +89,9 @@ namespace KerbalConstructionTime
         {
             RRType = type;
             associatedID = id;
-            BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
+            //BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
+            BP = KCT_MathParsing.GetStandardFormulaValue("Reconditioning", new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()},
+                {"E", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
             if (BP > KCT_GameStates.timeSettings.MaxReconditioning) BP = KCT_GameStates.timeSettings.MaxReconditioning;
             progress = 0;
             if (type == RolloutReconType.Reconditioning)
