@@ -351,7 +351,7 @@ namespace KerbalConstructionTime
 
         private void EditorRecalculation()
         {
-            if (editorRecalcuationRequired)
+            if (editorRecalcuationRequired && !KCT_GUI.PrimarilyDisabled)
             {
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 editorRecalcuationRequired = false;
