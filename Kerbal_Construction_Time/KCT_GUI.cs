@@ -90,7 +90,7 @@ namespace KerbalConstructionTime
                 if (showClearLaunch)
                     centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawClearLaunch, "Launch site not clear!", HighLogic.Skin.window);
                 if (showShipRoster)
-                    crewListWindowPosition = GUILayout.Window(8953, crewListWindowPosition, KCT_GUI.DrawShipRoster, "Select Crew", HighLogic.Skin.window);
+                    crewListWindowPosition = GUILayout.Window(8955, crewListWindowPosition, KCT_GUI.DrawShipRoster, "Select Crew", HighLogic.Skin.window);
                 if (showCrewSelect)
                     crewListWindowPosition = GUILayout.Window(8954, crewListWindowPosition, KCT_GUI.DrawCrewSelect, "Select Crew", HighLogic.Skin.window);
                 if (showSimConfig)
@@ -2363,9 +2363,9 @@ namespace KerbalConstructionTime
 
                 if (researchRate == -13)
                 {
-                    researchRate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[0].ToString() } });
+                    researchRate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[0].ToString() }, {"R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
 
-                    upResearchRate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[0]+1).ToString() } });
+                    upResearchRate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[0]+1).ToString() }, {"R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
                 }
 
                 if (researchRate >= 0)
@@ -2387,11 +2387,11 @@ namespace KerbalConstructionTime
                 double days = GameSettings.KERBIN_TIME ? 4 : 1;
                 if (nodeRate == -13)
                 {
-                    nodeRate = KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { {"N", KSC.RDUpgrades[1].ToString()} });
+                    nodeRate = KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[1].ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
                    // double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
                   //  if (max > 0 && nodeRate > max) nodeRate = max;
 
-                    upNodeRate = KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[1]+1).ToString() } });
+                    upNodeRate = KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[1] + 1).ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
                   //  if (max > 0 && upNodeRate > max) upNodeRate = max;
                 }
                 double sci = 86400 * nodeRate;
@@ -2530,7 +2530,7 @@ namespace KerbalConstructionTime
     public class GUIDataSaver
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Windows.txt";
-        [Persistent] GUIPosition editorPositionSaved, buildListPositionSaved, timeLimitPositionSaved;
+        [Persistent] GUIPosition editorPositionSaved, timeLimitPositionSaved;
         public void Save()
         {
            // buildListPositionSaved = new GUIPosition("buildList", KCT_GUI.buildListWindowPosition.x, KCT_GUI.buildListWindowPosition.y, KCT_GameStates.showWindows[0]);

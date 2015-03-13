@@ -41,11 +41,12 @@ namespace KerbalConstructionTime
             double currentVal = 0;
             string stack = "";
             string lastOp = "+";
-            string[] ops = { "+", "-", "*", "/", "%", "^", "(", "e", "E", "l", "L", "m" };
+            string[] ops = { "+", "-", "*", "/", "%", "^", "(", "e", "E" };
+            string[] functions = { "min", "max", "l", "L", "abs", "sign" };
             for (int i = 0; i < input.Length; ++i)
             {
                 string ch = input[i].ToString();
-                bool isOp = false;
+                bool isOp = false, isFunction = false;
                 //  KCTDebug.Log(ch);
                 foreach (string op in ops)
                 {
@@ -55,6 +56,18 @@ namespace KerbalConstructionTime
                         break;
                     }
                 }
+                if (!isOp)
+                {
+                    foreach (string fun in functions)
+                    {
+                        if (fun[0] == input[i])
+                        {
+                            isFunction = true;
+                            break;
+                        }
+                    }
+                }
+
                 if (isOp)
                 {
                     if (ch == "-" && (stack.Trim() == ""))
@@ -86,55 +99,63 @@ namespace KerbalConstructionTime
                         input = input.Substring(0, i) + val + input.Substring(j + 1);
                         --i;
                     }
-                    else if (ch == "l" && input[i + 1].ToString() == "(")
-                    {
-                        int j = FindEndParenthesis(input, i + 1)[0];
-                        string sub = input.Substring(i + 2, j - i - 2);
-                        double val = ParseMath(sub, variables);
-                        val = Math.Log(val);
-                        input = input.Substring(0, i) + val.ToString() + input.Substring(j + 1);
-                        --i;
-                    }
-                    else if (ch == "L" && input[i + 1].ToString() == "(")
-                    {
-                        int j = FindEndParenthesis(input, i + 1)[0];
-                        string sub = input.Substring(i + 2, j - i - 2);
-                        double val = ParseMath(sub, variables);
-                        val = Math.Log10(val);
-                        input = input.Substring(0, i) + val.ToString() + input.Substring(j + 1);
-                        --i;
-                    }
-                    else if (ch == "m")
-                    {
-                        int[] parenComma = FindEndParenthesis(input, i + 4);
-                        int j = parenComma[0];
-                       /* string[] parts = input.Substring(i + 4, j - i - 4).Split(',');
-                        if (parts.Length > 2)
-                        {
-                            for (int k = 2; k < parts.Length; k++)
-                                parts[1] += "," + parts[k];
-                        }*/
-                        string[] parts = new string[2];
-                        parts[0] = input.Substring(i + 4, parenComma[1] - i - 4);
-                        parts[1] = input.Substring(parenComma[1] + 1, j - parenComma[1] - 1);
-                        //KCTDebug.Log(parts[0]);
-                        double sub1 = ParseMath(parts[0], variables);
-                        double sub2 = ParseMath(parts[1], variables);
-                        double val = 0;
-                        if (input.Substring(i, 4) == "max(")
-                            val = Math.Max(sub1, sub2);
-                        else if (input.Substring(i, 4) == "min(")
-                            val = Math.Min(sub1, sub2);
-
-                        input = input.Substring(0, i) + val.ToString() + input.Substring(j + 1);
-                        --i;
-                    }
                     else
                     {
                         currentVal = DoMath(currentVal, lastOp, stack);
                         lastOp = ch;
                         stack = "";
                     }
+                }
+                else if (isFunction)
+                {
+                    int subStart = input.IndexOf('(', i)+1;
+                    string function = input.Substring(i, subStart - i - 1);
+                    //KCTDebug.Log(function);
+                    int[] parenComma = FindEndParenthesis(input, subStart);
+                    int j = parenComma[0];
+                    int comma = parenComma[1];
+                    string sub = input.Substring(subStart, j - subStart);
+                   // KCTDebug.Log(sub);
+                    double val = 0.0;
+
+                    if (function == "l")
+                    {
+                        val = ParseMath(sub, variables);
+                        val = Math.Log(val);
+                    }
+                    else if (function == "L")
+                    {
+                        val = ParseMath(sub, variables);
+                        val = Math.Log10(val);
+                    }
+                    else if (function == "max" || function == "min")
+                    {
+                        string[] parts = new string[2];
+                        parts[0] = input.Substring(subStart, parenComma[1] - subStart);
+                        parts[1] = input.Substring(parenComma[1] + 1, j - parenComma[1] - 1);
+                        double sub1 = ParseMath(parts[0], variables);
+                        double sub2 = ParseMath(parts[1], variables);
+                        if (function == "max")
+                            val = Math.Max(sub1, sub2);
+                        else if (function == "min")
+                            val = Math.Min(sub1, sub2);
+                    }
+                    else if (function == "sign")
+                    {
+                        val = ParseMath(sub, variables);
+                        if (val >= 0)
+                            val = 1;
+                        else
+                            val = -1;
+                    }
+                    else if (function == "abs")
+                    {
+                        val = ParseMath(sub, variables);
+                        val = Math.Abs(val);
+                    }
+
+                    input = input.Substring(0, i) + val.ToString() + input.Substring(j + 1);
+                    i--;
                 }
                 else
                 {

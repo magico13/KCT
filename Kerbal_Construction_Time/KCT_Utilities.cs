@@ -770,7 +770,7 @@ namespace KerbalConstructionTime
             }
 
             //Assign science based on science rate
-            double rate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string,string>() {{"N", KSC.RDUpgrades[0].ToString()}});
+            double rate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[0].ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
             if (CurrentGameHasScience() && !vessel.cannotEarnScience && rate > 0)
                 AddScienceWithMessage((float)(rate*vessel.buildPoints), TransactionReasons.None);
 
@@ -1891,6 +1891,20 @@ namespace KerbalConstructionTime
                 }
             }
             return false;
+        }
+
+        public static int BuildingUpgradeLevel(SpaceCenterFacility facility)
+        {
+            int lvl = 0;
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+            {
+                lvl = (int)ScenarioUpgradeableFacilities.GetFacilityLevel(facility);
+            }
+            else
+            {
+                lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
+            }
+            return lvl;
         }
     }
 }
