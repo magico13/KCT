@@ -593,6 +593,12 @@ namespace KerbalConstructionTime
             
             //The following should only be executed when fully enabled for the save
 
+            foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
+            {
+                KSC.RecalculateBuildRates();
+                KSC.RecalculateUpgradedBuildRates();
+            }
+
             if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.buildSimulatedVessel)
             {
                 KCT_GameStates.buildSimulatedVessel = false;

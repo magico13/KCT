@@ -5,142 +5,6 @@ using System.Text;
 
 namespace KerbalConstructionTime
 {
-   /* public class KCT_KSCTech : IKCTBuildItem
-    {
-        [Persistent] public string Name = ""; //ex: VAB Upgrade LVL 2, LaunchPad Repair
-        [Persistent] public double progress = 0, BP = 0;
-
-        private KCT_KSC _KSC = null;
-        public KCT_KSC KSC
-        {
-            get
-            {
-                if (_KSC == null)
-                    _KSC = KCT_GameStates.KSCs.Find(ksc => ksc.KSCTech.Contains(this));
-                return _KSC;
-            }
-        }
-
-        string IKCTBuildItem.GetItemName()
-        {
-            return Name;
-        }
-        double IKCTBuildItem.GetBuildRate()
-        {
-            double rateTotal = 0;
-            if (KSC != null)
-            {
-                foreach (double rate in KCT_Utilities.BuildRatesSPH(KSC))
-                    rateTotal += rate;
-                foreach (double rate in KCT_Utilities.BuildRatesVAB(KSC))
-                    rateTotal += rate;
-            }
-            return rateTotal;
-        }
-        double IKCTBuildItem.GetTimeLeft()
-        {
-            return (BP - progress)/((IKCTBuildItem)this).GetBuildRate();
-        }
-        KCT_BuildListVessel.ListType IKCTBuildItem.GetListType()
-        {
-            return KCT_BuildListVessel.ListType.Reconditioning;
-        }
-        bool IKCTBuildItem.IsComplete()
-        {
-            return progress >= BP;
-        }
-        public IKCTBuildItem AsIKCTBuildItem()
-        {
-            return (IKCTBuildItem)this;
-        }
-        public void AddProgress(double amt)
-        {
-            progress += amt;
-            if (progress > BP) progress = BP;
-        }
-
-        public void ActivateTech()
-        {
-           // SpaceCenterFacility facility = GetFacility();
-            string fName = GetFacilityName();
-            Upgradeables.UpgradeableFacility upFacil = null;
-            if (ScenarioUpgradeableFacilities.protoUpgradeables.ContainsKey(fName))
-                upFacil = ScenarioUpgradeableFacilities.protoUpgradeables[fName].facilityRefs.Find(f => f.name == fName);
-            if (upFacil != null)
-            {
-                int lvl = GetLevel();
-                if (lvl > 0)
-                    upFacil.SetLevel(lvl);
-            }
-
-        }
-
-        public bool IsInListAlready(KCT_KSCTech up)
-        {
-            return (KSC != null || KCT_GameStates.ActiveKSC.KSCTech.Find(u => u.Name == up.Name) != null);
-        }
-
-        public SpaceCenterFacility GetFacility()
-        {
-            if (Name.Contains("Admin"))
-                return SpaceCenterFacility.Administration;
-            else if (Name.Contains("Astronaut"))
-                return SpaceCenterFacility.AstronautComplex;
-            else if (Name.Contains("LaunchPad"))
-                return SpaceCenterFacility.LaunchPad;
-            else if (Name.Contains("Mission"))
-                return SpaceCenterFacility.MissionControl;
-            else if (Name.Contains("R&D"))
-                return SpaceCenterFacility.ResearchAndDevelopment;
-            else if (Name.Contains("Runway"))
-                return SpaceCenterFacility.Runway;
-            else if (Name.Contains("SPH"))
-                return SpaceCenterFacility.SpaceplaneHangar;
-            else if (Name.Contains("Tracking"))
-                return SpaceCenterFacility.TrackingStation;
-            else if (Name.Contains("VAB"))
-                return SpaceCenterFacility.VehicleAssemblyBuilding;
-            else
-                return SpaceCenterFacility.Administration;
-        }
-
-        public string GetFacilityName()
-        {
-            if (Name.Contains("Admin"))
-                return "Administration";
-            else if (Name.Contains("Astronaut"))
-                return "AstronautComplex";
-            else if (Name.Contains("LaunchPad"))
-                return "LaunchPad";
-            else if (Name.Contains("Mission"))
-                return "MissionControl";
-            else if (Name.Contains("R&D"))
-                return "ResearchAndDevelopment";
-            else if (Name.Contains("Runway"))
-                return "Runway";
-            else if (Name.Contains("SPH"))
-                return "SpaceplaneHangar";
-            else if (Name.Contains("Tracking"))
-                return "TrackingStation";
-            else if (Name.Contains("VAB"))
-                return "VehicleAssemblyBuilding";
-            else
-                return "";
-        }
-
-        public int GetLevel()
-        {
-            int lvl = 0;
-            if (Name.Contains("LVL"))
-            {
-                string[] split = Name.Split(' ');
-                int.TryParse(split[split.Count() - 1], out lvl);
-            }
-
-            return lvl;
-        }
-    }*/
-
     public class KCT_KSC
     {
         public string KSCName;
@@ -154,6 +18,8 @@ namespace KerbalConstructionTime
         public List<int> SPHUpgrades = new List<int>() { 0 };
         public List<int> RDUpgrades = new List<int>() { 0, 0 };
         public List<KCT_Recon_Rollout> Recon_Rollout = new List<KCT_Recon_Rollout>();
+        public List<double> VABRates = new List<double>(), SPHRates = new List<double>();
+        public List<double> UpVABRates = new List<double>(), UpSPHRates = new List<double>();
 
         public KCT_KSC(string name)
         {
@@ -174,6 +40,53 @@ namespace KerbalConstructionTime
             return Recon_Rollout.FirstOrDefault(r => r.RRType == type);
         }
 
+        public void RecalculateBuildRates()
+        {
+            VABRates.Clear();
+            SPHRates.Clear();
+            double rate = 0.1;
+            int index = 0;
+            while (rate > 0)
+            {
+                rate = KCT_MathParsing.ParseBuildRateFormula(KCT_BuildListVessel.ListType.VAB, index, this);
+                if (rate >= 0)
+                    VABRates.Add(rate);
+                index++;
+            }
+            rate = 0.1;
+            index = 0;
+            while (rate > 0)
+            {
+                rate = KCT_MathParsing.ParseBuildRateFormula(KCT_BuildListVessel.ListType.SPH, index, this);
+                if (rate >= 0)
+                    SPHRates.Add(rate);
+                index++;
+            }
+        }
+
+        public void RecalculateUpgradedBuildRates()
+        {
+            UpVABRates.Clear();
+            UpSPHRates.Clear();
+            double rate = 0.1;
+            int index = 0;
+            while (rate > 0)
+            {
+                rate = KCT_MathParsing.ParseBuildRateFormula(KCT_BuildListVessel.ListType.VAB, index, this, true);
+                if (rate >= 0)
+                    UpVABRates.Add(rate);
+                index++;
+            }
+            rate = 0.1;
+            index = 0;
+            while (rate > 0)
+            {
+                rate = KCT_MathParsing.ParseBuildRateFormula(KCT_BuildListVessel.ListType.SPH, index, this, true);
+                if (rate >= 0)
+                    UpSPHRates.Add(rate);
+                index++;
+            }
+        }
 
         public ConfigNode AsConfigNode()
         {

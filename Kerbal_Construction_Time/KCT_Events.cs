@@ -99,6 +99,15 @@ namespace KerbalConstructionTime
             {
                 KCTDebug.Log("Facility " + facility.id + " upgraded to lvl " + lvl);
                 allowedToUpgrade = false;
+                foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                {
+                    ksc.RecalculateBuildRates();
+                    ksc.RecalculateUpgradedBuildRates();
+                }
+                foreach (KCT_TechItem tech in KCT_GameStates.TechList)
+                {
+                    tech.UpdateBuildRate();
+                }
             }
            /* if (lvl <= lastLvl)
             {

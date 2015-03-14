@@ -155,7 +155,7 @@ namespace KerbalConstructionTime
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Formulas.cfg";
         [Persistent] public string NodeFormula, UpgradeFundsFormula, UpgradeScienceFormula, ResearchFormula, EffectivePartFormula, ProceduralPartFormula, BPFormula,
-            KSCUpgradeFormula, ReconditioningFormula;
+            KSCUpgradeFormula, ReconditioningFormula, BuildRateFormula;
        // [Persistent] public string NodeMax, UpgradeFundsMax, UpgradeScienceMax;
         public KCT_FormulaSettings()
         {
@@ -171,6 +171,8 @@ namespace KerbalConstructionTime
             BPFormula = "([E]^(1/2))*2000*[O]";
             KSCUpgradeFormula = "([C]^(1/2))*2000*[O]";
             ReconditioningFormula = "min([M]*[O]*[E], [X])";
+            BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)"; //N = num upgrades, I = rate index, L = VAB/SPH upgrade level, R = R&D level
+                //lvl0->2 rates, lvl1->4 rates, lvl2->6 rates
         }
 
         public void Load()

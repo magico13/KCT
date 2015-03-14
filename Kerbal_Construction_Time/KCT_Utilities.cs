@@ -437,24 +437,39 @@ namespace KerbalConstructionTime
             return cost;
         }
 
-        public static double GetBuildRate(int index, KCT_BuildListVessel.ListType type, KCT_KSC KSC)
+        
+        public static double GetBuildRate(int index, KCT_BuildListVessel.ListType type, KCT_KSC KSC, bool UpgradedRate = false)
         {
             if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
             double ret = 0;
             if (type == KCT_BuildListVessel.ListType.VAB)
             {
-                if (KSC.VABUpgrades.Count - 1 >= index)
+                if (!UpgradedRate && KSC.VABRates.Count > index)
                 {
-                    ret = KSC.VABUpgrades[index] * (index+1) * 0.05;
-                    if (index == 0) ret += 0.1;
+                    return KSC.VABRates[index];
+                }
+                else if (UpgradedRate && KSC.UpVABRates.Count > index)
+                {
+                    return KSC.UpVABRates[index];
+                }
+                else
+                {
+                    return 0;
                 }
             }
             else if (type == KCT_BuildListVessel.ListType.SPH)
             {
-                if (KSC.SPHUpgrades.Count - 1 >= index)
+                if (!UpgradedRate && KSC.SPHRates.Count > index)
                 {
-                    ret = KSC.SPHUpgrades[index] * (index+1) * 0.05;
-                    if (index == 0) ret += 0.1;
+                    return KSC.SPHRates[index];
+                }
+                else if (UpgradedRate && KSC.UpSPHRates.Count > index)
+                {
+                    return KSC.UpSPHRates[index];
+                }
+                else
+                {
+                    return 0;
                 }
             }
             else if (type == KCT_BuildListVessel.ListType.TechNode)
@@ -477,29 +492,13 @@ namespace KerbalConstructionTime
         public static List<double> BuildRatesVAB(KCT_KSC KSC)
         {
             if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
-            List<double> rates = new List<double>();
-            if (KSC.VABUpgrades.Count > 0)
-            {
-                for (int i = 0; i < KSC.VABUpgrades.Count; i++)
-                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, KSC));
-            }
-            else
-                rates.Add(0.1);
-            return rates;
+            return KSC.VABRates;
         }
 
         public static List<double> BuildRatesSPH(KCT_KSC KSC)
         {
             if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
-            List<double> rates = new List<double>();
-            if (KSC.SPHUpgrades.Count > 0)
-            {
-                for (int i = 0; i < KSC.SPHUpgrades.Count; i++)
-                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, KSC));
-            }
-            else
-                rates.Add(0.1);
-            return rates;
+            return KSC.SPHRates;
         }
 
         private static double lastUT=0.0, UT;
@@ -1898,11 +1897,12 @@ namespace KerbalConstructionTime
             int lvl = 0;
             if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
             {
-                lvl = (int)ScenarioUpgradeableFacilities.GetFacilityLevel(facility);
+                lvl = (int)(2*ScenarioUpgradeableFacilities.GetFacilityLevel(facility));
             }
             else
             {
-                lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
+                //lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
+                lvl = 2;
             }
             return lvl;
         }

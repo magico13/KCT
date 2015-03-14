@@ -21,6 +21,7 @@ namespace KerbalConstructionTime
                 case "BP": return ParseMath(KCT_GameStates.formulaSettings.BPFormula, variables);
                 case "KSCUpgrade": return ParseMath(KCT_GameStates.formulaSettings.KSCUpgradeFormula, variables);
                 case "Reconditioning": return ParseMath(KCT_GameStates.formulaSettings.ReconditioningFormula, variables);
+                case "BuildRate": return ParseMath(KCT_GameStates.formulaSettings.BuildRateFormula, variables);
                 default: return 0;
             }
         }
@@ -115,7 +116,7 @@ namespace KerbalConstructionTime
                     int j = parenComma[0];
                     int comma = parenComma[1];
                     string sub = input.Substring(subStart, j - subStart);
-                   // KCTDebug.Log(sub);
+                    KCTDebug.Log("fn: "+function+" sub: "+sub);
                     double val = 0.0;
 
                     if (function == "l")
@@ -208,6 +209,46 @@ namespace KerbalConstructionTime
             }
 
             return currentVal;
+        }
+
+        public static double ParseBuildRateFormula(KCT_BuildListVessel.ListType type, int index, KCT_KSC KSC, bool UpgradedRates = false)
+        {
+            //N = num upgrades, I = rate index, L = VAB/SPH upgrade level, R = R&D level
+            int level = 0, upgrades = 0;
+            Dictionary<string, string> variables = new Dictionary<string, string>();
+            if (type == KCT_BuildListVessel.ListType.VAB)
+            {
+                level = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
+                if (KSC.VABUpgrades.Count > index)
+                    upgrades = KSC.VABUpgrades[index];
+            }
+            else if (type == KCT_BuildListVessel.ListType.SPH)
+            {
+                level = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.SpaceplaneHangar);
+                if (KSC.SPHUpgrades.Count > index)
+                    upgrades = KSC.SPHUpgrades[index];
+            }
+            if (UpgradedRates)
+                upgrades++;
+            variables.Add("L", level.ToString());
+            variables.Add("N", upgrades.ToString());
+            variables.Add("I", index.ToString());
+            variables.Add("R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString());
+
+            return GetStandardFormulaValue("BuildRate", variables);
+        }
+
+        public static double ParseNodeRateFormula(double ScienceValue, bool UpgradedRates = false)
+        {
+            int RnDLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment);
+            int upgrades = KCT_GameStates.TechUpgradesTotal;
+            if (UpgradedRates) upgrades++;
+            Dictionary<string, string> variables = new Dictionary<string, string>();
+            variables.Add("S", ScienceValue.ToString());
+            variables.Add("N", upgrades.ToString());
+            variables.Add("R", RnDLvl.ToString());
+
+            return GetStandardFormulaValue("Node", variables);
         }
     }
 }

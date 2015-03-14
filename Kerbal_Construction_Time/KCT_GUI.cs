@@ -649,6 +649,20 @@ namespace KerbalConstructionTime
                     KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
                 }
                 GUILayout.EndHorizontal();
+
+                if (GUILayout.Button("Fill Tanks"))
+                {
+                    foreach (Part p in EditorLogic.fetch.ship.parts)
+                    {
+                        //fill as part prefab would be filled?
+                        foreach (PartResource rsc in p.Resources)
+                        {
+                            PartResource templateRsc = p.partInfo.partPrefab.Resources.list.Find(r => r.resourceName == rsc.resourceName);
+                            if (templateRsc != null)
+                                rsc.amount = templateRsc.amount;
+                        }
+                    }
+                }
             }
 
 
@@ -2260,15 +2274,20 @@ namespace KerbalConstructionTime
                     KCT_GameStates.ActiveKSC.RDUpgrades = new List<int>() { 0, 0 };
                     KCT_GameStates.TechUpgradesTotal = 0;
                     foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                    {
                         ksc.RDUpgrades[1] = 0;
+                    }
                     nodeRate = -13;
                     upNodeRate = -13;
                     researchRate = -13;
                     upResearchRate = -13;
 
+                    KCT_GameStates.ActiveKSC.RecalculateBuildRates();
+                    KCT_GameStates.ActiveKSC.RecalculateUpgradedBuildRates();
 
                     foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                         tech.UpdateBuildRate();
+
                 }
             }
             GUILayout.EndHorizontal();
@@ -2287,22 +2306,28 @@ namespace KerbalConstructionTime
                 GUILayout.EndHorizontal();
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.VABUpgrades.Count + 1) * 26), GUILayout.MaxHeight(3 * Screen.height / 4));
                 GUILayout.BeginVertical();
-                for (int i = 0; i < KSC.VABUpgrades.Count; i++)
+                for (int i = 0; i < KSC.VABRates.Count; i++)
                 {
+                    double rate = KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, KSC);
+                    double upgraded = KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, KSC, true);
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Rate "+(i+1));
-                    GUILayout.Label(KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, KSC) + " BP/s");
-                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && (i == 0 || KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, KSC) + ((i + 1) * 0.05)
-                        <= KCT_Utilities.GetBuildRate(i - 1, KCT_BuildListVessel.ListType.VAB, KSC)))
+                    GUILayout.Label(rate + " BP/s");
+                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && (i == 0 || upgraded <= KCT_Utilities.GetBuildRate(i - 1, KCT_BuildListVessel.ListType.VAB, KSC)) && upgraded - rate > 0)
                     {
-                        if (GUILayout.Button("+" + ((i + 1) * 0.05), GUILayout.Width(45)))
+                        if (GUILayout.Button("+" + Math.Round(upgraded - rate,2), GUILayout.Width(45)))
                         {
-                            ++KSC.VABUpgrades[i];
+                            if (i < KSC.VABUpgrades.Count)
+                                ++KSC.VABUpgrades[i];
+                            else
+                                KSC.VABUpgrades.Add(1);
+                            KSC.RecalculateBuildRates();
+                            KSC.RecalculateUpgradedBuildRates();
                         }
                     }
                     GUILayout.EndHorizontal();
                 }
-                GUILayout.BeginHorizontal();
+               /* GUILayout.BeginHorizontal();
                 GUILayout.Label("Rate " + (KSC.VABUpgrades.Count + 1));
                 GUILayout.Label("0 BP/s");
                 if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && ((KSC.VABUpgrades.Count + 1) * 0.05)
@@ -2311,9 +2336,11 @@ namespace KerbalConstructionTime
                     if (GUILayout.Button("+" + ((KSC.VABUpgrades.Count + 1) * 0.05), GUILayout.Width(45)))
                     {
                         KSC.VABUpgrades.Add(1);
+                        KSC.RecalculateBuildRates();
+                        KSC.RecalculateUpgradedBuildRates();
                     }
                 }
-                GUILayout.EndHorizontal();
+                GUILayout.EndHorizontal();*/
                 GUILayout.EndVertical();
                 GUILayout.EndScrollView();
             }
@@ -2325,22 +2352,28 @@ namespace KerbalConstructionTime
                 GUILayout.EndHorizontal();
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.SPHUpgrades.Count + 1) * 26), GUILayout.MaxHeight(3 * Screen.height / 4));
                 GUILayout.BeginVertical();
-                for (int i = 0; i < KSC.SPHUpgrades.Count; i++)
+                for (int i = 0; i < KSC.SPHRates.Count; i++)
                 {
+                    double rate = KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, KSC);
+                    double upgraded = KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, KSC, true);
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Rate " + (i + 1));
-                    GUILayout.Label(KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, KSC) + " BP/s");
-                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && (i == 0 || KCT_Utilities.GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, KSC) + ((i + 1) * 0.05)
-                        <= KCT_Utilities.GetBuildRate(i - 1, KCT_BuildListVessel.ListType.SPH, KSC)))
+                    GUILayout.Label(rate + " BP/s");
+                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && (i == 0 || upgraded <= KCT_Utilities.GetBuildRate(i-1, KCT_BuildListVessel.ListType.SPH, KSC)) && upgraded-rate > 0)
                     {
-                        if (GUILayout.Button("+" + ((i + 1) * 0.05), GUILayout.Width(45)))
+                        if (GUILayout.Button("+" + Math.Round(upgraded - rate, 2), GUILayout.Width(45)))
                         {
-                            ++KSC.SPHUpgrades[i];
+                            if (i < KSC.SPHUpgrades.Count)
+                                ++KSC.SPHUpgrades[i];
+                            else
+                                KSC.SPHUpgrades.Add(1);
+                            KSC.RecalculateBuildRates();
+                            KSC.RecalculateUpgradedBuildRates();
                         }
                     }
                     GUILayout.EndHorizontal();
                 }
-                GUILayout.BeginHorizontal();
+                /*GUILayout.BeginHorizontal();
                 GUILayout.Label("Rate " + (KSC.SPHUpgrades.Count + 1));
                 GUILayout.Label("0 BP/s");
                 if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && ((KSC.SPHUpgrades.Count + 1) * 0.05)
@@ -2349,9 +2382,11 @@ namespace KerbalConstructionTime
                     if (GUILayout.Button("+" + ((KSC.SPHUpgrades.Count + 1) * 0.05), GUILayout.Width(45)))
                     {
                         KSC.SPHUpgrades.Add(1);
+                        KSC.RecalculateBuildRates();
+                        KSC.RecalculateUpgradedBuildRates();
                     }
                 }
-                GUILayout.EndHorizontal();
+                GUILayout.EndHorizontal();*/
                 GUILayout.EndVertical();
                 GUILayout.EndScrollView();
             }
@@ -2387,11 +2422,13 @@ namespace KerbalConstructionTime
                 double days = GameSettings.KERBIN_TIME ? 4 : 1;
                 if (nodeRate == -13)
                 {
-                    nodeRate = KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[1].ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
+                    nodeRate = KCT_MathParsing.ParseNodeRateFormula(0);
+                        //KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[1].ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
                    // double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
                   //  if (max > 0 && nodeRate > max) nodeRate = max;
 
-                    upNodeRate = KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[1] + 1).ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
+                    upNodeRate = KCT_MathParsing.ParseNodeRateFormula(0, true);
+                    //KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[1] + 1).ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
                   //  if (max > 0 && upNodeRate > max) upNodeRate = max;
                 }
                 double sci = 86400 * nodeRate;
