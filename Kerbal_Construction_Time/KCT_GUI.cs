@@ -108,6 +108,9 @@ namespace KerbalConstructionTime
                 if (showSimLengthChooser)
                     centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimLengthChooser, "Time Limit", HighLogic.Skin.window);
 
+                if (KCT_SpecialSurpriseInside.instance.showRace)
+                    KCT_SpecialSurpriseInside.instance.raceRect = GUILayout.Window(8955, KCT_SpecialSurpriseInside.instance.raceRect, KCT_SpecialSurpriseInside.instance.SRBRace, "SRB Race Track", HighLogic.Skin.window);
+
                 if (unlockEditor)
                 {
                     EditorLogic.fetch.Unlock("KCTGUILock");

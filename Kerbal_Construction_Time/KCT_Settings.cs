@@ -29,6 +29,7 @@ namespace KerbalConstructionTime
         [Persistent] public bool PreferBlizzyToolbar;
         [Persistent] public bool AllowParachuteRecovery;
         [Persistent] public bool NoSimGUI;
+        [Persistent] public bool DisableSpecialSurprise;
 
         [Persistent] public bool RandomizeCrew;
         [Persistent] public bool AutoHireCrew;
@@ -67,6 +68,7 @@ namespace KerbalConstructionTime
             PreferBlizzyToolbar = false;
             AllowParachuteRecovery = true;
             NoSimGUI = false;
+            DisableSpecialSurprise = false;
 
             RecoveryModifierDefault = 0.75f;
             NoCostSimulationsDefault = false;

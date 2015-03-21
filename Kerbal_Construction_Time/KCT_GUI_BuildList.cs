@@ -14,6 +14,11 @@ namespace KerbalConstructionTime
             if (buildListWindowPosition.xMax > Screen.width)
                 buildListWindowPosition.x = Screen.width - buildListWindowPosition.width;
 
+
+            if (KCT_SpecialSurpriseInside.instance.activated)
+                if (GUILayout.Button(KCT_SpecialSurpriseInside.instance.jebCoinTex))
+                    KCT_SpecialSurpriseInside.instance.showRace = true;
+
             //GUI.skin = HighLogic.Skin;
             GUIStyle redText = new GUIStyle(GUI.skin.label);
             redText.normal.textColor = Color.red;

@@ -180,10 +180,11 @@ namespace KerbalConstructionTime
             KCT_GameStates.settings.Save(); //Save the settings file, with defaults if it doesn't exist
             KCT_GameStates.timeSettings.Load(); //Load the time settings
             KCT_GameStates.timeSettings.Save(); //Save the time settings
-
             UpdateOldFormulaCFG(); //Update the formula cfg file to the new format so things aren't broken
             KCT_GameStates.formulaSettings.Load();
             KCT_GameStates.formulaSettings.Save();
+            if (KCT_SpecialSurpriseInside.instance == null)
+                new KCT_SpecialSurpriseInside();
 
             // Ghetto event queue
             if (HighLogic.LoadedScene == GameScenes.EDITOR)
@@ -375,6 +376,9 @@ namespace KerbalConstructionTime
             {
                 KCT_Utilities.LoadSimulationSave(true);
             }
+
+            if (KCT_SpecialSurpriseInside.instance.activated && HighLogic.LoadedSceneIsFlight)
+                KCT_SpecialSurpriseInside.instance.CheckShipForChallengeComplete();
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
