@@ -223,9 +223,19 @@ namespace KerbalConstructionTime
                 module.SetValue(val.name, val.value);
             }
 
-            
+            foreach (ConfigNode node in template.GetNodes()) //This should account for nested nodes, like RealChutes' PARACHUTE node
+            {
+                if (module.HasNode(node.name))
+                {
+                    foreach (ConfigNode.Value val in node.values)
+                        module.GetNode(node.name).SetValue(val.name, val.value);
+                }
+            }
+
             foreach (ConfigNode node in module.GetNodes("MODULE"))
                 SanitizeNode(node, templates);
+
+            
             /*
             if (name.Contains("ModuleEngines"))
             {
@@ -299,6 +309,21 @@ namespace KerbalConstructionTime
             module.AddValue("staged", "False");
             module.AddValue("persistentState", "STOWED");
             templates.AddNode(module);
+
+            //RealChuteModule
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "RealChuteModule");
+            module.AddValue("armed", "False");
+            module.AddValue("staged", "False");
+            module.AddValue("launched", "False");
+            module.AddValue("oneWasDeployed", "False");
+            ConfigNode PARACHUTE = new ConfigNode("PARACHUTE");
+            PARACHUTE.AddValue("capOff", "False");
+            PARACHUTE.AddValue("time", "0");
+            PARACHUTE.AddValue("depState", "STOWED");
+            module.AddNode(PARACHUTE);
+            templates.AddNode(module);
+
 
             templates.Save(KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_ModuleTemplates.cfg");
         }

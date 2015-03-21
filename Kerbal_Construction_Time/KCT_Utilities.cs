@@ -240,7 +240,7 @@ namespace KerbalConstructionTime
                 aParts.Add(partNode);
             }
             return GetBuildTime(aParts, useTracker, useInventory);*/
-            return GetBuildTime(parts, useTracker, KCT_GameStates.PartInventory);
+            return GetBuildTime(parts, useTracker, useInventory?KCT_GameStates.PartInventory:new Dictionary<string, int>());
         }
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, Dictionary<String, int> inventory)

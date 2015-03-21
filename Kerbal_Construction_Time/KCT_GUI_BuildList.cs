@@ -197,7 +197,7 @@ namespace KerbalConstructionTime
                         if (i > 0 && GUILayout.Button("^", GUILayout.Width(butW)))
                         {
                             buildList.RemoveAt(i);
-                            if (Input.GetKey(KeyCode.LeftControl))
+                            if (GameSettings.MODIFIER_KEY.GetKey())
                             {
                                 buildList.Insert(0, b);
                             }
@@ -335,7 +335,7 @@ namespace KerbalConstructionTime
                             {
                                 rollout.SwapRolloutType();
                             }
-                            else if (!Input.GetKey(KeyCode.LeftControl) && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
+                            else if (!GameSettings.MODIFIER_KEY.GetKey() && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                             {
                                 bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
                                 if (!operational)
@@ -453,7 +453,7 @@ namespace KerbalConstructionTime
                         if (i < buildList.Count - 1 && GUILayout.Button("v", GUILayout.Width(butW)))
                         {
                             buildList.RemoveAt(i);
-                            if (Input.GetKey(KeyCode.LeftControl))
+                            if (GameSettings.MODIFIER_KEY.GetKey())
                             {
                                 buildList.Add(b);
                             }
@@ -515,7 +515,7 @@ namespace KerbalConstructionTime
                         GUILayout.Label(b.shipName);
                         GUILayout.Label(status + "   ", GUILayout.ExpandWidth(false));
                         //ScenarioDestructibles.protoDestructibles["KSCRunway"].
-                        if (!HighLogic.LoadedSceneIsEditor && HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
+                        if (HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
                             bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.SPH);//new PreFlightTests.FacilityOperational("Runway", "building").Test();
                             if (!operational)
@@ -551,7 +551,7 @@ namespace KerbalConstructionTime
                                 }
                             }
                         }
-                        else if (!HighLogic.LoadedSceneIsEditor && recovery != null)
+                        else if (recovery != null)
                         {
                             GUILayout.Label(KCT_Utilities.GetColonFormattedTime(recovery.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
                         }
