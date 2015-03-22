@@ -424,15 +424,17 @@ namespace KerbalConstructionTime
             return name;
         }
 
-        public static double GetPartCosts(Part part)
+        public static double GetPartCosts(Part part, bool includeFuel = true)
         {
             double cost = 0;
             cost = part.partInfo.cost + part.GetModuleCosts(part.partInfo.cost);
-
-            foreach (PartResource rsc in part.Resources)
+            if (!includeFuel)
             {
-                PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.resourceName);
-                cost -= rsc.amount * def.unitCost;
+                foreach (PartResource rsc in part.Resources)
+                {
+                    PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.resourceName);
+                    cost -= rsc.amount * def.unitCost;
+                }
             }
             return cost;
         }
