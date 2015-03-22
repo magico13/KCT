@@ -110,6 +110,8 @@ namespace KerbalConstructionTime
 
                 if (KCT_SpecialSurpriseInside.instance.showRace)
                     KCT_SpecialSurpriseInside.instance.raceRect = GUILayout.Window(8955, KCT_SpecialSurpriseInside.instance.raceRect, KCT_SpecialSurpriseInside.instance.SRBRace, "SRB Race Track", HighLogic.Skin.window);
+                if (KCT_SpecialSurpriseInside.instance.showAd)
+                    KCT_SpecialSurpriseInside.instance.adRect = GUILayout.Window(8952, KCT_SpecialSurpriseInside.instance.adRect, KCT_SpecialSurpriseInside.instance.FullPageAd, "Advertisement", HighLogic.Skin.window);
 
                 if (unlockEditor)
                 {
@@ -1006,23 +1008,32 @@ namespace KerbalConstructionTime
             GUILayout.BeginVertical();
             if (GUILayout.Button("Build Vessel"))
             {
-                KCT_Utilities.AddVesselToBuildList(useInventory);
-                PartCategories CategoryCurrent = PartCategories.none;
-                switch (currentCategoryInt)
+                if (!KCT_SpecialSurpriseInside.instance.activated || KCT_SpecialSurpriseInside.instance.disableBlocks)
                 {
-                    case 0: CategoryCurrent = PartCategories.Pods; break;
-                    case 1: CategoryCurrent = PartCategories.Propulsion; break;
-                    case 2: CategoryCurrent = PartCategories.Control; break;
-                    case 3: CategoryCurrent = PartCategories.Structural; break;
-                    case 4: CategoryCurrent = PartCategories.Aero; break;
-                    case 5: CategoryCurrent = PartCategories.Utility; break;
-                    case 6: CategoryCurrent = PartCategories.Science; break;
-                    default: CategoryCurrent = PartCategories.none; break;
+                    KCT_Utilities.AddVesselToBuildList(useInventory);
+                    PartCategories CategoryCurrent = PartCategories.none;
+                    switch (currentCategoryInt)
+                    {
+                        case 0: CategoryCurrent = PartCategories.Pods; break;
+                        case 1: CategoryCurrent = PartCategories.Propulsion; break;
+                        case 2: CategoryCurrent = PartCategories.Control; break;
+                        case 3: CategoryCurrent = PartCategories.Structural; break;
+                        case 4: CategoryCurrent = PartCategories.Aero; break;
+                        case 5: CategoryCurrent = PartCategories.Utility; break;
+                        case 6: CategoryCurrent = PartCategories.Science; break;
+                        default: CategoryCurrent = PartCategories.none; break;
+                    }
+                    InventoryCategoryChanged(CategoryCurrent);
                 }
-                InventoryCategoryChanged(CategoryCurrent);
+                else
+                {
+                    KCT_SpecialSurpriseInside.instance.EditorUnlockPopup();
+                }
+
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 showLaunchAlert = false;
                 unlockEditor = true;
+                
             }
             if (GUILayout.Button("Simulate Vessel"))
             {

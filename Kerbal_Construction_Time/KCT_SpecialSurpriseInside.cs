@@ -11,11 +11,12 @@ namespace KerbalConstructionTime
     class KCT_SpecialSurpriseInside
     {
         public static KCT_SpecialSurpriseInside instance = null;
-        public bool activated = false, showRace = false, challengeCompleted = false;
-        public Texture2D jebCoinTex, rt10Tex;
+        public bool activated = false, showRace = false, showAd = false, challengeCompleted = false, disableBlocks = false;
+        public Texture2D jebCoinTex, rt10Tex, Ad1;
 
-        public int TotalJebCoins = 1;
+        public int TotalJebCoins = 2, sceneChanges = 0, sceneChangeLimit = 6;
         public Rect raceRect = new Rect((Screen.width-512) / 2, Screen.height / 2, 512, 1);
+        public Rect adRect = new Rect(0, 0, Screen.width, Screen.height);
         private ProtoCrewMember chosenKerbal = null;
         private SRBRace raceInstance = null;
 
@@ -27,6 +28,8 @@ namespace KerbalConstructionTime
                 return;
             else
                 DeploySurprise();
+
+            
         }
 
         private void DeploySurprise()
@@ -50,6 +53,14 @@ namespace KerbalConstructionTime
                 fileData = System.IO.File.ReadAllBytes(filePath);
                 rt10Tex.LoadImage(fileData);
             }
+
+            Ad1 = new Texture2D(2, 2);
+            filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/Icons/ad1.png";
+            if (System.IO.File.Exists(filePath))
+            {
+                fileData = System.IO.File.ReadAllBytes(filePath);
+                Ad1.LoadImage(fileData);
+            }
             
             string popupString = "Welcome to Kerbal Crush Saga: Rocket Fire Age, the replacement for Kerbal Construction Time that makes KSP more like your FAVORITE smart phone games!\n\n"+
                 "Take part in DAILY CHALLENGES or SRB RACES to earn JEB COIN to spend on speeding up rocket construction! Build REALISTIC rockets at REALISTIC speeds, in REAL TIME!";
@@ -60,7 +71,7 @@ namespace KerbalConstructionTime
         {
             Vessel active = FlightGlobals.ActiveVessel;
             double targetLat = -0.092222, targetLon = 285.4475, targetAlt = 102.0;
-            if (active != null)
+            if (active != null && !challengeCompleted)
             {
                 if (active.Landed && KCT_Utilities.ApproximatelyEqual(targetLat, active.latitude, 0.006) && KCT_Utilities.ApproximatelyEqual(targetLon, active.longitude, 0.006) && KCT_Utilities.ApproximatelyEqual(targetAlt, active.altitude, 5))
                 {
@@ -85,8 +96,9 @@ namespace KerbalConstructionTime
 
                     if (!hasChutes && hasSRB)
                     {
+                        challengeCompleted = true;
                         string popupString = "Congratulations! You completed the Daily Challenge! Take some pictures to show your worth and post them on the forum thread!\n\n" +
-                            "(Ok, seriously? You seriously completed the Daily Challenge? Screw it, you get over 9000 Jeb Coins. Please, for the love of all things Kerbal, post your result on the KCT forum thread. I HAVE to see this.)";
+                            "(Ok, seriously? You seriously completed the Daily Challenge? Screw it, you get over 9000 Jeb Coins (a $45,000 value). Please, for the love of all things Kerbal, post your result on the KCT forum thread. I HAVE to see this.)";
                         PopupDialog.SpawnPopupDialog("Challenge Complete!", popupString, "Collect Reward!", false, HighLogic.Skin);
                         TotalJebCoins += 9001;
                     }
@@ -100,12 +112,35 @@ namespace KerbalConstructionTime
             options[0] = new DialogOption("1 Jeb Coin - $5", OpenBrowserToJebCoinWebsite);
             options[1] = new DialogOption("2 Jeb Coins - $9 (Save 10%!)", OpenBrowserToJebCoinWebsite);
             options[2] = new DialogOption("5 Jeb Coins - $20 (Save 20%!)", OpenBrowserToJebCoinWebsite);
-            options[3] = new DialogOption("10 Jeb Coins - $35 (Save 30%!)", OpenBrowserToJebCoinWebsite);
+            options[3] = new DialogOption("10 Jeb Coins - $35 (Save 30%!)", DisablePopup);
             options[4] = new DialogOption("100 Jeb Coins - $250 (Save 50%! BEST DEAL!)", OpenBrowserToJebCoinWebsite);
             options[5] = new DialogOption("Close Store", EmptyVoid);
             MultiOptionDialog popup = new MultiOptionDialog("Purchase additional Jeb Coin from the Store for new, low rates!\n"+
             "Note: You will be redirected to the store website to complete your purchase.", "Jeb Coin Store", HighLogic.Skin, options);
             PopupDialog.SpawnPopupDialog(popup, false, HighLogic.Skin);
+        }
+
+        public void DailyChallengePopup()
+        {
+            string message = "Werhner accidentally forgot an important experiment near the launchpad and needs your help retrieving it. "
+            + "You agreed before he mentioned that it's on top of the Tier 3 water tower, and that all the parachutes are being repacked and can't be used, and that Kerbodyne needs an RT-10 tested ASAP.\n"
+            + "GOAL: Land a vessel on top of the water tower, without parachutes, with an activated RT-10 Solid Fuel Booster. You may use any additional parts you desire. This can be performed during a Simulation."
+            + "\nREWARD: 5 Jeb Coins";
+            PopupDialog.SpawnPopupDialog("Daily Challenge: April 1st", message, "Close", false, HighLogic.Skin);
+        }
+
+        public void EditorUnlockPopup()
+        {
+            if (KCT_SpecialSurpriseInside.instance.TotalJebCoins < 2)
+                PopupDialog.SpawnPopupDialog("Stop!", "You must unlock vessel construction by spending 2 Jeb Coins!", "Close", false, HighLogic.Skin);
+            else
+            {
+                DialogOption[] options = new DialogOption[2];
+                options[0] = new DialogOption("Spend Jeb Coins", DoError);
+                options[1] = new DialogOption("Close", EmptyVoid);
+                MultiOptionDialog popup = new MultiOptionDialog("You must unlock vessel construction by spending 2 Jeb Coins!", "Stop!", HighLogic.Skin, options);
+                PopupDialog.SpawnPopupDialog(popup, false, HighLogic.Skin);
+            }
         }
 
         public void SRBRace(int windowIndex)
@@ -118,13 +153,6 @@ namespace KerbalConstructionTime
                 if (crew.rosterStatus == ProtoCrewMember.RosterStatus.Available)
                     available.Add(crew);
             }
-            /*DialogOption[] options = new DialogOption[available.Count];
-            for (int i=0; i<available.Count; i++)
-            {
-                options[i] = new DialogOption(available[i].name, SetChosenKerbal);
-            }
-            MultiOptionDialog popup = new MultiOptionDialog("Choose your racer for the SRB Race!", "SRB Racing", HighLogic.Skin, options);
-            PopupDialog.SpawnPopupDialog(popup, false, HighLogic.Skin);*/
             GUILayout.BeginVertical();
             if (chosenKerbal == null)
             {
@@ -203,6 +231,46 @@ namespace KerbalConstructionTime
         private void EmptyVoid()
         {
 
+        }
+
+        private void DoError()
+        {
+            PopupDialog.SpawnPopupDialog("Error", "An error occurred while processing your request, please try again!", "Close", false, HighLogic.Skin);
+            TotalJebCoins -= 2;
+        }
+
+        public void FullPageAd(int windowID)
+        {
+            GUILayout.BeginVertical();
+            if (GUILayout.Button("X", GUILayout.ExpandWidth(false)))
+                showAd = false;
+            GUILayout.Label(Ad1);
+            GUILayout.EndVertical();
+        }
+
+        public void DisablePopup()
+        {
+            DialogOption[] options = new DialogOption[3];
+            options[0] = new DialogOption("Disable Advertisements", DisableAdverts);
+            options[1] = new DialogOption("Disable All Parts", DisableAll);
+            options[2] = new DialogOption("Do Nothing", EmptyVoid);
+            string msg = "Alright, I've had my fun with you. You can disable Kerbal Crush Saga: Rocket Fire Age and go back to using Kerbal Construction Time now."+
+                " If you want to still play around with the prank (for today only), you can choose to disable advertisements and the block on building vessels, but keep the SRB races, daily challenge, and Jeb Coins."+
+                " Just go back to the Jeb Coin Store and press the button for 10 Jeb Coins to bring this back up."+
+                "\n\nSorry if I drove you a little nuts ;) - magico13";
+            MultiOptionDialog popup = new MultiOptionDialog(msg, "Thanks For Playing Along", HighLogic.Skin, options);
+            PopupDialog.SpawnPopupDialog(popup, false, HighLogic.Skin);
+        }
+
+        private void DisableAdverts()
+        {
+            disableBlocks = true;
+        }
+
+        private void DisableAll()
+        {
+            activated = false;
+            KCT_GameStates.settings.DisableSpecialSurprise = true;
         }
     }
 

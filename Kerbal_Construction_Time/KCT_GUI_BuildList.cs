@@ -14,11 +14,6 @@ namespace KerbalConstructionTime
             if (buildListWindowPosition.xMax > Screen.width)
                 buildListWindowPosition.x = Screen.width - buildListWindowPosition.width;
 
-
-            if (KCT_SpecialSurpriseInside.instance.activated)
-                if (GUILayout.Button(KCT_SpecialSurpriseInside.instance.jebCoinTex))
-                    KCT_SpecialSurpriseInside.instance.showRace = true;
-
             //GUI.skin = HighLogic.Skin;
             GUIStyle redText = new GUIStyle(GUI.skin.label);
             redText.normal.textColor = Color.red;
@@ -641,6 +636,27 @@ namespace KerbalConstructionTime
                 GUILayout.Label("Latest: " + KCT_UpdateChecker.WebVersion);
                 GUILayout.EndHorizontal();
             }
+
+            if (KCT_SpecialSurpriseInside.instance.activated)
+            {
+                GUILayout.BeginHorizontal();
+                //jeb coin img, jeb coin amt, store button, daily challenge, SRB races
+                GUILayout.Label(KCT_SpecialSurpriseInside.instance.jebCoinTex, GUILayout.ExpandWidth(false));
+                if (GUILayout.Button(" Jeb Coins: " + KCT_SpecialSurpriseInside.instance.TotalJebCoins, GUILayout.ExpandWidth(false)))
+                    KCT_SpecialSurpriseInside.instance.JebCoinStore();
+                GUILayout.Label("");
+                if (GUILayout.Button("Daily Challenge", GUILayout.ExpandWidth(false)))
+                    KCT_SpecialSurpriseInside.instance.DailyChallengePopup();
+                GUILayout.Label("");
+                if (GUILayout.Button("Race SRBs", GUILayout.ExpandWidth(false)))
+                {
+                    KCT_SpecialSurpriseInside.instance.showRace = true;
+                    showBuildList = false;
+                }
+
+                GUILayout.EndHorizontal();
+            }
+
             GUILayout.EndVertical();
         }
 

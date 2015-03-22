@@ -687,6 +687,8 @@ namespace KerbalConstructionTime
         {
             String textureReturn;
 
+            if (KCT_SpecialSurpriseInside.instance.activated)
+                return "KerbalConstructionTime/Icons/jebcoin_32";
             if (!KCT_GameStates.settings.enabledForSave)
                 return "KerbalConstructionTime/Icons/KCT_off";
 

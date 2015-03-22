@@ -197,6 +197,7 @@ namespace KerbalConstructionTime
                 
             if (ApplicationLauncher.Ready && (KCTButtonStock == null || !ApplicationLauncher.Instance.Contains(KCTButtonStock, out vis))) //Add Stock button
             {
+                string texturePath = KCT_SpecialSurpriseInside.instance.activated ? "KerbalConstructionTime/Icons/jebcoin_32" : "KerbalConstructionTime/Icons/KCT_on";
                 KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
                         KCT_GUI.onClick,
                         KCT_GUI.onClick,
@@ -205,7 +206,7 @@ namespace KerbalConstructionTime
                         DummyVoid,
                         DummyVoid,
                         ApplicationLauncher.AppScenes.ALWAYS,
-                        GameDatabase.Instance.GetTexture("KerbalConstructionTime/Icons/KCT_on", false));
+                        GameDatabase.Instance.GetTexture(texturePath, false));
 
                 //ApplicationLauncher.Instance.EnableMutuallyExclusive(KCTButtonStock);
             }
@@ -269,6 +270,7 @@ namespace KerbalConstructionTime
 
         public void gameSceneEvent(GameScenes scene)
         {
+            KCT_SpecialSurpriseInside.instance.sceneChanges++;
             if (!KCT_GameStates.settings.enabledForSave) return;
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
             if (validScenes.Contains(scene))
