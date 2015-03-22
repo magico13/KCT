@@ -271,6 +271,7 @@ namespace KerbalConstructionTime
         {
             activated = false;
             KCT_GameStates.settings.DisableSpecialSurprise = true;
+            KCT_GameStates.settings.Save();
         }
     }
 
