@@ -263,6 +263,7 @@ namespace KerbalConstructionTime
                 double effectiveCost = 0;
                 //double cost = ShipConstruction.GetPartCosts(p.protoPartSnapshot, p.partInfo, out dC, out wC);
                 double cost = GetPartCosts(p);
+                double dryCost = GetPartCosts(p, false);
                 
                 double drymass = p.mass;
                 double wetmass = p.GetResourceMass() + drymass;
@@ -271,8 +272,8 @@ namespace KerbalConstructionTime
                     name += GetTweakScaleSize(p);
                     double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
-                    //C=cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
-                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"M",wetmass.ToString()},
+                    //C=cost, c=dry cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetmass.ToString()},
                     {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
 
                     if (InvEff != 0)
@@ -284,15 +285,15 @@ namespace KerbalConstructionTime
                 }
                 else //Procedural parts get handled differently
                 {
-                    double costRemaining = cost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
+                    double costRemaining = dryCost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
                     costRemaining = Math.Max(costRemaining, 0);
-                    double costRemoved = cost - costRemaining;
-                    //C=cost, A=cost covered by inv, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
+                    double costRemoved = dryCost - costRemaining;
+                    //C=cost, c=dry cost, A=cost covered by inv, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
 
                     double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
 
-                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"M",wetmass.ToString()},
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetmass.ToString()},
                     {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
 
                     if (InvEff != 0)
@@ -323,6 +324,7 @@ namespace KerbalConstructionTime
                 String name = PartNameFromNode(p);
                 double effectiveCost = 0;
                 double cost = GetPartCostFromNode(p);
+                double dryCost = GetPartCostFromNode(p, false);
                 //double wetmass = GetPartMassFromNode(p, true);
                 //double drymass = GetPartMassFromNode(p, false);
                 float dryMass, fuelMass;
@@ -333,8 +335,8 @@ namespace KerbalConstructionTime
                     name += GetTweakScaleSize(p);
                     double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
-                    //C=cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
-                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"M",wetMass.ToString()},
+                    //C=cost, c=dry cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetMass.ToString()},
                     {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
 
                     if (InvEff != 0)
@@ -366,15 +368,15 @@ namespace KerbalConstructionTime
                 else //Procedural parts get handled differently
                 {
                    // name = PartNameFromNode(p);
-                    double costRemaining = cost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
+                    double costRemaining = dryCost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
                     costRemaining = Math.Max(costRemaining, 0);
-                    double costRemoved = cost - costRemaining;
-                    //C=cost, A=cost covered by inv, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
+                    double costRemoved = dryCost - costRemaining;
+                    //C=cost, c=dry cost, A=cost covered by inv, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
 
                     double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
 
-                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"M",wetMass.ToString()},
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetMass.ToString()},
                     {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
 
                     if (InvEff != 0)
@@ -428,12 +430,16 @@ namespace KerbalConstructionTime
         {
             double cost = 0;
             cost = part.partInfo.cost + part.GetModuleCosts(part.partInfo.cost);
-            if (!includeFuel)
+            foreach (PartResource rsc in part.Resources)
             {
-                foreach (PartResource rsc in part.Resources)
+                PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.resourceName);
+                if (!includeFuel)
                 {
-                    PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.resourceName);
-                    cost -= rsc.amount * def.unitCost;
+                    cost -= rsc.maxAmount * def.unitCost;
+                }
+                else //accounts for if you remove some fuel from a tank
+                {
+                    cost -= (rsc.maxAmount - rsc.amount) * def.unitCost;
                 }
             }
             return cost;

@@ -112,7 +112,7 @@ namespace KerbalConstructionTime
                     int subStart = input.IndexOf('(', i)+1;
                     string function = input.Substring(i, subStart - i - 1);
                     //KCTDebug.Log(function);
-                    int[] parenComma = FindEndParenthesis(input, subStart);
+                    int[] parenComma = FindEndParenthesis(input, subStart-1);
                     int j = parenComma[0];
                     int comma = parenComma[1];
                     string sub = input.Substring(subStart, j - subStart);
