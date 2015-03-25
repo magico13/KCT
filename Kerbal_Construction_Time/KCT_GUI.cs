@@ -420,7 +420,14 @@ namespace KerbalConstructionTime
                     {
                         rateIndexHolder = (rateIndexHolder + 1) % rates.Count;
                         bR = rates[rateIndexHolder];
-                        buildRateForDisplay = bR.ToString();
+                        if (bR > 0)
+                            buildRateForDisplay = bR.ToString();
+                        else
+                        {
+                            rateIndexHolder = (rateIndexHolder + 1) % rates.Count;
+                            bR = rates[rateIndexHolder];
+                            buildRateForDisplay = bR.ToString();
+                        }
                     }
                     GUILayout.EndHorizontal();
                     GUILayout.Label(KCT_Utilities.GetFormattedTime(buildTime / bR));
