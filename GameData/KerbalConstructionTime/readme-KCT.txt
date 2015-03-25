@@ -19,15 +19,15 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
-v1.1.5.0 (3/X/15)
+v1.1.5.0 (3/24/15)
 New Features:
  - The Most Requested Feature: Recovering directly to storage. Be warned that it likely has bugs, especially with mod parts. Requires manual refuelling of ships.
  - KSC Upgrades now have time requirements associated with them.
- - Several new formulae have been exposed for editing, including the entire BP calculation formula. KCT_Formulas.cfg must be deleted for this update.
+ - Several new formulae have been exposed for editing, including the entire BP calculation formula.
  - Rush builds 10% by spending 20% of the total vessel cost.
 Interface Changes:
  - Moved buttons in the build list to before the vessel name
- - You can CTRL+Click the arrow buttons to move a vessel to top/bottom of the list
+ - You can Alt+Click the arrow buttons to move a vessel to top/bottom of the list
  - Lines in storage are colored according to their current status
  - Vessels that are rolled out can be launched from the Editor (should save a scene change for KK users)
  - Crew Select GUI now displays Kerbal class and level
@@ -45,7 +45,8 @@ Bug Fixes:
  - Fix for Real Fuels boiling off during construction
 Miscellaneous:
  - "icons" folder renamed to "Icons"
- - Added min(x,y), max(x,y), l(x), and L(x) functions to math parser (l=natural log, L=log base 10)
+ - Added min(x,y), max(x,y), sign(x), abs(x), l(x), and L(x) functions to math parser (l=natural log, L=log base 10)
+ - Removed Herobrine
 
 v1.1.2.0 (12/26/14)
  - Fixed issue when toolbar mod is used instead of Stock AppLauncher
