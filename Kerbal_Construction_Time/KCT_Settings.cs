@@ -20,6 +20,7 @@ namespace KerbalConstructionTime
         [Persistent] public float RecoveryModifierDefault;
         [Persistent] public bool NoCostSimulationsDefault;
         [Persistent] public bool InstantTechUnlockDefault;
+        [Persistent] public bool InstantKSCUpgradeDefault;
         [Persistent] public bool DisableBuildTimeDefault;
         [Persistent] public bool EnableAllBodiesDefault;
         [Persistent] public bool ReconditioningDefault;
@@ -27,12 +28,18 @@ namespace KerbalConstructionTime
         [Persistent] public bool OverrideLaunchButton;
         [Persistent] public bool PreferBlizzyToolbar;
         [Persistent] public bool AllowParachuteRecovery;
+        [Persistent] public bool NoSimGUI;
+        [Persistent] public bool DisableSpecialSurprise;
+
+        [Persistent] public bool RandomizeCrew;
+        [Persistent] public bool AutoHireCrew;
 
         //Game specific settings
         public bool enabledForSave = true;
         public float RecoveryModifier;
         public bool NoCostSimulations;
         public bool InstantTechUnlock;
+        public bool InstantKSCUpgrades;
         public bool DisableBuildTime;
         public bool EnableAllBodies;
         public bool Reconditioning;
@@ -60,10 +67,13 @@ namespace KerbalConstructionTime
             AutoKACAlarams = true;
             PreferBlizzyToolbar = false;
             AllowParachuteRecovery = true;
+            NoSimGUI = false;
+            DisableSpecialSurprise = false;
 
             RecoveryModifierDefault = 0.75f;
             NoCostSimulationsDefault = false;
             InstantTechUnlockDefault = false;
+            InstantKSCUpgradeDefault = false;
             DisableBuildTimeDefault = false;
             EnableAllBodiesDefault = false;
             ReconditioningDefault = true;
@@ -87,10 +97,14 @@ namespace KerbalConstructionTime
                     RecoveryModifier = RecoveryModifierDefault;
                     NoCostSimulations = NoCostSimulationsDefault;
                     InstantTechUnlock = InstantTechUnlockDefault;
+                    InstantKSCUpgrades = InstantKSCUpgradeDefault;
                     DisableBuildTime = DisableBuildTimeDefault;
                     EnableAllBodies = EnableAllBodiesDefault;
                     Reconditioning = ReconditioningDefault;
                 }
+
+                KCT_GUI.autoHire = AutoHireCrew;
+                KCT_GUI.randomCrew = RandomizeCrew;
             }
         }
 
@@ -142,16 +156,25 @@ namespace KerbalConstructionTime
     public class KCT_FormulaSettings
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Formulas.cfg";
-        [Persistent] public string NodeFormula, UpgradeFundsFormula, UpgradeScienceFormula;
-        [Persistent] public string NodeMax, UpgradeFundsMax, UpgradeScienceMax;
+        [Persistent] public string NodeFormula, UpgradeFundsFormula, UpgradeScienceFormula, ResearchFormula, EffectivePartFormula, ProceduralPartFormula, BPFormula,
+            KSCUpgradeFormula, ReconditioningFormula, BuildRateFormula;
+       // [Persistent] public string NodeMax, UpgradeFundsMax, UpgradeScienceMax;
         public KCT_FormulaSettings()
         {
             NodeFormula = "2^([N]+1) / 86400"; //Rate = 2^(N+1)/86400 BP/s
-            NodeMax = "0";
-            UpgradeFundsFormula = "2^([N]+4) * 1000";
-            UpgradeFundsMax = "1024000";
-            UpgradeScienceFormula = "2^([N]+2) * 1.0";
-            UpgradeScienceMax = "512";
+        //    NodeMax = "0";
+            UpgradeFundsFormula = "min(2^([N]+4) * 1000, 1024000)";
+        //    UpgradeFundsMax = "1024000";
+            UpgradeScienceFormula = "min(2^([N]+2) * 1.0, 512)";
+       //     UpgradeScienceMax = "512";
+            ResearchFormula = "[N]*0.5/86400";
+            EffectivePartFormula = "min([C]/([I] + ([B]*([U]+1))), [C])";
+            ProceduralPartFormula = "(([C]-[A]) + ([A]*10/max([I],1))) / max([B]*([U]+1),1)";
+            BPFormula = "([E]^(1/2))*2000*[O]";
+            KSCUpgradeFormula = "([C]^(1/2))*2000*[O]";
+            ReconditioningFormula = "min([M]*[O]*[E], [X])";
+            BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)"; //N = num upgrades, I = rate index, L = VAB/SPH upgrade level, R = R&D level
+                //lvl0->2 rates, lvl1->4 rates, lvl2->6 rates
         }
 
         public void Load()

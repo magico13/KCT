@@ -67,6 +67,9 @@ namespace KerbalConstructionTime
         public static List<String> BodiesVisited = new List<string> {"Kerbin"};
         public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;
 
+        public static KCT_OnLoadError erroredDuringOnLoad = new KCT_OnLoadError();
+
+
         public static void reset()
         {
             //firstStart = true;
@@ -84,7 +87,12 @@ namespace KerbalConstructionTime
             PurchasedUpgrades = new List<int>() { 0, 0 };
            // LaunchPadReconditioning = null;
             targetedItem = null;
-
+            KCT_GUI.fundsCost = -13;
+            KCT_GUI.sciCost = -13;
+            KCT_GUI.nodeRate = -13;
+            KCT_GUI.upNodeRate = -13;
+            KCT_GUI.researchRate = -13;
+            KCT_GUI.upResearchRate = -13;
             //ActiveKSC = new KCT_KSC("Stock");
             //KSCs = new List<KCT_KSC>() {ActiveKSC};
 

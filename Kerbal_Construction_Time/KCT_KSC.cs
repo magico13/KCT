@@ -12,11 +12,14 @@ namespace KerbalConstructionTime
         public List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
         public List<KCT_BuildListVessel> SPHWarehouse = new List<KCT_BuildListVessel>();
+        public List<KCT_UpgradingBuilding> KSCTech = new List<KCT_UpgradingBuilding>();
         //public List<KCT_TechItem> TechList = new List<KCT_TechItem>();
         public List<int> VABUpgrades = new List<int>() { 0 };
         public List<int> SPHUpgrades = new List<int>() { 0 };
         public List<int> RDUpgrades = new List<int>() { 0, 0 };
         public List<KCT_Recon_Rollout> Recon_Rollout = new List<KCT_Recon_Rollout>();
+        public List<double> VABRates = new List<double>(), SPHRates = new List<double>();
+        public List<double> UpVABRates = new List<double>(), UpSPHRates = new List<double>();
 
         public KCT_KSC(string name)
         {
@@ -37,6 +40,53 @@ namespace KerbalConstructionTime
             return Recon_Rollout.FirstOrDefault(r => r.RRType == type);
         }
 
+        public void RecalculateBuildRates()
+        {
+            VABRates.Clear();
+            SPHRates.Clear();
+            double rate = 0.1;
+            int index = 0;
+            while (rate > 0)
+            {
+                rate = KCT_MathParsing.ParseBuildRateFormula(KCT_BuildListVessel.ListType.VAB, index, this);
+                if (rate >= 0)
+                    VABRates.Add(rate);
+                index++;
+            }
+            rate = 0.1;
+            index = 0;
+            while (rate > 0)
+            {
+                rate = KCT_MathParsing.ParseBuildRateFormula(KCT_BuildListVessel.ListType.SPH, index, this);
+                if (rate >= 0)
+                    SPHRates.Add(rate);
+                index++;
+            }
+        }
+
+        public void RecalculateUpgradedBuildRates()
+        {
+            UpVABRates.Clear();
+            UpSPHRates.Clear();
+            double rate = 0.1;
+            int index = 0;
+            while (rate > 0)
+            {
+                rate = KCT_MathParsing.ParseBuildRateFormula(KCT_BuildListVessel.ListType.VAB, index, this, true);
+                if (rate >= 0)
+                    UpVABRates.Add(rate);
+                index++;
+            }
+            rate = 0.1;
+            index = 0;
+            while (rate > 0)
+            {
+                rate = KCT_MathParsing.ParseBuildRateFormula(KCT_BuildListVessel.ListType.SPH, index, this, true);
+                if (rate >= 0)
+                    UpSPHRates.Add(rate);
+                index++;
+            }
+        }
 
         public ConfigNode AsConfigNode()
         {
@@ -121,6 +171,15 @@ namespace KerbalConstructionTime
             }
             node.AddNode(sphwh);
 
+            ConfigNode upgradeables = new ConfigNode("KSCTech");
+            foreach (KCT_UpgradingBuilding buildingTech in KSCTech)
+            {
+                ConfigNode bT = new ConfigNode("UpgradingBuilding");
+                bT = ConfigNode.CreateConfigFromObject(buildingTech, bT);
+                upgradeables.AddNode(bT);
+            }
+            node.AddNode(upgradeables);
+
             /*ConfigNode tech = new ConfigNode("TechList");
             foreach (KCT_TechItem techItem in TechList)
             {
@@ -155,6 +214,7 @@ namespace KerbalConstructionTime
             VABWarehouse.Clear();
             SPHList.Clear();
             SPHWarehouse.Clear();
+            KSCTech.Clear();
             //TechList.Clear();
             Recon_Rollout.Clear();
 
@@ -232,6 +292,17 @@ namespace KerbalConstructionTime
                 KCT_Recon_Rollout tempRR = new KCT_Recon_Rollout();
                 ConfigNode.LoadObjectFromConfig(tempRR, RRCN);
                 Recon_Rollout.Add(tempRR);
+            }
+
+            if (node.HasNode("KSCTech"))
+            {
+                tmp = node.GetNode("KSCTech");
+                foreach (ConfigNode upBuild in tmp.GetNodes("UpgradingBuilding"))
+                {
+                    KCT_UpgradingBuilding tempUP = new KCT_UpgradingBuilding();
+                    ConfigNode.LoadObjectFromConfig(tempUP, upBuild);
+                    KSCTech.Add(tempUP);
+                }
             }
 
             return this;

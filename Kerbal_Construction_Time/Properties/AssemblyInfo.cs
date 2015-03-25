@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Kerbal_Construction_Time")]
-[assembly: AssemblyCopyright("Copyright ©  2014, Michael Marvin")]
+[assembly: AssemblyCopyright("Copyright ©  2015, Michael Marvin")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

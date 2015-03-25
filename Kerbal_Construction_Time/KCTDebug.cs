@@ -21,6 +21,53 @@ namespace KerbalConstructionTime
             }
         }
     }
+
+    public class KCT_OnLoadError
+    {
+        public bool OnLoadCalled, OnLoadFinished, AlertFired;
+        private int timeout = 100, timer = 0;
+
+        public bool HasErrored()
+        {
+            if (timer >= timeout)
+            {
+                return (OnLoadCalled && !OnLoadFinished);
+            }
+            else if (timer >= 0)
+            {
+                timer++;
+            }
+            return false;
+        }
+
+        public void OnLoadStart()
+        {
+            KCTDebug.Log("OnLoad Started");
+            OnLoadCalled = true;
+            OnLoadFinished = false;
+            timer = 0;
+            AlertFired = false;
+        }
+
+        public void OnLoadFinish()
+        {
+            OnLoadCalled = false;
+            OnLoadFinished = true;
+            timer = -1;
+            KCTDebug.Log("OnLoad Completed");
+        }
+
+        public void FireAlert()
+        {
+            if (!AlertFired)
+            {
+                AlertFired = true;
+                Debug.LogError("[KCT] ERROR! An error while KCT loading data occurred. Things will be seriously broken!");
+                //Display error to user
+                PopupDialog.SpawnPopupDialog("Error Loading KCT Data", "ERROR! An error occurred while loading KCT data. Things will be seriously broken! Please report this error to the KCT forum thread and attach the log file. The game will be UNPLAYABLE in this state!", "Understood", false, HighLogic.Skin);
+            }
+        }
+    }
 }
 /*
 Copyright (C) 2014  Michael Marvin, Zachary Eck

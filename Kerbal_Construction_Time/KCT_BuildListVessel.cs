@@ -13,7 +13,7 @@ namespace KerbalConstructionTime
         public double progress, buildPoints;
         public String launchSite, flag, shipName;
         public ListType type;
-        public enum ListType { VAB, SPH, TechNode, Reconditioning };
+        public enum ListType { VAB, SPH, TechNode, Reconditioning, KSC };
         //public List<string> InventoryParts;
         public Dictionary<string, int> InventoryParts;
         public ConfigNode shipNode;
@@ -106,46 +106,23 @@ namespace KerbalConstructionTime
 
         //private ProtoVessel recovered;
 
-        public KCT_BuildListVessel(ProtoVessel vessel) //For recovered vessels
+        public KCT_BuildListVessel(Vessel vessel) //For recovered vessels
         {
            /* if (KCT_GameStates.recoveryRequestVessel == null)
             {
                 KCTDebug.Log("Somehow tried to recover something that was null!");
                 return;
             }*/
+            
+
             id = Guid.NewGuid();
             shipName = vessel.vesselName;
-            //shipNode = KCT_Utilities.ProtoVesselToCraftFile(vessel);
-            string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/tmp.craft";
-           // KCT_GameStates.recoveryRequestVessel.SaveShip(tempFile);
-            shipNode = ConfigNode.Load(tempFile);
-            //recovered = vessel;
+            shipNode = FromInFlightVessel(vessel);
 
-            ConfigNode[] parts = shipNode.GetNodes("PART");
-            ConfigNode tmp = new ConfigNode("ShipNode");
-            vessel.Save(tmp);
-
-           // string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/protovessel.craft";
-           // tmp.Save(tempFile);
-            ConfigNode[] parts2 = tmp.GetNodes("PART");
-            for (int i = 0; i < parts.Length; i++)
-            {
-                parts[i].SetValue("rot", parts2[i].GetValue("rotation"));
-                parts[i].SetValue("pos", parts2[i].GetValue("position"));
-                //parts[i].SetValue("attRot", parts2[i].GetValue("position"));
-            }
-
-            SanitizeShipNode(shipNode);
-            
-            
-           /* List<Part> shipParts = ShipAssembly.rebuildShip(KCT_GameStates.recoveryRequestVessel);
-            ship = new ShipConstruct(shipName, 0, shipParts);
-            shipNode = ship.SaveShip();*/
-
-            cost = KCT_Utilities.GetTotalVesselCost(vessel);
+            cost = KCT_Utilities.GetTotalVesselCost(shipNode);
             TotalMass = 0;
             InventoryParts = new Dictionary<string, int>();
-            foreach (ProtoPartSnapshot p in vessel.protoPartSnapshots)
+            foreach (ProtoPartSnapshot p in vessel.protoVessel.protoPartSnapshots)
             {
                 //InventoryParts.Add(p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p));
                 string name = p.partInfo.name;
@@ -179,73 +156,176 @@ namespace KerbalConstructionTime
             DistanceFromKSC = (float)SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(vessel.latitude, vessel.longitude));
         }
 
-        public void UpdateShipType(ListType newType)
+        private ConfigNode FromInFlightVessel(Vessel VesselToSave)
         {
-            this.type = newType;
-            shipNode.SetValue("type", type == ListType.VAB ? "VAB" : "SPH");
-            launchSite = type == ListType.VAB ? "LaunchPad" : "Runway";
+            //This code is taken from InflightShipSave by Claw, using the CC-BY-NC-SA license.
+            //This code thus is licensed under the same license, despite the GPLv3 license covering original KCT code
+            //See https://github.com/ClawKSP/InflightShipSave
 
-           /* if (type == ListType.SPH)
-            {
-                foreach (ConfigNode part in shipNode.GetNodes("PART"))
-                {
-                    string[] rot = part.GetValue("rot").Split(',');
-                    string newRot = (float.Parse(rot[0]) + 0.7071068) + "," + rot[1] + "," + rot[2] + "," + (float.Parse(rot[3]) - (1-0.7071068));
-                    part.SetValue("rot", newRot);
+            string ShipName = VesselToSave.vesselName;
+           // Debug.LogWarning("Saving: " + ShipName);
 
-                    string[] pos = part.GetValue("pos").Split(',');
-                    string newPos = pos[0] + ",0," + (pos[1]);
-                    part.SetValue("pos", newPos);
-                }
-            }*/
+            ShipConstruct ConstructToSave = new ShipConstruct(ShipName, "", VesselToSave.parts[0]);
+
+            Quaternion OriginalRotation = VesselToSave.vesselTransform.rotation;
+            Vector3 OriginalPosition = VesselToSave.vesselTransform.position;
+
+            VesselToSave.SetRotation(new Quaternion(0, 0, 0, 1));
+            Vector3 ShipSize = ShipConstruction.CalculateCraftSize(ConstructToSave);
+            VesselToSave.SetPosition(new Vector3(0, ShipSize.y + 2, 0));
+
+            ConfigNode CN = new ConfigNode("ShipConstruct");
+            CN = ConstructToSave.SaveShip();
+            SanitizeShipNode(CN);
+
+            VesselToSave.SetRotation(OriginalRotation);
+            VesselToSave.SetPosition(OriginalPosition);
+            //End of Claw's code. Thanks Claw!
+            return CN;
         }
 
         private ConfigNode SanitizeShipNode(ConfigNode node)
         {
             //PART, MODULE -> clean experiments, repack chutes, disable engines
+            String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_ModuleTemplates.cfg";
+            if (!File.Exists(filePath))
+            {
+                CreateInitialTemplates();
+            }
+            ConfigNode ModuleTemplates = ConfigNode.Load(filePath);
+            ConfigNode[] templates = ModuleTemplates.GetNodes("MODULE");
             foreach(ConfigNode part in node.GetNodes("PART"))
             {
                 foreach(ConfigNode module in part.GetNodes("MODULE"))
                 {
-                    string name = module.GetValue("name");
-                    if (name == "ModuleEngines")
-                    {
-                        module.SetValue("staged", "False");
-                        module.SetValue("flameout", "False");
-                        module.SetValue("EngineIgnited", "False");
-                        module.SetValue("engineShutdown", "False");
-                        module.SetValue("currentThrottle", "0");
-                        module.SetValue("manuallyOverridden", "False");
-                    }
-                    else if (name == "ModuleEnginesFX")
-                    {
-                        module.SetValue("staged", "False");
-                        module.SetValue("flameout", "False");
-                        module.SetValue("EngineIgnited", "False");
-                        module.SetValue("engineShutdown", "False");
-                        module.SetValue("currentThrottle", "0");
-                        module.SetValue("manuallyOverridden", "False");
-                    }
-                    else if (name == "ModuleScienceExperiment")
-                    {
-                        module.SetValue("Deployed", "False");
-                        module.SetValue("Inoperable", "False");
-                        module.RemoveNodes("ScienceData");
-                    }
-                    else if (name == "ModuleScienceContainer")
-                    {
-                        module.RemoveNodes("ScienceData");
-                    }
-                    else if (name == "ModuleParachute")
-                    {
-                        module.SetValue("staged", "False");
-                        module.SetValue("persistentState", "STOWED");
-                    }
+                    SanitizeNode(module, templates);
+                }
+            }
+            return node;
+        }
+
+        private void SanitizeNode(ConfigNode module, ConfigNode[] templates)
+        {
+            string name = module.GetValue("name");
+
+            if (module.HasNode("ScienceData"))
+            {
+                module.RemoveNodes("ScienceData");
+            }
+            if (name == "Log")
+                module.ClearValues();
+
+            ConfigNode template = templates.FirstOrDefault(t => t.GetValue("name") == name);
+            if (template == null) return;
+            ConfigNode.ValueList values = template.values;
+            foreach (ConfigNode.Value val in values)
+            {
+                module.SetValue(val.name, val.value);
+            }
+
+            foreach (ConfigNode node in template.GetNodes()) //This should account for nested nodes, like RealChutes' PARACHUTE node
+            {
+                if (module.HasNode(node.name))
+                {
+                    foreach (ConfigNode.Value val in node.values)
+                        module.GetNode(node.name).SetValue(val.name, val.value);
                 }
             }
 
+            foreach (ConfigNode node in module.GetNodes("MODULE"))
+                SanitizeNode(node, templates);
 
-            return node;
+            
+            /*
+            if (name.Contains("ModuleEngines"))
+            {
+                module.SetValue("staged", "False");
+                module.SetValue("flameout", "False");
+                module.SetValue("EngineIgnited", "False");
+                module.SetValue("engineShutdown", "False");
+                module.SetValue("currentThrottle", "0");
+                module.SetValue("manuallyOverridden", "False");
+            }
+            else if (name == "ModuleScienceExperiment")
+            {
+                module.SetValue("Deployed", "False");
+                module.SetValue("Inoperable", "False");
+            }
+            else if (name == "ModuleParachute")
+            {
+                module.SetValue("staged", "False");
+                module.SetValue("persistentState", "STOWED");
+            }
+            else if (name == "Log")
+            {
+                module.ClearValues();
+            }
+
+            if (module.HasNode("ScienceData"))
+            {
+                module.RemoveNodes("ScienceData");
+            }
+            */
+            
+        }
+
+        private void CreateInitialTemplates()
+        {
+            ConfigNode templates = new ConfigNode("KCT_ModuleTemplates");
+            ConfigNode module;
+            
+            //ModuleEngines
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleEngines");
+            module.AddValue("staged", "False");
+            module.AddValue("flameout", "False");
+            module.AddValue("EngineIgnited", "False");
+            module.AddValue("engineShutdown", "False");
+            module.AddValue("currentThrottle", "0");
+            module.AddValue("manuallyOverridden", "False");
+            templates.AddNode(module);
+
+            //ModuleEnginesFX
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleEnginesFX");
+            module.AddValue("staged", "False");
+            module.AddValue("flameout", "False");
+            module.AddValue("EngineIgnited", "False");
+            module.AddValue("engineShutdown", "False");
+            module.AddValue("currentThrottle", "0");
+            module.AddValue("manuallyOverridden", "False");
+            templates.AddNode(module);
+
+            //ModuleScienceExperiment
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleScienceExperiment");
+            module.AddValue("Deployed", "False");
+            module.AddValue("Inoperable", "False");
+            templates.AddNode(module);
+
+            //ModuleParachute
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleParachute");
+            module.AddValue("staged", "False");
+            module.AddValue("persistentState", "STOWED");
+            templates.AddNode(module);
+
+            //RealChuteModule
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "RealChuteModule");
+            module.AddValue("armed", "False");
+            module.AddValue("staged", "False");
+            module.AddValue("launched", "False");
+            module.AddValue("oneWasDeployed", "False");
+            ConfigNode PARACHUTE = new ConfigNode("PARACHUTE");
+            PARACHUTE.AddValue("capOff", "False");
+            PARACHUTE.AddValue("time", "0");
+            PARACHUTE.AddValue("depState", "STOWED");
+            module.AddNode(PARACHUTE);
+            templates.AddNode(module);
+
+
+            templates.Save(KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_ModuleTemplates.cfg");
         }
 
         public KCT_BuildListVessel NewCopy(bool RecalcTime)
@@ -286,7 +366,7 @@ namespace KerbalConstructionTime
 
         private void UpdateRFTanks()
         {
-            foreach (ConfigNode cn in ExtractedPartNodes)
+            foreach (ConfigNode cn in shipNode.GetNodes("PART"))
             {
                 foreach (ConfigNode module in cn.GetNodes("MODULE"))
                 {
@@ -309,28 +389,16 @@ namespace KerbalConstructionTime
             double mass = 0;
             foreach (ConfigNode p in this.ExtractedPartNodes)
             {
-                float massTmp;
-                if (float.TryParse(p.GetValue("mass"), out massTmp))
-                {
-                    mass += massTmp;
-                    //mass += p.GetResourceMass();
-                    foreach (ConfigNode rsc in p.GetNodes("RESOURCE"))
-                    {
-                        PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.GetValue("name"));
-                        mass += def.density * float.Parse(rsc.GetValue("amount"));
-                    }
-                }
-                else
-                {
-                    AvailablePart part = KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(p));
-                    if (part != null)
-                    {
-                        mass += part.partPrefab.mass;
-                        mass += part.partPrefab.GetResourceMass();
-                    }
-                }
+                float n1, n2;
+                mass += ShipConstruction.GetPartTotalMass(p, KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(p)), out n1, out n2);
             }
             return mass;
+        }
+
+        public double GetTotalCost()
+        {
+            if (cost != 0) return cost;
+            return KCT_Utilities.GetTotalVesselCost(shipNode);
         }
 
         public bool RemoveFromBuildList()

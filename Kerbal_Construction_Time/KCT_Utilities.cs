@@ -72,6 +72,41 @@ namespace KerbalConstructionTime
             }
         }
 
+        public static double ParseColonFormattedTime(string timeString, bool toUT=true)
+        {
+            double time = 0;
+            string[] parts = timeString.Split(':');
+            int len = parts.Length;
+            double sPerDay = GameSettings.KERBIN_TIME ? 6 * 3600 : 24 * 3600;
+            double sPerYear = GameSettings.KERBIN_TIME ? 426 * sPerDay : 365 * sPerDay;
+            try
+            {
+                time = double.Parse(parts[len - 1]);
+                if (len > 1)
+                    time += 60 * double.Parse(parts[len - 2]); //minutes
+                if (len > 2)
+                    time += 3600 * double.Parse(parts[len - 3]); //hours
+                if (len > 3)
+                { 
+                    time += sPerDay * double.Parse(parts[len - 4]); //days
+                    if (toUT)
+                        time -= sPerDay;
+                }
+                if (len > 4)
+                {
+                    time += sPerYear * double.Parse(parts[len - 5]); //years
+                    if (toUT)
+                        time -= sPerYear;
+                }
+            }
+            catch
+            {
+                KCTDebug.Log("Error parsing time string.");
+                time = -1;
+            }
+            return time;
+        }
+
         public static Dictionary<String, int> PartListToDict(List<String> list)
         {
             Dictionary<String, int> newInv = new Dictionary<String, int>();
@@ -133,12 +168,13 @@ namespace KerbalConstructionTime
 
         public static AvailablePart GetAvailablePartByName(string partName)
         {
-            foreach (AvailablePart a in PartLoader.LoadedPartsList)
+            /*foreach (AvailablePart a in PartLoader.LoadedPartsList)
             {
                 if (a.name == partName)
                     return a;
             }
-            return null;
+            return null;*/
+            return PartLoader.getPartInfoByName(partName);
         }
 
        /* public static double GetBuildTime(List<string> partNames, bool useTracker, bool useInventory)
@@ -158,14 +194,14 @@ namespace KerbalConstructionTime
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, List<String> inventory)
         {
-            List<ConfigNode> aParts = new List<ConfigNode>();
+           /* List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
             {
                 ConfigNode partNode = new ConfigNode();
                 p.protoPartSnapshot.Save(partNode);
                 aParts.Add(partNode);
-            }
-            return GetBuildTime(aParts, useTracker, PartListToDict(inventory));
+            }*/
+            return GetBuildTime(parts, useTracker, PartListToDict(inventory));
         }
 
         /*public static double GetBuildTime(List<String> parts, bool useTracker, List<String> inventory)
@@ -183,38 +219,96 @@ namespace KerbalConstructionTime
 
         public static double GetBuildTime(List<Part> parts)
         {
-            List<ConfigNode> aParts = new List<ConfigNode>();
+            /*List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
             {
                 ConfigNode partNode = new ConfigNode();
                 p.protoPartSnapshot.Save(partNode);
                 aParts.Add(partNode);
             }
-            return GetBuildTime(aParts, true, true);
+            return GetBuildTime(aParts, true, true);*/
+            return GetBuildTime(parts, true, true);
         }
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, bool useInventory)
         {
-            List<ConfigNode> aParts = new List<ConfigNode>();
+            /*List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
             {
                 ConfigNode partNode = new ConfigNode();
                 p.protoPartSnapshot.Save(partNode);
                 aParts.Add(partNode);
             }
-            return GetBuildTime(aParts, useTracker, useInventory);
+            return GetBuildTime(aParts, useTracker, useInventory);*/
+            return GetBuildTime(parts, useTracker, useInventory?KCT_GameStates.PartInventory:new Dictionary<string, int>());
         }
 
         public static double GetBuildTime(List<Part> parts, bool useTracker, Dictionary<String, int> inventory)
         {
-            List<ConfigNode> aParts = new List<ConfigNode>();
+           /* List<ConfigNode> aParts = new List<ConfigNode>();
             foreach (Part p in parts)
             {
                 ConfigNode partNode = new ConfigNode();
                 p.protoPartSnapshot.Save(partNode);
                 aParts.Add(partNode);
             }
-            return GetBuildTime(aParts, useTracker, inventory);
+            return GetBuildTime(aParts, useTracker, inventory);*/
+
+            //Let's make this one actually work as well.
+            Dictionary<String, int> invCopy = new Dictionary<string, int>(inventory);
+            double totalEffectiveCost = 0;
+            foreach (Part p in parts)
+            {
+                String name = p.partInfo.name;
+                double effectiveCost = 0;
+                //double cost = ShipConstruction.GetPartCosts(p.protoPartSnapshot, p.partInfo, out dC, out wC);
+                double cost = GetPartCosts(p);
+                double dryCost = GetPartCosts(p, false);
+                
+                double drymass = p.mass;
+                double wetmass = p.GetResourceMass() + drymass;
+                if (!KCT_Utilities.PartIsProcedural(p))
+                {
+                    name += GetTweakScaleSize(p);
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
+                    //C=cost, c=dry cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetmass.ToString()},
+                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+
+                    if (InvEff != 0)
+                    {
+                        --invCopy[name];
+                        if (invCopy[name] == 0)
+                            invCopy.Remove(name);
+                    }
+                }
+                else //Procedural parts get handled differently
+                {
+                    double costRemaining = dryCost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
+                    costRemaining = Math.Max(costRemaining, 0);
+                    double costRemoved = dryCost - costRemaining;
+                    //C=cost, c=dry cost, A=cost covered by inv, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
+
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
+
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetmass.ToString()},
+                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+
+                    if (InvEff != 0)
+                    {
+                        invCopy[name] -= (int)(costRemoved * 1000);
+                        if (invCopy[name] == 0)
+                            invCopy.Remove(name);
+                    }
+                }
+
+                if (effectiveCost < 0) effectiveCost = 0;
+                totalEffectiveCost += effectiveCost;
+            }
+            double finalBP = KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string, string>() { { "E", totalEffectiveCost.ToString() }, { "O", KCT_GameStates.timeSettings.OverallMultiplier.ToString() } });
+            return finalBP;
         }
 
         public static double GetBuildTime(List<ConfigNode> parts, bool useTracker, Dictionary<String, int> inventory)
@@ -227,12 +321,31 @@ namespace KerbalConstructionTime
             double totalEffectiveCost = 0;
             foreach (ConfigNode p in parts)
             {
-                String name = PartNameFromNode(p) + GetTweakScaleSize(p);
+                String name = PartNameFromNode(p);
                 double effectiveCost = 0;
                 double cost = GetPartCostFromNode(p);
+                double dryCost = GetPartCostFromNode(p, false);
+                //double wetmass = GetPartMassFromNode(p, true);
+                //double drymass = GetPartMassFromNode(p, false);
+                float dryMass, fuelMass;
+                float wetMass = ShipConstruction.GetPartTotalMass(p, GetAvailablePartByName(name), out dryMass, out fuelMass);
+                    
                 if (!KCT_Utilities.PartIsProcedural(p))
                 {
-                    if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
+                    name += GetTweakScaleSize(p);
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
+                    //C=cost, c=dry cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetMass.ToString()},
+                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+
+                    if (InvEff != 0)
+                    {
+                        --invCopy[name];
+                        if (invCopy[name] == 0)
+                            invCopy.Remove(name);
+                    }
+                   /* if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
                     {
                         // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
                         if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
@@ -250,15 +363,30 @@ namespace KerbalConstructionTime
                     else // If the part has never been used, it takes the maximal time
                     {
                         effectiveCost = cost;
-                    }
+                    }*/
                 }
                 else //Procedural parts get handled differently
                 {
-                    name = PartNameFromNode(p);
-                    double costRemaining = cost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
+                   // name = PartNameFromNode(p);
+                    double costRemaining = dryCost - (invCopy.ContainsKey(name) ? (invCopy[name] / 1000f) : 0);
                     costRemaining = Math.Max(costRemaining, 0);
-                    double costRemoved = cost - costRemaining;
+                    double costRemoved = dryCost - costRemaining;
+                    //C=cost, c=dry cost, A=cost covered by inv, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
 
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
+
+                    effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetMass.ToString()},
+                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+
+                    if (InvEff != 0)
+                    {
+                        invCopy[name] -= (int)(costRemoved * 1000);
+                        if (invCopy[name] == 0)
+                            invCopy.Remove(name);
+                    }
+
+                    /*
                     if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0)
                     {
                         // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
@@ -277,14 +405,15 @@ namespace KerbalConstructionTime
                     else // If the part has never been used, it takes the maximal time
                     {
                         effectiveCost = cost;
-                    }
+                    }*/
                 }
 
                 if (effectiveCost < 0) effectiveCost = 0;
                 totalEffectiveCost += effectiveCost;
             }
-
-            return Math.Sqrt(totalEffectiveCost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
+            double finalBP = KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string,string>() { {"E", totalEffectiveCost.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}});
+            return finalBP;
+            //return Math.Sqrt(totalEffectiveCost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
         }
 
         public static string PartNameFromNode(ConfigNode part)
@@ -297,24 +426,58 @@ namespace KerbalConstructionTime
             return name;
         }
 
-        public static double GetBuildRate(int index, KCT_BuildListVessel.ListType type, KCT_KSC KSC)
+        public static double GetPartCosts(Part part, bool includeFuel = true)
+        {
+            double cost = 0;
+            cost = part.partInfo.cost + part.GetModuleCosts(part.partInfo.cost);
+            foreach (PartResource rsc in part.Resources)
+            {
+                PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.resourceName);
+                if (!includeFuel)
+                {
+                    cost -= rsc.maxAmount * def.unitCost;
+                }
+                else //accounts for if you remove some fuel from a tank
+                {
+                    cost -= (rsc.maxAmount - rsc.amount) * def.unitCost;
+                }
+            }
+            return cost;
+        }
+
+        
+        public static double GetBuildRate(int index, KCT_BuildListVessel.ListType type, KCT_KSC KSC, bool UpgradedRate = false)
         {
             if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
             double ret = 0;
             if (type == KCT_BuildListVessel.ListType.VAB)
             {
-                if (KSC.VABUpgrades.Count - 1 >= index)
+                if (!UpgradedRate && KSC.VABRates.Count > index)
                 {
-                    ret = KSC.VABUpgrades[index] * (index+1) * 0.05;
-                    if (index == 0) ret += 0.1;
+                    return KSC.VABRates[index];
+                }
+                else if (UpgradedRate && KSC.UpVABRates.Count > index)
+                {
+                    return KSC.UpVABRates[index];
+                }
+                else
+                {
+                    return 0;
                 }
             }
             else if (type == KCT_BuildListVessel.ListType.SPH)
             {
-                if (KSC.SPHUpgrades.Count - 1 >= index)
+                if (!UpgradedRate && KSC.SPHRates.Count > index)
                 {
-                    ret = KSC.SPHUpgrades[index] * (index+1) * 0.05;
-                    if (index == 0) ret += 0.1;
+                    return KSC.SPHRates[index];
+                }
+                else if (UpgradedRate && KSC.UpSPHRates.Count > index)
+                {
+                    return KSC.UpSPHRates[index];
+                }
+                else
+                {
+                    return 0;
                 }
             }
             else if (type == KCT_BuildListVessel.ListType.TechNode)
@@ -337,28 +500,13 @@ namespace KerbalConstructionTime
         public static List<double> BuildRatesVAB(KCT_KSC KSC)
         {
             if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
-            List<double> rates = new List<double>();
-            if (KSC.VABUpgrades.Count > 0)
-            {
-                for (int i = 0; i < KSC.VABUpgrades.Count; i++)
-                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, KSC));
-            }
-            else
-                rates.Add(0.1);
-            return rates;
+            return KSC.VABRates;
         }
 
-        public static List<double> BuildRatesSPH()
+        public static List<double> BuildRatesSPH(KCT_KSC KSC)
         {
-            List<double> rates = new List<double>();
-            if (KCT_GameStates.ActiveKSC.SPHUpgrades.Count > 0)
-            {
-                for (int i = 0; i < KCT_GameStates.ActiveKSC.SPHUpgrades.Count; i++)
-                    rates.Add(GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, null));
-            }
-            else
-                rates.Add(0.1);
-            return rates;
+            if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
+            return KSC.SPHRates;
         }
 
         private static double lastUT=0.0, UT;
@@ -399,6 +547,16 @@ namespace KerbalConstructionTime
                     }
 
                     ksc.Recon_Rollout.RemoveAll(rr => !KCT_GameStates.settings.Reconditioning || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));
+
+                    foreach (KCT_UpgradingBuilding kscTech in ksc.KSCTech)
+                    {
+                        kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
+                        if (kscTech.AsIKCTBuildItem().IsComplete() || KCT_GameStates.settings.InstantKSCUpgrades)
+                        {
+                            kscTech.Upgrade();
+                        }
+                    }
+                    ksc.KSCTech.RemoveAll(ub => ub.AsIKCTBuildItem().IsComplete());
 
                 }
                 for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
@@ -451,17 +609,49 @@ namespace KerbalConstructionTime
                 return dry;
         }
 
+        public static float GetPartMassFromNode(ConfigNode part, bool includeFuel = true)
+        {
+            float dry = 0, total = 0, wet = 0;
+           /* if (float.TryParse(part.GetValue("mass"), out dry))
+            {
+                //mass += p.GetResourceMass();
+                foreach (ConfigNode rsc in part.GetNodes("RESOURCE"))
+                {
+                    PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.GetValue("name"));
+                    wet = dry + def.density * float.Parse(rsc.GetValue("amount"));
+                }
+            }
+            else
+            {
+                AvailablePart p = KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(part));
+                if (part != null)
+                {
+                    dry = p.partPrefab.mass;
+                    wet = dry + p.partPrefab.GetResourceMass();
+                }
+            }*/
+
+            ShipConstruction.GetPartTotalMass(part, GetAvailablePartByName(PartNameFromNode(part)), out dry, out wet);
+            if (includeFuel)
+                return total;
+            else
+                return dry;
+        }
+
         public static string GetTweakScaleSize(ProtoPartSnapshot part)
         {
             string partSize = "";
-            ProtoPartModuleSnapshot tweakscale = part.modules.Find(mod => mod.moduleName == "TweakScale");
-            if (tweakscale != null)
+            if (part.modules != null)
             {
-                ConfigNode tsCN = tweakscale.moduleValues;
-                string defaultScale = tsCN.GetValue("defaultScale");
-                string currentScale = tsCN.GetValue("currentScale");
-                if (!defaultScale.Equals(currentScale))
-                    partSize = "," + currentScale;
+                ProtoPartModuleSnapshot tweakscale = part.modules.Find(mod => mod.moduleName == "TweakScale");
+                if (tweakscale != null)
+                {
+                    ConfigNode tsCN = tweakscale.moduleValues;
+                    string defaultScale = tsCN.GetValue("defaultScale");
+                    string currentScale = tsCN.GetValue("currentScale");
+                    if (!defaultScale.Equals(currentScale))
+                        partSize = "," + currentScale;
+                }
             }
             return partSize;
         }
@@ -484,26 +674,44 @@ namespace KerbalConstructionTime
             return partSize;
         }
 
+        public static string GetTweakScaleSize(Part part)
+        {
+            string partSize = "";
+            if (part.Modules != null && part.Modules.Contains("TweakScale"))
+            {
+                PartModule tweakscale = part.Modules["TweakScale"];
+                //ConfigNode tsCN = tweakscale.snapshot.moduleValues;
+
+                object defaultScale = tweakscale.Fields.GetValue("defaultScale");//tsCN.GetValue("defaultScale");
+                object currentScale = tweakscale.Fields.GetValue("currentScale");//tsCN.GetValue("currentScale");
+                if (!defaultScale.Equals(currentScale))
+                    partSize = "," + currentScale.ToString();
+            }
+            return partSize;
+        }
+
         private static DateTime startedFlashing;
         public static String GetButtonTexture()
         {
             String textureReturn;
 
+            if (KCT_SpecialSurpriseInside.instance.activated)
+                return "KerbalConstructionTime/Icons/jebcoin_32";
             if (!KCT_GameStates.settings.enabledForSave)
-                return "KerbalConstructionTime/icons/KCT_off";
+                return "KerbalConstructionTime/Icons/KCT_off";
 
             //Flash for up to 3 seconds, at half second intervals per icon
             if (KCT_GameStates.kctToolbarButton.Important && (DateTime.Now.CompareTo(startedFlashing.AddSeconds(3))) < 0 && DateTime.Now.Millisecond < 500)
-                textureReturn = "KerbalConstructionTime/icons/KCT_off";
+                textureReturn = "KerbalConstructionTime/Icons/KCT_off";
             //If it's been longer than 3 seconds, set Important to false and stop flashing
             else if (KCT_GameStates.kctToolbarButton.Important && (DateTime.Now.CompareTo(startedFlashing.AddSeconds(3))) > 0)
             {
                 KCT_GameStates.kctToolbarButton.Important = false;
-                textureReturn = "KerbalConstructionTime/icons/KCT_on";
+                textureReturn = "KerbalConstructionTime/Icons/KCT_on";
             }
             //The normal icon
             else
-                textureReturn = "KerbalConstructionTime/icons/KCT_on";
+                textureReturn = "KerbalConstructionTime/Icons/KCT_on";
 
             return textureReturn;
         }
@@ -571,8 +779,9 @@ namespace KerbalConstructionTime
             }
 
             //Assign science based on science rate
-            if (CurrentGameHasScience() && !vessel.cannotEarnScience)
-                AddScienceWithMessage((float)(KSC.RDUpgrades[0] * 0.5 * vessel.buildPoints / 86400), TransactionReasons.None);
+            double rate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[0].ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
+            if (CurrentGameHasScience() && !vessel.cannotEarnScience && rate > 0)
+                AddScienceWithMessage((float)(rate*vessel.buildPoints), TransactionReasons.None);
 
             //Add parts to the tracker
             if (!vessel.cannotEarnScience)
@@ -646,7 +855,7 @@ namespace KerbalConstructionTime
         {
             string name = part.partInfo.name;
             int amt = 1;
-            if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
+            if (KCT_Utilities.PartIsProcedural(part))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts(0);
                 KCTDebug.Log("PP cost: " + cost);
@@ -697,11 +906,11 @@ namespace KerbalConstructionTime
         }
 
 
-        public static bool RemovePartFromInventory(Part part)
+        public static int RemovePartFromInventory(Part part)
         {
             string name = part.partInfo.name;
             int amt = 1;
-            if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
+            if (KCT_Utilities.PartIsProcedural(part))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts(0);
                 foreach (PartResource resource in part.Resources.list)
@@ -717,11 +926,11 @@ namespace KerbalConstructionTime
             return RemovePartFromInventory(nameToStore);*/
             return RemovePartFromInventory(name, amt);
         }
-        public static bool RemovePartFromInventory(Part part, Dictionary<String, int> inventory)
+        public static int RemovePartFromInventory(Part part, Dictionary<String, int> inventory)
         {
             string name = part.partInfo.name;
             int amt = 1;
-            if (KCT_Utilities.PartIsProcedural(part.protoPartSnapshot))
+            if (KCT_Utilities.PartIsProcedural(part))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts(0);
                 foreach (PartResource resource in part.Resources.list)
@@ -736,7 +945,7 @@ namespace KerbalConstructionTime
             string nameToStore = part.partInfo.name + tweakscale;*/
             return RemovePartFromInventory(name, inventory, amt);
         }
-        public static bool RemovePartFromInventory(ConfigNode part)
+        public static int RemovePartFromInventory(ConfigNode part)
         {
             string name = PartNameFromNode(part) + GetTweakScaleSize(part);
             int amt = 1;
@@ -748,7 +957,7 @@ namespace KerbalConstructionTime
             //return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part));
             return RemovePartFromInventory(name, amt);
         }
-        public static bool RemovePartFromInventory(ConfigNode part, Dictionary<String, int> inventory)
+        public static int RemovePartFromInventory(ConfigNode part, Dictionary<String, int> inventory)
         {
             string name = PartNameFromNode(part) + GetTweakScaleSize(part);
             int amt = 1;
@@ -760,23 +969,24 @@ namespace KerbalConstructionTime
             //return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part), inventory, 1);
             return RemovePartFromInventory(name, inventory, amt);
         }
-        public static bool RemovePartFromInventory(String name, int amt)
+        public static int RemovePartFromInventory(String name, int amt)
         {
             return RemovePartFromInventory(name, KCT_GameStates.PartInventory, amt);
         }
-        public static bool RemovePartFromInventory(String name, Dictionary<String, int> inventory, int amt)
+        public static int RemovePartFromInventory(String name, Dictionary<String, int> inventory, int amt)
         {
-            if (inventory.ContainsKey(name) && inventory[name] >= amt)
+            int removed = 0;
+            if (inventory.ContainsKey(name))
             {
-                inventory[name] -= amt;
+                removed = inventory[name] >= amt ? amt : inventory[name];
+                inventory[name] -= removed;
                 if (inventory[name] == 0)
                 {
                     inventory.Remove(name);
                 }
-                KCTDebug.Log("Removed " + amt + "x" + name + " from part inventory");
-                return true;
+                KCTDebug.Log("Removed " + removed + "x" + name + " from part inventory");
             }
-            return false;
+            return removed;
         }
 
         public static void AddPartToTracker(Part part)
@@ -835,7 +1045,7 @@ namespace KerbalConstructionTime
             System.IO.File.Copy(saveFile, backupFile, true);
         }
 
-        public static void LoadSimulationSave()
+        public static void LoadSimulationSave(bool newMethod)
         {
             string backupFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs";
             string saveFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/persistent.sfs";
@@ -844,11 +1054,41 @@ namespace KerbalConstructionTime
             KerbalConstructionTime.moved = false;
             KCT_GameStates.simulationEndTime = 0;
             KCTDebug.Log("Swapping persistent.sfs with simulation backup file.");
-            System.IO.File.Copy(backupFile, saveFile, true);
+            if (newMethod)
+            {
+                ConfigNode lastShip = ShipConstruction.ShipConfig;
+                EditorFacility lastEditor = HighLogic.CurrentGame.editorFacility;
+
+                Game newGame = GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
+                GamePersistence.SaveGame(newGame, "persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+                GameScenes targetScene = HighLogic.LoadedScene;
+                newGame.startScene = targetScene;
+
+                // This has to be before... newGame.Start()
+                if (targetScene == GameScenes.EDITOR)
+                {
+                    newGame.editorFacility = lastEditor;
+                }
+
+
+                newGame.Start();
+
+                // ... And this has to be after. <3 KSP
+                if (targetScene == GameScenes.EDITOR)
+                {
+                    EditorDriver.StartupBehaviour = EditorDriver.StartupBehaviours.LOAD_FROM_CACHE;
+                    ShipConstruction.ShipConfig = lastShip;
+                }
+            }
+            else
+            {
+                System.IO.File.Copy(backupFile, saveFile, true);
+            }
             System.IO.File.Delete(backupFile);
+            
             //GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
             //System.IO.File.Delete(backupFile);
-            KCT_GameStates.LoadingSimulationSave = true;
+            KCT_GameStates.LoadingSimulationSave = false;
         }
 
 
@@ -1008,20 +1248,24 @@ namespace KerbalConstructionTime
                 {
                     ScreenMessages.PostScreenMessage("Did not pass editor checks!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     ScreenMessages.PostScreenMessage(failedReason, 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                    return blv;
+                    return null;
                 }
 
 
-                float totalCost = GetTotalVesselCost(blv.shipNode);
+                double totalCost = blv.GetTotalCost();
                 double prevFunds = Funding.Instance.Funds;
-                double newFunds = SpendFunds(totalCost, TransactionReasons.VesselRollout);
-                if (prevFunds == newFunds)
+                //double newFunds = SpendFunds(totalCost, TransactionReasons.VesselRollout);
+                if (totalCost > prevFunds)
                 {
                     KCTDebug.Log("Tried to add " + blv.shipName + " to build list but not enough funds.");
-                    KCTDebug.Log("Vessel cost: " + GetTotalVesselCost(blv.shipNode) + ", Current funds: " + newFunds);
+                    KCTDebug.Log("Vessel cost: " + GetTotalVesselCost(blv.shipNode) + ", Current funds: " + prevFunds);
                     var msg = new ScreenMessage("Not Enough Funds To Build!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     ScreenMessages.PostScreenMessage(msg, true);
-                    return blv;
+                    return null;
+                }
+                else
+                {
+                    SpendFunds(totalCost, TransactionReasons.VesselRollout);
                 }
             }
             string type = "";
@@ -1039,13 +1283,13 @@ namespace KerbalConstructionTime
             {
                 foreach (ConfigNode p in blv.ExtractedPartNodes)
                 {
-                    if (KCT_Utilities.RemovePartFromInventory(p, inventory))
+                   // if (KCT_Utilities.RemovePartFromInventory(p, inventory))
                     {
                         if (!KCT_Utilities.PartIsProcedural(p))
-                            AddToDict(blv.InventoryParts, PartNameFromNode(p) + GetTweakScaleSize(p), 1);
+                            AddToDict(blv.InventoryParts, PartNameFromNode(p) + GetTweakScaleSize(p), KCT_Utilities.RemovePartFromInventory(p, inventory));
                            // blv.InventoryParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p), 1);
                         else
-                            AddToDict(blv.InventoryParts, PartNameFromNode(p), (int)(1000 * GetPartCostFromNode(p, false)));
+                            AddToDict(blv.InventoryParts, PartNameFromNode(p), KCT_Utilities.RemovePartFromInventory(p, inventory));
                            // blv.InventoryParts.Add(PartNameFromNode(p), (int)(1000 * GetPartCostFromNode(p, false)));
                     }
                 }
@@ -1063,42 +1307,48 @@ namespace KerbalConstructionTime
             if (KCT_GameStates.ActiveKSC == null)
                 return null;
             double shortestTime = double.PositiveInfinity;
-            foreach (IKCTBuildItem blv in KCT_GameStates.ActiveKSC.VABList)
+            foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
             {
-                double time = blv.GetTimeLeft();
-                if (time < shortestTime)
+                foreach (IKCTBuildItem blv in KSC.VABList)
                 {
-                    thing = blv;
-                    shortestTime = time;
+                    double time = blv.GetTimeLeft();
+                    if (time < shortestTime)
+                    {
+                        thing = blv;
+                        shortestTime = time;
+                    }
                 }
-            }
-            foreach (IKCTBuildItem blv in KCT_GameStates.ActiveKSC.SPHList)
-            {
-                double time = blv.GetTimeLeft();
-                if (time < shortestTime)
+                foreach (IKCTBuildItem blv in KSC.SPHList)
                 {
-                    thing = blv;
-                    shortestTime = time;
+                    double time = blv.GetTimeLeft();
+                    if (time < shortestTime)
+                    {
+                        thing = blv;
+                        shortestTime = time;
+                    }
                 }
-            }
-            foreach (IKCTBuildItem blv in KCT_GameStates.TechList)
-            {
-                double time = blv.GetTimeLeft();
-                if (time < shortestTime)
+                
+                foreach (IKCTBuildItem rr in KSC.Recon_Rollout)
                 {
-                    thing = blv;
-                    shortestTime = time;
+                    if (rr.IsComplete())
+                        continue;
+                    double time = rr.GetTimeLeft();
+                    if (time < shortestTime)
+                    {
+                        thing = rr;
+                        shortestTime = time;
+                    }
                 }
-            }
-            foreach (IKCTBuildItem rr in KCT_GameStates.ActiveKSC.Recon_Rollout)
-            {
-                if (rr.IsComplete())
-                    continue;
-                double time = rr.GetTimeLeft();
-                if (time < shortestTime)
+                foreach (IKCTBuildItem ub in KSC.KSCTech)
                 {
-                    thing = rr;
-                    shortestTime = time;
+                    if (ub.IsComplete())
+                        continue;
+                    double time = ub.GetTimeLeft();
+                    if (time < shortestTime)
+                    {
+                        thing = ub;
+                        shortestTime = time;
+                    }
                 }
             }
             /*if (KCT_Utilities.ReconditioningActive(null))
@@ -1111,6 +1361,15 @@ namespace KerbalConstructionTime
                     shortestTime = time;
                 }
             }*/
+            foreach (IKCTBuildItem blv in KCT_GameStates.TechList)
+            {
+                double time = blv.GetTimeLeft();
+                if (time < shortestTime)
+                {
+                    thing = blv;
+                    shortestTime = time;
+                }
+            }
             return thing;
         }
 
@@ -1365,13 +1624,13 @@ namespace KerbalConstructionTime
             if (!HighLogic.LoadedSceneIsEditor)
                 return;
             //KCTDebug.Log("Recalculating build time");
-            List<ConfigNode> partNodes = ship.SaveShip().GetNodes("PART").ToList();
+            //List<ConfigNode> partNodes = ship.SaveShip().GetNodes("PART").ToList();
             KCT_GUI.PartsInUse.Clear();
             if (KCT_GUI.useInventory)
             {
-                foreach (ConfigNode part in partNodes)
+                foreach (Part part in ship.parts)
                 {
-                    string name = PartNameFromNode(part);
+                    string name = part.partInfo.name;
                     int amt = 1;
                     if (!PartIsProcedural(part))
                     {
@@ -1379,7 +1638,10 @@ namespace KerbalConstructionTime
                     }
                     else
                     {
-                        amt = (int)(1000 * GetPartCostFromNode(part, false));
+                        
+                       /* float dryCost, fuelCost;
+                        ShipConstruction.GetPartCosts(partNode, part.partInfo, out dryCost, out fuelCost);*/
+                        amt = (int)(1000 * GetPartCosts(part));
                     }
                     if (!KCT_GUI.PartsInUse.ContainsKey(name))
                         KCT_GUI.PartsInUse.Add(name, amt);
@@ -1389,7 +1651,7 @@ namespace KerbalConstructionTime
             }
 
             if (!KCT_GameStates.EditorShipEditingMode)
-                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(partNodes, true, KCT_GUI.useInventory);
+                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(ship.Parts, true, KCT_GUI.useInventory);
             else
             {
                 //List<string> partsForInventory = new List<string>();
@@ -1440,7 +1702,7 @@ namespace KerbalConstructionTime
                 foreach (KeyValuePair<string, int> kvp in KCT_GameStates.editedVessel.InventoryParts)
                     KCT_Utilities.AddToDict(partsForInventory, kvp.Key, kvp.Value);
 
-                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(partNodes, true, partsForInventory);
+                KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(ship.parts, true, partsForInventory);
             }
         }
 
@@ -1586,6 +1848,7 @@ namespace KerbalConstructionTime
 
         public static void AddToDict(Dictionary<string, int> dict, string key, int value)
         {
+            if (value <= 0) return;
             if (!dict.ContainsKey(key))
                 dict.Add(key, value);
             else
@@ -1626,114 +1889,32 @@ namespace KerbalConstructionTime
             return false;
         }
 
-        public static double ParseMath(string input, Dictionary<string, string> variables)
+        public static bool PartIsProcedural(Part part)
         {
-            KCTDebug.Log("Input_raw: " + input);
-            foreach (KeyValuePair<string, string> kvp in variables)
+            if (part.Modules != null)
             {
-                if (input.Contains("["+kvp.Key+"]"))
+                for (int i = 0; i < part.Modules.Count; i++ )
                 {
-                    input = input.Replace("[" + kvp.Key + "]", kvp.Value);
+                    if (part.Modules[i].moduleName.ToLower().Contains("procedural"))
+                        return true;
                 }
             }
-            KCTDebug.Log("Input_replaced: "+input);
-
-            double currentVal = 0;
-            string stack = "";
-            string lastOp = "+";
-            string[] ops = { "+", "-", "*", "/", "%", "^", "(", "e" };
-            for (int i = 0; i < input.Length; ++i )
-            {
-                string ch = input[i].ToString();
-                bool isOp = false;
-              //  KCTDebug.Log(ch);
-                foreach (string op in ops)
-                {
-                    if (op == ch)
-                    {
-                        isOp = true;
-                        break;
-                    }
-                }
-                if (isOp)
-                {
-                    if (ch == "-" && (stack.Trim() == ""))
-                    {
-                        stack += ch;
-                    }
-                    else if (ch == "e" || ch == "E")
-                    {
-                        int index;
-                        for (index = i; index < input.Length; ++index)
-                        {
-                            string ch2 = input[index].ToString();
-                            if (ops.Contains(ch2))
-                                break;
-                        }
-                        string sub = input.Substring(i + 1, index - i - 1);
-                        double exp = ParseMath(sub, variables);
-                        double newVal = double.Parse(stack) * Math.Pow(10, exp);
-                        currentVal = DoMath(currentVal, lastOp, newVal.ToString());
-                        stack = "0";
-                        lastOp = "+";
-                        i = index - 1;
-                    }
-                    else if (ch == "(")
-                    {
-                        int depth = 0;
-                        int j = 0;
-                        for (j = i + 1; j < input.Length; ++j)
-                        {
-                            if (input[j] == '(') depth++;
-                            if (input[j] == ')') depth--;
-
-                            if (depth < 0)
-                            {
-                                break;
-                            }
-                        }
-                        string sub = input.Substring(i + 1, j - i - 1);
-                        string val = ParseMath(sub, variables).ToString();
-                        input = input.Substring(0, i) + val + input.Substring(j + 1);
-                        --i;
-                    }
-                    else
-                    {
-                        currentVal = DoMath(currentVal, lastOp, stack);
-                        lastOp = ch;
-                        stack = "";
-                    }
-                }
-                else
-                {
-                    stack += ch;
-                }
-            }
-            currentVal = DoMath(currentVal, lastOp, stack);
-            KCTDebug.Log("Result: " + currentVal);
-            return currentVal;
+            return false;
         }
 
-        private static double DoMath(double currentVal, string operation, string newVal)
+        public static int BuildingUpgradeLevel(SpaceCenterFacility facility)
         {
-            double newValue = 0;
-            if (!double.TryParse(newVal, out newValue))
+            int lvl = 0;
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
             {
-                Debug.LogError("[KCT] Tried to parse a non-double value: " + newVal);
-                return currentVal;
+                lvl = (int)(2*ScenarioUpgradeableFacilities.GetFacilityLevel(facility));
             }
-            switch (operation)
+            else
             {
-                case "+": currentVal += newValue; break;
-                case "-": currentVal -= newValue; break;
-                case "*": currentVal *= newValue; break;
-                case "/": currentVal /= newValue; break;
-                case "%": currentVal = currentVal % long.Parse(newVal); break;
-                case "^": currentVal = Math.Pow(currentVal, newValue); break;
-                default: break;
+                //lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
+                lvl = 2;
             }
-
-            return currentVal;
+            return lvl;
         }
     }
 }
