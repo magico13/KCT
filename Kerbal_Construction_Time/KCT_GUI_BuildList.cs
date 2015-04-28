@@ -244,12 +244,19 @@ namespace KerbalConstructionTime
                     GUILayout.Label("VAB Storage");
                     if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel != null && FlightGlobals.ActiveVessel.IsRecoverable && FlightGlobals.ActiveVessel.IsClearToSave() == ClearToSaveStatus.CLEAR && GUILayout.Button("Recover Active Vessel"))
                     {
-                        KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
-                        KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.VAB;
-                        KCT_GameStates.recoveredVessel.launchSite = "LaunchPad";
-                       // HighLogic.LoadScene(GameScenes.SPACECENTER);
-                        //ShipConstruction.RecoverVesselFromFlight(FlightGlobals.ActiveVessel.protoVessel, HighLogic.CurrentGame.flightState);
-                        GameEvents.OnVesselRecoveryRequested.Fire(FlightGlobals.ActiveVessel);
+                        try
+                        {
+                            KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
+                            KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.VAB;
+                            KCT_GameStates.recoveredVessel.launchSite = "LaunchPad";
+                            // HighLogic.LoadScene(GameScenes.SPACECENTER);
+                            //ShipConstruction.RecoverVesselFromFlight(FlightGlobals.ActiveVessel.protoVessel, HighLogic.CurrentGame.flightState);
+                            GameEvents.OnVesselRecoveryRequested.Fire(FlightGlobals.ActiveVessel);
+                        }
+                        catch
+                        {
+                            Debug.LogError("[KCT] Error while recovering craft into inventory.");
+                        }
                     }
                     if (buildList.Count == 0)
                     {
@@ -482,11 +489,18 @@ namespace KerbalConstructionTime
                     GUILayout.Label("SPH Storage");
                     if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel != null && FlightGlobals.ActiveVessel.IsRecoverable && FlightGlobals.ActiveVessel.IsClearToSave() == ClearToSaveStatus.CLEAR && GUILayout.Button("Recover Active Vessel"))
                     {
-                        KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
-                        KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.SPH;
-                        KCT_GameStates.recoveredVessel.launchSite = "Runway";
-                        //ShipConstruction.RecoverVesselFromFlight(FlightGlobals.ActiveVessel.protoVessel, HighLogic.CurrentGame.flightState);
-                        GameEvents.OnVesselRecoveryRequested.Fire(FlightGlobals.ActiveVessel);
+                        try
+                        {
+                            KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
+                            KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.SPH;
+                            KCT_GameStates.recoveredVessel.launchSite = "Runway";
+                            //ShipConstruction.RecoverVesselFromFlight(FlightGlobals.ActiveVessel.protoVessel, HighLogic.CurrentGame.flightState);
+                            GameEvents.OnVesselRecoveryRequested.Fire(FlightGlobals.ActiveVessel);
+                        }
+                        catch
+                        {
+                            Debug.LogError("[KCT] Error while recovering craft into inventory.");
+                        }
                     }
 
                     for (int i = 0; i < buildList.Count; i++)
@@ -634,26 +648,6 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Current Version: " + KCT_UpdateChecker.CurrentVersion);
                 GUILayout.Label("Latest: " + KCT_UpdateChecker.WebVersion);
-                GUILayout.EndHorizontal();
-            }
-
-            if (KCT_SpecialSurpriseInside.instance.activated)
-            {
-                GUILayout.BeginHorizontal();
-                //jeb coin img, jeb coin amt, store button, daily challenge, SRB races
-                GUILayout.Label(KCT_SpecialSurpriseInside.instance.jebCoinTex, GUILayout.ExpandWidth(false));
-                if (GUILayout.Button(" Jeb Coins: " + KCT_SpecialSurpriseInside.instance.TotalJebCoins, GUILayout.ExpandWidth(false)))
-                    KCT_SpecialSurpriseInside.instance.JebCoinStore();
-                GUILayout.Label("");
-                if (GUILayout.Button("Daily Challenge", GUILayout.ExpandWidth(false)))
-                    KCT_SpecialSurpriseInside.instance.DailyChallengePopup();
-                GUILayout.Label("");
-                if (GUILayout.Button("Race SRBs", GUILayout.ExpandWidth(false)))
-                {
-                    KCT_SpecialSurpriseInside.instance.showRace = true;
-                    showBuildList = false;
-                }
-
                 GUILayout.EndHorizontal();
             }
 

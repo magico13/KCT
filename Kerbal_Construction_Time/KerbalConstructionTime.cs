@@ -183,11 +183,6 @@ namespace KerbalConstructionTime
             UpdateOldFormulaCFG(); //Update the formula cfg file to the new format so things aren't broken
             KCT_GameStates.formulaSettings.Load();
             KCT_GameStates.formulaSettings.Save();
-            if (KCT_SpecialSurpriseInside.instance == null)
-                new KCT_SpecialSurpriseInside();
-
-            if (KCT_SpecialSurpriseInside.instance.activated && !KCT_SpecialSurpriseInside.instance.disableBlocks && KCT_SpecialSurpriseInside.instance.sceneChanges >= KCT_SpecialSurpriseInside.instance.sceneChangeLimit)
-                KCT_SpecialSurpriseInside.instance.DisablePopup();
 
             // Ghetto event queue
             if (HighLogic.LoadedScene == GameScenes.EDITOR)
@@ -379,17 +374,6 @@ namespace KerbalConstructionTime
             {
                 KCT_Utilities.LoadSimulationSave(true);
             }
-
-            if (KCT_SpecialSurpriseInside.instance.activated)
-            {
-                if (HighLogic.LoadedSceneIsFlight)
-                KCT_SpecialSurpriseInside.instance.CheckShipForChallengeComplete();
-
-                if (!KCT_SpecialSurpriseInside.instance.disableBlocks && UnityEngine.Random.Range(0, 1000) == 0)
-                    KCT_SpecialSurpriseInside.instance.showAd = true;
-            }
-
-
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
@@ -580,7 +564,11 @@ namespace KerbalConstructionTime
                 KCT_GUI.hideAll();
                 KCT_GUI.showSimulationWindow = !KCT_GameStates.settings.NoSimGUI;
                 KCT_GUI.showTimeRemaining = true;
-                Planetarium.SetUniversalTime(KCT_GameStates.simulationUT);
+                if (!KCT_GameStates.simulationInitialized)
+                {
+                    Planetarium.SetUniversalTime(KCT_GameStates.simulationUT);
+                    KCT_GameStates.simulationInitialized = true;
+                }
             }
 
             if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.FundsToChargeAtSimEnd != 0)

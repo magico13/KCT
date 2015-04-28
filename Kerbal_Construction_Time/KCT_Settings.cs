@@ -171,7 +171,7 @@ namespace KerbalConstructionTime
             EffectivePartFormula = "min([C]/([I] + ([B]*([U]+1))), [C])";
             ProceduralPartFormula = "(([C]-[A]) + ([A]*10/max([I],1))) / max([B]*([U]+1),1)";
             BPFormula = "([E]^(1/2))*2000*[O]";
-            KSCUpgradeFormula = "([C]^(1/2))*2000*[O]";
+            KSCUpgradeFormula = "([C]^(1/2))*1000*[O]";
             ReconditioningFormula = "min([M]*[O]*[E], [X])";
             BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)"; //N = num upgrades, I = rate index, L = VAB/SPH upgrade level, R = R&D level
                 //lvl0->2 rates, lvl1->4 rates, lvl2->6 rates

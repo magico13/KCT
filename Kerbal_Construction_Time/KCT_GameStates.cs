@@ -60,7 +60,7 @@ namespace KerbalConstructionTime
         
         //Things pertaining to simulations
         public static CelestialBody simulationBody;
-        public static bool simulateInOrbit = false;
+        public static bool simulateInOrbit = false, simulationInitialized = false;
         public static double simulationUT = 0;
         public static double simulationEndTime = 0, simulationTimeLimit = 0, simulationDefaultTimeLimit = 0;
         public static double simOrbitAltitude = 0, simInclination = 0;
@@ -76,6 +76,7 @@ namespace KerbalConstructionTime
             PartTracker = new Dictionary<string, int>();
             PartInventory = new Dictionary<string, int>();
             flightSimulated = false;
+            simulationInitialized = false;
             vesselDict = new Dictionary<string, string>();
             simulationBody = KCT_Utilities.GetBodyByName("Kerbin");
             simulateInOrbit = false;
