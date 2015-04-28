@@ -324,6 +324,11 @@ namespace KerbalConstructionTime
             module.AddNode(PARACHUTE);
             templates.AddNode(module);
 
+            //B9AirBrake
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "FSairBrake");
+            module.AddValue("targetAngle", "0");
+            templates.AddNode(module);
 
             templates.Save(KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_ModuleTemplates.cfg");
         }

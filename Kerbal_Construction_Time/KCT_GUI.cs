@@ -822,7 +822,7 @@ namespace KerbalConstructionTime
                 orbitAltString = GUILayout.TextField(orbitAltString, GUILayout.Width(100));
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Min: " + KCT_GameStates.simulationBody.maxAtmosphereAltitude / 1000);
+                GUILayout.Label("Min: " + KCT_GameStates.simulationBody.atmosphereDepth / 1000);
                 GUILayout.Label("Max: " + Math.Floor(KCT_GameStates.simulationBody.sphereOfInfluence) / 1000);
                 GUILayout.EndHorizontal();
 
@@ -893,9 +893,9 @@ namespace KerbalConstructionTime
                 if (KCT_GameStates.simulateInOrbit)
                 {
                     if (!double.TryParse(orbitAltString, out KCT_GameStates.simOrbitAltitude))
-                        KCT_GameStates.simOrbitAltitude = KCT_GameStates.simulationBody.maxAtmosphereAltitude + 1000;
+                        KCT_GameStates.simOrbitAltitude = KCT_GameStates.simulationBody.atmosphereDepth + 1000;
                     else
-                        KCT_GameStates.simOrbitAltitude = Math.Min(Math.Max(1000 * KCT_GameStates.simOrbitAltitude, KCT_GameStates.simulationBody.maxAtmosphereAltitude), KCT_GameStates.simulationBody.sphereOfInfluence);
+                        KCT_GameStates.simOrbitAltitude = Math.Min(Math.Max(1000 * KCT_GameStates.simOrbitAltitude, KCT_GameStates.simulationBody.atmosphereDepth), KCT_GameStates.simulationBody.sphereOfInfluence);
 
                     if (!advancedSimConfig || !double.TryParse(orbitIncString, out KCT_GameStates.simInclination))
                         KCT_GameStates.simInclination = 0;
@@ -1445,7 +1445,7 @@ namespace KerbalConstructionTime
                                         HighLogic.CurrentGame.CrewRoster.GetNextApplicant();
                                     int index = randomCrew ? rand.Next(HighLogic.CurrentGame.CrewRoster.Applicants.Count() - 1) : 0;
                                     ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(index);
-                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
+                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired);
                                     List<ProtoCrewMember> activeCrew;
                                     activeCrew = KCT_GameStates.launchedCrew[j].crewList;
                                     if (activeCrew.Count > i)
@@ -1483,7 +1483,7 @@ namespace KerbalConstructionTime
                                         HighLogic.CurrentGame.CrewRoster.GetNextApplicant();
                                     int index = randomCrew ? rand.Next(HighLogic.CurrentGame.CrewRoster.Applicants.Count() - 1) : 0;
                                     ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(index);
-                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
+                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired);
                                     List<ProtoCrewMember> activeCrew;
                                     activeCrew = KCT_GameStates.launchedCrew[j].crewList;
                                     if (activeCrew.Count > i)
@@ -1558,7 +1558,7 @@ namespace KerbalConstructionTime
                                         HighLogic.CurrentGame.CrewRoster.GetNextApplicant();
                                     int index = randomCrew ? rand.Next(HighLogic.CurrentGame.CrewRoster.Applicants.Count() - 1) : 0;
                                     ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(index);
-                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
+                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired);
                                     List<ProtoCrewMember> activeCrew;
                                     activeCrew = KCT_GameStates.launchedCrew[j].crewList;
                                     if (activeCrew.Count > i)
@@ -1592,7 +1592,7 @@ namespace KerbalConstructionTime
                                         HighLogic.CurrentGame.CrewRoster.GetNextApplicant();
                                     int index = randomCrew ? rand.Next(HighLogic.CurrentGame.CrewRoster.Applicants.Count() - 1) : 0;
                                     ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(index);
-                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
+                                    HighLogic.CurrentGame.CrewRoster.HireApplicant(hired);
                                     List<ProtoCrewMember> activeCrew;
                                     activeCrew = KCT_GameStates.launchedCrew[j].crewList;
                                     if (activeCrew.Count > i)
@@ -1653,7 +1653,7 @@ namespace KerbalConstructionTime
                                 ProtoCrewMember hired = HighLogic.CurrentGame.CrewRoster.Applicants.ElementAt(index);
                                 //hired.rosterStatus = ProtoCrewMember.RosterStatus.AVAILABLE;
                                 //HighLogic.CurrentGame.CrewRoster.AddCrewMember(hired);
-                                HighLogic.CurrentGame.CrewRoster.HireApplicant(hired, Planetarium.GetUniversalTime());
+                                HighLogic.CurrentGame.CrewRoster.HireApplicant(hired);
                                 List<ProtoCrewMember> activeCrew;
                                 activeCrew = KCT_GameStates.launchedCrew[j].crewList;
                                 if (activeCrew.Count > i)

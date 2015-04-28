@@ -21,10 +21,7 @@ namespace KerbalConstructionTime
         {
             GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
             GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
-
-            if (!StageRecoveryWrapper.StageRecoveryAvailable)
-                GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
-            else
+            if (StageRecoveryWrapper.StageRecoveryAvailable)
             {
                 KCTDebug.Log("Deferring stage recovery to StageRecovery.");
                 StageRecoveryWrapper.AddRecoverySuccessEvent(StageRecoverySuccessEvent);
@@ -389,7 +386,7 @@ namespace KerbalConstructionTime
             }
             return (float)mass;
         }
-        public void vesselDestroyEvent(Vessel v)
+       /* public void vesselDestroyEvent(Vessel v)
         {
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (!KCT_GameStates.settings.AllowParachuteRecovery) return;
@@ -582,7 +579,7 @@ namespace KerbalConstructionTime
                     }
                 }
             }
-        }
+        }*/
     }
 
     public class KCT_UpgradingBuilding : IKCTBuildItem

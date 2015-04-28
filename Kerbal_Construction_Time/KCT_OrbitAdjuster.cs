@@ -107,7 +107,7 @@ namespace KerbalConstructionTime
             if (double.IsNaN(e))
                 e = 0;
             if (double.IsNaN(sma))
-                sma = body.Radius + body.maxAtmosphereAltitude + 10000;
+                sma = body.Radius + body.atmosphereDepth + 10000;
             if (double.IsNaN(lan))
                 lan = 0;
             if (double.IsNaN(w))
