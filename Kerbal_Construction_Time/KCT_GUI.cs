@@ -271,7 +271,7 @@ namespace KerbalConstructionTime
         {
             if (!PrimarilyDisabled)
             {
-                if (HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedSceneIsFlight)
+                if (HighLogic.LoadedScene == GameScenes.SPACECENTER || (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated))
                 {
                     showBuildList = true;
                 }
@@ -281,7 +281,7 @@ namespace KerbalConstructionTime
         {
             if (!PrimarilyDisabled && !clicked)
             {
-                if (HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedSceneIsFlight)
+                if (HighLogic.LoadedScene == GameScenes.SPACECENTER || (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated))
                 {
                     showBuildList = false;
                 }
