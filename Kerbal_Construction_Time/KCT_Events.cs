@@ -21,10 +21,7 @@ namespace KerbalConstructionTime
         {
             GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
             GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
-
-            if (!StageRecoveryWrapper.StageRecoveryAvailable)
-                GameEvents.onVesselDestroy.Add(vesselDestroyEvent);
-            else
+            if (StageRecoveryWrapper.StageRecoveryAvailable)
             {
                 KCTDebug.Log("Deferring stage recovery to StageRecovery.");
                 StageRecoveryWrapper.AddRecoverySuccessEvent(StageRecoverySuccessEvent);
@@ -39,7 +36,7 @@ namespace KerbalConstructionTime
                 GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
             GameEvents.onEditorShipModified.Add(ShipModifiedEvent);
             GameEvents.OnPartPurchased.Add(PartPurchasedEvent);
-            GameEvents.OnVesselRecoveryRequested.Add(RecoveryRequested);
+            //GameEvents.OnVesselRecoveryRequested.Add(RecoveryRequested);
             GameEvents.onGUIRnDComplexDespawn.Add(TechDisableEvent);
             GameEvents.OnKSCFacilityUpgraded.Add(FacilityUpgradedEvent);
             GameEvents.onGameStateLoad.Add(PersistenceLoadEvent);
@@ -197,18 +194,18 @@ namespace KerbalConstructionTime
                 
             if (ApplicationLauncher.Ready && (KCTButtonStock == null || !ApplicationLauncher.Instance.Contains(KCTButtonStock, out vis))) //Add Stock button
             {
-                string texturePath = KCT_SpecialSurpriseInside.instance.activated ? "KerbalConstructionTime/Icons/jebcoin_32" : "KerbalConstructionTime/Icons/KCT_on";
-                KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
-                        KCT_GUI.onClick,
-                        KCT_GUI.onClick,
-                        DummyVoid, //TODO: List next ship here?
-                        DummyVoid,
-                        DummyVoid,
-                        DummyVoid,
-                        ApplicationLauncher.AppScenes.ALWAYS,
-                        GameDatabase.Instance.GetTexture(texturePath, false));
+                string texturePath = "KerbalConstructionTime/Icons/KCT_on";
+                KCT_Events.instance.KCTButtonStock = ApplicationLauncher.Instance.AddModApplication(
+                    KCT_GUI.ClickOn,
+                    KCT_GUI.ClickOff,
+                    KCT_GUI.onHoverOn,
+                    KCT_GUI.onHoverOff,
+                    KCT_Events.instance.DummyVoid, //TODO: List next ship here?
+                    KCT_Events.instance.DummyVoid,
+                    ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.MAPVIEW | ApplicationLauncher.AppScenes.SPACECENTER | ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.VAB,
+                    GameDatabase.Instance.GetTexture(texturePath, false));
 
-                //ApplicationLauncher.Instance.EnableMutuallyExclusive(KCTButtonStock);
+                ApplicationLauncher.Instance.EnableMutuallyExclusive(KCT_Events.instance.KCTButtonStock);
             }
         }
         public void DummyVoid() { }
@@ -270,7 +267,6 @@ namespace KerbalConstructionTime
 
         public void gameSceneEvent(GameScenes scene)
         {
-            KCT_SpecialSurpriseInside.instance.sceneChanges++;
             if (!KCT_GameStates.settings.enabledForSave) return;
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
             if (validScenes.Contains(scene))
@@ -389,7 +385,7 @@ namespace KerbalConstructionTime
             }
             return (float)mass;
         }
-        public void vesselDestroyEvent(Vessel v)
+       /* public void vesselDestroyEvent(Vessel v)
         {
             if (!KCT_GameStates.settings.enabledForSave) return;
             if (!KCT_GameStates.settings.AllowParachuteRecovery) return;
@@ -582,7 +578,7 @@ namespace KerbalConstructionTime
                     }
                 }
             }
-        }
+        }*/
     }
 
     public class KCT_UpgradingBuilding : IKCTBuildItem

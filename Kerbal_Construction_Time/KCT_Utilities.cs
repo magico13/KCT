@@ -550,13 +550,13 @@ namespace KerbalConstructionTime
 
                     foreach (KCT_UpgradingBuilding kscTech in ksc.KSCTech)
                     {
-                        kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
-                        if (kscTech.AsIKCTBuildItem().IsComplete() || KCT_GameStates.settings.InstantKSCUpgrades)
+                        if (!kscTech.AsIKCTBuildItem().IsComplete()) kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
+                        if (HighLogic.LoadedScene == GameScenes.SPACECENTER && kscTech.AsIKCTBuildItem().IsComplete() || KCT_GameStates.settings.InstantKSCUpgrades)
                         {
                             kscTech.Upgrade();
                         }
                     }
-                    ksc.KSCTech.RemoveAll(ub => ub.AsIKCTBuildItem().IsComplete());
+                    if (HighLogic.LoadedScene == GameScenes.SPACECENTER) ksc.KSCTech.RemoveAll(ub => ub.AsIKCTBuildItem().IsComplete());
 
                 }
                 for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
@@ -695,8 +695,6 @@ namespace KerbalConstructionTime
         {
             String textureReturn;
 
-            if (KCT_SpecialSurpriseInside.instance.activated)
-                return "KerbalConstructionTime/Icons/jebcoin_32";
             if (!KCT_GameStates.settings.enabledForSave)
                 return "KerbalConstructionTime/Icons/KCT_off";
 
@@ -1089,6 +1087,7 @@ namespace KerbalConstructionTime
             //GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
             //System.IO.File.Delete(backupFile);
             KCT_GameStates.LoadingSimulationSave = false;
+            KCT_GameStates.simulationInitialized = false;
         }
 
 
