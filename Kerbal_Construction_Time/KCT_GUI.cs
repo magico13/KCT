@@ -1780,7 +1780,22 @@ namespace KerbalConstructionTime
                 if (available)
                     availableCrew.Add(crewMember);
             }
-
+            foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Tourist) //Get tourists
+            {
+                bool available = true;
+                if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                {
+                    foreach (CrewedPart cP in KCT_GameStates.launchedCrew)
+                    {
+                        if (cP.crewList.Contains(crewMember))
+                            available = false;
+                    }
+                }
+                else
+                    available = false;
+                if (available)
+                    availableCrew.Add(crewMember);
+            }
             return availableCrew;
         }
 
