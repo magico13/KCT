@@ -194,6 +194,12 @@ namespace KerbalConstructionTime
             onClick();
         }
 
+        public static void ClickToggle()
+        {
+            clicked = !clicked;
+            onClick();
+        }
+
         public static void onClick()
         {
            // clicked = !clicked;
@@ -2202,8 +2208,8 @@ namespace KerbalConstructionTime
                     KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
                     KCT_GameStates.kctToolbarButton.OnClick += ((e) =>
                     {
-                        KCT_GUI.clicked = !KCT_GUI.clicked;
-                        KCT_GUI.onClick();
+                        //KCT_GUI.clicked = !KCT_GUI.clicked;
+                        KCT_GUI.ClickToggle();
                     });
                 }
             }

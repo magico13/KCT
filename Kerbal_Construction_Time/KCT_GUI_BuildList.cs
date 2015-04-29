@@ -652,6 +652,10 @@ namespace KerbalConstructionTime
             }
 
             GUILayout.EndVertical();
+
+            if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null && KCT_GameStates.settings.PreferBlizzyToolbar)
+                if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+                    GUI.DragWindow();
         }
 
         private static Guid IDSelected = new Guid();

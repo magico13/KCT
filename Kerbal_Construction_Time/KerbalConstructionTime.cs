@@ -137,7 +137,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
                     KCT_GameStates.kctToolbarButton.OnClick += ((e) =>
                     {
-                        KCT_GUI.onClick();
+                        KCT_GUI.ClickToggle();
                     });
                 }
             }

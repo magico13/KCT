@@ -19,7 +19,7 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
-v1.1.6.0 (4/28/15)
+v1.1.6.0 (4/29/15)
  - Update for KSP 1.0
  - KSC Upgrade time halved by default
  - KSC building upgrades now wait until you reenter the Space Center scene to complete
@@ -28,6 +28,7 @@ v1.1.6.0 (4/28/15)
  - Possible fix for random explosions that happen when switching vessels during simulations
  - Improved functioning of the KCT toolbar button+GUI
  - Windows that are meant to be centered are going to be centered, $DEITY damnit!
+ - Build List is (again) movable when using Blizzy's toolbar
  
 v1.1.5.0 (3/24/15)
 New Features:
