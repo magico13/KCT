@@ -28,13 +28,13 @@ namespace CrewQueue
                     _type = AssemblyLoader.loadedAssemblies
                                           .Select(a => a.assembly.GetExportedTypes())
                                           .SelectMany(t => t)
-                                          .FirstOrDefault(t => t.FullName == "CrewQueue.CrewQueue");
+                                          .FirstOrDefault(t => t.FullName == "CrewQueue.CrewQueueProxy");
 
                     _available = _type != null;
                 }
                 return (bool)_available;
             }
-        }        
+        }
 
         /// <summary>
         /// Returns the Kerbals who are allowed to go on missions, unsorted.
@@ -42,8 +42,8 @@ namespace CrewQueue
         public static IEnumerable<ProtoCrewMember> AvailableCrew
         {
             get
-            {                
-                return (IEnumerable<ProtoCrewMember>) getProperty("CrewQueueRoster", "AvailableCrew");          
+            {
+                return (IEnumerable<ProtoCrewMember>)getProperty("AvailableCrew");
             }
         }
 
@@ -54,29 +54,29 @@ namespace CrewQueue
         {
             get
             {
-                return (IEnumerable<ProtoCrewMember>) getProperty("CrewQueueRoster", "UnavailableCrew");
+                return (IEnumerable<ProtoCrewMember>)getProperty("UnavailableCrew");
             }
         }
 
         /// <summary>
         /// Returns the Kerbals who are allowed to go on missions, sorted inexperienced first.
         /// </summary>
-        public static IOrderedEnumerable<ProtoCrewMember> NewbieCrew
+        public static IOrderedEnumerable<ProtoCrewMember> LeastExperiencedCrew
         {
             get
             {
-                return (IOrderedEnumerable<ProtoCrewMember>)getProperty("CrewQueueRoster", "LeastExperiencedCrew");
+                return (IOrderedEnumerable<ProtoCrewMember>)getProperty("LeastExperiencedCrew");
             }
         }
 
         /// <summary>
         /// Returns the Kerbals who are allowed to go on missions, sorted veterans first.
         /// </summary>
-        public static IOrderedEnumerable<ProtoCrewMember> VeteranCrew
+        public static IOrderedEnumerable<ProtoCrewMember> MostExperiencedCrew
         {
             get
             {
-                return (IOrderedEnumerable<ProtoCrewMember>)getProperty("CrewQueueRoster", "MostExperiencedCrew");
+                return (IOrderedEnumerable<ProtoCrewMember>)getProperty("MostExperiencedCrew");
             }
         }
 
@@ -86,9 +86,9 @@ namespace CrewQueue
         /// <param name="partPrefab">A reference to the Part in question.</param>
         /// <param name="preferVeterans">Check if veterans should be prioritized over newbies</param>
         /// <returns></returns>
-        public IEnumerable<ProtoCrewMember> GetCrewForPart(Part partPrefab, bool preferVeterans = false)
+        public IEnumerable<ProtoCrewMember> GetCrewForPart(Part partPrefab, IEnumerable<ProtoCrewMember> exemptList, bool preferVeterans = false)
         {
-            return (IEnumerable<ProtoCrewMember>) invokeMethod("CrewQueue","GetCrewForPart", new object[] { partPrefab, preferVeterans });
+            return (IEnumerable<ProtoCrewMember>)invokeMethod("GetCrewForPart", new object[] { partPrefab, exemptList, preferVeterans });
         }
 
         // Generic accessors
@@ -103,44 +103,34 @@ namespace CrewQueue
                 }
                 else
                 {
-                    throw new Exception("Attempted to access CrewQ without that mod installed.");
+                    throw new Exception("Attempted to access CrewQueue without that mod installed.");
                 }
             }
         }
 
-        internal static object getProperty(string target, string name, object[] indexes = null)
+        internal static object getProperty(string name, object[] indexes = null)
         {
             if (Available)
             {
-                Type type = AssemblyLoader.loadedAssemblies
-                                          .Select(a => a.assembly.GetExportedTypes())
-                                          .SelectMany(t => t)
-                                          .FirstOrDefault(t => t.FullName == "CrewQueue." + target);
-
-                System.Reflection.PropertyInfo _property = type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
+                System.Reflection.PropertyInfo _property = _type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Static);
                 return _property.GetValue(Instance, indexes);
             }
             else
             {
-                throw new Exception("Attempted to access CrewQ without that mod installed.");
+                throw new Exception("Attempted to access CrewQueue without that mod installed.");
             }
         }
 
-        internal static object invokeMethod(string target, string name, object[] parameters = null)
+        internal static object invokeMethod(string name, object[] parameters = null)
         {
             if (Available)
             {
-                Type type = AssemblyLoader.loadedAssemblies
-                                          .Select(a => a.assembly.GetExportedTypes())
-                                          .SelectMany(t => t)
-                                          .FirstOrDefault(t => t.FullName == "CrewQueue." + target);
-
-                MethodInfo _method = type.GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
+                MethodInfo _method = _type.GetMethod(name, BindingFlags.NonPublic | BindingFlags.Static);
                 return _method.Invoke(Instance, parameters);
             }
             else
             {
-                throw new Exception("Attempted to access CrewQ without that mod installed.");
+                throw new Exception("Attempted to access CrewQueue without that mod installed.");
             }
         }
     }
