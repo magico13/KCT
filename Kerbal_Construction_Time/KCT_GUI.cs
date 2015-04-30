@@ -1764,9 +1764,9 @@ namespace KerbalConstructionTime
 
         private static List<ProtoCrewMember> CrewAvailable()
         {
-            if (CrewQ.API.Available)
+            if (CrewQueue.API.Available)
             {
-                return CrewQ.API.AvailableCrew.ToList();
+                return CrewQueue.API.AvailableCrew.ToList();
             }
 
             List<ProtoCrewMember> availableCrew = new List<ProtoCrewMember>();
