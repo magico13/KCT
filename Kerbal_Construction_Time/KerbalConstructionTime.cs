@@ -315,14 +315,22 @@ namespace KerbalConstructionTime
                                 if (crewMember != null)
                                 {
                                     ProtoCrewMember finalCrewMember = crewMember;
-                                    foreach (ProtoCrewMember rosterCrew in roster.Crew)
+                                    if (crewMember.type == ProtoCrewMember.KerbalType.Crew)
                                     {
-                                        if (rosterCrew.name == crewMember.name)
-                                            finalCrewMember = rosterCrew;
+                                        finalCrewMember = roster.Crew.FirstOrDefault(c => c.name == crewMember.name);
                                     }
-                                    KCTDebug.Log("Assigning " + finalCrewMember.name + " to " + p.partInfo.name);
+                                    else if (crewMember.type == ProtoCrewMember.KerbalType.Tourist)
+                                    {
+                                        finalCrewMember = roster.Tourist.FirstOrDefault(c => c.name == crewMember.name);
+                                    }
+                                    if (finalCrewMember == null)
+                                    {
+                                        Debug.LogError("Error when assigning " + crewMember.name + " to " + p.partInfo.name +". Cannot find Kerbal in list.");
+                                        continue;
+                                    }
                                     try
                                     {
+                                        KCTDebug.Log("Assigning " + finalCrewMember.name + " to " + p.partInfo.name);
                                         if (p.AddCrewmember(finalCrewMember))//p.AddCrewmemberAt(finalCrewMember, crewList.IndexOf(crewMember)))
                                         {
                                             finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Assigned;
@@ -333,12 +341,14 @@ namespace KerbalConstructionTime
                                         {
                                             Debug.LogError("Error when assigning " + crewMember.name + " to " + p.partInfo.name);
                                             finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Available;
+                                            continue;
                                         }
                                     }
                                     catch
                                     {
                                         Debug.LogError("Error when assigning " + crewMember.name + " to " + p.partInfo.name);
                                         finalCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Available;
+                                        continue;
                                     }
                                 }
                             }
