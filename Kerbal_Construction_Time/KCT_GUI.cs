@@ -317,6 +317,7 @@ namespace KerbalConstructionTime
             showRename = false;
             showFirstRun = false;
             showSimLengthChooser = false;
+            clicked = false;
         }
 
         public static void DrawGUIs(int windowID)
