@@ -605,6 +605,7 @@ namespace KerbalConstructionTime
 
         public void Downgrade()
         {
+            KCTDebug.Log("Downgrading " + commonName + " to level " + currentLevel);
             foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
             {
                 KCT_Events.allowedToUpgrade = true;
@@ -615,13 +616,14 @@ namespace KerbalConstructionTime
 
         public void Upgrade()
         {
-            
+            KCTDebug.Log("Upgrading " + commonName + " to level " + upgradeLevel);
             foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
             {
                 KCT_Events.allowedToUpgrade = true;
                 facility.SetLevel(upgradeLevel);
             }
-            UpgradeProcessed = true;
+            UpgradeProcessed = ((int)(ScenarioUpgradeableFacilities.GetFacilityLevel(id)*2) == upgradeLevel);
+            
             //KCT_Events.allowedToUpgrade = false;
         }
 

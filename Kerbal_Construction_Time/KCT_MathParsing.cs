@@ -116,7 +116,7 @@ namespace KerbalConstructionTime
                     int j = parenComma[0];
                     int comma = parenComma[1];
                     string sub = input.Substring(subStart, j - subStart);
-                    KCTDebug.Log("fn: "+function+" sub: "+sub);
+                   // KCTDebug.Log("fn: "+function+" sub: "+sub);
                     double val = 0.0;
 
                     if (function == "l")
@@ -164,8 +164,7 @@ namespace KerbalConstructionTime
                 }
             }
             currentVal = DoMath(currentVal, lastOp, stack);
-           // KCTDebug.Log("Result: " + currentVal);
-            KCTDebug.Log("(" + raw + ")=(" + input + ")=" + currentVal);
+           // KCTDebug.Log("(" + raw + ")=(" + input + ")=" + currentVal);
             return currentVal;
         }
 

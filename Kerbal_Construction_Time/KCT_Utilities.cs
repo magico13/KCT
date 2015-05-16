@@ -553,7 +553,8 @@ namespace KerbalConstructionTime
                         if (!kscTech.AsIKCTBuildItem().IsComplete()) kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
                         if (HighLogic.LoadedScene == GameScenes.SPACECENTER && (kscTech.AsIKCTBuildItem().IsComplete() || KCT_GameStates.settings.InstantKSCUpgrades))
                         {
-                            kscTech.Upgrade();
+                            if (ScenarioUpgradeableFacilities.Instance != null && KCT_GameStates.erroredDuringOnLoad.OnLoadFinished)
+                                kscTech.Upgrade();
                         }
                     }
                     if (HighLogic.LoadedScene == GameScenes.SPACECENTER) ksc.KSCTech.RemoveAll(ub => ub.UpgradeProcessed);

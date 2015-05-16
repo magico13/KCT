@@ -19,6 +19,13 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.1.7.0 (5/16/15)
+ - Fixed issues when loading tourists
+ - Supports Regex's KSCSwitcher now
+ - Fixed issue with creating a new save after loading one where KCT is disabled
+ - Fixed bug with facility upgrades failing when loading Space Center from Flight scene
+ - Updated StageRecovery, Toolbar, and KAC wrappers.
+
 v1.1.6.0 (4/29/15)
  - Update for KSP 1.0
  - KSC Upgrade time halved by default
