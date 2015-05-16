@@ -317,6 +317,7 @@ namespace KerbalConstructionTime
             showRename = false;
             showFirstRun = false;
             showSimLengthChooser = false;
+            clicked = false;
         }
 
         public static void DrawGUIs(int windowID)
@@ -1764,12 +1765,30 @@ namespace KerbalConstructionTime
 
         private static List<ProtoCrewMember> CrewAvailable()
         {
+            List<ProtoCrewMember> availableCrew = new List<ProtoCrewMember>();
             if (CrewQ.API.Available)
             {
-                return CrewQ.API.AvailableCrew.ToList();
+                availableCrew = CrewQ.API.AvailableCrew.ToList();
+                foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Tourist) //Get tourists
+                {
+                    bool available = true;
+                    if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                    {
+                        foreach (CrewedPart cP in KCT_GameStates.launchedCrew)
+                        {
+                            if (cP.crewList.Contains(crewMember))
+                                available = false;
+                        }
+                    }
+                    else
+                        available = false;
+                    if (available)
+                        availableCrew.Add(crewMember);
+                }
+
+                return availableCrew;
             }
 
-            List<ProtoCrewMember> availableCrew = new List<ProtoCrewMember>();
             foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Crew) //Initialize available crew list
             {
                 bool available = true;

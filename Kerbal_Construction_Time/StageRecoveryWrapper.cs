@@ -37,6 +37,23 @@ namespace KerbalConstructionTime
             }
         }
 
+        /* Check to see if StageRecovery is enabled. Returns false if unavailable or if user settings prevent SR from activating. */
+        public static bool StageRecoveryEnabled
+        {
+            get
+            {
+                if (StageRecoveryAvailable)
+                {
+                    object SREnabledObject = GetMemberInfoValue(SRType.GetMember("SREnabled")[0], Instance);
+                    return (bool)SREnabledObject;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
         #region APIMethods
         /***************/
         /* API methods */
@@ -76,6 +93,40 @@ namespace KerbalConstructionTime
             object failList = GetMemberInfoValue(SRType.GetMember("RecoveryFailureEvent")[0], Instance);
             System.Reflection.MethodInfo removeMethod = failList.GetType().GetMethod("Remove");
             removeMethod.Invoke(failList, new object[] { method });
+        }
+
+        /* Adds a listener to the OnRecoveryProcessingStart Event. When processing of the recovery status of a vessel starts 
+         * the event will fire before any serious processing occurs. */
+        public static void AddRecoveryProcessingStartListener(Action<Vessel> method)
+        {
+            object successList = GetMemberInfoValue(SRType.GetMember("OnRecoveryProcessingStart")[0], Instance);
+            System.Reflection.MethodInfo addMethod = successList.GetType().GetMethod("Add");
+            addMethod.Invoke(successList, new object[] { method });
+        }
+
+        /* Removes a listener from the OnRecoveryProcessingStart Event */
+        public static void RemoveRecoveryProcessingStartListener(Action<Vessel> method)
+        {
+            object successList = GetMemberInfoValue(SRType.GetMember("OnRecoveryProcessingStart")[0], Instance);
+            System.Reflection.MethodInfo removeMethod = successList.GetType().GetMethod("Remove");
+            removeMethod.Invoke(successList, new object[] { method });
+        }
+
+        /* Adds a listener to the OnRecoveryProcessingStart Event. When processing of the recovery status of a vessel starts 
+         * the event will fire before any serious processing occurs. */
+        public static void AddRecoveryProcessingFinishListener(Action<Vessel> method)
+        {
+            object successList = GetMemberInfoValue(SRType.GetMember("OnRecoveryProcessingFinish")[0], Instance);
+            System.Reflection.MethodInfo addMethod = successList.GetType().GetMethod("Add");
+            addMethod.Invoke(successList, new object[] { method });
+        }
+
+        /* Removes a listener from the OnRecoveryProcessingFinish Event */
+        public static void RemoveRecoveryProcessingFinishListener(Action<Vessel> method)
+        {
+            object successList = GetMemberInfoValue(SRType.GetMember("OnRecoveryProcessingFinish")[0], Instance);
+            System.Reflection.MethodInfo removeMethod = successList.GetType().GetMethod("Remove");
+            removeMethod.Invoke(successList, new object[] { method });
         }
         #endregion
 

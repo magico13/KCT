@@ -551,12 +551,13 @@ namespace KerbalConstructionTime
                     foreach (KCT_UpgradingBuilding kscTech in ksc.KSCTech)
                     {
                         if (!kscTech.AsIKCTBuildItem().IsComplete()) kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
-                        if (HighLogic.LoadedScene == GameScenes.SPACECENTER && kscTech.AsIKCTBuildItem().IsComplete() || KCT_GameStates.settings.InstantKSCUpgrades)
+                        if (HighLogic.LoadedScene == GameScenes.SPACECENTER && (kscTech.AsIKCTBuildItem().IsComplete() || KCT_GameStates.settings.InstantKSCUpgrades))
                         {
-                            kscTech.Upgrade();
+                            if (ScenarioUpgradeableFacilities.Instance != null && KCT_GameStates.erroredDuringOnLoad.OnLoadFinished)
+                                kscTech.Upgrade();
                         }
                     }
-                    if (HighLogic.LoadedScene == GameScenes.SPACECENTER) ksc.KSCTech.RemoveAll(ub => ub.AsIKCTBuildItem().IsComplete());
+                    if (HighLogic.LoadedScene == GameScenes.SPACECENTER) ksc.KSCTech.RemoveAll(ub => ub.UpgradeProcessed);
 
                 }
                 for (int i = 0; i < KCT_GameStates.TechList.Count; i++)
@@ -1515,37 +1516,50 @@ namespace KerbalConstructionTime
             }
         }
 
-        public static bool RSSActive
+
+        private static bool? _KSCSwitcherInstalled = null;
+        public static bool KSCSwitcherInstalled
         {
             get
             {
-                Type RSS = AssemblyLoader.loadedAssemblies
-                .Select(a => a.assembly.GetExportedTypes())
-                .SelectMany(t => t)
-                .FirstOrDefault(t => t.FullName == "RealSolarSystem.KSCSwitcher");
+                if (_KSCSwitcherInstalled == null)
+                {
+                    Type Switcher = AssemblyLoader.loadedAssemblies
+                    .Select(a => a.assembly.GetExportedTypes())
+                    .SelectMany(t => t)
+                    .FirstOrDefault(t => t.FullName == "regexKSP.KSCSwitcher");
 
-                if (RSS != null) return true;
+                    _KSCSwitcherInstalled = (Switcher != null);
 
-                return false;
+                    KCTDebug.Log("KSCSwitcher status: " + _KSCSwitcherInstalled);
+                }
+                return (_KSCSwitcherInstalled == null ? false : (bool)_KSCSwitcherInstalled);
             }
         }
 
         public static string GetActiveRSSKSC()
         {
-            if (!RSSActive) return "Stock";
-            Type RSS = AssemblyLoader.loadedAssemblies
-                 .Select(a => a.assembly.GetExportedTypes())
-                 .SelectMany(t => t)
-                 .FirstOrDefault(t => t.FullName == "RealSolarSystem.KSCSwitcher");
+            if (!KSCSwitcherInstalled) return "Stock";
+            Type Switcher = AssemblyLoader.loadedAssemblies
+                    .Select(a => a.assembly.GetExportedTypes())
+                    .SelectMany(t => t)
+                    .FirstOrDefault(t => t.FullName == "regexKSP.KSCSwitcher");
 
-            System.Reflection.FieldInfo site = RSS.GetField("activeSite");
+            UnityEngine.Object KSCSwitcherInstance = GameObject.FindObjectOfType(Switcher);
 
-            return (string)KCT_Utilities.GetMemberInfoValue(site, null);
+            return (string)GetMemberInfoValue(Switcher.GetMember("activeSite")[0], KSCSwitcherInstance);
+
+            //System.Reflection.FieldInfo site = RSS.GetField("activeSite");
+
+            //return (string)KCT_Utilities.GetMemberInfoValue(site, null);
         }
 
         public static void SetActiveKSCToRSS()
         {
             string site = GetActiveRSSKSC();
+            SetActiveKSC(site);
+            /*
+            if (site == "") site = "Stock";
             if (KCT_GameStates.ActiveKSC == null || site != KCT_GameStates.ActiveKSC.KSCName)
             {
                 KCTDebug.Log("Setting active site to " + site);
@@ -1561,7 +1575,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.ActiveKSC = setActive;
                 }
                 KCT_GameStates.activeKSCName = site;
-            }
+            }*/
         }
 
         public static void SetActiveKSC(string site)

@@ -267,6 +267,17 @@ namespace KerbalConstructionTime
 
         public void gameSceneEvent(GameScenes scene)
         {
+            if (scene == GameScenes.MAINMENU)
+            {
+                KCT_GameStates.reset();
+                KCT_GameStates.firstStart = true;
+                KCT_Utilities.disableSimulationLocks();
+                InputLockManager.RemoveControlLock("KCTLaunchLock");
+                KCT_GameStates.activeKSCName = "Stock";
+                KCT_GameStates.ActiveKSC = new KCT_KSC("Stock");
+                KCT_GameStates.KSCs = new List<KCT_KSC>() { KCT_GameStates.ActiveKSC };
+            }
+
             if (!KCT_GameStates.settings.enabledForSave) return;
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
             if (validScenes.Contains(scene))
@@ -288,16 +299,6 @@ namespace KerbalConstructionTime
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
             }
 
-            if (scene == GameScenes.MAINMENU)
-            {
-                KCT_GameStates.reset();
-                KCT_GameStates.firstStart = true;
-                KCT_Utilities.disableSimulationLocks();
-                InputLockManager.RemoveControlLock("KCTLaunchLock");
-                KCT_GameStates.activeKSCName = "Stock";
-                KCT_GameStates.ActiveKSC = new KCT_KSC("Stock");
-                KCT_GameStates.KSCs = new List<KCT_KSC>() { KCT_GameStates.ActiveKSC };
-            }
             if (HighLogic.LoadedSceneIsEditor)
             {
                 EditorLogic.fetch.Unlock("KCTEditorMouseLock");
@@ -586,6 +587,7 @@ namespace KerbalConstructionTime
         [Persistent] public int upgradeLevel, currentLevel;
         [Persistent] public string id, commonName;
         [Persistent] public double progress=0, BP=0, cost=0;
+        [Persistent] public bool UpgradeProcessed = false;
         //public bool allowUpgrade = false;
         private KCT_KSC _KSC = null;
         public KCT_UpgradingBuilding(Upgradeables.UpgradeableFacility facility, int newLevel, int oldLevel, string name)
@@ -603,6 +605,7 @@ namespace KerbalConstructionTime
 
         public void Downgrade()
         {
+            KCTDebug.Log("Downgrading " + commonName + " to level " + currentLevel);
             foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
             {
                 KCT_Events.allowedToUpgrade = true;
@@ -613,12 +616,14 @@ namespace KerbalConstructionTime
 
         public void Upgrade()
         {
-            
+            KCTDebug.Log("Upgrading " + commonName + " to level " + upgradeLevel);
             foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
             {
                 KCT_Events.allowedToUpgrade = true;
                 facility.SetLevel(upgradeLevel);
             }
+            UpgradeProcessed = ((int)(ScenarioUpgradeableFacilities.GetFacilityLevel(id)*2) == upgradeLevel);
+            
             //KCT_Events.allowedToUpgrade = false;
         }
 
