@@ -35,14 +35,9 @@ namespace KerbalConstructionTime
             formulaSettings = new KCT_Preset_Formula();
         }
 
-        public override void OnEncodeToConfigNode()
+        public ConfigNode AsConfigNode()
         {
-            base.OnEncodeToConfigNode();
-        }
 
-        public override void OnDecodeFromConfigNode()
-        {
-            base.OnDecodeFromConfigNode();
         }
 
     }
