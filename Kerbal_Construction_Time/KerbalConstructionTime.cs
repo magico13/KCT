@@ -665,11 +665,12 @@ namespace KerbalConstructionTime
             {
                 if (KCT_Utilities.CurrentGameHasScience() && KCT_GameStates.TotalUpgradePoints == 0)
                 {
-                    ConfigNode CN = new ConfigNode();
+                   /* ConfigNode CN = new ConfigNode();
                     ResearchAndDevelopment.Instance.snapshot.Save(CN);
-                    ConfigNode[] techNodes = CN.GetNodes("Tech");
-                    KCTDebug.Log("technodes length: " + techNodes.Length);
-                    KCT_GameStates.TotalUpgradePoints = techNodes.Length + 14;
+                    ConfigNode[] techNodes = CN.GetNodes("Tech");*/
+                    int numNodes = RDController.Instance.nodes.FindAll(n => n.IsResearched).Count;
+                    KCTDebug.Log("technodes length: " + numNodes);
+                    KCT_GameStates.TotalUpgradePoints = numNodes + 14;
                 }
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
