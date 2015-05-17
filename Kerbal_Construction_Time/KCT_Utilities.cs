@@ -1089,6 +1089,8 @@ namespace KerbalConstructionTime
             //System.IO.File.Delete(backupFile);
             KCT_GameStates.LoadingSimulationSave = false;
             KCT_GameStates.simulationInitialized = false;
+
+            KCT_GameStates.TestFlightPartFailures = true;
         }
 
 
@@ -1516,6 +1518,27 @@ namespace KerbalConstructionTime
             }
         }
 
+        public static Type TestFlightInterface;
+        private static bool? _TestFlightInstalled = null;
+        public static bool TestFlightInstalled
+        {
+            get
+            {
+                if (_TestFlightInstalled == null)
+                {
+                    TestFlightInterface = AssemblyLoader.loadedAssemblies
+                    .Select(a => a.assembly.GetExportedTypes())
+                    .SelectMany(t => t)
+                    .FirstOrDefault(t => t.FullName == "TestFlightCore.TestFlightInterface");
+
+                    _TestFlightInstalled = (TestFlightInterface != null);
+                }
+                return (_TestFlightInstalled == null ? false : (bool)_TestFlightInstalled);
+            }
+        }
+
+        
+
 
         private static bool? _KSCSwitcherInstalled = null;
         public static bool KSCSwitcherInstalled
@@ -1531,7 +1554,7 @@ namespace KerbalConstructionTime
 
                     _KSCSwitcherInstalled = (Switcher != null);
 
-                    KCTDebug.Log("KSCSwitcher status: " + _KSCSwitcherInstalled);
+                    //KCTDebug.Log("KSCSwitcher status: " + _KSCSwitcherInstalled);
                 }
                 return (_KSCSwitcherInstalled == null ? false : (bool)_KSCSwitcherInstalled);
             }

@@ -67,6 +67,8 @@ namespace KerbalConstructionTime
         public static List<String> BodiesVisited = new List<string> {"Kerbin"};
         public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;
 
+        public static bool TestFlightPartFailures = true;
+
         public static KCT_OnLoadError erroredDuringOnLoad = new KCT_OnLoadError();
 
 

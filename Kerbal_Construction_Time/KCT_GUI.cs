@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using System.Reflection;
 
 namespace KerbalConstructionTime
 {
@@ -1232,6 +1233,7 @@ namespace KerbalConstructionTime
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
                 KCT_GameStates.simulationEndTime = 0;
+                KCT_GameStates.TestFlightPartFailures = true;
              //   if (MCEWrapper.MCEAvailable) //Support for MCE
              //       MCEWrapper.IloadMCEbackup();
                 FlightDriver.RevertToLaunch();
@@ -1245,6 +1247,7 @@ namespace KerbalConstructionTime
                 KCT_Utilities.disableSimulationLocks();
                 KCT_GameStates.flightSimulated = false;
                 KCT_GameStates.simulationEndTime = 0;
+                KCT_GameStates.TestFlightPartFailures = true;
               //  if (MCEWrapper.MCEAvailable) //Support for MCE
               //      MCEWrapper.IloadMCEbackup();
                 if (FlightDriver.LaunchSiteName == "LaunchPad")
@@ -1252,6 +1255,38 @@ namespace KerbalConstructionTime
                 else if (FlightDriver.LaunchSiteName == "Runway")
                     FlightDriver.RevertToPrelaunch(EditorFacility.SPH);
                 centralWindowPosition.height = 1;
+            }
+            if (KCT_Utilities.TestFlightInstalled && KCT_GameStates.TestFlightPartFailures && GUILayout.Button("Disable Part Failures"))
+            {
+                KCT_GameStates.TestFlightPartFailures = false;
+                foreach (Part part in FlightGlobals.ActiveVessel.Parts)
+                {
+                    bool tfAvailableOnPart = (bool)KCT_Utilities.TestFlightInterface.InvokeMember("TestFlightAvailable", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part });
+                    if (tfAvailableOnPart)
+                    {
+                        foreach (string failureName in (List<string>)KCT_Utilities.TestFlightInterface.InvokeMember("GetAvailableFailures", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part }))
+                        {
+                            KCTDebug.Log(part.partInfo.name + ":" + failureName);
+                            KCT_Utilities.TestFlightInterface.InvokeMember("DisableFailure", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part, failureName });
+                        }
+                    }
+                }
+            }
+            if (KCT_Utilities.TestFlightInstalled && !KCT_GameStates.TestFlightPartFailures && GUILayout.Button("Enable Part Failures"))
+            {
+                KCT_GameStates.TestFlightPartFailures = true;
+                foreach (Part part in FlightGlobals.ActiveVessel.Parts)
+                {
+                    bool tfAvailableOnPart = (bool)KCT_Utilities.TestFlightInterface.InvokeMember("TestFlightAvailable", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part });
+                    if (tfAvailableOnPart)
+                    {
+                        foreach (string failureName in (List<string>)KCT_Utilities.TestFlightInterface.InvokeMember("GetAvailableFailures", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part }))
+                        {
+                            KCTDebug.Log(part.partInfo.name + ":" + failureName);
+                            KCT_Utilities.TestFlightInterface.InvokeMember("EnableFailure", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part, failureName });
+                        }
+                    }
+                }
             }
             if (GUILayout.Button("Close"))
             {
