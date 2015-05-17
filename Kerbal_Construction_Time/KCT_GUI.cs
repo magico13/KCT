@@ -2582,11 +2582,11 @@ namespace KerbalConstructionTime
         private static string newName = "";
         public static void DrawRenameWindow(int windowID)
         {
-            if (centralWindowPosition.y != (Screen.height - centralWindowPosition.height) / 2)
+          /*  if (centralWindowPosition.y != (Screen.height - centralWindowPosition.height) / 2)
             {
                 centralWindowPosition.y = (Screen.height - centralWindowPosition.height) / 2;
                 centralWindowPosition.height = 1;
-            }
+            }*/
             GUILayout.BeginVertical();
             GUILayout.Label("Name:");
             newName = GUILayout.TextField(newName);
