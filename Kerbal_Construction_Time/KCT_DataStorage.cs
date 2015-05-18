@@ -72,12 +72,12 @@ namespace KerbalConstructionTime
     {
         [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX
             || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && KCT_GameStates.settings.SandboxEnabled));
-        [Persistent] public float RecoveryModifier = 0.75f;
+      /*  [Persistent] public float RecoveryModifier = 0.75f;
         [Persistent] public bool NoCostSimulations = false;
         [Persistent] public bool DisableBuildTime = false;
         [Persistent] public bool InstantTechUnlock = false;
         [Persistent] public bool EnableAllBodies = false;
-        [Persistent] public bool Reconditioning = true;
+        [Persistent] public bool Reconditioning = true;*/
 
         [Persistent] public float fundsFromSimulation = 0;
 
@@ -145,23 +145,23 @@ namespace KerbalConstructionTime
         private void SetSettings()
         {
             KCT_GameStates.settings.enabledForSave = enabledForSave;
-            KCT_GameStates.settings.RecoveryModifier = RecoveryModifier;
+           /* KCT_GameStates.settings.RecoveryModifier = RecoveryModifier;
             KCT_GameStates.settings.NoCostSimulations = NoCostSimulations;
             KCT_GameStates.settings.DisableBuildTime = DisableBuildTime;
             KCT_GameStates.settings.InstantTechUnlock = InstantTechUnlock;
             KCT_GameStates.settings.EnableAllBodies = EnableAllBodies;
-            KCT_GameStates.settings.Reconditioning = Reconditioning;
+            KCT_GameStates.settings.Reconditioning = Reconditioning;*/
         }
 
         private void GetSettings()
         {
             enabledForSave = KCT_GameStates.settings.enabledForSave;
-            RecoveryModifier = KCT_GameStates.settings.RecoveryModifier;
+           /* RecoveryModifier = KCT_GameStates.settings.RecoveryModifier;
             NoCostSimulations = KCT_GameStates.settings.NoCostSimulations;
             DisableBuildTime = KCT_GameStates.settings.DisableBuildTime;
             InstantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
             EnableAllBodies = KCT_GameStates.settings.EnableAllBodies;
-            Reconditioning = KCT_GameStates.settings.Reconditioning;
+            Reconditioning = KCT_GameStates.settings.Reconditioning;*/
         }
 
         private bool VesselIsInWorld(Guid id)

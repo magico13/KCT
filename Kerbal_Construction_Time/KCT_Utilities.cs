@@ -270,11 +270,11 @@ namespace KerbalConstructionTime
                 if (!KCT_Utilities.PartIsProcedural(p))
                 {
                     name += GetTweakScaleSize(p);
-                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
                     //C=cost, c=dry cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
                     effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetmass.ToString()},
-                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect.ToString()}});
 
                     if (InvEff != 0)
                     {
@@ -290,11 +290,11 @@ namespace KerbalConstructionTime
                     double costRemoved = dryCost - costRemaining;
                     //C=cost, c=dry cost, A=cost covered by inv, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
 
-                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
 
                     effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetmass.ToString()},
-                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+                    {"m", drymass.ToString()}, {"U", used.ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect.ToString()}});
 
                     if (InvEff != 0)
                     {
@@ -307,7 +307,7 @@ namespace KerbalConstructionTime
                 if (effectiveCost < 0) effectiveCost = 0;
                 totalEffectiveCost += effectiveCost;
             }
-            double finalBP = KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string, string>() { { "E", totalEffectiveCost.ToString() }, { "O", KCT_GameStates.timeSettings.OverallMultiplier.ToString() } });
+            double finalBP = KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string, string>() { { "E", totalEffectiveCost.ToString() }, { "O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString() } });
             return finalBP;
         }
 
@@ -333,11 +333,11 @@ namespace KerbalConstructionTime
                 if (!KCT_Utilities.PartIsProcedural(p))
                 {
                     name += GetTweakScaleSize(p);
-                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
                     //C=cost, c=dry cost, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
                     effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetMass.ToString()},
-                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect.ToString()}});
 
                     if (InvEff != 0)
                     {
@@ -345,20 +345,20 @@ namespace KerbalConstructionTime
                         if (invCopy[name] == 0)
                             invCopy.Remove(name);
                     }
-                   /* if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
+                   /* if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect > 0) // If the part is in the inventory, it has a small effect on the total craft
                     {
                         // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
-                        if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
-                            effectiveCost = Math.Min(cost / (KCT_GameStates.timeSettings.InventoryEffect + (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1))), cost);
+                        if (useTracker && KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
+                            effectiveCost = Math.Min(cost / (KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect + (KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1))), cost);
                         else // Otherwise the cost is just the normal cost divided by the inventory effect
-                            effectiveCost = cost / KCT_GameStates.timeSettings.InventoryEffect;
+                            effectiveCost = cost / KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect;
                         --invCopy[name];
                         if (invCopy[name] == 0)
                             invCopy.Remove(name);
                     }
-                    else if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name)) // The more the part is used, the faster it gets to build
+                    else if (useTracker && KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name)) // The more the part is used, the faster it gets to build
                     {
-                        effectiveCost = Math.Min(cost / (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1)), cost);
+                        effectiveCost = Math.Min(cost / (KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1)), cost);
                     }
                     else // If the part has never been used, it takes the maximal time
                     {
@@ -373,11 +373,11 @@ namespace KerbalConstructionTime
                     double costRemoved = dryCost - costRemaining;
                     //C=cost, c=dry cost, A=cost covered by inv, M=wet mass, m=dry mass, U=part tracker, O=overall multiplier, I=inventory effect (0 if not in inv), B=build effect
 
-                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_GameStates.timeSettings.InventoryEffect : 0;
+                    double InvEff = (invCopy.ContainsKey(name) && invCopy[name] > 0) ? KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect : 0;
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
 
                     effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetMass.ToString()},
-                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_GameStates.timeSettings.BuildEffect.ToString()}});
+                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect.ToString()}});
 
                     if (InvEff != 0)
                     {
@@ -387,20 +387,20 @@ namespace KerbalConstructionTime
                     }
 
                     /*
-                    if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_GameStates.timeSettings.InventoryEffect > 0)
+                    if (invCopy.Count > 0 && invCopy.ContainsKey(name) && KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect > 0)
                     {
                         // Combine the part tracker and inventory effect into one so that times will still decrease as you recover+reuse
-                        if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
-                            effectiveCost = (costRemaining + (costRemoved * 10 / KCT_GameStates.timeSettings.InventoryEffect)) / Math.Max(KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1), 1);
+                        if (useTracker && KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name))
+                            effectiveCost = (costRemaining + (costRemoved * 10 / KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect)) / Math.Max(KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1), 1);
                         else // Otherwise the cost is just the normal cost divided by the inventory effect
-                            effectiveCost = costRemaining + (costRemoved * 10 / KCT_GameStates.timeSettings.InventoryEffect);
+                            effectiveCost = costRemaining + (costRemoved * 10 / KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect);
                         invCopy[name] -= (int)(costRemoved*1000);
                         if (invCopy[name] == 0)
                             invCopy.Remove(name);
                     }
-                    else if (useTracker && KCT_GameStates.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name)) // The more the part is used, the faster it gets to build
+                    else if (useTracker && KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect > 0 && KCT_GameStates.PartTracker.ContainsKey(name)) // The more the part is used, the faster it gets to build
                     {
-                        effectiveCost = Math.Min(cost / (KCT_GameStates.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1)), cost);
+                        effectiveCost = Math.Min(cost / (KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect * (KCT_GameStates.PartTracker[name] + 1)), cost);
                     }
                     else // If the part has never been used, it takes the maximal time
                     {
@@ -411,9 +411,9 @@ namespace KerbalConstructionTime
                 if (effectiveCost < 0) effectiveCost = 0;
                 totalEffectiveCost += effectiveCost;
             }
-            double finalBP = KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string,string>() { {"E", totalEffectiveCost.ToString()}, {"O", KCT_GameStates.timeSettings.OverallMultiplier.ToString()}});
+            double finalBP = KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string, string>() { { "E", totalEffectiveCost.ToString() }, { "O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString() } });
             return finalBP;
-            //return Math.Sqrt(totalEffectiveCost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
+            //return Math.Sqrt(totalEffectiveCost) * 2000 * KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier;
         }
 
         public static string PartNameFromNode(ConfigNode part)
@@ -546,12 +546,12 @@ namespace KerbalConstructionTime
                         if (rr.progress > rr.BP) rr.progress = rr.BP;
                     }
 
-                    ksc.Recon_Rollout.RemoveAll(rr => !KCT_GameStates.settings.Reconditioning || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));
+                    ksc.Recon_Rollout.RemoveAll(rr => !KCT_PresetManager.Instance.ActivePreset.generalSettings.Reconditioning || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));
 
                     foreach (KCT_UpgradingBuilding kscTech in ksc.KSCTech)
                     {
                         if (!kscTech.AsIKCTBuildItem().IsComplete()) kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
-                        if (HighLogic.LoadedScene == GameScenes.SPACECENTER && (kscTech.AsIKCTBuildItem().IsComplete() || KCT_GameStates.settings.InstantKSCUpgrades))
+                        if (HighLogic.LoadedScene == GameScenes.SPACECENTER && (kscTech.AsIKCTBuildItem().IsComplete() || KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantKSCUpgrades))
                         {
                             if (ScenarioUpgradeableFacilities.Instance != null && KCT_GameStates.erroredDuringOnLoad.OnLoadFinished)
                                 kscTech.Upgrade();
@@ -565,7 +565,7 @@ namespace KerbalConstructionTime
                     KCT_TechItem tech = KCT_GameStates.TechList[i];
                     double buildRate = tech.BuildRate;
                     tech.progress += (buildRate * (UT - lastUT));
-                    if (tech.isComplete || KCT_GameStates.settings.InstantTechUnlock)
+                    if (tech.isComplete || KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantTechUnlock)
                     {
                         if (KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRate > 1f)
                             TimeWarp.SetRate(0, true);
@@ -1457,7 +1457,7 @@ namespace KerbalConstructionTime
             return spentPoints;
         }
 
-        public static float GetRecoveryValueForChuteLanding(ProtoVessel pv)
+       /* public static float GetRecoveryValueForChuteLanding(ProtoVessel pv)
         {
             bool probeCoreAttached = false;
            // foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
@@ -1485,7 +1485,7 @@ namespace KerbalConstructionTime
             KCTDebug.Log("Vessel being recovered by KCT. Percent returned: " + 100 * recoveryPercent + "%. Distance from KSC: " + Math.Round(distanceFromKSC/1000, 2) + " km");
             KCTDebug.Log("Funds being returned: " + totalReturn + "/" + totalBeforeReturn);
             return totalReturn;
-        }
+        }*/
 
         public static bool StageRecoveryAddonActive
         {

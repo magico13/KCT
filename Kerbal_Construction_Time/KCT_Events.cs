@@ -68,7 +68,7 @@ namespace KerbalConstructionTime
                 return;
 
 
-            if (!(allowedToUpgrade || KCT_GameStates.settings.InstantKSCUpgrades))
+            if (!(allowedToUpgrade || KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantKSCUpgrades))
             {
                 KCT_UpgradingBuilding upgrading = new KCT_UpgradingBuilding(facility, lvl, lvl - 1, facility.id.Split('/').Last());
                 
@@ -125,7 +125,7 @@ namespace KerbalConstructionTime
             if (KCT_GUI.PrimarilyDisabled)
                 return;
             double cost = facility.RepairCost;
-            double BP = Math.Sqrt(cost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
+            double BP = Math.Sqrt(cost) * 2000 * KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier;
             KCTDebug.Log("Facility being repaired for " + cost + " funds, resulting in a BP of " + BP);
             facility.StopCoroutine("Repair");
         }
@@ -239,7 +239,7 @@ namespace KerbalConstructionTime
                     ++KCT_GameStates.TotalUpgradePoints;
                     ScreenMessages.PostScreenMessage("[KCT] Upgrade Point Added!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
 
-                    if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime)
+                    if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantTechUnlock && !KCT_PresetManager.Instance.ActivePreset.generalSettings.DisableBuildTime)
                     {
                         KCT_GameStates.TechList.Add(tech);
                         ScreenMessages.PostScreenMessage("[KCT] Node will unlock in " + KCT_Utilities.GetFormattedTime(tech.TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
@@ -256,7 +256,7 @@ namespace KerbalConstructionTime
 
         public void TechDisableEvent()
         {
-            if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime)
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantTechUnlock && !KCT_PresetManager.Instance.ActivePreset.generalSettings.DisableBuildTime)
             {
                 foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                 {
@@ -332,7 +332,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
                     KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd, TransactionReasons.None);
                 }
-                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_GameStates.settings.Reconditioning)
+                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_PresetManager.Instance.ActivePreset.generalSettings.Reconditioning)
                 {
                     KCT_Recon_Rollout reconditioning = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
                     if (reconditioning == null)
@@ -635,7 +635,7 @@ namespace KerbalConstructionTime
         public void SetBP(double cost)
         {
            // BP = Math.Sqrt(cost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
-            BP = KCT_MathParsing.GetStandardFormulaValue("KSCUpgrade", new Dictionary<string, string>() { { "C", cost.ToString() }, { "O", KCT_GameStates.timeSettings.OverallMultiplier.ToString() } });
+            BP = KCT_MathParsing.GetStandardFormulaValue("KSCUpgrade", new Dictionary<string, string>() { { "C", cost.ToString() }, { "O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString() } });
         }
 
         public bool AlreadyInProgress()

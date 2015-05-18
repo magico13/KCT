@@ -178,11 +178,19 @@ namespace KerbalConstructionTime
         {
             KCT_GameStates.settings.Load(); //Load the settings file, if it exists
             KCT_GameStates.settings.Save(); //Save the settings file, with defaults if it doesn't exist
-            KCT_GameStates.timeSettings.Load(); //Load the time settings
+
+            if (KCT_PresetManager.Instance == null)
+            {
+                KCT_PresetManager.Instance = new KCT_PresetManager();
+            }
+            KCT_PresetManager.Instance.SetActiveFromSaveData();
+            KCT_PresetManager.Instance.SaveActiveToSaveData();
+
+           /* KCT_GameStates.timeSettings.Load(); //Load the time settings
             KCT_GameStates.timeSettings.Save(); //Save the time settings
             UpdateOldFormulaCFG(); //Update the formula cfg file to the new format so things aren't broken
             KCT_GameStates.formulaSettings.Load();
-            KCT_GameStates.formulaSettings.Save();
+            KCT_GameStates.formulaSettings.Save();*/
 
             // Ghetto event queue
             if (HighLogic.LoadedScene == GameScenes.EDITOR)

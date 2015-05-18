@@ -100,7 +100,7 @@ namespace KerbalConstructionTime
 
             //Buttons for VAB/SPH lists
             List<string> buttonList = new List<string> { "VAB", "SPH", "KSC" };
-            if (KCT_Utilities.CurrentGameHasScience() && !KCT_GameStates.settings.InstantTechUnlock) buttonList.Add("Tech");
+            if (KCT_Utilities.CurrentGameHasScience() && !KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantTechUnlock) buttonList.Add("Tech");
             GUILayout.BeginHorizontal();
             //if (HighLogic.LoadedScene == GameScenes.SPACECENTER) { buttonList.Add("Upgrades"); buttonList.Add("Settings"); }
             int lastSelected = listWindow;
@@ -264,7 +264,7 @@ namespace KerbalConstructionTime
                     }
                     KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout);
                     //KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollback);
-                    bool rolloutEnabled = KCT_GameStates.settings.Reconditioning && KCT_GameStates.timeSettings.RolloutReconSplit > 0;
+                    bool rolloutEnabled = KCT_PresetManager.Instance.ActivePreset.generalSettings.Reconditioning && KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit > 0;
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];

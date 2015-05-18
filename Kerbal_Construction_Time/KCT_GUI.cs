@@ -136,7 +136,7 @@ namespace KerbalConstructionTime
             }
         }
 
-        public static bool PrimarilyDisabled { get { return (!KCT_GameStates.settings.enabledForSave || KCT_GameStates.settings.DisableBuildTime); } }
+        public static bool PrimarilyDisabled { get { return (!KCT_GameStates.settings.enabledForSave || KCT_PresetManager.Instance.ActivePreset.generalSettings.DisableBuildTime); } }
 
         private static void CheckKSCLock()
         {
@@ -219,7 +219,7 @@ namespace KerbalConstructionTime
                 else
                     showSettings = false;
             }
-            else if (KCT_GameStates.settings.DisableBuildTime && HighLogic.LoadedSceneIsEditor)
+            else if (KCT_PresetManager.Instance.ActivePreset.generalSettings.DisableBuildTime && HighLogic.LoadedSceneIsEditor)
             {
                 if (!showSimConfig)
                 {
@@ -802,7 +802,7 @@ namespace KerbalConstructionTime
         {
             if (simLength == "")
             {
-                if (KCT_GameStates.settings.NoCostSimulations || !KCT_Utilities.CurrentGameIsCareer())
+                if (KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations || !KCT_Utilities.CurrentGameIsCareer())
                     simLength = "0";
                 else
                     simLength = "0.25";
@@ -860,7 +860,7 @@ namespace KerbalConstructionTime
             float nullFloat, nF2;
 
             float cost = 0;
-            if (!KCT_GameStates.settings.NoCostSimulations)
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations)
             {
                 cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 1);
                 cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
@@ -935,7 +935,7 @@ namespace KerbalConstructionTime
                 unlockEditor = true;
                 showSimConfig = false;
                 centralWindowPosition.height = 1;
-                if (!KCT_GameStates.settings.NoCostSimulations)
+                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations)
                 {
                     KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
                     KCT_GameStates.SimulationCost = cost;
@@ -969,7 +969,7 @@ namespace KerbalConstructionTime
         public static void DrawBodyChooser(int windowID)
         {
             GUILayout.BeginVertical();
-            if (KCT_GameStates.settings.EnableAllBodies)
+            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.EnableAllBodies)
             {
                 foreach (CelestialBody body in FlightGlobals.Bodies)
                 {
@@ -1136,11 +1136,11 @@ namespace KerbalConstructionTime
                 }
             }
 
-            if ((!KCT_Utilities.CurrentGameIsCareer() || KCT_GameStates.settings.NoCostSimulations || Funding.Instance.Funds >= (KCT_GameStates.SimulationCost*1.1))
-                && GUILayout.Button("Purchase Additional Time\n" + ((KCT_GameStates.settings.NoCostSimulations || !KCT_Utilities.CurrentGameIsCareer()) ? "Free" : Math.Round(KCT_GameStates.SimulationCost * 1.1).ToString() + " funds")))
+            if ((!KCT_Utilities.CurrentGameIsCareer() || KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations || Funding.Instance.Funds >= (KCT_GameStates.SimulationCost*1.1))
+                && GUILayout.Button("Purchase Additional Time\n" + ((KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations || !KCT_Utilities.CurrentGameIsCareer()) ? "Free" : Math.Round(KCT_GameStates.SimulationCost * 1.1).ToString() + " funds")))
             {
                 showSimulationCompleteFlight = false;
-                if (KCT_Utilities.CurrentGameIsCareer() && !KCT_GameStates.settings.NoCostSimulations)
+                if (KCT_Utilities.CurrentGameIsCareer() && !KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations)
                 {
                     KCT_GameStates.FundsToChargeAtSimEnd += KCT_GameStates.SimulationCost * 1.1F;
                     KCT_Utilities.SpendFunds(KCT_GameStates.SimulationCost * 1.1F, TransactionReasons.None);
@@ -1895,45 +1895,44 @@ namespace KerbalConstructionTime
         private static void ShowSettings()
         {
             settingSelected = 0;
-            newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
+          /*  newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
             newBuildEffect = KCT_GameStates.timeSettings.BuildEffect.ToString();
             newInvEffect = KCT_GameStates.timeSettings.InventoryEffect.ToString();
-            newReconEffect = (86400 / KCT_GameStates.timeSettings.ReconditioningEffect).ToString();
+            newReconEffect = (86400 / KCT_GameStates.timeSettings.ReconditioningEffect).ToString();*/
             enabledForSave = KCT_GameStates.settings.enabledForSave;
-            enableAllBodies = KCT_GameStates.settings.EnableAllBodies;
+          //  enableAllBodies = KCT_GameStates.settings.EnableAllBodies;
             newTimeWarp = KCT_GameStates.settings.MaxTimeWarp.ToString();
             forceStopWarp = KCT_GameStates.settings.ForceStopWarp;
             newSandboxUpgrades = KCT_GameStates.settings.SandboxUpgrades.ToString();
             newUpgradeCount = KCT_GameStates.TotalUpgradePoints.ToString();
             //newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
-            instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
-            instantKSCUpgrades = KCT_GameStates.settings.InstantKSCUpgrades;
+         /*   instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
+            instantKSCUpgrades = KCT_GameStates.settings.InstantKSCUpgrades;*/
 
-            disableBuildTimes = KCT_GameStates.settings.DisableBuildTime;
+        //    disableBuildTimes = KCT_GameStates.settings.DisableBuildTime;
             checkForUpdates = KCT_GameStates.settings.CheckForUpdates;
             versionSpecific = KCT_GameStates.settings.VersionSpecific;
-            newRecoveryModifier = (KCT_GameStates.settings.RecoveryModifier*100).ToString();
+         //   newRecoveryModifier = (KCT_GameStates.settings.RecoveryModifier*100).ToString();
             disableRecMsgs = KCT_GameStates.settings.DisableRecoveryMessages;
             disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
-            freeSims = KCT_GameStates.settings.NoCostSimulations;
-            recon = KCT_GameStates.settings.Reconditioning;
+        /*    freeSims = KCT_GameStates.settings.NoCostSimulations;
+            recon = KCT_GameStates.settings.Reconditioning;*/
             debug = KCT_GameStates.settings.Debug;
             overrideLaunchBtn = KCT_GameStates.settings.OverrideLaunchButton;
             autoAlarms = KCT_GameStates.settings.AutoKACAlarams;
             useBlizzyToolbar = KCT_GameStates.settings.PreferBlizzyToolbar;
-            allowParachuteRecovery = KCT_GameStates.settings.AllowParachuteRecovery;
 
-            reconSplit = KCT_GameStates.timeSettings.RolloutReconSplit;
+       /*     reconSplit = KCT_GameStates.timeSettings.RolloutReconSplit;
             maxReconditioning = KCT_GameStates.timeSettings.MaxReconditioning.ToString();
-            newNodeModifier = KCT_GameStates.timeSettings.NodeModifier.ToString();
+            newNodeModifier = KCT_GameStates.timeSettings.NodeModifier.ToString();*/
 
-            disableBuildTimesDefault = KCT_GameStates.settings.DisableBuildTimeDefault;
+        /*    disableBuildTimesDefault = KCT_GameStates.settings.DisableBuildTimeDefault;
             instantTechUnlockDefault = KCT_GameStates.settings.InstantTechUnlockDefault;
             instantKSCUpgradeDefault = KCT_GameStates.settings.InstantKSCUpgradeDefault;
             enableAllBodiesDefault = KCT_GameStates.settings.EnableAllBodiesDefault;
             freeSimsDefault = KCT_GameStates.settings.NoCostSimulationsDefault;
             newRecoveryModDefault = (KCT_GameStates.settings.RecoveryModifierDefault*100).ToString();
-            reconDefault = KCT_GameStates.settings.ReconditioningDefault;
+            reconDefault = KCT_GameStates.settings.ReconditioningDefault;*/
 
             settingsPosition.height = 1;
             showSettings = !showSettings;
@@ -2092,7 +2091,7 @@ namespace KerbalConstructionTime
                 newNodeModifier = GUILayout.TextField(newNodeModifier, 10, GUILayout.Width(100));
                 GUILayout.EndHorizontal();*/
 
-                GUILayout.Label("Reconditioning/Rollout:");
+            /*    GUILayout.Label("Reconditioning/Rollout:");
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Total: ");
                 double mult;
@@ -2101,7 +2100,7 @@ namespace KerbalConstructionTime
                 GUILayout.Label(days + " BP per ");
                 newReconEffect = GUILayout.TextField(newReconEffect, 10, GUILayout.Width(100));
                 GUILayout.Label(" tons.");
-                GUILayout.EndHorizontal();
+                GUILayout.EndHorizontal();*/
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Max Recon.: ");
@@ -2159,36 +2158,36 @@ namespace KerbalConstructionTime
                 KCT_GameStates.settings.enabledForSave = enabledForSave;
                 KCT_GameStates.TotalUpgradePoints = int.Parse(newUpgradeCount);
                 KCT_GameStates.settings.MaxTimeWarp = Math.Min(TimeWarp.fetch.warpRates.Count()-1, Math.Max(0, int.Parse(newTimeWarp)));
-                KCT_GameStates.settings.EnableAllBodies = enableAllBodies;
+          //      KCT_GameStates.settings.EnableAllBodies = enableAllBodies;
                 KCT_GameStates.settings.ForceStopWarp = forceStopWarp;
-                KCT_GameStates.settings.InstantTechUnlock = instantTechUnlock;
-                KCT_GameStates.settings.InstantKSCUpgrades = instantKSCUpgrades;
+          //      KCT_GameStates.settings.InstantTechUnlock = instantTechUnlock;
+          //      KCT_GameStates.settings.InstantKSCUpgrades = instantKSCUpgrades;
                 KCT_GameStates.settings.SandboxUpgrades = int.Parse(newSandboxUpgrades);
-                KCT_GameStates.settings.DisableBuildTime = disableBuildTimes;
-                KCT_GameStates.settings.RecoveryModifier = Math.Min(1, Math.Max(float.Parse(newRecoveryModifier) / 100f, 0));
+          //      KCT_GameStates.settings.DisableBuildTime = disableBuildTimes;
+          //      KCT_GameStates.settings.RecoveryModifier = Math.Min(1, Math.Max(float.Parse(newRecoveryModifier) / 100f, 0));
                 KCT_GameStates.settings.CheckForUpdates = checkForUpdates;
                 KCT_GameStates.settings.VersionSpecific = versionSpecific;
                 KCT_GameStates.settings.DisableRecoveryMessages = disableRecMsgs;
                 KCT_GameStates.settings.DisableAllMessages = disableAllMsgs;
-                KCT_GameStates.settings.NoCostSimulations = freeSims;
-                KCT_GameStates.settings.Reconditioning = recon;
+          //      KCT_GameStates.settings.NoCostSimulations = freeSims;
+           //     KCT_GameStates.settings.Reconditioning = recon;
                 KCT_GameStates.settings.OverrideLaunchButton = overrideLaunchBtn;
                 KCT_GameStates.settings.Debug = debug;
                 KCT_GameStates.settings.AutoKACAlarams = autoAlarms;
                 KCT_GameStates.settings.PreferBlizzyToolbar = useBlizzyToolbar;
-                KCT_GameStates.settings.AllowParachuteRecovery = allowParachuteRecovery;
+           //     KCT_GameStates.settings.AllowParachuteRecovery = allowParachuteRecovery;
 
-                KCT_GameStates.settings.DisableBuildTimeDefault = disableBuildTimesDefault;
+           /*     KCT_GameStates.settings.DisableBuildTimeDefault = disableBuildTimesDefault;
                 KCT_GameStates.settings.InstantTechUnlockDefault = instantTechUnlockDefault;
                 KCT_GameStates.settings.InstantKSCUpgradeDefault = instantKSCUpgrades;
                 KCT_GameStates.settings.EnableAllBodiesDefault = enableAllBodiesDefault;
                 KCT_GameStates.settings.NoCostSimulationsDefault = freeSimsDefault;
                 KCT_GameStates.settings.RecoveryModifierDefault = Math.Min(1, Math.Max(float.Parse(newRecoveryModDefault) / 100f, 0));
-                KCT_GameStates.settings.ReconditioningDefault = reconDefault;
+                KCT_GameStates.settings.ReconditioningDefault = reconDefault;*/
 
                 KCT_GameStates.settings.Save();
 
-                KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);
+              /*  KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);
                 KCT_GameStates.timeSettings.BuildEffect = double.Parse(newBuildEffect);
                 KCT_GameStates.timeSettings.InventoryEffect = double.Parse(newInvEffect);
                 KCT_GameStates.timeSettings.NodeModifier = double.Parse(newNodeModifier);
@@ -2197,7 +2196,7 @@ namespace KerbalConstructionTime
                 double reconTime = double.Parse(newReconEffect);
                 reconTime = (86400 / reconTime);
                 KCT_GameStates.timeSettings.ReconditioningEffect = reconTime;
-                KCT_GameStates.timeSettings.Save();
+                KCT_GameStates.timeSettings.Save();*/
                 showSettings = false;
                 if (!PrimarilyDisabled) showBuildList = true;
                 if (!enabledForSave) InputLockManager.RemoveControlLock("KCTKSCLock");

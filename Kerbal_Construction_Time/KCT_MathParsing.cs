@@ -12,16 +12,16 @@ namespace KerbalConstructionTime
         {
             switch (formulaName)
             {
-                case "Node": return ParseMath(KCT_GameStates.formulaSettings.NodeFormula, variables);
-                case "UpgradeFunds": return ParseMath(KCT_GameStates.formulaSettings.UpgradeFundsFormula, variables);
-                case "UpgradeScience": return ParseMath(KCT_GameStates.formulaSettings.UpgradeScienceFormula, variables);
-                case "Research": return ParseMath(KCT_GameStates.formulaSettings.ResearchFormula, variables);
-                case "EffectivePart": return ParseMath(KCT_GameStates.formulaSettings.EffectivePartFormula, variables);
-                case "ProceduralPart": return ParseMath(KCT_GameStates.formulaSettings.ProceduralPartFormula, variables);
-                case "BP": return ParseMath(KCT_GameStates.formulaSettings.BPFormula, variables);
-                case "KSCUpgrade": return ParseMath(KCT_GameStates.formulaSettings.KSCUpgradeFormula, variables);
-                case "Reconditioning": return ParseMath(KCT_GameStates.formulaSettings.ReconditioningFormula, variables);
-                case "BuildRate": return ParseMath(KCT_GameStates.formulaSettings.BuildRateFormula, variables);
+                case "Node": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.NodeFormula, variables);
+                case "UpgradeFunds": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeFundsFormula, variables);
+                case "UpgradeScience": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeScienceFormula, variables);
+                case "Research": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ResearchFormula, variables);
+                case "EffectivePart": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.EffectivePartFormula, variables);
+                case "ProceduralPart": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ProceduralPartFormula, variables);
+                case "BP": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BPFormula, variables);
+                case "KSCUpgrade": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KSCUpgradeFormula, variables);
+                case "Reconditioning": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ReconditioningFormula, variables);
+                case "BuildRate": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BuildRateFormula, variables);
                 default: return 0;
             }
         }

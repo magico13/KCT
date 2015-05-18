@@ -8,12 +8,47 @@ namespace KerbalConstructionTime
     class KCT_PresetManager
     {
         public static KCT_PresetManager Instance;
+        public KCT_Preset ActivePreset;
+        public List<KCT_Preset> Presets;
 
-        public KCT_PresetManager()
-        {
-            Instance = this;
+        protected string PresetPath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/Presets/";
+
+        public KCT_PresetManager() 
+        { 
+            Presets = new List<KCT_Preset>();
+            LoadPresets();
+
+            KCTDebug.Log("First preset name is " + Presets[0].name);
         }
 
+        public void SetActiveFromSaveData()
+        {
+            string SavedFile = KSPUtil.ApplicationRootPath + "/saves/" + HighLogic.SaveFolder+"/KCT_Settings.cfg";
+            if (System.IO.File.Exists(SavedFile))
+            {
+                ActivePreset = new KCT_Preset(SavedFile);
+            }
+            else
+            {
+                ActivePreset = new KCT_Preset("UNINIT", "NA", "NA");
+            }
+        }
+
+        public void SaveActiveToSaveData()
+        {
+            string SavedFile = KSPUtil.ApplicationRootPath + "/saves/" + HighLogic.SaveFolder + "/KCT_Settings.cfg";
+            ActivePreset.SaveToFile(SavedFile);
+        }
+
+        public void LoadPresets()
+        {
+            Presets.Clear();
+            foreach (string file in System.IO.Directory.GetFiles(PresetPath, "*.cfg"))
+            {
+                KCT_Preset newPreset = new KCT_Preset(file);
+                Presets.Add(newPreset);
+            }
+        }
     }
 
     class KCT_Preset
@@ -22,7 +57,12 @@ namespace KerbalConstructionTime
         public KCT_Preset_Time timeSettings;
         public KCT_Preset_Formula formulaSettings;
 
-        string name = "", description = "", author = "";
+        public string name = "UNINIT", description = "NA", author = "NA";
+
+        public KCT_Preset(string filePath)
+        {
+            LoadFromFile(filePath);
+        }
 
         public KCT_Preset(string presetName, string presetDescription, string presetAuthor)
         {
@@ -47,7 +87,6 @@ namespace KerbalConstructionTime
             return node;
         }
 
-
         public void FromConfigNode(ConfigNode node)
         {
             name = node.GetValue("name");
@@ -58,24 +97,41 @@ namespace KerbalConstructionTime
             ConfigNode.LoadObjectFromConfig(timeSettings, node.GetNode("KCT_Preset_Time"));
             ConfigNode.LoadObjectFromConfig(formulaSettings, node.GetNode("KCT_Preset_Formula"));
         }
+
+        public void SaveToFile(string filePath)
+        {
+            ConfigNode node = this.AsConfigNode();
+            node.Save(filePath);
+        }
+
+        public void LoadFromFile(string filePath)
+        {
+            ConfigNode node = ConfigNode.Load(filePath);
+            this.FromConfigNode(node.GetNode("KCT_Preset"));
+        }
+
+        public void SetActive()
+        {
+            KCT_PresetManager.Instance.ActivePreset = this;
+        }
     }
 
     class KCT_Preset_General : ConfigNodeStorage
     {
         [Persistent]
-        bool NoCostSimulations = false, InstantTechUnlock = false, InstantKSCUpgrades = false, DisableBuildTime = false, EnableAllBodies = false, Reconditioning = true;
+        public bool NoCostSimulations = false, InstantTechUnlock = false, InstantKSCUpgrades = false, DisableBuildTime = false, EnableAllBodies = false, Reconditioning = true;
     }
 
     class KCT_Preset_Time : ConfigNodeStorage
     {
         [Persistent]
-        double OverallMutliplier = 1.0, BuildEffect = 1.0, InventoryEffect = 100.0, ReconditioningEffect = 1728, MaxReconditioning = 345600, RolloutReconSplit = 0.25, NodeModifier = 1.0;
+        public double OverallMultiplier = 1.0, BuildEffect = 1.0, InventoryEffect = 100.0, ReconditioningEffect = 1728, MaxReconditioning = 345600, RolloutReconSplit = 0.25, NodeModifier = 1.0;
     }
 
     class KCT_Preset_Formula : ConfigNodeStorage
     {
         [Persistent]
-        string NodeFormula = "2^([N]+1) / 86400",
+        public string NodeFormula = "2^([N]+1) / 86400",
             UpgradeFundsFormula = "min(2^([N]+4) * 1000, 1024000)",
             UpgradeScienceFormula = "min(2^([N]+2) * 1.0, 512)",
             ResearchFormula = "[N]*0.5/86400",
