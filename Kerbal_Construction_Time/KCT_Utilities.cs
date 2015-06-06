@@ -546,12 +546,12 @@ namespace KerbalConstructionTime
                         if (rr.progress > rr.BP) rr.progress = rr.BP;
                     }
 
-                    ksc.Recon_Rollout.RemoveAll(rr => !KCT_PresetManager.Instance.ActivePreset.generalSettings.Reconditioning || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));
+                    ksc.Recon_Rollout.RemoveAll(rr => !KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));
 
                     foreach (KCT_UpgradingBuilding kscTech in ksc.KSCTech)
                     {
                         if (!kscTech.AsIKCTBuildItem().IsComplete()) kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
-                        if (HighLogic.LoadedScene == GameScenes.SPACECENTER && (kscTech.AsIKCTBuildItem().IsComplete() || KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantKSCUpgrades))
+                        if (HighLogic.LoadedScene == GameScenes.SPACECENTER && (kscTech.AsIKCTBuildItem().IsComplete() || !KCT_PresetManager.Instance.ActivePreset.generalSettings.KSCUpgradeTimes))
                         {
                             if (ScenarioUpgradeableFacilities.Instance != null && KCT_GameStates.erroredDuringOnLoad.OnLoadFinished)
                                 kscTech.Upgrade();
@@ -565,7 +565,7 @@ namespace KerbalConstructionTime
                     KCT_TechItem tech = KCT_GameStates.TechList[i];
                     double buildRate = tech.BuildRate;
                     tech.progress += (buildRate * (UT - lastUT));
-                    if (tech.isComplete || KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantTechUnlock)
+                    if (tech.isComplete || !KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes)
                     {
                         if (KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRate > 1f)
                             TimeWarp.SetRate(0, true);

@@ -68,7 +68,7 @@ namespace KerbalConstructionTime
                 return;
 
 
-            if (!(allowedToUpgrade || KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantKSCUpgrades))
+            if (!(allowedToUpgrade || !KCT_PresetManager.Instance.ActivePreset.generalSettings.KSCUpgradeTimes))
             {
                 KCT_UpgradingBuilding upgrading = new KCT_UpgradingBuilding(facility, lvl, lvl - 1, facility.id.Split('/').Last());
                 
@@ -239,7 +239,7 @@ namespace KerbalConstructionTime
                     ++KCT_GameStates.TotalUpgradePoints;
                     ScreenMessages.PostScreenMessage("[KCT] Upgrade Point Added!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
 
-                    if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantTechUnlock && !KCT_PresetManager.Instance.ActivePreset.generalSettings.DisableBuildTime)
+                    if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes && KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)
                     {
                         KCT_GameStates.TechList.Add(tech);
                         ScreenMessages.PostScreenMessage("[KCT] Node will unlock in " + KCT_Utilities.GetFormattedTime(tech.TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
@@ -256,7 +256,7 @@ namespace KerbalConstructionTime
 
         public void TechDisableEvent()
         {
-            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.InstantTechUnlock && !KCT_PresetManager.Instance.ActivePreset.generalSettings.DisableBuildTime)
+            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes && KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)
             {
                 foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                 {
@@ -332,7 +332,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
                     KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd, TransactionReasons.None);
                 }
-                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_PresetManager.Instance.ActivePreset.generalSettings.Reconditioning)
+                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes)
                 {
                     KCT_Recon_Rollout reconditioning = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
                     if (reconditioning == null)

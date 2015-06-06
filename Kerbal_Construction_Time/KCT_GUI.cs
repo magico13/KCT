@@ -136,7 +136,7 @@ namespace KerbalConstructionTime
             }
         }
 
-        public static bool PrimarilyDisabled { get { return (!KCT_GameStates.settings.enabledForSave || KCT_PresetManager.Instance.ActivePreset.generalSettings.DisableBuildTime); } }
+        public static bool PrimarilyDisabled { get { return (!KCT_GameStates.settings.enabledForSave || !KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes); } }
 
         private static void CheckKSCLock()
         {
@@ -219,7 +219,7 @@ namespace KerbalConstructionTime
                 else
                     showSettings = false;
             }
-            else if (KCT_PresetManager.Instance.ActivePreset.generalSettings.DisableBuildTime && HighLogic.LoadedSceneIsEditor)
+            else if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes && HighLogic.LoadedSceneIsEditor)
             {
                 if (!showSimConfig)
                 {
@@ -802,7 +802,7 @@ namespace KerbalConstructionTime
         {
             if (simLength == "")
             {
-                if (KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations || !KCT_Utilities.CurrentGameIsCareer())
+                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.SimulationCosts || !KCT_Utilities.CurrentGameIsCareer())
                     simLength = "0";
                 else
                     simLength = "0.25";
@@ -860,7 +860,7 @@ namespace KerbalConstructionTime
             float nullFloat, nF2;
 
             float cost = 0;
-            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations)
+            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.SimulationCosts)
             {
                 cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 1);
                 cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
@@ -935,7 +935,7 @@ namespace KerbalConstructionTime
                 unlockEditor = true;
                 showSimConfig = false;
                 centralWindowPosition.height = 1;
-                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations)
+                if (KCT_PresetManager.Instance.ActivePreset.generalSettings.SimulationCosts)
                 {
                     KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
                     KCT_GameStates.SimulationCost = cost;
@@ -969,7 +969,7 @@ namespace KerbalConstructionTime
         public static void DrawBodyChooser(int windowID)
         {
             GUILayout.BeginVertical();
-            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.EnableAllBodies)
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.RequireVisitsForSimulations)
             {
                 foreach (CelestialBody body in FlightGlobals.Bodies)
                 {
@@ -1136,11 +1136,11 @@ namespace KerbalConstructionTime
                 }
             }
 
-            if ((!KCT_Utilities.CurrentGameIsCareer() || KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations || Funding.Instance.Funds >= (KCT_GameStates.SimulationCost*1.1))
-                && GUILayout.Button("Purchase Additional Time\n" + ((KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations || !KCT_Utilities.CurrentGameIsCareer()) ? "Free" : Math.Round(KCT_GameStates.SimulationCost * 1.1).ToString() + " funds")))
+            if ((!KCT_Utilities.CurrentGameIsCareer() || !KCT_PresetManager.Instance.ActivePreset.generalSettings.SimulationCosts || Funding.Instance.Funds >= (KCT_GameStates.SimulationCost*1.1))
+                && GUILayout.Button("Purchase Additional Time\n" + ((!KCT_PresetManager.Instance.ActivePreset.generalSettings.SimulationCosts || !KCT_Utilities.CurrentGameIsCareer()) ? "Free" : Math.Round(KCT_GameStates.SimulationCost * 1.1).ToString() + " funds")))
             {
                 showSimulationCompleteFlight = false;
-                if (KCT_Utilities.CurrentGameIsCareer() && !KCT_PresetManager.Instance.ActivePreset.generalSettings.NoCostSimulations)
+                if (KCT_Utilities.CurrentGameIsCareer() && KCT_PresetManager.Instance.ActivePreset.generalSettings.SimulationCosts)
                 {
                     KCT_GameStates.FundsToChargeAtSimEnd += KCT_GameStates.SimulationCost * 1.1F;
                     KCT_Utilities.SpendFunds(KCT_GameStates.SimulationCost * 1.1F, TransactionReasons.None);

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace KerbalConstructionTime
 {
@@ -10,15 +12,18 @@ namespace KerbalConstructionTime
         public static KCT_PresetManager Instance;
         public KCT_Preset ActivePreset;
         public List<KCT_Preset> Presets;
+        public List<string> PresetPaths;
 
-        protected string PresetPath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/Presets/";
+        //protected string PresetPath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/Presets/";
 
         public KCT_PresetManager() 
         { 
             Presets = new List<KCT_Preset>();
+            PresetPaths = new List<string>();
+            FindPresetFiles();
             LoadPresets();
 
-            KCTDebug.Log("First preset name is " + Presets[0].name);
+            //KCTDebug.Log("First preset name is " + Presets[0].name);
         }
 
         public void SetActiveFromSaveData()
@@ -40,22 +45,51 @@ namespace KerbalConstructionTime
             ActivePreset.SaveToFile(SavedFile);
         }
 
+        public void FindPresetFiles()
+        {
+            PresetPaths.Clear();
+            foreach (string dir in Directory.GetDirectories(KSPUtil.ApplicationRootPath + "GameData/"))
+            {
+                foreach (string dir2 in Directory.GetDirectories(dir))
+                {
+                    if (dir2.Contains("KCT_Presets")) //Found a presets folder
+                    {
+                        //Add all the files in the folder
+                        foreach (string file in Directory.GetFiles(dir2, "*.cfg"))
+                        {
+                            KCTDebug.Log("Found preset at " + file);
+                            PresetPaths.Add(file);
+                        }
+                    }
+                }
+            }
+        }
+
         public void LoadPresets()
         {
             Presets.Clear();
-            foreach (string file in System.IO.Directory.GetFiles(PresetPath, "*.cfg"))
+            
+           // foreach (string file in System.IO.Directory.GetFiles(PresetPath, "*.cfg"))
+            foreach (string file in PresetPaths)
             {
-                KCT_Preset newPreset = new KCT_Preset(file);
-                Presets.Add(newPreset);
+                try
+                {
+                    KCT_Preset newPreset = new KCT_Preset(file);
+                    Presets.Add(newPreset);
+                }
+                catch
+                {
+                    Debug.LogError("[KCT] Could not load preset at " + file);
+                }
             }
         }
     }
 
     class KCT_Preset
     {
-        public KCT_Preset_General generalSettings;
-        public KCT_Preset_Time timeSettings;
-        public KCT_Preset_Formula formulaSettings;
+        public KCT_Preset_General generalSettings = new KCT_Preset_General();
+        public KCT_Preset_Time timeSettings = new KCT_Preset_Time();
+        public KCT_Preset_Formula formulaSettings = new KCT_Preset_Formula();
 
         public string name = "UNINIT", description = "NA", author = "NA";
 
@@ -69,10 +103,6 @@ namespace KerbalConstructionTime
             name = presetName;
             description = presetDescription;
             author = presetAuthor;
-
-            generalSettings = new KCT_Preset_General();
-            timeSettings = new KCT_Preset_Time();
-            formulaSettings = new KCT_Preset_Formula();
         }
 
         public ConfigNode AsConfigNode()
@@ -93,6 +123,8 @@ namespace KerbalConstructionTime
             description = node.GetValue("description");
             author = node.GetValue("author");
 
+            //ConfigNode toLoad = new ConfigNode("KCT_Preset_General");
+            //toLoad.AddNode(node.getn)
             ConfigNode.LoadObjectFromConfig(generalSettings, node.GetNode("KCT_Preset_General"));
             ConfigNode.LoadObjectFromConfig(timeSettings, node.GetNode("KCT_Preset_Time"));
             ConfigNode.LoadObjectFromConfig(formulaSettings, node.GetNode("KCT_Preset_Formula"));
@@ -100,14 +132,16 @@ namespace KerbalConstructionTime
 
         public void SaveToFile(string filePath)
         {
-            ConfigNode node = this.AsConfigNode();
+            ConfigNode node = new ConfigNode("KCT_Preset");
+            node.AddNode(this.AsConfigNode());
             node.Save(filePath);
         }
 
         public void LoadFromFile(string filePath)
         {
+            KCTDebug.Log("Loading a preset from " + filePath);
             ConfigNode node = ConfigNode.Load(filePath);
-            this.FromConfigNode(node.GetNode("KCT_Preset"));
+            this.FromConfigNode(node.GetNode("KCT_Preset")); //.GetNode("KCT_Preset")
         }
 
         public void SetActive()
@@ -119,7 +153,7 @@ namespace KerbalConstructionTime
     class KCT_Preset_General : ConfigNodeStorage
     {
         [Persistent]
-        public bool NoCostSimulations = false, InstantTechUnlock = false, InstantKSCUpgrades = false, DisableBuildTime = false, EnableAllBodies = false, Reconditioning = true;
+        public bool BuildTimes = true, ReconditioningTimes = true, TechUnlockTimes = true, KSCUpgradeTimes = true, SimulationCosts = true, RequireVisitsForSimulations = true;
     }
 
     class KCT_Preset_Time : ConfigNodeStorage
