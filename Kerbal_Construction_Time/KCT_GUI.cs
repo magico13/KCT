@@ -319,6 +319,11 @@ namespace KerbalConstructionTime
             showFirstRun = false;
             showSimLengthChooser = false;
             clicked = false;
+
+            VABSelected = false;
+            SPHSelected = false;
+            TechSelected = false;
+            listWindow = -1;
         }
 
         public static void DrawGUIs(int windowID)
@@ -2410,7 +2415,7 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("VAB Upgrades");
                 GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.VABUpgrades.Count + 1) * 26), GUILayout.MaxHeight(3 * Screen.height / 4));
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.VABUpgrades.Count + 1) * 26), GUILayout.MaxHeight(1 * Screen.height / 4));
                 GUILayout.BeginVertical();
                 for (int i = 0; i < KSC.VABRates.Count; i++)
                 {
@@ -2456,7 +2461,7 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("SPH Upgrades");
                 GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.SPHUpgrades.Count + 1) * 26), GUILayout.MaxHeight(3 * Screen.height / 4));
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.SPHUpgrades.Count + 1) * 26), GUILayout.MaxHeight(1 * Screen.height / 4));
                 GUILayout.BeginVertical();
                 for (int i = 0; i < KSC.SPHRates.Count; i++)
                 {

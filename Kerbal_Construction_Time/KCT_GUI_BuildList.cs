@@ -128,7 +128,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.lastWarpRate = 0;
                 }
 
-                if (KCT_GameStates.settings.AutoKACAlarams && KACWrapper.APIReady)
+                if (KCT_GameStates.settings.AutoKACAlarams && KACWrapper.APIReady && buildItem.GetTimeLeft() > 30) //don't check if less than 30 seconds to completion. Might fix errors people are seeing
                 {
                     double UT = Planetarium.GetUniversalTime();
                     if (!KCT_Utilities.ApproximatelyEqual(KCT_GameStates.KACAlarmUT - UT, buildItem.GetTimeLeft()))
@@ -316,6 +316,7 @@ namespace KerbalConstructionTime
                     {
                         try
                         {
+                            GamePersistence.SaveGame("KCT_Backup", HighLogic.SaveFolder, SaveMode.OVERWRITE);
                             KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
                             KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.VAB;
                             KCT_GameStates.recoveredVessel.launchSite = "LaunchPad";
@@ -561,6 +562,7 @@ namespace KerbalConstructionTime
                     {
                         try
                         {
+                            GamePersistence.SaveGame("KCT_Backup", HighLogic.SaveFolder, SaveMode.OVERWRITE);
                             KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
                             KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.SPH;
                             KCT_GameStates.recoveredVessel.launchSite = "Runway";
