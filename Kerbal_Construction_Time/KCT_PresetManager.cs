@@ -26,12 +26,54 @@ namespace KerbalConstructionTime
             //KCTDebug.Log("First preset name is " + Presets[0].name);
         }
 
+        public KCT_Preset FindPresetByName(string name)
+        {
+            return Presets.Find(p => p.name == name);
+        }
+
+        public void ClearPresets()
+        {
+            Presets.Clear();
+            PresetPaths.Clear();
+            ActivePreset = null;
+        }
+
+        public int GetIndex(KCT_Preset preset)
+        {
+            if (Presets.Contains(preset))
+                return Presets.IndexOf(preset);
+            else
+                return -1;
+        }
+
+        public string[] PresetNames(bool IncludeCustom)
+        {
+            List<string> names = new List<string>();
+            foreach (KCT_Preset preset in Presets)
+            {
+                names.Add(preset.name);
+            }
+            if (IncludeCustom)
+                names.Add("Custom");
+            return names.ToArray();
+        }
+
         public void SetActiveFromSaveData()
         {
             string SavedFile = KSPUtil.ApplicationRootPath + "/saves/" + HighLogic.SaveFolder+"/KCT_Settings.cfg";
             if (System.IO.File.Exists(SavedFile))
             {
-                ActivePreset = new KCT_Preset(SavedFile);
+                KCT_Preset saved = new KCT_Preset(SavedFile);
+                if (FindPresetByName(saved.name) != null) //Get settings from the original preset, if it exists
+                {
+                    ActivePreset = FindPresetByName(saved.name);
+                    KCTDebug.Log("Loading settings from preset, rather than save. Name: " + ActivePreset.name);
+                }
+                else
+                {
+                    ActivePreset = saved;
+                    KCTDebug.Log("Loading saved settings.");
+                }
             }
             else
             {
@@ -48,8 +90,23 @@ namespace KerbalConstructionTime
         public void FindPresetFiles()
         {
             PresetPaths.Clear();
+            //Check the KCT folder first
+            foreach (string dir2 in Directory.GetDirectories(KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime"))
+            {
+                if (dir2.Contains("KCT_Presets")) //Found a presets folder
+                {
+                    //Add all the files in the folder
+                    foreach (string file in Directory.GetFiles(dir2, "*.cfg"))
+                    {
+                        KCTDebug.Log("Found preset at " + file);
+                        PresetPaths.Add(file);
+                    }
+                }
+            }
+
             foreach (string dir in Directory.GetDirectories(KSPUtil.ApplicationRootPath + "GameData/"))
             {
+                if (dir == "KerbalConstructionTime") continue; //Don't check the KCT folder again
                 foreach (string dir2 in Directory.GetDirectories(dir))
                 {
                     if (dir2.Contains("KCT_Presets")) //Found a presets folder
@@ -75,6 +132,11 @@ namespace KerbalConstructionTime
                 try
                 {
                     KCT_Preset newPreset = new KCT_Preset(file);
+                    KCT_Preset existing = Presets.Find(p => p.name == newPreset.name);
+                    if (existing != null) //Ensure there is only one preset with a given name. Take the last one found as the final one.
+                    {
+                        Presets.Remove(existing);
+                    }
                     Presets.Add(newPreset);
                 }
                 catch

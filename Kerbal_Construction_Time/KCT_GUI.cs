@@ -65,7 +65,8 @@ namespace KerbalConstructionTime
 
 
                 if (showSettings)
-                    settingsPosition = GUILayout.Window(8955, settingsPosition, KCT_GUI.DrawSettings, "KCT Settings", HighLogic.Skin.window);
+                    //settingsPosition = GUILayout.Window(8955, settingsPosition, KCT_GUI.DrawSettings, "KCT Settings", HighLogic.Skin.window);
+                    presetPosition = GUILayout.Window(8955, presetPosition, KCT_GUI.DrawPresetWindow, "KCT Settings", HighLogic.Skin.window);
                 if (!KCT_GameStates.settings.enabledForSave)
                     return;
 

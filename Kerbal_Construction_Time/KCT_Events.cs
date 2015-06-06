@@ -276,6 +276,8 @@ namespace KerbalConstructionTime
                 KCT_GameStates.activeKSCName = "Stock";
                 KCT_GameStates.ActiveKSC = new KCT_KSC("Stock");
                 KCT_GameStates.KSCs = new List<KCT_KSC>() { KCT_GameStates.ActiveKSC };
+
+                KCT_PresetManager.Instance.ClearPresets();
             }
 
             if (!KCT_GameStates.settings.enabledForSave) return;
