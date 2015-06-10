@@ -26,9 +26,9 @@ namespace KerbalConstructionTime
             //KCTDebug.Log("First preset name is " + Presets[0].name);
         }
 
-        public KCT_Preset FindPresetByName(string name)
+        public KCT_Preset FindPresetByShortName(string name)
         {
-            return Presets.Find(p => p.name == name);
+            return Presets.Find(p => p.shortName == name);
         }
 
         public void ClearPresets()
@@ -38,20 +38,50 @@ namespace KerbalConstructionTime
             ActivePreset = null;
         }
 
-        public int GetIndex(KCT_Preset preset)
+        public int GetIndex(KCT_Preset preset, bool softMatch=false)
         {
+            foreach (KCT_Preset preset2 in Presets)
+            {
+                if (PresetsEqual(preset, preset2, softMatch))
+                    return Presets.IndexOf(preset2);
+            }
+            return -1;
+            /*
             if (Presets.Contains(preset))
                 return Presets.IndexOf(preset);
             else
-                return -1;
+                return -1;*/
         }
 
-        public string[] PresetNames(bool IncludeCustom)
+        public bool PresetsEqual(KCT_Preset preset1, KCT_Preset preset2, bool softMatch=false) //softMatch means names can be different, but settings must be the same
+        {
+            if (!softMatch)
+            {
+                if (preset1.name != preset2.name)
+                    return false;
+                if (preset1.shortName != preset2.shortName)
+                    return false;
+                if (preset1.description != preset2.description)
+                    return false;
+                if (preset1.author != preset2.author)
+                    return false;
+            }
+            if (preset1.generalSettings.AsConfigNode().GetValues() != preset2.generalSettings.AsConfigNode().GetValues()) //TODO: Use a better method of checking the nodes are equal. KCT2 had one I think
+                return false;
+            if (preset1.timeSettings.AsConfigNode().GetValues() != preset2.timeSettings.AsConfigNode().GetValues())
+                return false;
+            if (preset1.formulaSettings.AsConfigNode().GetValues() != preset2.formulaSettings.AsConfigNode().GetValues())
+                return false;
+
+            return true;
+        }
+
+        public string[] PresetShortNames(bool IncludeCustom)
         {
             List<string> names = new List<string>();
             foreach (KCT_Preset preset in Presets)
             {
-                names.Add(preset.name);
+                names.Add(preset.shortName);
             }
             if (IncludeCustom)
                 names.Add("Custom");
@@ -64,9 +94,9 @@ namespace KerbalConstructionTime
             if (System.IO.File.Exists(SavedFile))
             {
                 KCT_Preset saved = new KCT_Preset(SavedFile);
-                if (FindPresetByName(saved.name) != null) //Get settings from the original preset, if it exists
+                if (FindPresetByShortName(saved.name) != null) //Get settings from the original preset, if it exists
                 {
-                    ActivePreset = FindPresetByName(saved.name);
+                    ActivePreset = FindPresetByShortName(saved.shortName);
                     KCTDebug.Log("Loading settings from preset, rather than save. Name: " + ActivePreset.name);
                 }
                 else
@@ -77,7 +107,7 @@ namespace KerbalConstructionTime
             }
             else
             {
-                ActivePreset = new KCT_Preset("UNINIT", "NA", "NA");
+                ActivePreset = new KCT_Preset("UNINIT", "UNINIT", "NA", "NA");
             }
         }
 
@@ -132,7 +162,8 @@ namespace KerbalConstructionTime
                 try
                 {
                     KCT_Preset newPreset = new KCT_Preset(file);
-                    KCT_Preset existing = Presets.Find(p => p.name == newPreset.name);
+                    //KCT_Preset existing = Presets.Find(p => p.name == newPreset.name);
+                    KCT_Preset existing = FindPresetByShortName(newPreset.shortName);
                     if (existing != null) //Ensure there is only one preset with a given name. Take the last one found as the final one.
                     {
                         Presets.Remove(existing);
@@ -153,24 +184,42 @@ namespace KerbalConstructionTime
         public KCT_Preset_Time timeSettings = new KCT_Preset_Time();
         public KCT_Preset_Formula formulaSettings = new KCT_Preset_Formula();
 
-        public string name = "UNINIT", description = "NA", author = "NA";
+        public string name = "UNINIT", shortName = "UNINIT", description = "NA", author = "NA";
 
         public KCT_Preset(string filePath)
         {
             LoadFromFile(filePath);
         }
 
-        public KCT_Preset(string presetName, string presetDescription, string presetAuthor)
+        public KCT_Preset(string presetName, string presetShortName, string presetDescription, string presetAuthor)
         {
             name = presetName;
+            shortName = presetShortName;
             description = presetDescription;
             author = presetAuthor;
+        }
+
+        public KCT_Preset(KCT_Preset Source)
+        {
+            name = Source.name;
+            shortName = Source.shortName;
+            description = Source.description;
+            author = Source.author;
+
+           // generalSettings = Source.generalSettings;
+            //timeSettings = Source.timeSettings;
+            //formulaSettings = Source.formulaSettings;
+
+            ConfigNode.LoadObjectFromConfig(generalSettings, Source.generalSettings.AsConfigNode());
+            ConfigNode.LoadObjectFromConfig(timeSettings, Source.timeSettings.AsConfigNode());
+            ConfigNode.LoadObjectFromConfig(formulaSettings, Source.formulaSettings.AsConfigNode());
         }
 
         public ConfigNode AsConfigNode()
         {
             ConfigNode node = new ConfigNode("KCT_Preset");
             node.AddValue("name", name);
+            node.AddValue("shortName", shortName);
             node.AddValue("description", description);
             node.AddValue("author", author);
             node.AddNode(generalSettings.AsConfigNode());
@@ -182,6 +231,7 @@ namespace KerbalConstructionTime
         public void FromConfigNode(ConfigNode node)
         {
             name = node.GetValue("name");
+            shortName = node.GetValue("shortName");
             description = node.GetValue("description");
             author = node.GetValue("author");
 
@@ -215,7 +265,9 @@ namespace KerbalConstructionTime
     class KCT_Preset_General : ConfigNodeStorage
     {
         [Persistent]
-        public bool BuildTimes = true, ReconditioningTimes = true, TechUnlockTimes = true, KSCUpgradeTimes = true, SimulationCosts = true, RequireVisitsForSimulations = true;
+        public bool Enabled = true, BuildTimes = true, ReconditioningTimes = true, TechUnlockTimes = true, KSCUpgradeTimes = true,
+            Simulations = true, SimulationCosts = true, RequireVisitsForSimulations = true,
+            TechUpgrades = true;
     }
 
     class KCT_Preset_Time : ConfigNodeStorage
