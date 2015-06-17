@@ -268,12 +268,14 @@ namespace KerbalConstructionTime
         public bool Enabled = true, BuildTimes = true, ReconditioningTimes = true, TechUnlockTimes = true, KSCUpgradeTimes = true,
             Simulations = true, SimulationCosts = true, RequireVisitsForSimulations = true,
             TechUpgrades = true;
+        [Persistent]
+        public string StartingPoints = "15,15,45"; //Career, Science, and Sandbox modes
     }
 
     class KCT_Preset_Time : ConfigNodeStorage
     {
         [Persistent]
-        public double OverallMultiplier = 1.0, BuildEffect = 1.0, InventoryEffect = 100.0, ReconditioningEffect = 1728, MaxReconditioning = 345600, RolloutReconSplit = 0.25, NodeModifier = 1.0;
+        public double OverallMultiplier = 1.0, BuildEffect = 1.0, InventoryEffect = 100.0, ReconditioningEffect = 1728, MaxReconditioning = 345600, RolloutReconSplit = 0.25;
     }
 
     class KCT_Preset_Formula : ConfigNodeStorage
@@ -288,6 +290,8 @@ namespace KerbalConstructionTime
             BPFormula = "([E]^(1/2))*2000*[O]",
             KSCUpgradeFormula = "([C]^(1/2))*1000*[O]",
             ReconditioningFormula = "min([M]*[O]*[E], [X])",
-            BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)";
+            BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)",
+            SimCostFormula = "", //[M] = planet mass, [A] = presence of atmosphere (1 or 0), [m] = mass of vessel, [C] = cost of vessel, [S] = # times simulated this editor session, [SMA] = ratio parent planet SMA to Kerbin SMA, [L] = Simulation length in hours
+            KerbinSimCostFormula = "";
     }
 }
