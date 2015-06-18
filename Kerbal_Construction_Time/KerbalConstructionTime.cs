@@ -671,7 +671,7 @@ namespace KerbalConstructionTime
             }
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
-                if (KCT_Utilities.CurrentGameHasScience() && KCT_GameStates.TotalUpgradePoints == 0)
+                if (KCT_Utilities.CurrentGameHasScience() && KCT_GameStates.TotalUpgradePoints < 0)
                 {
                    /* ConfigNode CN = new ConfigNode();
                     ResearchAndDevelopment.Instance.snapshot.Save(CN);

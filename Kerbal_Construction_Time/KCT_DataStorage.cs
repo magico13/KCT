@@ -88,7 +88,7 @@ namespace KerbalConstructionTime
         [Persistent] List<int> SPHUpgrades = new List<int>() {0};
         [Persistent] List<int> RDUpgrades = new List<int>() {0,0};
         [Persistent] List<int> PurchasedUpgrades = new List<int>() {0,0};
-        [Persistent] int TotalUpgradePoints = 0, TechUpgrades = 0;
+        [Persistent] int TotalUpgradePoints = -1, TechUpgrades = 0;
         [Persistent] List<String> BodiesVisited = new List<string> {"Kerbin"};
         [Persistent] List<String> PartTracker = new List<String>();
         [Persistent] List<String> PartInventory = new List<String>();

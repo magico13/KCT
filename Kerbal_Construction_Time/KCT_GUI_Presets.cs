@@ -12,6 +12,7 @@ namespace KerbalConstructionTime
         private static int presetIndex = -1;
         private static KCT_Preset WorkingPreset;
         private static Vector2 presetScrollView;
+        private static bool changed = false;
         public static void DrawPresetWindow(int windowID)
         {
             if (WorkingPreset == null)
@@ -36,8 +37,8 @@ namespace KerbalConstructionTime
                 WorkingPreset.shortName = "Custom";
                 WorkingPreset.description = "A custom set of configs.";
                 WorkingPreset.author = HighLogic.SaveFolder;
-            }//GUI.changed && 
-            if (presetIndex < presetShortNames.Length - 1 && !KCT_PresetManager.Instance.PresetsEqual(WorkingPreset, KCT_PresetManager.Instance.Presets[presetIndex], true))
+            }
+            if (changed && presetIndex < presetShortNames.Length - 1 && !KCT_Utilities.ConfigNodesAreEquivalent(WorkingPreset.AsConfigNode(), KCT_PresetManager.Instance.Presets[presetIndex].AsConfigNode())) //!KCT_PresetManager.Instance.PresetsEqual(WorkingPreset, KCT_PresetManager.Instance.Presets[presetIndex], true)
             {
                 presetIndex = presetShortNames.Length - 1; //Custom preset
                 WorkingPreset.name = "Custom";
@@ -125,6 +126,8 @@ namespace KerbalConstructionTime
             GUILayout.EndVertical(); //end column 2
             GUILayout.EndHorizontal(); //end main split
             GUILayout.EndVertical(); //end window
+
+            changed = GUI.changed;
         }
     }
 }

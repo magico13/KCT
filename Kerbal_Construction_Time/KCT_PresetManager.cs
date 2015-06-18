@@ -42,7 +42,8 @@ namespace KerbalConstructionTime
         {
             foreach (KCT_Preset preset2 in Presets)
             {
-                if (PresetsEqual(preset, preset2, softMatch))
+                //if (PresetsEqual(preset, preset2, softMatch))
+                if (KCT_Utilities.ConfigNodesAreEquivalent(preset.AsConfigNode(), preset2.AsConfigNode()))
                     return Presets.IndexOf(preset2);
             }
             return -1;
@@ -53,7 +54,7 @@ namespace KerbalConstructionTime
                 return -1;*/
         }
 
-        public bool PresetsEqual(KCT_Preset preset1, KCT_Preset preset2, bool softMatch=false) //softMatch means names can be different, but settings must be the same
+       /* public bool PresetsEqual(KCT_Preset preset1, KCT_Preset preset2, bool softMatch=false) //softMatch means names can be different, but settings must be the same
         {
             if (!softMatch)
             {
@@ -74,7 +75,7 @@ namespace KerbalConstructionTime
                 return false;
 
             return true;
-        }
+        }*/
 
         public string[] PresetShortNames(bool IncludeCustom)
         {
@@ -185,6 +186,22 @@ namespace KerbalConstructionTime
         public KCT_Preset_Formula formulaSettings = new KCT_Preset_Formula();
 
         public string name = "UNINIT", shortName = "UNINIT", description = "NA", author = "NA";
+        private int[] upgrades_internal;
+        public int[] start_upgrades //TODO: Actually implement the starting points
+        {
+            get
+            {
+                if (upgrades_internal == null)
+                {
+                    upgrades_internal = new int[3] {0, 0, 0}; //career, science, sandbox
+                    string[] upgrades = generalSettings.StartingPoints.Split(',');
+                    for (int i=0; i<3; i++)
+                        if (!int.TryParse(upgrades[i], out upgrades_internal[i]))
+                            upgrades_internal[i] = 0;
+                }
+                return upgrades_internal;
+            }
+        }
 
         public KCT_Preset(string filePath)
         {
@@ -290,8 +307,9 @@ namespace KerbalConstructionTime
             BPFormula = "([E]^(1/2))*2000*[O]",
             KSCUpgradeFormula = "([C]^(1/2))*1000*[O]",
             ReconditioningFormula = "min([M]*[O]*[E], [X])",
-            BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)",
+            BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)", //TODO: Implement simulation cost formulas, reset formula
             SimCostFormula = "", //[M] = planet mass, [A] = presence of atmosphere (1 or 0), [m] = mass of vessel, [C] = cost of vessel, [S] = # times simulated this editor session, [SMA] = ratio parent planet SMA to Kerbin SMA, [L] = Simulation length in hours
-            KerbinSimCostFormula = "";
+            KerbinSimCostFormula = "",
+            UpgradeResetFormula = "2*[N]"; //N = number of times it's been reset
     }
 }

@@ -233,6 +233,8 @@ namespace KerbalConstructionTime
             variables.Add("N", upgrades.ToString());
             variables.Add("I", index.ToString());
             variables.Add("R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString());
+            int numNodes = RDController.Instance != null ? RDController.Instance.nodes.FindAll(n => n.IsResearched).Count : 0;
+            variables.Add("S", numNodes.ToString());
 
             return GetStandardFormulaValue("BuildRate", variables);
         }
