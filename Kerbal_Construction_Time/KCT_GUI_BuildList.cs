@@ -9,6 +9,64 @@ namespace KerbalConstructionTime
     public static partial class KCT_GUI
     {
         private static int listWindow = -1;
+        private static bool VABSelected, SPHSelected, TechSelected;
+        private static void SelectList(string list)
+        {
+            buildListWindowPosition.height = 1;
+            switch (list)
+            {
+                case "VAB":
+                    if (VABSelected)
+                    {
+                        listWindow = -1;
+                        VABSelected = false;
+                    }
+                    else
+                    {
+                        listWindow = 0;
+                        VABSelected = true;
+                        SPHSelected = false;
+                        TechSelected = false;
+                    }
+                    break;
+                case "SPH":
+                    if (SPHSelected)
+                    {
+                        listWindow = -1;
+                        SPHSelected = false;
+                    }
+                    else
+                    {
+                        listWindow = 1;
+                        VABSelected = false;
+                        SPHSelected = true;
+                        TechSelected = false;
+                    }
+                    break;
+                case "Tech":
+                    if (TechSelected)
+                    {
+                        listWindow = -1;
+                        TechSelected = false;
+                    }
+                    else
+                    {
+                        listWindow = 2;
+                        VABSelected = false;
+                        SPHSelected = false;
+                        TechSelected = true;
+                    }
+                    break;
+                default:
+                    listWindow = -1;
+                    TechSelected = false;
+                    VABSelected = false;
+                    SPHSelected = false;
+                    break;
+            }
+        }
+
+
         public static void DrawBuildListWindow(int windowID)
         {
             if (buildListWindowPosition.xMax > Screen.width)
@@ -70,7 +128,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.lastWarpRate = 0;
                 }
 
-                if (KCT_GameStates.settings.AutoKACAlarams && KACWrapper.APIReady)
+                if (KCT_GameStates.settings.AutoKACAlarams && KACWrapper.APIReady && buildItem.GetTimeLeft() > 30) //don't check if less than 30 seconds to completion. Might fix errors people are seeing
                 {
                     double UT = Planetarium.GetUniversalTime();
                     if (!KCT_Utilities.ApproximatelyEqual(KCT_GameStates.KACAlarmUT - UT, buildItem.GetTimeLeft()))
@@ -99,12 +157,24 @@ namespace KerbalConstructionTime
             GUILayout.EndHorizontal();
 
             //Buttons for VAB/SPH lists
-            List<string> buttonList = new List<string> { "VAB", "SPH", "KSC" };
-            if (KCT_Utilities.CurrentGameHasScience() && !KCT_GameStates.settings.InstantTechUnlock) buttonList.Add("Tech");
+           // List<string> buttonList = new List<string> { "VAB", "SPH", "KSC" };
+            //if (KCT_Utilities.CurrentGameHasScience() && !KCT_GameStates.settings.InstantTechUnlock) buttonList.Add("Tech");
             GUILayout.BeginHorizontal();
             //if (HighLogic.LoadedScene == GameScenes.SPACECENTER) { buttonList.Add("Upgrades"); buttonList.Add("Settings"); }
-            int lastSelected = listWindow;
-            listWindow = GUILayout.Toolbar(listWindow, buttonList.ToArray());
+          //  int lastSelected = listWindow;
+           // listWindow = GUILayout.Toolbar(listWindow, buttonList.ToArray());
+
+            bool VABSelectedNew = GUILayout.Toggle(VABSelected, "VAB", GUI.skin.button);
+            bool SPHSelectedNew = GUILayout.Toggle(SPHSelected, "SPH", GUI.skin.button);
+            bool TechSelectedNew = false;
+            if (KCT_Utilities.CurrentGameHasScience())
+                TechSelectedNew = GUILayout.Toggle(TechSelected, "Tech", GUI.skin.button);
+            if (VABSelectedNew != VABSelected)
+                SelectList("VAB");
+            else if (SPHSelectedNew != SPHSelected)
+                SelectList("SPH");
+            else if (TechSelectedNew != TechSelected)
+                SelectList("Tech");
 
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER && GUILayout.Button("Upgrades"))
             {
@@ -120,7 +190,7 @@ namespace KerbalConstructionTime
             }
             GUILayout.EndHorizontal();
 
-            if (GUI.changed)
+          /*  if (GUI.changed)
             {
                 buildListWindowPosition.height = 1;
                 showBLPlus = false;
@@ -128,7 +198,7 @@ namespace KerbalConstructionTime
                 {
                     listWindow = -1;
                 }
-            }
+            }*/
             //Content of lists
             if (listWindow == 0) //VAB Build List
             {
@@ -246,6 +316,7 @@ namespace KerbalConstructionTime
                     {
                         try
                         {
+                            GamePersistence.SaveGame("KCT_Backup", HighLogic.SaveFolder, SaveMode.OVERWRITE);
                             KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
                             KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.VAB;
                             KCT_GameStates.recoveredVessel.launchSite = "LaunchPad";
@@ -491,6 +562,7 @@ namespace KerbalConstructionTime
                     {
                         try
                         {
+                            GamePersistence.SaveGame("KCT_Backup", HighLogic.SaveFolder, SaveMode.OVERWRITE);
                             KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
                             KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.SPH;
                             KCT_GameStates.recoveredVessel.launchSite = "Runway";
@@ -578,48 +650,42 @@ namespace KerbalConstructionTime
                 }
                 GUILayout.EndScrollView();
             }
-            else if (listWindow == 2) //KSC things
+            else if (listWindow == 2) //Tech nodes
             {
                 List<KCT_UpgradingBuilding> KSCList = KCT_GameStates.ActiveKSC.KSCTech;
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Name:");
-                GUILayout.Label("Progress:", GUILayout.Width(width1 / 2));
-                GUILayout.Label("Time Left:", GUILayout.Width(width1));
-                GUILayout.Space(70);
-                GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(250));
-                if (KSCList.Count == 0)
-                    GUILayout.Label("No upgrade projects are currently underway.");
-                foreach (KCT_UpgradingBuilding KCTTech in KSCList)
-                {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(KCTTech.AsIKCTBuildItem().GetItemName());
-                    GUILayout.Label(Math.Round(100 * KCTTech.progress / KCTTech.BP, 2) + " %", GUILayout.Width(width1 / 2));
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(KCTTech.AsIKCTBuildItem().GetTimeLeft()), GUILayout.Width(width1));
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(70)))
-                    {
-                        KCT_GameStates.targetedItem = KCTTech;
-                        KCT_GameStates.canWarp = true;
-                        KCT_Utilities.RampUpWarp(KCTTech);
-                        KCT_GameStates.warpInitiated = true;
-                    }
-                    else if (HighLogic.LoadedSceneIsEditor)
-                        GUILayout.Space(70);
-                    GUILayout.EndHorizontal();
-                }
-                GUILayout.EndScrollView();
-            }
-            else if (listWindow == 3) //Tech nodes
-            {
                 List<KCT_TechItem> techList = KCT_GameStates.TechList;
                 //GUILayout.Label("Tech Node Research");
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Node Name:");
+                GUILayout.Label("Name:");
                 GUILayout.Label("Progress:", GUILayout.Width(width1/2));
                 GUILayout.Label("Time Left:", GUILayout.Width(width1));
                 GUILayout.Space(70);
                 GUILayout.EndHorizontal();
                 scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(250));
+
+                if (KCT_Utilities.CurrentGameIsCareer())
+                {
+                    if (KSCList.Count == 0)
+                        GUILayout.Label("No KSC upgrade projects are currently underway.");
+                    foreach (KCT_UpgradingBuilding KCTTech in KSCList)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(KCTTech.AsIKCTBuildItem().GetItemName());
+                        GUILayout.Label(Math.Round(100 * KCTTech.progress / KCTTech.BP, 2) + " %", GUILayout.Width(width1 / 2));
+                        GUILayout.Label(KCT_Utilities.GetColonFormattedTime(KCTTech.AsIKCTBuildItem().GetTimeLeft()), GUILayout.Width(width1));
+                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(70)))
+                        {
+                            KCT_GameStates.targetedItem = KCTTech;
+                            KCT_GameStates.canWarp = true;
+                            KCT_Utilities.RampUpWarp(KCTTech);
+                            KCT_GameStates.warpInitiated = true;
+                        }
+                        else if (HighLogic.LoadedSceneIsEditor)
+                            GUILayout.Space(70);
+                        GUILayout.EndHorizontal();
+                    }
+                }
+
                 if (techList.Count == 0)
                     GUILayout.Label("No tech nodes are being researched!\nBegin research by unlocking tech in the R&D building.");
                 for (int i = 0; i < techList.Count; i++)

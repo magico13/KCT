@@ -64,8 +64,10 @@ namespace KerbalConstructionTime
         public static double simulationUT = 0;
         public static double simulationEndTime = 0, simulationTimeLimit = 0, simulationDefaultTimeLimit = 0;
         public static double simOrbitAltitude = 0, simInclination = 0;
-        public static List<String> BodiesVisited = new List<string> {"Kerbin"};
+        public static List<String> BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
         public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;
+
+        public static bool TestFlightPartFailures = true;
 
         public static KCT_OnLoadError erroredDuringOnLoad = new KCT_OnLoadError();
 
@@ -78,9 +80,9 @@ namespace KerbalConstructionTime
             flightSimulated = false;
             simulationInitialized = false;
             vesselDict = new Dictionary<string, string>();
-            simulationBody = KCT_Utilities.GetBodyByName("Kerbin");
+            simulationBody = KCT_Utilities.GetBodyByName(BodiesVisited[0]);
             simulateInOrbit = false;
-            BodiesVisited = new List<string> {"Kerbin"};
+            BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
             TotalUpgradePoints = 0;
           /*  VABUpgrades = new List<int>() {0};
             SPHUpgrades = new List<int>() {0};

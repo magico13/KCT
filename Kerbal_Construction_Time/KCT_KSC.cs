@@ -73,8 +73,10 @@ namespace KerbalConstructionTime
             while (rate > 0)
             {
                 rate = KCT_MathParsing.ParseBuildRateFormula(KCT_BuildListVessel.ListType.VAB, index, this, true);
-                if (rate >= 0)
+                if (rate >= 0 && (index == 0 || VABRates[index - 1] > 0))
                     UpVABRates.Add(rate);
+                else
+                    break;
                 index++;
             }
             rate = 0.1;
@@ -82,8 +84,10 @@ namespace KerbalConstructionTime
             while (rate > 0)
             {
                 rate = KCT_MathParsing.ParseBuildRateFormula(KCT_BuildListVessel.ListType.SPH, index, this, true);
-                if (rate >= 0)
+                if (rate >= 0 && (index == 0 || SPHRates[index - 1] > 0))
                     UpSPHRates.Add(rate);
+                else
+                    break;
                 index++;
             }
         }
