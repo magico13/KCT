@@ -1130,6 +1130,8 @@ namespace KerbalConstructionTime
             }
             
             CelestialBody Kerbin = GetBodyByName("Kerbin");
+            if (Kerbin == null)
+                Kerbin = GetBodyByName("Earth");
 
             double orbitRatio = 1;
             if (Parent.orbit.semiMajorAxis >= Kerbin.orbit.semiMajorAxis)
@@ -1431,12 +1433,12 @@ namespace KerbalConstructionTime
 
         public static CelestialBody GetBodyByName(String name)
         {
-            foreach (CelestialBody b in FlightGlobals.Bodies)
+            /*foreach (CelestialBody b in FlightGlobals.Bodies)
             {
                 if (b.bodyName.ToLower() == name.ToLower())
                     return b;
-            }
-            return null;
+            }*/
+            return FlightGlobals.Bodies.FirstOrDefault(b => b.bodyName.ToLower() == name.ToLower());
         }
 
         public static object GetMemberInfoValue(System.Reflection.MemberInfo member, object sourceObject)

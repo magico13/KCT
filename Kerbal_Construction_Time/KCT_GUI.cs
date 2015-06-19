@@ -817,7 +817,12 @@ namespace KerbalConstructionTime
             GUILayout.BeginHorizontal();
             GUILayout.Label("Body: ");
             if (KCT_GameStates.simulationBody == null)
+            {
                 KCT_GameStates.simulationBody = KCT_Utilities.GetBodyByName("Kerbin");
+                if (KCT_GameStates.simulationBody == null) //Still null? Probably RSS then.
+                    KCT_GameStates.simulationBody = KCT_Utilities.GetBodyByName("Earth");
+            }
+            
             GUILayout.Label(KCT_GameStates.simulationBody.bodyName);
             if (GUILayout.Button("Select", GUILayout.ExpandWidth(false)))
             {
@@ -828,14 +833,14 @@ namespace KerbalConstructionTime
                 simulationConfigPosition.height = 1;
             }
             GUILayout.EndHorizontal();
-            if (KCT_GameStates.simulationBody.bodyName == "Kerbin")
+            if (KCT_GameStates.simulationBody.bodyName == "Kerbin" || KCT_GameStates.simulationBody.bodyName == "Earth")
             {
                 bool changed = KCT_GameStates.simulateInOrbit;
                 KCT_GameStates.simulateInOrbit = GUILayout.Toggle(KCT_GameStates.simulateInOrbit, " Start in orbit?");
                 if (KCT_GameStates.simulateInOrbit != changed)
                     simulationConfigPosition.height = 1;
             }
-            if (KCT_GameStates.simulationBody.bodyName != "Kerbin" || (KCT_GameStates.simulationBody.bodyName == "Kerbin" && KCT_GameStates.simulateInOrbit))
+            if ((KCT_GameStates.simulationBody.bodyName != "Kerbin" && KCT_GameStates.simulationBody.bodyName != "Earth") || KCT_GameStates.simulateInOrbit)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Orbit Altitude (km): ");
@@ -904,7 +909,7 @@ namespace KerbalConstructionTime
             if (((KCT_Utilities.CurrentGameIsCareer() && Funding.Instance.Funds >= cost)
                 || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
             {
-                if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
+                if (KCT_GameStates.simulationBody.bodyName != "Kerbin" && KCT_GameStates.simulationBody.bodyName != "Earth")
                     KCT_GameStates.simulateInOrbit = true;
 
                 KCT_GameStates.simulationTimeLimit = 3600 * double.Parse(simLength);
