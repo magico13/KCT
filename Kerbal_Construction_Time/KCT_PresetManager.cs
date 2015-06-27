@@ -177,6 +177,22 @@ namespace KerbalConstructionTime
                 }
             }
         }
+
+        public int StartingUpgrades(Game.Modes mode)
+        {
+            if (mode == Game.Modes.CAREER)
+            {
+                return ActivePreset.start_upgrades[0];
+            }
+            else if (mode == Game.Modes.SCIENCE_SANDBOX)
+            {
+                return ActivePreset.start_upgrades[1];
+            }
+            else
+            {
+                return ActivePreset.start_upgrades[2];
+            }
+        }
     }
 
     class KCT_Preset

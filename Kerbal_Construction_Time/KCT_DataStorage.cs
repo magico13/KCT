@@ -72,12 +72,6 @@ namespace KerbalConstructionTime
     {
         [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX
             || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && KCT_GameStates.settings.SandboxEnabled));
-        [Persistent] public float RecoveryModifier = 0.75f;
-        [Persistent] public bool NoCostSimulations = false;
-        [Persistent] public bool DisableBuildTime = false;
-        [Persistent] public bool InstantTechUnlock = false;
-        [Persistent] public bool EnableAllBodies = false;
-        [Persistent] public bool Reconditioning = true;
 
         [Persistent] public float fundsFromSimulation = 0;
 
@@ -88,12 +82,14 @@ namespace KerbalConstructionTime
         [Persistent] List<int> SPHUpgrades = new List<int>() {0};
         [Persistent] List<int> RDUpgrades = new List<int>() {0,0};
         [Persistent] List<int> PurchasedUpgrades = new List<int>() {0,0};
-        [Persistent] int TotalUpgradePoints = 0, TechUpgrades = 0;
         [Persistent] List<String> BodiesVisited = new List<string> {KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin"};
         [Persistent] List<String> PartTracker = new List<String>();
         [Persistent] List<String> PartInventory = new List<String>();
         [Persistent] string activeKSC = "";
         [Persistent] string SimulationTime = "";
+        [Persistent] float SalesFigures = 0;
+        [Persistent] int UpgradesResetCounter = 0, TechUpgrades = 0;
+
 
         public override void OnDecodeFromConfigNode()
         {
@@ -104,22 +100,15 @@ namespace KerbalConstructionTime
             KCT_GameStates.ActiveKSC.SPHUpgrades = SPHUpgrades;
             KCT_GameStates.ActiveKSC.RDUpgrades = RDUpgrades;*/
             KCT_GameStates.PurchasedUpgrades = PurchasedUpgrades;
-            KCT_GameStates.TotalUpgradePoints = TotalUpgradePoints;
             KCT_GameStates.FundsGivenForVessel = fundsFromSimulation;
-            KCT_GameStates.TechUpgradesTotal = TechUpgrades;
             KCT_GameStates.activeKSCName = activeKSC;
             KCT_GUI.simLength = SimulationTime;
+            KCT_GameStates.InventorySalesFigures = SalesFigures;
+            KCT_GameStates.InventorySaleUpgrades = (float)KCT_MathParsing.GetStandardFormulaValue("InventorySales", new Dictionary<string, string> { { "V", "0" }, { "P", SalesFigures.ToString() } });
+            KCT_GameStates.UpgradesResetCounter = UpgradesResetCounter;
+            KCT_GameStates.TechUpgradesTotal = TechUpgrades;
 
             SetSettings();
-            //Fix for change to number of upgrades at start.
-            if (firstStart)
-            {
-                KCT_GameStates.TotalUpgradePoints += 15;
-            /*    KCT_GameStates.ActiveKSC.VABUpgrades = new List<int>() { 0 };
-                KCT_GameStates.ActiveKSC.SPHUpgrades = new List<int>() { 0 };
-                KCT_GameStates.ActiveKSC.RDUpgrades = new List<int>() { 0, 0 };*/
-                //firstStart = false;
-            }
             KCT_GameStates.firstStart = firstStart;
         }
 
@@ -134,11 +123,13 @@ namespace KerbalConstructionTime
             RDUpgrades = KCT_GameStates.RDUpgrades;*/
             TechUpgrades = KCT_GameStates.TechUpgradesTotal;
             PurchasedUpgrades = KCT_GameStates.PurchasedUpgrades;
-            TotalUpgradePoints = KCT_GameStates.TotalUpgradePoints;
             fundsFromSimulation = KCT_GameStates.FundsGivenForVessel;
             firstStart = KCT_GameStates.firstStart;
             activeKSC = KCT_GameStates.ActiveKSC.KSCName;
             SimulationTime = KCT_GUI.simLength;
+            SalesFigures = KCT_GameStates.InventorySalesFigures;
+            UpgradesResetCounter = KCT_GameStates.UpgradesResetCounter;
+
             GetSettings();
         }
 

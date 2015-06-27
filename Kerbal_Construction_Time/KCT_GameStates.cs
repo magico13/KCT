@@ -41,7 +41,9 @@ namespace KerbalConstructionTime
         public static List<KCT_TechItem> TechList = new List<KCT_TechItem>();
 
         public static List<int> PurchasedUpgrades = new List<int>() { 0, 0 };
-        public static int TotalUpgradePoints = 0;
+        public static float InventorySaleUpgrades = 0, InventorySalesFigures = 0;
+        public static int UpgradesResetCounter = 0;
+        //public static int TotalUpgradePoints = 0;
         public static KCT_BuildListVessel launchedVessel, editedVessel, recoveredVessel;
         //public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
         public static List<CrewedPart> launchedCrew = new List<CrewedPart>();
@@ -83,7 +85,6 @@ namespace KerbalConstructionTime
             simulationBody = KCT_Utilities.GetBodyByName(BodiesVisited[0]);
             simulateInOrbit = false;
             BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
-            TotalUpgradePoints = 0;
           /*  VABUpgrades = new List<int>() {0};
             SPHUpgrades = new List<int>() {0};
             RDUpgrades = new List<int>() {0, 0};*/
@@ -96,6 +97,9 @@ namespace KerbalConstructionTime
             KCT_GUI.upNodeRate = -13;
             KCT_GUI.researchRate = -13;
             KCT_GUI.upResearchRate = -13;
+
+            InventorySaleUpgrades = 0;
+            InventorySalesFigures = 0;
             //ActiveKSC = new KCT_KSC("Stock");
             //KSCs = new List<KCT_KSC>() {ActiveKSC};
 

@@ -293,10 +293,6 @@ namespace KerbalConstructionTime
                     KCT_Utilities.LoadSimulationSave();
                 }*/
                 KCT_GUI.hideAll();
-                if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
-                {
-                    KCT_GameStates.TotalUpgradePoints = KCT_GameStates.settings.SandboxUpgrades;
-                }
             }
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
@@ -671,15 +667,6 @@ namespace KerbalConstructionTime
             }
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
-                if (KCT_Utilities.CurrentGameHasScience() && KCT_GameStates.TotalUpgradePoints < 0)
-                {
-                   /* ConfigNode CN = new ConfigNode();
-                    ResearchAndDevelopment.Instance.snapshot.Save(CN);
-                    ConfigNode[] techNodes = CN.GetNodes("Tech");*/
-                    int numNodes = RDController.Instance.nodes.FindAll(n => n.IsResearched).Count;
-                    KCTDebug.Log("technodes length: " + numNodes);
-                    KCT_GameStates.TotalUpgradePoints = numNodes + 14;
-                }
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
                     KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];

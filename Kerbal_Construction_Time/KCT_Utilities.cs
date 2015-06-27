@@ -1982,6 +1982,30 @@ namespace KerbalConstructionTime
             }
             return lvl;
         }
+
+
+        public static int TotalUpgradePoints()
+        {
+            int total = 0;
+            //Starting points
+            total += KCT_PresetManager.Instance.StartingUpgrades(HighLogic.CurrentGame.Mode);
+            //R&D
+            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUpgrades)
+            {
+                total += RDController.Instance.nodes.FindAll(n => n.IsResearched).Count;
+            }
+            //Purchased funds
+            total += KCT_GameStates.PurchasedUpgrades[0];
+            //Purchased science
+            total += KCT_GameStates.PurchasedUpgrades[1];
+            //Inventory sales
+            total += (int)KCT_GameStates.InventorySaleUpgrades;
+            //Misc. (when API)
+
+
+            return total;
+        }
+
     }
 }
 /*

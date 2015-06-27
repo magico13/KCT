@@ -1950,7 +1950,7 @@ namespace KerbalConstructionTime
             newTimeWarp = KCT_GameStates.settings.MaxTimeWarp.ToString();
             forceStopWarp = KCT_GameStates.settings.ForceStopWarp;
             newSandboxUpgrades = KCT_GameStates.settings.SandboxUpgrades.ToString();
-            newUpgradeCount = KCT_GameStates.TotalUpgradePoints.ToString();
+            //newUpgradeCount = KCT_GameStates.TotalUpgradePoints.ToString();
             //newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
          /*   instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
             instantKSCUpgrades = KCT_GameStates.settings.InstantKSCUpgrades;*/
@@ -2202,7 +2202,7 @@ namespace KerbalConstructionTime
                 if (!enabledForSave && KCT_GameStates.settings.enabledForSave)
                     KCT_Utilities.DisableModFunctionality();
                 KCT_GameStates.settings.enabledForSave = enabledForSave;
-                KCT_GameStates.TotalUpgradePoints = int.Parse(newUpgradeCount);
+                //KCT_GameStates.TotalUpgradePoints = int.Parse(newUpgradeCount);
                 KCT_GameStates.settings.MaxTimeWarp = Math.Min(TimeWarp.fetch.warpRates.Count()-1, Math.Max(0, int.Parse(newTimeWarp)));
           //      KCT_GameStates.settings.EnableAllBodies = enableAllBodies;
                 KCT_GameStates.settings.ForceStopWarp = forceStopWarp;
@@ -2303,8 +2303,9 @@ namespace KerbalConstructionTime
             int spentPoints = KCT_Utilities.TotalSpentUpgrades(null);
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Total Points: " + KCT_GameStates.TotalUpgradePoints);
-            GUILayout.Label("Available: " + (KCT_GameStates.TotalUpgradePoints - spentPoints));
+            int upgrades = KCT_Utilities.TotalUpgradePoints();
+            GUILayout.Label("Total Points: " + upgrades);
+            GUILayout.Label("Available: " + (upgrades - spentPoints));
           //  if (KCT_Utilities.RSSActive)
            //     GUILayout.Label("Minimum Available: ");
             GUILayout.EndHorizontal();
@@ -2334,7 +2335,6 @@ namespace KerbalConstructionTime
                         {
                             //ResearchAndDevelopment.Instance.Science -= cost;
                             ResearchAndDevelopment.Instance.AddScience(-(float)cost, TransactionReasons.None);
-                            ++KCT_GameStates.TotalUpgradePoints;
                             ++KCT_GameStates.PurchasedUpgrades[0];
 
                             sciCost = -13;
@@ -2368,7 +2368,6 @@ namespace KerbalConstructionTime
                         if (Funding.Instance.Funds >= cost)
                         {
                             KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
-                            ++KCT_GameStates.TotalUpgradePoints;
                             ++KCT_GameStates.PurchasedUpgrades[1];
 
 
@@ -2379,34 +2378,39 @@ namespace KerbalConstructionTime
                 }
             }
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Reset Upgrades: ");
-            if (GUILayout.Button("2 Points", GUILayout.ExpandWidth(false)))
+            //TODO: Calculate the cost of resetting
+            int ResetCost = (int)KCT_MathParsing.GetStandardFormulaValue("UpgradeReset", new Dictionary<string, string> { { "N", KCT_GameStates.UpgradesResetCounter.ToString() } });
+            if (ResetCost >= 0)
             {
-                if (KCT_GameStates.TotalUpgradePoints - spentPoints > 1)
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Reset Upgrades: ");
+                if (GUILayout.Button(ResetCost+" Points", GUILayout.ExpandWidth(false)))
                 {
-                    KCT_GameStates.ActiveKSC.VABUpgrades = new List<int>() {0};
-                    KCT_GameStates.ActiveKSC.SPHUpgrades = new List<int>() { 0 };
-                    KCT_GameStates.ActiveKSC.RDUpgrades = new List<int>() { 0, 0 };
-                    KCT_GameStates.TechUpgradesTotal = 0;
-                    foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                    if (upgrades - spentPoints >= ResetCost)
                     {
-                        ksc.RDUpgrades[1] = 0;
+                        KCT_GameStates.ActiveKSC.VABUpgrades = new List<int>() { 0 };
+                        KCT_GameStates.ActiveKSC.SPHUpgrades = new List<int>() { 0 };
+                        KCT_GameStates.ActiveKSC.RDUpgrades = new List<int>() { 0, 0 };
+                        KCT_GameStates.TechUpgradesTotal = 0;
+                        foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                        {
+                            ksc.RDUpgrades[1] = 0;
+                        }
+                        nodeRate = -13;
+                        upNodeRate = -13;
+                        researchRate = -13;
+                        upResearchRate = -13;
+
+                        KCT_GameStates.ActiveKSC.RecalculateBuildRates();
+                        KCT_GameStates.ActiveKSC.RecalculateUpgradedBuildRates();
+
+                        foreach (KCT_TechItem tech in KCT_GameStates.TechList)
+                            tech.UpdateBuildRate();
+
                     }
-                    nodeRate = -13;
-                    upNodeRate = -13;
-                    researchRate = -13;
-                    upResearchRate = -13;
-
-                    KCT_GameStates.ActiveKSC.RecalculateBuildRates();
-                    KCT_GameStates.ActiveKSC.RecalculateUpgradedBuildRates();
-
-                    foreach (KCT_TechItem tech in KCT_GameStates.TechList)
-                        tech.UpdateBuildRate();
-
                 }
+                GUILayout.EndHorizontal();
             }
-            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("VAB")) { upgradeWindowHolder = 0; upgradePosition.height = 1; }
@@ -2429,7 +2433,7 @@ namespace KerbalConstructionTime
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Rate "+(i+1));
                     GUILayout.Label(rate + " BP/s");
-                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && (i == 0 || upgraded <= KCT_Utilities.GetBuildRate(i - 1, KCT_BuildListVessel.ListType.VAB, KSC)) && upgraded - rate > 0)
+                    if (upgrades - spentPoints > 0 && (i == 0 || upgraded <= KCT_Utilities.GetBuildRate(i - 1, KCT_BuildListVessel.ListType.VAB, KSC)) && upgraded - rate > 0)
                     {
                         if (GUILayout.Button("+" + Math.Round(upgraded - rate,2), GUILayout.Width(45)))
                         {
@@ -2475,7 +2479,7 @@ namespace KerbalConstructionTime
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Rate " + (i + 1));
                     GUILayout.Label(rate + " BP/s");
-                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0 && (i == 0 || upgraded <= KCT_Utilities.GetBuildRate(i-1, KCT_BuildListVessel.ListType.SPH, KSC)) && upgraded-rate > 0)
+                    if (upgrades - spentPoints > 0 && (i == 0 || upgraded <= KCT_Utilities.GetBuildRate(i-1, KCT_BuildListVessel.ListType.SPH, KSC)) && upgraded-rate > 0)
                     {
                         if (GUILayout.Button("+" + Math.Round(upgraded - rate, 2), GUILayout.Width(45)))
                         {
@@ -2524,7 +2528,7 @@ namespace KerbalConstructionTime
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Research");
                     GUILayout.Label(Math.Round(researchRate * 86400, 2) + " sci/86400 BP");
-                    if (KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
+                    if (upgrades - spentPoints > 0)
                     {
                         if (GUILayout.Button("+" + Math.Round((upResearchRate - researchRate) * 86400, 2), GUILayout.Width(45)))
                         {
@@ -2554,12 +2558,12 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Development");
                 GUILayout.Label(sciPerDay + " sci/day");
-                if (upNodeRate != nodeRate && KCT_GameStates.TotalUpgradePoints - spentPoints > 0)
+                if (upNodeRate != nodeRate && upgrades - spentPoints > 0)
                 {
                     bool everyKSCCanUpgrade = true;
                     foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                     {
-                        if (KCT_GameStates.TotalUpgradePoints - KCT_Utilities.TotalSpentUpgrades(ksc) <= 0)
+                        if (upgrades - KCT_Utilities.TotalSpentUpgrades(ksc) <= 0)
                         {
                             everyKSCCanUpgrade = false;
                             break;
@@ -2630,7 +2634,7 @@ namespace KerbalConstructionTime
                 centralWindowPosition.Set((Screen.width - 450) / 2, (Screen.height - 200) / 2, 450, 200);
             }
             GUILayout.BeginVertical();
-            GUILayout.Label("Welcome to KCT! It is advised that you spend your " + (KCT_GameStates.TotalUpgradePoints-KCT_Utilities.TotalSpentUpgrades(null)) + " upgrades to increase the build rate in the building you will primarily be using.");
+            GUILayout.Label("Welcome to KCT! It is advised that you spend your " + (KCT_Utilities.TotalUpgradePoints()-KCT_Utilities.TotalSpentUpgrades(null)) + " upgrades to increase the build rate in the building you will primarily be using.");
             GUILayout.Label("Please see the getting started guide included in the download or available from the forum for more information!");
             if (KCT_GameStates.settings.CheckForUpdates)
                 GUILayout.Label("Due to your settings, automatic update checking is enabled. You can disable it in the Settings menu!");
