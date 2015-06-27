@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using System.Reflection;
 
 namespace KerbalConstructionTime
 {
@@ -319,6 +320,11 @@ namespace KerbalConstructionTime
             showFirstRun = false;
             showSimLengthChooser = false;
             clicked = false;
+
+            VABSelected = false;
+            SPHSelected = false;
+            TechSelected = false;
+            listWindow = -1;
         }
 
         public static void DrawGUIs(int windowID)
@@ -812,7 +818,12 @@ namespace KerbalConstructionTime
             GUILayout.BeginHorizontal();
             GUILayout.Label("Body: ");
             if (KCT_GameStates.simulationBody == null)
+            {
                 KCT_GameStates.simulationBody = KCT_Utilities.GetBodyByName("Kerbin");
+                if (KCT_GameStates.simulationBody == null) //Still null? Probably RSS then.
+                    KCT_GameStates.simulationBody = KCT_Utilities.GetBodyByName("Earth");
+            }
+            
             GUILayout.Label(KCT_GameStates.simulationBody.bodyName);
             if (GUILayout.Button("Select", GUILayout.ExpandWidth(false)))
             {
@@ -823,14 +834,14 @@ namespace KerbalConstructionTime
                 simulationConfigPosition.height = 1;
             }
             GUILayout.EndHorizontal();
-            if (KCT_GameStates.simulationBody.bodyName == "Kerbin")
+            if (KCT_GameStates.simulationBody.bodyName == "Kerbin" || KCT_GameStates.simulationBody.bodyName == "Earth")
             {
                 bool changed = KCT_GameStates.simulateInOrbit;
                 KCT_GameStates.simulateInOrbit = GUILayout.Toggle(KCT_GameStates.simulateInOrbit, " Start in orbit?");
                 if (KCT_GameStates.simulateInOrbit != changed)
                     simulationConfigPosition.height = 1;
             }
-            if (KCT_GameStates.simulationBody.bodyName != "Kerbin" || (KCT_GameStates.simulationBody.bodyName == "Kerbin" && KCT_GameStates.simulateInOrbit))
+            if ((KCT_GameStates.simulationBody.bodyName != "Kerbin" && KCT_GameStates.simulationBody.bodyName != "Earth") || KCT_GameStates.simulateInOrbit)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Orbit Altitude (km): ");
@@ -899,7 +910,7 @@ namespace KerbalConstructionTime
             if (((KCT_Utilities.CurrentGameIsCareer() && Funding.Instance.Funds >= cost)
                 || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
             {
-                if (KCT_GameStates.simulationBody.bodyName != "Kerbin")
+                if (KCT_GameStates.simulationBody.bodyName != "Kerbin" && KCT_GameStates.simulationBody.bodyName != "Earth")
                     KCT_GameStates.simulateInOrbit = true;
 
                 KCT_GameStates.simulationTimeLimit = 3600 * double.Parse(simLength);
@@ -1233,6 +1244,7 @@ namespace KerbalConstructionTime
                 KCT_GameStates.flightSimulated = true;
                 KCT_Utilities.enableSimulationLocks();
                 KCT_GameStates.simulationEndTime = 0;
+                KCT_GameStates.TestFlightPartFailures = true;
              //   if (MCEWrapper.MCEAvailable) //Support for MCE
              //       MCEWrapper.IloadMCEbackup();
                 FlightDriver.RevertToLaunch();
@@ -1246,6 +1258,7 @@ namespace KerbalConstructionTime
                 KCT_Utilities.disableSimulationLocks();
                 KCT_GameStates.flightSimulated = false;
                 KCT_GameStates.simulationEndTime = 0;
+                KCT_GameStates.TestFlightPartFailures = true;
               //  if (MCEWrapper.MCEAvailable) //Support for MCE
               //      MCEWrapper.IloadMCEbackup();
                 if (FlightDriver.LaunchSiteName == "LaunchPad")
@@ -1253,6 +1266,38 @@ namespace KerbalConstructionTime
                 else if (FlightDriver.LaunchSiteName == "Runway")
                     FlightDriver.RevertToPrelaunch(EditorFacility.SPH);
                 centralWindowPosition.height = 1;
+            }
+            if (KCT_Utilities.TestFlightInstalled && KCT_GameStates.TestFlightPartFailures && GUILayout.Button("Disable Part Failures"))
+            {
+                KCT_GameStates.TestFlightPartFailures = false;
+                foreach (Part part in FlightGlobals.ActiveVessel.Parts)
+                {
+                    bool tfAvailableOnPart = (bool)KCT_Utilities.TestFlightInterface.InvokeMember("TestFlightAvailable", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part });
+                    if (tfAvailableOnPart)
+                    {
+                        foreach (string failureName in (List<string>)KCT_Utilities.TestFlightInterface.InvokeMember("GetAvailableFailures", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part }))
+                        {
+                            KCTDebug.Log(part.partInfo.name + ":" + failureName);
+                            KCT_Utilities.TestFlightInterface.InvokeMember("DisableFailure", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part, failureName });
+                        }
+                    }
+                }
+            }
+            if (KCT_Utilities.TestFlightInstalled && !KCT_GameStates.TestFlightPartFailures && GUILayout.Button("Enable Part Failures"))
+            {
+                KCT_GameStates.TestFlightPartFailures = true;
+                foreach (Part part in FlightGlobals.ActiveVessel.Parts)
+                {
+                    bool tfAvailableOnPart = (bool)KCT_Utilities.TestFlightInterface.InvokeMember("TestFlightAvailable", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part });
+                    if (tfAvailableOnPart)
+                    {
+                        foreach (string failureName in (List<string>)KCT_Utilities.TestFlightInterface.InvokeMember("GetAvailableFailures", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part }))
+                        {
+                            KCTDebug.Log(part.partInfo.name + ":" + failureName);
+                            KCT_Utilities.TestFlightInterface.InvokeMember("EnableFailure", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { part, failureName });
+                        }
+                    }
+                }
             }
             if (GUILayout.Button("Close"))
             {
@@ -2375,7 +2420,7 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("VAB Upgrades");
                 GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.VABUpgrades.Count + 1) * 26), GUILayout.MaxHeight(3 * Screen.height / 4));
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.VABUpgrades.Count + 1) * 26), GUILayout.MaxHeight(1 * Screen.height / 4));
                 GUILayout.BeginVertical();
                 for (int i = 0; i < KSC.VABRates.Count; i++)
                 {
@@ -2421,7 +2466,7 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("SPH Upgrades");
                 GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.SPHUpgrades.Count + 1) * 26), GUILayout.MaxHeight(3 * Screen.height / 4));
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.SPHUpgrades.Count + 1) * 26), GUILayout.MaxHeight(1 * Screen.height / 4));
                 GUILayout.BeginVertical();
                 for (int i = 0; i < KSC.SPHRates.Count; i++)
                 {
@@ -2547,11 +2592,11 @@ namespace KerbalConstructionTime
         private static string newName = "";
         public static void DrawRenameWindow(int windowID)
         {
-            if (centralWindowPosition.y != (Screen.height - centralWindowPosition.height) / 2)
+          /*  if (centralWindowPosition.y != (Screen.height - centralWindowPosition.height) / 2)
             {
                 centralWindowPosition.y = (Screen.height - centralWindowPosition.height) / 2;
                 centralWindowPosition.height = 1;
-            }
+            }*/
             GUILayout.BeginVertical();
             GUILayout.Label("Name:");
             newName = GUILayout.TextField(newName);

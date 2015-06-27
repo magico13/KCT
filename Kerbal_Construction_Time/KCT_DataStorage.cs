@@ -72,12 +72,12 @@ namespace KerbalConstructionTime
     {
         [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX
             || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX && KCT_GameStates.settings.SandboxEnabled));
-      /*  [Persistent] public float RecoveryModifier = 0.75f;
+        [Persistent] public float RecoveryModifier = 0.75f;
         [Persistent] public bool NoCostSimulations = false;
         [Persistent] public bool DisableBuildTime = false;
         [Persistent] public bool InstantTechUnlock = false;
         [Persistent] public bool EnableAllBodies = false;
-        [Persistent] public bool Reconditioning = true;*/
+        [Persistent] public bool Reconditioning = true;
 
         [Persistent] public float fundsFromSimulation = 0;
 
@@ -88,8 +88,8 @@ namespace KerbalConstructionTime
         [Persistent] List<int> SPHUpgrades = new List<int>() {0};
         [Persistent] List<int> RDUpgrades = new List<int>() {0,0};
         [Persistent] List<int> PurchasedUpgrades = new List<int>() {0,0};
-        [Persistent] int TotalUpgradePoints = -1, TechUpgrades = 0;
-        [Persistent] List<String> BodiesVisited = new List<string> {"Kerbin"};
+        [Persistent] int TotalUpgradePoints = 0, TechUpgrades = 0;
+        [Persistent] List<String> BodiesVisited = new List<string> {KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin"};
         [Persistent] List<String> PartTracker = new List<String>();
         [Persistent] List<String> PartInventory = new List<String>();
         [Persistent] string activeKSC = "";
@@ -145,7 +145,7 @@ namespace KerbalConstructionTime
         private void SetSettings()
         {
             KCT_GameStates.settings.enabledForSave = enabledForSave;
-           /* KCT_GameStates.settings.RecoveryModifier = RecoveryModifier;
+            /*KCT_GameStates.settings.RecoveryModifier = RecoveryModifier;
             KCT_GameStates.settings.NoCostSimulations = NoCostSimulations;
             KCT_GameStates.settings.DisableBuildTime = DisableBuildTime;
             KCT_GameStates.settings.InstantTechUnlock = InstantTechUnlock;
@@ -156,7 +156,7 @@ namespace KerbalConstructionTime
         private void GetSettings()
         {
             enabledForSave = KCT_GameStates.settings.enabledForSave;
-           /* RecoveryModifier = KCT_GameStates.settings.RecoveryModifier;
+            /*RecoveryModifier = KCT_GameStates.settings.RecoveryModifier;
             NoCostSimulations = KCT_GameStates.settings.NoCostSimulations;
             DisableBuildTime = KCT_GameStates.settings.DisableBuildTime;
             InstantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;

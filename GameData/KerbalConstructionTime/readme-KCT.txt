@@ -19,6 +19,14 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.1.8.0 (6/18/15)
+ - Fixed several GUI issues
+ - Main GUI now uses buttons (actually Toggles) rather than a Toolbar, meaning warping won't close it now
+ - Moved KSC upgrades into the Tech tab
+ - Added ability to disable TestFlight part failures during simulations
+ - Quicksaves are now made automatically when recovering vessels to the inventory
+ - Fixed issues with RSS and simulations now that RSS uses Kopernicus
+ 
 v1.1.7.0 (5/16/15)
  - Fixed issues when loading tourists
  - Supports Regex's KSCSwitcher now
