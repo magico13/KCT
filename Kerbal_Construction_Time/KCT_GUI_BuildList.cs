@@ -8,11 +8,14 @@ namespace KerbalConstructionTime
 {
     public static partial class KCT_GUI
     {
+        private static bool MouseOnRolloutButton = false;
         private static int listWindow = -1;
         public static void DrawBuildListWindow(int windowID)
         {
             if (buildListWindowPosition.xMax > Screen.width)
                 buildListWindowPosition.x = Screen.width - buildListWindowPosition.width;
+
+            //if (Input.touchCount == 0) MouseOnRolloutButton = false;
 
             //GUI.skin = HighLogic.Skin;
             GUIStyle redText = new GUIStyle(GUI.skin.label);
@@ -311,13 +314,22 @@ namespace KerbalConstructionTime
 
                         GUILayout.Label(b.shipName, textColor);
                         GUILayout.Label(status+"   ", textColor, GUILayout.ExpandWidth(false));
-                        if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null && GUILayout.Button("Rollout", GUILayout.ExpandWidth(false)))
+                        if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null)
                         {
-                            if (rollout != null)
+                            string rolloutText = MouseOnRolloutButton ? KCT_Utilities.GetColonFormattedTime(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()).AsBuildItem().GetTimeLeft()) : "Rollout";
+                            if (GUILayout.Button(rolloutText, GUILayout.ExpandWidth(false)))
                             {
-                                rollout.SwapRolloutType();
+                                if (rollout != null)
+                                {
+                                    rollout.SwapRolloutType();
+                                }
+                                KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()));
                             }
-                            KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()));
+                            if (Event.current.type == EventType.Repaint)
+                                if (GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
+                                    MouseOnRolloutButton = true;
+                                else
+                                    MouseOnRolloutButton = false;
                         }
                         else if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && rollout != null && b.id.ToString() == rollout.associatedID && !rollout.AsBuildItem().IsComplete() && rollback == null &&
                             GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollout.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false)))
@@ -393,6 +405,7 @@ namespace KerbalConstructionTime
                         {
                             GUILayout.Label(KCT_Utilities.GetColonFormattedTime(recovery.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
                         }
+
                         GUILayout.EndHorizontal();
                     }
                 }

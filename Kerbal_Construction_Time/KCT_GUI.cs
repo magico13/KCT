@@ -39,7 +39,7 @@ namespace KerbalConstructionTime
         private static Rect simulationConfigPosition = new Rect((Screen.width / 2)-150, (Screen.height / 4), 300, 1);
         private static Rect bLPlusPosition = new Rect(Screen.width-500, 40, 100, 1);
 
-        private static GUISkin windowSkin;// = HighLogic.Skin;// = new GUIStyle(HighLogic.Skin.window);
+        public static GUISkin windowSkin;// = HighLogic.Skin;// = new GUIStyle(HighLogic.Skin.window);
 
         private static bool isKSCLocked = false, isEditorLocked = false;
 
@@ -1110,7 +1110,7 @@ namespace KerbalConstructionTime
         public static void DrawSimulationCompleteFlight(int windowID)
         {
             GUILayout.BeginVertical();
-            if (GUILayout.Button("Build"))
+            if (KCT_GameStates.launchedVessel != null && !KCT_GameStates.EditorShipEditingMode && GUILayout.Button("Build")) //Doesn't work if the vessel is null or we're editing the vessel
             {
                 KCT_GameStates.buildSimulatedVessel = true;
                 KCTDebug.Log("Ship added from simulation.");

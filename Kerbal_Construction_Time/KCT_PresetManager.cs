@@ -310,6 +310,7 @@ namespace KerbalConstructionTime
             BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)", //TODO: Implement simulation cost formulas, reset formula
             SimCostFormula = "", //[M] = planet mass, [A] = presence of atmosphere (1 or 0), [m] = mass of vessel, [C] = cost of vessel, [S] = # times simulated this editor session, [SMA] = ratio parent planet SMA to Kerbin SMA, [L] = Simulation length in hours
             KerbinSimCostFormula = "",
-            UpgradeResetFormula = "2*[N]"; //N = number of times it's been reset
+            UpgradeResetFormula = "2*[N]", //N = number of times it's been reset
+            InventorySaleFormula = "([V]+[P] / 10000)^(0.5)"; //Gives the TOTAL amount of points, decimals are kept //[V] = inventory value in funds, [P] = Value of all previous sales combined
     }
 }
