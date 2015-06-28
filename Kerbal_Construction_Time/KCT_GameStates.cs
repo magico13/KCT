@@ -68,6 +68,7 @@ namespace KerbalConstructionTime
         public static double simOrbitAltitude = 0, simInclination = 0;
         public static List<String> BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
         public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;
+        public static int EditorSimulationCount = 0;
 
         public static bool TestFlightPartFailures = true;
 
@@ -100,6 +101,7 @@ namespace KerbalConstructionTime
 
             InventorySaleUpgrades = 0;
             InventorySalesFigures = 0;
+
             //ActiveKSC = new KCT_KSC("Stock");
             //KSCs = new List<KCT_KSC>() {ActiveKSC};
 

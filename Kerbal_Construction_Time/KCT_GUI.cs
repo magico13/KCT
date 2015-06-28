@@ -223,16 +223,19 @@ namespace KerbalConstructionTime
             }
             else if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes && HighLogic.LoadedSceneIsEditor)
             {
-                if (!showSimConfig)
+                if (KCT_PresetManager.Instance.ActivePreset.generalSettings.Simulations)
                 {
-                    simulationConfigPosition.height = 1;
-                    EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
-                    showSimConfig = true;
-                }
-                else
-                {
-                    showSimConfig = false;
-                    unlockEditor = true;
+                    if (!showSimConfig)
+                    {
+                        simulationConfigPosition.height = 1;
+                        EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
+                        showSimConfig = true;
+                    }
+                    else
+                    {
+                        showSimConfig = false;
+                        unlockEditor = true;
+                    }
                 }
             }
             else if (HighLogic.LoadedScene == GameScenes.FLIGHT && !KCT_GameStates.flightSimulated && !PrimarilyDisabled)
@@ -485,7 +488,7 @@ namespace KerbalConstructionTime
                         InventoryCategoryChanged(CategoryCurrent);
                         KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                     }
-                    if (GUILayout.Button("Simulate"))
+                    if (KCT_PresetManager.Instance.ActivePreset.generalSettings.Simulations && GUILayout.Button("Simulate"))
                     {
                         simulationConfigPosition.height = 1;
                         EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
@@ -673,7 +676,7 @@ namespace KerbalConstructionTime
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Simulate"))
+                if (KCT_PresetManager.Instance.ActivePreset.generalSettings.Simulations && GUILayout.Button("Simulate"))
                 {
                     finishedShipBP = -1;
                     simulationConfigPosition.height = 1;
@@ -861,9 +864,9 @@ namespace KerbalConstructionTime
             if (simLength == "")
             {
                 if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.SimulationCosts || !KCT_Utilities.CurrentGameIsCareer())
-                    simLength = "0";
+                    simLength = "00:00:00:00:00";
                 else
-                    simLength = "0.25";
+                    simLength = "00:00:00:15:00";
             }
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
@@ -908,7 +911,8 @@ namespace KerbalConstructionTime
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Simulation Length: ");
-            GUILayout.Label(KCT_Utilities.GetColonFormattedTime(float.Parse(simLength) * 3600));
+            simLength = GUILayout.TextField(simLength, 18, GUILayout.Width(180));
+            /*GUILayout.Label(KCT_Utilities.GetColonFormattedTime(float.Parse(simLength) * 3600));
             if (GUILayout.Button("Select", GUILayout.ExpandWidth(false)))
             {
                 //show body chooser
@@ -916,7 +920,7 @@ namespace KerbalConstructionTime
                 showSimLengthChooser = true;
                 centralWindowPosition.height = 1;
                 simulationConfigPosition.height = 1;
-            }
+            }*/
             GUILayout.EndHorizontal();
 
             //simLength = GUILayout.TextField(simLength);
@@ -925,8 +929,9 @@ namespace KerbalConstructionTime
             float cost = 0;
             if (KCT_PresetManager.Instance.ActivePreset.generalSettings.SimulationCosts)
             {
-                cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 1);
-                cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
+                //cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 1);
+                //cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
+                cost = KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength, EditorLogic.fetch.ship, KCT_GameStates.EditorSimulationCount + 1);
                 GUILayout.Label("Cost: " + Math.Round(cost, 1));
             }
 
@@ -964,7 +969,7 @@ namespace KerbalConstructionTime
                 if (KCT_GameStates.simulationBody.bodyName != "Kerbin" && KCT_GameStates.simulationBody.bodyName != "Earth")
                     KCT_GameStates.simulateInOrbit = true;
 
-                KCT_GameStates.simulationTimeLimit = 3600 * double.Parse(simLength);
+                KCT_GameStates.simulationTimeLimit = KCT_Utilities.ParseColonFormattedTime(simLength, false);
                 KCT_GameStates.simulationDefaultTimeLimit = KCT_GameStates.simulationTimeLimit;
 
                 if (KCT_GameStates.simulateInOrbit)
@@ -1012,6 +1017,7 @@ namespace KerbalConstructionTime
                     KCT_Utilities.AddFunds(KCT_GameStates.FundsGivenForVessel, TransactionReasons.VesselRollout);
                 }
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
+                KCT_GameStates.EditorSimulationCount++;
                 KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL);
                 EditorLogic.fetch.launchVessel();
             }

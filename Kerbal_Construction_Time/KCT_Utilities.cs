@@ -74,6 +74,7 @@ namespace KerbalConstructionTime
 
         public static double ParseColonFormattedTime(string timeString, bool toUT=true)
         {
+            //toUT is for converting a string that is given as a formatted UT (Starting with Y1, D1)
             double time = 0;
             string[] parts = timeString.Split(':');
             int len = parts.Length;
@@ -1140,9 +1141,58 @@ namespace KerbalConstructionTime
             {"87600", 12},
         };
 
-        public static float CostOfSimulation(CelestialBody orbitBody, string simulationLength)
+        public static float CostOfSimulation(CelestialBody body, string simulationLength, ShipConstruct ship, int SimCount)
         {
-            float timeMultiplier = 13;
+            if (simulationLength == "" || simulationLength == "0" || simulationLength == "-1")
+                simulationLength = "31536000000"; //1000 Earth years
+            CelestialBody Kerbin = GetBodyByName("Kerbin");
+            if (Kerbin == null)
+                Kerbin = GetBodyByName("Earth");
+
+            double length = KCT_Utilities.ParseColonFormattedTime(simulationLength, false);
+            length = Math.Min(length, 31536000000.0);
+            if (length < 0)
+                length = 31536000000.0;
+            Dictionary<string, string> vars = new Dictionary<string, string>();
+            vars.Add("L", length.ToString()); //Sim length in seconds
+            vars.Add("M", body.Mass.ToString()); //Body mass
+            vars.Add("KM", Kerbin.Mass.ToString()); //Kerbin mass
+            vars.Add("A", body.atmosphere ? "1" : "0"); //Presence of atmosphere
+            vars.Add("S", body.referenceBody != Planetarium.fetch.Sun ? "1" : "0"); //Is a moon (satellite)
+
+            float out1, out2;
+            vars.Add("m", ship.GetTotalMass().ToString()); //Vessel mass
+            vars.Add("C", ship.GetShipCosts(out out1, out out2).ToString()); //Vessel cost
+
+            vars.Add("s", SimCount.ToString()); //Number of times simulated this editor session
+
+
+            CelestialBody Parent = body;
+            while (Parent.referenceBody != Planetarium.fetch.Sun)
+            {
+                Parent = Parent.referenceBody;
+            }
+            double orbitRatio = 1;
+            if (Parent.orbit.semiMajorAxis >= Kerbin.orbit.semiMajorAxis)
+                orbitRatio = Parent.orbit.semiMajorAxis / Kerbin.orbit.semiMajorAxis;
+            else
+                orbitRatio = Kerbin.orbit.semiMajorAxis / Parent.orbit.semiMajorAxis;
+
+            vars.Add("SMA", orbitRatio.ToString());
+            vars.Add("PM", Parent.Mass.ToString());
+
+            if (body.bodyName == "Kerbin" || body.bodyName == "Earth")
+            {
+                return (float)(KCT_MathParsing.GetStandardFormulaValue("KerbinSimCost", vars));
+            }
+            else
+            {
+                return (float)(KCT_MathParsing.GetStandardFormulaValue("SimCost", vars));
+            }
+
+
+
+            /*float timeMultiplier = 13;
             if (TimeMultipliers.ContainsKey(simulationLength))
                  timeMultiplier = TimeMultipliers[simulationLength];
 
@@ -1172,7 +1222,7 @@ namespace KerbalConstructionTime
                 cost *= atmosphereMult * 1.1;
 
             cost *= timeMultiplier;
-            return (float)cost;
+            return (float)cost;*/
         }
 
         public static double SpendFunds(double toSpend, TransactionReasons reason)

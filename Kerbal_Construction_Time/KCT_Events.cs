@@ -275,6 +275,7 @@ namespace KerbalConstructionTime
                 KCT_GameStates.activeKSCName = "Stock";
                 KCT_GameStates.ActiveKSC = new KCT_KSC("Stock");
                 KCT_GameStates.KSCs = new List<KCT_KSC>() { KCT_GameStates.ActiveKSC };
+                KCT_GameStates.EditorSimulationCount = 0;
 
                 KCT_PresetManager.Instance.ClearPresets();
 
@@ -305,6 +306,11 @@ namespace KerbalConstructionTime
             if (HighLogic.LoadedSceneIsEditor)
             {
                 EditorLogic.fetch.Unlock("KCTEditorMouseLock");
+            }
+
+            if (!HighLogic.LoadedSceneIsEditor && !HighLogic.LoadedSceneIsFlight)
+            {
+                KCT_GameStates.EditorSimulationCount = 0;
             }
         }
 
