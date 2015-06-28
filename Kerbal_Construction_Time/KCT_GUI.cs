@@ -701,6 +701,33 @@ namespace KerbalConstructionTime
 
             if (showInventory)
             {
+                if (GUILayout.Button("Clear Out Inventory"))
+                {
+                    float totalValue = 0;
+                    foreach (KeyValuePair<string, int> kvp in KCT_GameStates.PartInventory)
+                    {
+                        AvailablePart part = KCT_Utilities.GetAvailablePartByName(kvp.Key);
+                        if (part != null)
+                        {
+                            if (!KCT_Utilities.PartIsProcedural(part.partPrefab))
+                            {
+                                totalValue += part.cost * kvp.Value;
+                            }
+                            else
+                            {
+                                totalValue += kvp.Value / 100.0F;
+                            }
+                        }
+                    }
+                    int newUpgrades = 0;
+                    newUpgrades = (int)(KCT_MathParsing.GetStandardFormulaValue("InventorySales", new Dictionary<string, string> { {"V", totalValue.ToString()}, {"P", KCT_GameStates.InventorySalesFigures.ToString() } }) - KCT_GameStates.InventorySaleUpgrades);
+                    DialogOption[] options = new DialogOption[2];
+                    options[0] = new DialogOption("Clear Out Inventory", ClearOutInventory);
+                    options[1] = new DialogOption("Cancel", DummyVoid);
+                    MultiOptionDialog a = new MultiOptionDialog("Do you wish to clear out the inventory? In return, you will receive "+newUpgrades+" upgrade points.", windowTitle:"Clear Out Inventory", options:options);
+                    PopupDialog.SpawnPopupDialog(a, false, GUI.skin);
+                }
+
                 List<string> categories = new List<string> { "Pods", "Fuel.", "Eng.", "Ctl.", "Struct.", "Aero", "Util.", "Sci." };
                 int lastCat = currentCategoryInt;
                 currentCategoryInt = GUILayout.Toolbar(currentCategoryInt, categories.ToArray(), GUILayout.ExpandWidth(false));
@@ -760,6 +787,30 @@ namespace KerbalConstructionTime
                 GUI.DragWindow();
 
             CheckEditorLock();
+        }
+
+        private static void ClearOutInventory()
+        {
+            float totalValue = 0;
+            foreach (KeyValuePair<string, int> kvp in KCT_GameStates.PartInventory)
+            {
+                AvailablePart part = KCT_Utilities.GetAvailablePartByName(kvp.Key);
+                if (part != null)
+                {
+                    if (!KCT_Utilities.PartIsProcedural(part.partPrefab))
+                    {
+                        totalValue += part.cost * kvp.Value;
+                    }
+                    else
+                    {
+                        totalValue += kvp.Value / 100.0F;
+                    }
+                    //Remove the parts from the inventory
+                    KCT_GameStates.PartInventory.Remove(kvp.Key);
+                }
+            }
+            KCT_GameStates.InventorySaleUpgrades = (float)KCT_MathParsing.GetStandardFormulaValue("InventorySales", new Dictionary<string, string> { { "V", totalValue.ToString() }, { "P", KCT_GameStates.InventorySalesFigures.ToString() } });
+            KCT_GameStates.InventorySalesFigures += totalValue;
         }
 
         private static Dictionary<string, int> InventoryForCategory = new Dictionary<string, int>();
