@@ -22,6 +22,8 @@ namespace KerbalConstructionTime
                 case "KSCUpgrade": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KSCUpgradeFormula, variables);
                 case "Reconditioning": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ReconditioningFormula, variables);
                 case "BuildRate": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BuildRateFormula, variables);
+                case "SimCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.SimCostFormula, variables);
+                case "KerbinSimCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KerbinSimCostFormula, variables);
                 case "UpgradeReset": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeResetFormula, variables);
                 case "InventorySales": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.InventorySaleFormula, variables);
                 default: return 0;
