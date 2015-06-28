@@ -255,11 +255,14 @@ namespace KerbalConstructionTime
 
         public void TechDisableEvent()
         {
-            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes && KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)
+            if (KCT_PresetManager.Instance != null && KCT_PresetManager.Instance.ActivePreset != null)
             {
-                foreach (KCT_TechItem tech in KCT_GameStates.TechList)
+                if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes && KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)
                 {
-                    tech.DisableTech();
+                    foreach (KCT_TechItem tech in KCT_GameStates.TechList)
+                    {
+                        tech.DisableTech();
+                    }
                 }
             }
         }

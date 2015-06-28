@@ -163,6 +163,9 @@ namespace KerbalConstructionTime
                 try
                 {
                     KCT_Preset newPreset = new KCT_Preset(file);
+                    if (KCT_Utilities.CurrentGameIsCareer() && !newPreset.CareerEnabled) continue; //Don't display presets that aren't designed for this game mode
+                    if (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX && !newPreset.ScienceEnabled) continue;
+                    if (KCT_Utilities.CurrentGameIsSandbox() && !newPreset.SandboxEnabled) continue;
                     //KCT_Preset existing = Presets.Find(p => p.name == newPreset.name);
                     KCT_Preset existing = FindPresetByShortName(newPreset.shortName);
                     if (existing != null) //Ensure there is only one preset with a given name. Take the last one found as the final one.
@@ -195,13 +198,16 @@ namespace KerbalConstructionTime
         }
     }
 
-    class KCT_Preset
+    public class KCT_Preset
     {
         public KCT_Preset_General generalSettings = new KCT_Preset_General();
         public KCT_Preset_Time timeSettings = new KCT_Preset_Time();
         public KCT_Preset_Formula formulaSettings = new KCT_Preset_Formula();
 
         public string name = "UNINIT", shortName = "UNINIT", description = "NA", author = "NA";
+        public bool CareerEnabled = true, ScienceEnabled = true, SandboxEnabled = true; //These just control whether it should appear during these game types
+
+
         private int[] upgrades_internal;
         public int[] start_upgrades //TODO: Actually implement the starting points
         {
@@ -239,6 +245,10 @@ namespace KerbalConstructionTime
             description = Source.description;
             author = Source.author;
 
+            CareerEnabled = Source.CareerEnabled;
+            ScienceEnabled = Source.ScienceEnabled;
+            SandboxEnabled = Source.SandboxEnabled;
+
            // generalSettings = Source.generalSettings;
             //timeSettings = Source.timeSettings;
             //formulaSettings = Source.formulaSettings;
@@ -255,6 +265,11 @@ namespace KerbalConstructionTime
             node.AddValue("shortName", shortName);
             node.AddValue("description", description);
             node.AddValue("author", author);
+
+            node.AddValue("career", CareerEnabled);
+            node.AddValue("science", ScienceEnabled);
+            node.AddValue("sandbox", SandboxEnabled);
+
             node.AddNode(generalSettings.AsConfigNode());
             node.AddNode(timeSettings.AsConfigNode());
             node.AddNode(formulaSettings.AsConfigNode());
@@ -267,6 +282,10 @@ namespace KerbalConstructionTime
             shortName = node.GetValue("shortName");
             description = node.GetValue("description");
             author = node.GetValue("author");
+
+            CareerEnabled = bool.Parse(node.GetValue("career"));
+            ScienceEnabled = bool.Parse(node.GetValue("science"));
+            SandboxEnabled = bool.Parse(node.GetValue("sandbox"));
 
             //ConfigNode toLoad = new ConfigNode("KCT_Preset_General");
             //toLoad.AddNode(node.getn)
@@ -295,7 +314,7 @@ namespace KerbalConstructionTime
         }
     }
 
-    class KCT_Preset_General : ConfigNodeStorage
+    public class KCT_Preset_General : ConfigNodeStorage
     {
         [Persistent]
         public bool Enabled = true, BuildTimes = true, ReconditioningTimes = true, TechUnlockTimes = true, KSCUpgradeTimes = true,
@@ -305,13 +324,13 @@ namespace KerbalConstructionTime
         public string StartingPoints = "15,15,45"; //Career, Science, and Sandbox modes
     }
 
-    class KCT_Preset_Time : ConfigNodeStorage
+    public class KCT_Preset_Time : ConfigNodeStorage
     {
         [Persistent]
         public double OverallMultiplier = 1.0, BuildEffect = 1.0, InventoryEffect = 100.0, ReconditioningEffect = 1728, MaxReconditioning = 345600, RolloutReconSplit = 0.25;
     }
 
-    class KCT_Preset_Formula : ConfigNodeStorage
+    public class KCT_Preset_Formula : ConfigNodeStorage
     {
         [Persistent]
         public string NodeFormula = "2^([N]+1) / 86400",
@@ -326,7 +345,7 @@ namespace KerbalConstructionTime
             BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)", //TODO: Implement simulation cost formulas, reset formula
             SimCostFormula = "max([C]/50000 * ([PM]/[KM]) * ([S]/10 + 1) * ([A]/10 + 1) * ([L]^0.5) * 100, 1000)", //[M] = body mass, [PM] = parent mass, [A] = presence of atmosphere (1 or 0), [m] = mass of vessel, [C] = cost of vessel, [s] = # times simulated this editor session, [SMA] = ratio parent planet SMA to Kerbin SMA, [L] = Simulation length in seconds, [KM] = Kerbin Mass, [S] = 1/0 if a satellite
             KerbinSimCostFormula = "max([C]/50000 * ([L]^0.5) * 10, 100)",
-            UpgradeResetFormula = "2*[N]", //N = number of times it's been reset
+            UpgradeResetFormula = "2*([N]+1)", //N = number of times it's been reset
             InventorySaleFormula = "([V]+[P] / 10000)^(0.5)"; //Gives the TOTAL amount of points, decimals are kept //[V] = inventory value in funds, [P] = Value of all previous sales combined
     }
 }

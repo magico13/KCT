@@ -2042,7 +2042,9 @@ namespace KerbalConstructionTime
             //R&D
             if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUpgrades)
             {
-                total += RDController.Instance.nodes.FindAll(n => n.IsResearched).Count;
+                //if (RDController.Instance != null && RDController.Instance.nodes != null)
+                //    total += RDController.Instance.nodes.FindAll(n => n.IsResearched).Count;
+                total += ResearchAndDevelopment.Instance.snapshot.GetData().CountNodes;
             }
             //Purchased funds
             total += KCT_GameStates.PurchasedUpgrades[0];

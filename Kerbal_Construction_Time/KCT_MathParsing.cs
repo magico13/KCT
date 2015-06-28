@@ -168,7 +168,7 @@ namespace KerbalConstructionTime
                 }
             }
             currentVal = DoMath(currentVal, lastOp, stack);
-            KCTDebug.Log("(" + raw + ")=(" + input + ")=" + currentVal);
+            //KCTDebug.Log("(" + raw + ")=(" + input + ")=" + currentVal);
             return currentVal;
         }
 
