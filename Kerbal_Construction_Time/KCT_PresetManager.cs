@@ -108,7 +108,11 @@ namespace KerbalConstructionTime
             }
             else
             {
-                ActivePreset = new KCT_Preset("UNINIT", "UNINIT", "NA", "NA");
+                KCT_Preset defaultSettings = FindPresetByShortName("default");
+                if (defaultSettings != null)
+                    ActivePreset = defaultSettings;
+                else
+                    ActivePreset = new KCT_Preset("UNINIT", "UNINIT", "NA", "NA");
             }
         }
 

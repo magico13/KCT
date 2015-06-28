@@ -281,9 +281,19 @@ namespace KerbalConstructionTime
                 KCT_GameStates.EditorSimulationCount = 0;
 
                 KCT_PresetManager.Instance.ClearPresets();
+                KCT_PresetManager.Instance = null;
 
                 return;
             }
+
+            /*if (HighLogic.LoadedScene == GameScenes.MAINMENU)
+            {
+                if (scene == GameScenes.SPACECENTER)
+                {
+                    KCT_PresetManager.Instance.FindPresetFiles();
+                    KCT_PresetManager.Instance.LoadPresets();
+                }
+            }*/
 
             if (!KCT_GameStates.settings.enabledForSave) return;
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };

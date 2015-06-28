@@ -9,13 +9,13 @@ namespace KerbalConstructionTime
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Config.txt";
         //[Persistent] public double BuildTimeModifier;
-        [Persistent] public bool SandboxEnabled;
+        //[Persistent] public bool SandboxEnabled;
         [Persistent] public int MaxTimeWarp;
-        [Persistent] public int SandboxUpgrades;
+        //[Persistent] public int SandboxUpgrades;
         [Persistent] public bool ForceStopWarp;
-        [Persistent] public bool DisableRecoveryMessages;
+        //[Persistent] public bool DisableRecoveryMessages;
         [Persistent] public bool DisableAllMessages;
-        [Persistent] public bool CheckForUpdates, VersionSpecific;
+        //[Persistent] public bool CheckForUpdates, VersionSpecific;
         [Persistent] public bool AutoKACAlarams;
         /*[Persistent] public float RecoveryModifierDefault;
         [Persistent] public bool NoCostSimulationsDefault;
@@ -51,15 +51,15 @@ namespace KerbalConstructionTime
         public KCT_Settings() 
         {
            // BuildTimeModifier = 1.0;
-            SandboxEnabled = true;
+           // SandboxEnabled = true;
             MaxTimeWarp = TimeWarp.fetch.warpRates.Count() - 1;
             
             ForceStopWarp = false;
-            SandboxUpgrades = 45;
-            DisableRecoveryMessages = false;
+            //SandboxUpgrades = 45;
+            //DisableRecoveryMessages = false;
             DisableAllMessages = false;
-            CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
-            VersionSpecific = false;
+           // CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
+            //VersionSpecific = false;
             Debug = false;
             OverrideLaunchButton = true;
           //  RecoveryModifier = 0.75F;

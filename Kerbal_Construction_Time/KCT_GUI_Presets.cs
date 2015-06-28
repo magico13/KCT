@@ -8,7 +8,8 @@ namespace KerbalConstructionTime
 {
     public static partial class KCT_GUI
     {
-        private static Rect presetPosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 640, Screen.height/2);
+        private static int presetsWidth = 900, presetsHeight = 600;
+        private static Rect presetPosition = new Rect((Screen.width-presetsWidth) / 2, (Screen.height-presetsHeight) / 2, presetsWidth, presetsHeight);
         private static int presetIndex = -1;
         private static KCT_Preset WorkingPreset;
         private static Vector2 presetScrollView, presetMainScroll;
@@ -79,6 +80,7 @@ namespace KerbalConstructionTime
             if (GUILayout.Button("Save as\nNew Preset", GUILayout.ExpandHeight(false)))
             {
                 //create new preset
+                SaveAsNewPreset(WorkingPreset);
             }
             GUILayout.EndVertical();
 
@@ -140,9 +142,9 @@ namespace KerbalConstructionTime
             GUILayout.EndHorizontal();
             GUILayout.Label("Rollout-Reconditioning Split:");
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Rollout", GUILayout.ExpandWidth(false));
+            //GUILayout.Label("Rollout", GUILayout.ExpandWidth(false));
             WorkingPreset.timeSettings.RolloutReconSplit = GUILayout.HorizontalSlider((float)Math.Floor(WorkingPreset.timeSettings.RolloutReconSplit * 100f), 0, 100)/100.0;
-            GUILayout.Label("Recon.", GUILayout.ExpandWidth(false));
+            //GUILayout.Label("Recon.", GUILayout.ExpandWidth(false));
             GUILayout.EndHorizontal();
             GUILayout.Label((Math.Floor(WorkingPreset.timeSettings.RolloutReconSplit*100))+"% Rollout, "+(100-Math.Floor(WorkingPreset.timeSettings.RolloutReconSplit*100))+"% Reconditioning");
             GUILayout.EndVertical(); //end time settings
@@ -262,6 +264,33 @@ namespace KerbalConstructionTime
             GUILayout.EndHorizontal();
 
             GUILayout.EndVertical(); //end column 2
+
+            GUILayout.BeginVertical(GUILayout.Width(100)); //Start general settings
+            GUILayout.Label("General Settings", yellowText);
+            GUILayout.Label("NOTE: Affects all saves!", yellowText);
+            GUILayout.BeginVertical(HighLogic.Skin.textArea);
+            GUILayout.Label("Max Timewarp");
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("-", GUILayout.ExpandWidth(false)))
+            {
+                KCT_GameStates.settings.MaxTimeWarp = Math.Max(KCT_GameStates.settings.MaxTimeWarp-1, 0);
+            }
+            //current warp setting
+            GUILayout.Label(TimeWarp.fetch.warpRates[KCT_GameStates.settings.MaxTimeWarp] + "x");
+            if (GUILayout.Button("+", GUILayout.ExpandWidth(false)))
+            {
+                KCT_GameStates.settings.MaxTimeWarp = Math.Min(KCT_GameStates.settings.MaxTimeWarp + 1, TimeWarp.fetch.warpRates.Length - 1);
+            }
+            GUILayout.EndHorizontal();
+
+            KCT_GameStates.settings.ForceStopWarp = GUILayout.Toggle(KCT_GameStates.settings.ForceStopWarp, "Auto Stop TimeWarp", HighLogic.Skin.button);
+            KCT_GameStates.settings.AutoKACAlarams = GUILayout.Toggle(KCT_GameStates.settings.AutoKACAlarams, "Auto KAC Alarms", HighLogic.Skin.button);
+            KCT_GameStates.settings.OverrideLaunchButton = GUILayout.Toggle(KCT_GameStates.settings.OverrideLaunchButton, "Override Launch Button", HighLogic.Skin.button);
+            KCT_GameStates.settings.PreferBlizzyToolbar = GUILayout.Toggle(KCT_GameStates.settings.PreferBlizzyToolbar, "Use Toolbar Mod", HighLogic.Skin.button);
+            KCT_GameStates.settings.DisableAllMessages = !GUILayout.Toggle(!KCT_GameStates.settings.DisableAllMessages, "Use Message System", HighLogic.Skin.button);
+            KCT_GameStates.settings.Debug = GUILayout.Toggle(KCT_GameStates.settings.Debug, "Debug Logging", HighLogic.Skin.button);
+            GUILayout.EndVertical();
+            GUILayout.EndVertical();
             
             GUILayout.EndHorizontal(); //end main split
             GUILayout.EndVertical(); //end window
@@ -291,5 +320,80 @@ namespace KerbalConstructionTime
             ReEffTmp = WorkingPreset.timeSettings.ReconditioningEffect.ToString();
             MaxReTmp = WorkingPreset.timeSettings.MaxReconditioning.ToString();
         }
+
+        private static string saveName, saveShort, saveDesc, saveAuthor;
+        private static bool saveCareer, saveScience, saveSandbox;
+        private static KCT_Preset toSave;
+        public static bool showPresetSaver = false;
+        public static void DrawPresetSaveWindow(int windowID)
+        {
+            GUILayout.BeginVertical();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Preset name:");
+            saveName = GUILayout.TextField(saveName, GUILayout.Width(100));
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Preset short name:");
+            saveShort = GUILayout.TextField(saveShort, GUILayout.Width(100));
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Preset author(s):");
+            saveAuthor = GUILayout.TextField(saveAuthor, GUILayout.Width(100));
+            GUILayout.EndHorizontal();
+
+            //GUILayout.BeginHorizontal();
+            GUILayout.Label("Preset description:");
+            saveDesc = GUILayout.TextField(saveDesc, GUILayout.Width(220));
+            //GUILayout.EndHorizontal();
+
+            saveCareer = GUILayout.Toggle(saveCareer, " Show in Career Games");
+            saveScience = GUILayout.Toggle(saveScience, " Show in Science Games");
+            saveSandbox = GUILayout.Toggle(saveSandbox, " Show in Sandbox Games");
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Save"))
+            {
+                toSave.name = saveName;
+                toSave.shortName = saveShort;
+                toSave.description = saveDesc;
+                toSave.author = saveAuthor;
+
+                toSave.CareerEnabled = saveCareer;
+                toSave.ScienceEnabled = saveScience;
+                toSave.SandboxEnabled = saveSandbox;
+
+                toSave.SaveToFile(KSPUtil.ApplicationRootPath + "/GameData/KerbalConstructionTime/KCT_Presets/"+toSave.shortName+".cfg");
+                showPresetSaver = false;
+                KCT_PresetManager.Instance.FindPresetFiles();
+                KCT_PresetManager.Instance.LoadPresets();
+            }
+            if (GUILayout.Button("Cancel"))
+            {
+                showPresetSaver = false;
+            }
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndVertical();
+
+            CenterWindow(ref centralWindowPosition);
+        }
+
+        public static void SaveAsNewPreset(KCT_Preset newPreset)
+        {
+            toSave = newPreset;
+            saveCareer = newPreset.CareerEnabled;
+            saveScience = newPreset.ScienceEnabled;
+            saveSandbox = newPreset.SandboxEnabled;
+
+            saveName = newPreset.name;
+            saveShort = newPreset.shortName;
+            saveDesc = newPreset.description;
+            saveAuthor = newPreset.author;
+
+            showPresetSaver = true;
+        }
+
     }
 }

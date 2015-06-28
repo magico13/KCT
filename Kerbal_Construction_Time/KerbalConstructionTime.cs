@@ -547,12 +547,12 @@ namespace KerbalConstructionTime
           //  KCTDebug.Log(ScenarioUpgradeableFacilities.protoUpgradeables.Values.ElementAt(0).facilityRefs[0].name);
 
 
-            if (!updateChecked)
+           /* if (!updateChecked)
             {
                 if (KCT_GameStates.settings.CheckForUpdates && !KCT_GameStates.firstStart) //Check for updates
                     KCT_UpdateChecker.CheckForUpdate(false, KCT_GameStates.settings.VersionSpecific);
                 updateChecked = true;
-            }
+            }*/
 
             if (!KCT_GameStates.settings.enabledForSave)
                 return;

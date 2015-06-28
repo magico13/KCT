@@ -109,6 +109,8 @@ namespace KerbalConstructionTime
                     centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawFirstRun, "Kerbal Construction Time", HighLogic.Skin.window);
                 if (showSimLengthChooser)
                     centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimLengthChooser, "Time Limit", HighLogic.Skin.window);
+                if (showPresetSaver)
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawPresetSaveWindow, "Save as New Preset", HighLogic.Skin.window);
 
                 if (unlockEditor)
                 {
@@ -322,6 +324,7 @@ namespace KerbalConstructionTime
             showRename = false;
             showFirstRun = false;
             showSimLengthChooser = false;
+            showPresetSaver = false;
             clicked = false;
 
             VABSelected = false;
@@ -364,6 +367,8 @@ namespace KerbalConstructionTime
                 DrawFirstRun(windowID);
             if (showSimLengthChooser)
                 DrawSimLengthChooser(windowID);
+            if (showPresetSaver)
+                DrawPresetSaveWindow(windowID);
         }
 
         public static void DrawMainGUI(int windowID) //Deprecated to all hell now I think
@@ -2006,17 +2011,17 @@ namespace KerbalConstructionTime
           //  enableAllBodies = KCT_GameStates.settings.EnableAllBodies;
             newTimeWarp = KCT_GameStates.settings.MaxTimeWarp.ToString();
             forceStopWarp = KCT_GameStates.settings.ForceStopWarp;
-            newSandboxUpgrades = KCT_GameStates.settings.SandboxUpgrades.ToString();
+          //  newSandboxUpgrades = KCT_GameStates.settings.SandboxUpgrades.ToString();
             //newUpgradeCount = KCT_GameStates.TotalUpgradePoints.ToString();
             //newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
          /*   instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
             instantKSCUpgrades = KCT_GameStates.settings.InstantKSCUpgrades;*/
 
         //    disableBuildTimes = KCT_GameStates.settings.DisableBuildTime;
-            checkForUpdates = KCT_GameStates.settings.CheckForUpdates;
-            versionSpecific = KCT_GameStates.settings.VersionSpecific;
+        //    checkForUpdates = KCT_GameStates.settings.CheckForUpdates;
+        //    versionSpecific = KCT_GameStates.settings.VersionSpecific;
          //   newRecoveryModifier = (KCT_GameStates.settings.RecoveryModifier*100).ToString();
-            disableRecMsgs = KCT_GameStates.settings.DisableRecoveryMessages;
+         //   disableRecMsgs = KCT_GameStates.settings.DisableRecoveryMessages;
             disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
         /*    freeSims = KCT_GameStates.settings.NoCostSimulations;
             recon = KCT_GameStates.settings.Reconditioning;*/
@@ -2265,12 +2270,12 @@ namespace KerbalConstructionTime
                 KCT_GameStates.settings.ForceStopWarp = forceStopWarp;
           //      KCT_GameStates.settings.InstantTechUnlock = instantTechUnlock;
           //      KCT_GameStates.settings.InstantKSCUpgrades = instantKSCUpgrades;
-                KCT_GameStates.settings.SandboxUpgrades = int.Parse(newSandboxUpgrades);
+             //   KCT_GameStates.settings.SandboxUpgrades = int.Parse(newSandboxUpgrades);
           //      KCT_GameStates.settings.DisableBuildTime = disableBuildTimes;
           //      KCT_GameStates.settings.RecoveryModifier = Math.Min(1, Math.Max(float.Parse(newRecoveryModifier) / 100f, 0));
-                KCT_GameStates.settings.CheckForUpdates = checkForUpdates;
-                KCT_GameStates.settings.VersionSpecific = versionSpecific;
-                KCT_GameStates.settings.DisableRecoveryMessages = disableRecMsgs;
+           //     KCT_GameStates.settings.CheckForUpdates = checkForUpdates;
+           //     KCT_GameStates.settings.VersionSpecific = versionSpecific;
+           //     KCT_GameStates.settings.DisableRecoveryMessages = disableRecMsgs;
                 KCT_GameStates.settings.DisableAllMessages = disableAllMsgs;
           //      KCT_GameStates.settings.NoCostSimulations = freeSims;
            //     KCT_GameStates.settings.Reconditioning = recon;
@@ -2644,7 +2649,15 @@ namespace KerbalConstructionTime
                 GUILayout.EndHorizontal();
 
             }
-            if (GUILayout.Button("Close")) { showUpgradeWindow = false; if (!PrimarilyDisabled) showBuildList = true; }
+            if (GUILayout.Button("Close")) 
+            { 
+                showUpgradeWindow = false;
+                if (!PrimarilyDisabled)
+                {
+                    //showBuildList = true;
+                    KCT_Events.instance.KCTButtonStock.SetTrue();
+                }
+            }
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                 GUI.DragWindow();
@@ -2686,40 +2699,45 @@ namespace KerbalConstructionTime
 
         public static void DrawFirstRun(int windowID)
         {
-            if (centralWindowPosition.width != 450)
+            if (centralWindowPosition.width != 200)
             {
-                centralWindowPosition.Set((Screen.width - 450) / 2, (Screen.height - 200) / 2, 450, 200);
+                centralWindowPosition.Set((Screen.width - 200) / 2, (Screen.height - 100) / 2, 200, 100);
             }
             GUILayout.BeginVertical();
-            GUILayout.Label("Welcome to KCT! It is advised that you spend your " + (KCT_Utilities.TotalUpgradePoints()-KCT_Utilities.TotalSpentUpgrades(null)) + " upgrades to increase the build rate in the building you will primarily be using.");
-            GUILayout.Label("Please see the getting started guide included in the download or available from the forum for more information!");
-            if (KCT_GameStates.settings.CheckForUpdates)
+            GUILayout.Label("Welcome to KCT! Follow the steps below to get set up.");
+            //GUILayout.Label("Welcome to KCT! It is advised that you spend your " + (KCT_Utilities.TotalUpgradePoints()-KCT_Utilities.TotalSpentUpgrades(null)) + " upgrades to increase the build rate in the building you will primarily be using.");
+            //GUILayout.Label("Please see the getting started guide included in the download or available from the forum for more information!");
+           /* if (KCT_GameStates.settings.CheckForUpdates)
                 GUILayout.Label("Due to your settings, automatic update checking is enabled. You can disable it in the Settings menu!");
             else
                 GUILayout.Label("Due to your settings, automatic update checking is disabled. You can enable it in the Settings menu!");
+            */
             //GUILayout.Label("\nNote: 0.24 introduced a bug that causes time to freeze while hovering over the Build List with the mouse cursor. Just move the cursor off of the window and time will resume.");
-            if (GUILayout.Button("Spend Upgrades"))
+            if (GUILayout.Button("1 - Choose a Preset"))
+            {
+                //showFirstRun = false;
+                centralWindowPosition.height = 1;
+                centralWindowPosition.width = 150;
+                //ShowSettings();
+                showSettings = true;
+            }
+            if (GUILayout.Button("2 - Spend Upgrades"))
             {
                 showFirstRun = false;
                 centralWindowPosition.height = 1;
                 centralWindowPosition.width = 150;
                 showUpgradeWindow = true;
             }
-            if (GUILayout.Button("Settings"))
-            {
-                showFirstRun = false;
-                centralWindowPosition.height = 1;
-                centralWindowPosition.width = 150;
-                ShowSettings();
-            }
-            if (GUILayout.Button("Close"))
+            
+            /*if (GUILayout.Button("3 - Finished"))
             {
                 showFirstRun = false;
                 centralWindowPosition.height = 1;
                 centralWindowPosition.width = 150;
                 if (KCT_GameStates.settings.CheckForUpdates)
                     KCT_UpdateChecker.CheckForUpdate(true, KCT_GameStates.settings.VersionSpecific);
-            }
+              
+            }*/
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                 GUI.DragWindow();
