@@ -343,7 +343,7 @@ namespace KerbalConstructionTime
             if (!KCT_GUI.PrimarilyDisabled)
             {
                 KCT_GameStates.flightSimulated = true;
-                PopupDialog.SpawnPopupDialog("Warning!", "To launch vessels you must first build them in the VAB or SPH, then launch them through the main KCT window in the Space Center!\n\nDo not use this menu to launch vessels!", "Ok", false, KCT_GUI.windowSkin);
+                PopupDialog.SpawnPopupDialog("Warning!", "To launch vessels you must first build them in the VAB or SPH, then launch them through the main KCT window in the Space Center!\n\nDo not use this menu to launch vessels!", "Ok", false, HighLogic.Skin);
             }
         }
 

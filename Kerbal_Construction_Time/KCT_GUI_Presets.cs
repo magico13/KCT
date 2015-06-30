@@ -254,11 +254,41 @@ namespace KerbalConstructionTime
                 KCT_PresetManager.Instance.SaveActiveToSaveData();
                 WorkingPreset = null;
                 showSettings = false;
+
+
+                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled && KCT_GameStates.settings.enabledForSave)
+                    KCT_Utilities.DisableModFunctionality();
+                KCT_GameStates.settings.enabledForSave = KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled;
+                KCT_GameStates.settings.MaxTimeWarp = newTimewarp;
+                KCT_GameStates.settings.ForceStopWarp = forceStopWarp;
+                KCT_GameStates.settings.DisableAllMessages = disableAllMsgs;
+                KCT_GameStates.settings.OverrideLaunchButton = overrideLaunchBtn;
+                KCT_GameStates.settings.Debug = debug;
+                KCT_GameStates.settings.AutoKACAlarams = autoAlarms;
+                KCT_GameStates.settings.PreferBlizzyToolbar = useBlizzyToolbar;
+
+                KCT_GameStates.settings.Save();
+                showSettings = false;
+                if (!PrimarilyDisabled && !showFirstRun)
+                {
+                    if (KCT_Events.instance.KCTButtonStock != null)
+                        KCT_Events.instance.KCTButtonStock.SetTrue();
+                    else
+                        showBuildList = true;
+                }
+                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) InputLockManager.RemoveControlLock("KCTKSCLock");
             }
             if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
             {
                 WorkingPreset = null;
                 showSettings = false;
+                if (!PrimarilyDisabled && !showFirstRun)
+                {
+                    if (KCT_Events.instance.KCTButtonStock != null)
+                        KCT_Events.instance.KCTButtonStock.SetTrue();
+                    else
+                        showBuildList = true;
+                }
             }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
@@ -283,12 +313,12 @@ namespace KerbalConstructionTime
             }
             GUILayout.EndHorizontal();
 
-            KCT_GameStates.settings.ForceStopWarp = GUILayout.Toggle(KCT_GameStates.settings.ForceStopWarp, "Auto Stop TimeWarp", HighLogic.Skin.button);
-            KCT_GameStates.settings.AutoKACAlarams = GUILayout.Toggle(KCT_GameStates.settings.AutoKACAlarams, "Auto KAC Alarms", HighLogic.Skin.button);
-            KCT_GameStates.settings.OverrideLaunchButton = GUILayout.Toggle(KCT_GameStates.settings.OverrideLaunchButton, "Override Launch Button", HighLogic.Skin.button);
-            KCT_GameStates.settings.PreferBlizzyToolbar = GUILayout.Toggle(KCT_GameStates.settings.PreferBlizzyToolbar, "Use Toolbar Mod", HighLogic.Skin.button);
-            KCT_GameStates.settings.DisableAllMessages = !GUILayout.Toggle(!KCT_GameStates.settings.DisableAllMessages, "Use Message System", HighLogic.Skin.button);
-            KCT_GameStates.settings.Debug = GUILayout.Toggle(KCT_GameStates.settings.Debug, "Debug Logging", HighLogic.Skin.button);
+            forceStopWarp = GUILayout.Toggle(forceStopWarp, "Auto Stop TimeWarp", HighLogic.Skin.button);
+            autoAlarms = GUILayout.Toggle(autoAlarms, "Auto KAC Alarms", HighLogic.Skin.button);
+            overrideLaunchBtn = GUILayout.Toggle(overrideLaunchBtn, "Override Launch Button", HighLogic.Skin.button);
+            useBlizzyToolbar = GUILayout.Toggle(useBlizzyToolbar, "Use Toolbar Mod", HighLogic.Skin.button);
+            disableAllMsgs = !GUILayout.Toggle(!disableAllMsgs, "Use Message System", HighLogic.Skin.button);
+            debug = GUILayout.Toggle(debug, "Debug Logging", HighLogic.Skin.button);
             GUILayout.EndVertical();
             GUILayout.EndVertical();
             
@@ -377,7 +407,7 @@ namespace KerbalConstructionTime
 
             GUILayout.EndVertical();
 
-            CenterWindow(ref centralWindowPosition);
+            CenterWindow(ref presetNamingWindowPosition);
         }
 
         public static void SaveAsNewPreset(KCT_Preset newPreset)

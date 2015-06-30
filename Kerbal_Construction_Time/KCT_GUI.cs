@@ -27,6 +27,7 @@ namespace KerbalConstructionTime
         private static Rect SOIAlertPosition = new Rect(Screen.width / 3, Screen.height / 3, 250, 100);
 
         private static Rect centralWindowPosition = new Rect((Screen.width - 150) / 2, (Screen.height - 50) / 2, 150, 50);
+        private static Rect presetNamingWindowPosition = new Rect((Screen.width - 150) / 2, (Screen.height - 50) / 2, 150, 50);
 
         //private static Rect launchAlertPosition = new Rect((Screen.width-75)/2, (Screen.height-100)/2, 150, 100);
         //private static Rect simulationCompleteEditorPosition = new Rect((Screen.width - 75) / 2, (Screen.height - 100) / 2, 150, 100);
@@ -110,7 +111,7 @@ namespace KerbalConstructionTime
                 if (showSimLengthChooser)
                     centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimLengthChooser, "Time Limit", HighLogic.Skin.window);
                 if (showPresetSaver)
-                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawPresetSaveWindow, "Save as New Preset", HighLogic.Skin.window);
+                    presetNamingWindowPosition = GUILayout.Window(8952, presetNamingWindowPosition, KCT_GUI.DrawPresetSaveWindow, "Save as New Preset", HighLogic.Skin.window);
 
                 if (unlockEditor)
                 {
@@ -1992,332 +1993,28 @@ namespace KerbalConstructionTime
             CenterWindow(ref crewListWindowPosition);
         }
 
-        public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier, 
+       /* public static string newMultiplier, newBuildEffect, newInvEffect, newTimeWarp, newSandboxUpgrades, newUpgradeCount, newTimeLimit, newRecoveryModifier, 
             newReconEffect, maxReconditioning, newNodeModifier;
         public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, 
             freeSims, recon, debug, overrideLaunchBtn, autoAlarms, useBlizzyToolbar, allowParachuteRecovery, instantKSCUpgrades;
+        */
+        public static bool forceStopWarp, disableAllMsgs, debug, overrideLaunchBtn, autoAlarms, useBlizzyToolbar;
+        public static int newTimewarp;
 
         public static double reconSplit;
         public static string newRecoveryModDefault;
         public static bool disableBuildTimesDefault, instantTechUnlockDefault, enableAllBodiesDefault, freeSimsDefault, reconDefault, instantKSCUpgradeDefault;
         private static void ShowSettings()
         {
-            settingSelected = 0;
-          /*  newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
-            newBuildEffect = KCT_GameStates.timeSettings.BuildEffect.ToString();
-            newInvEffect = KCT_GameStates.timeSettings.InventoryEffect.ToString();
-            newReconEffect = (86400 / KCT_GameStates.timeSettings.ReconditioningEffect).ToString();*/
-            enabledForSave = KCT_GameStates.settings.enabledForSave;
-          //  enableAllBodies = KCT_GameStates.settings.EnableAllBodies;
-            newTimeWarp = KCT_GameStates.settings.MaxTimeWarp.ToString();
+            newTimewarp = KCT_GameStates.settings.MaxTimeWarp;
             forceStopWarp = KCT_GameStates.settings.ForceStopWarp;
-          //  newSandboxUpgrades = KCT_GameStates.settings.SandboxUpgrades.ToString();
-            //newUpgradeCount = KCT_GameStates.TotalUpgradePoints.ToString();
-            //newTimeLimit = KCT_GameStates.settings.SimulationTimeLimit.ToString();
-         /*   instantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
-            instantKSCUpgrades = KCT_GameStates.settings.InstantKSCUpgrades;*/
-
-        //    disableBuildTimes = KCT_GameStates.settings.DisableBuildTime;
-        //    checkForUpdates = KCT_GameStates.settings.CheckForUpdates;
-        //    versionSpecific = KCT_GameStates.settings.VersionSpecific;
-         //   newRecoveryModifier = (KCT_GameStates.settings.RecoveryModifier*100).ToString();
-         //   disableRecMsgs = KCT_GameStates.settings.DisableRecoveryMessages;
             disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
-        /*    freeSims = KCT_GameStates.settings.NoCostSimulations;
-            recon = KCT_GameStates.settings.Reconditioning;*/
             debug = KCT_GameStates.settings.Debug;
             overrideLaunchBtn = KCT_GameStates.settings.OverrideLaunchButton;
             autoAlarms = KCT_GameStates.settings.AutoKACAlarams;
             useBlizzyToolbar = KCT_GameStates.settings.PreferBlizzyToolbar;
 
-       /*     reconSplit = KCT_GameStates.timeSettings.RolloutReconSplit;
-            maxReconditioning = KCT_GameStates.timeSettings.MaxReconditioning.ToString();
-            newNodeModifier = KCT_GameStates.timeSettings.NodeModifier.ToString();*/
-
-        /*    disableBuildTimesDefault = KCT_GameStates.settings.DisableBuildTimeDefault;
-            instantTechUnlockDefault = KCT_GameStates.settings.InstantTechUnlockDefault;
-            instantKSCUpgradeDefault = KCT_GameStates.settings.InstantKSCUpgradeDefault;
-            enableAllBodiesDefault = KCT_GameStates.settings.EnableAllBodiesDefault;
-            freeSimsDefault = KCT_GameStates.settings.NoCostSimulationsDefault;
-            newRecoveryModDefault = (KCT_GameStates.settings.RecoveryModifierDefault*100).ToString();
-            reconDefault = KCT_GameStates.settings.ReconditioningDefault;*/
-
-            settingsPosition.height = 1;
             showSettings = !showSettings;
-        }
-
-
-        private static int settingSelected = 0;
-        private static void DrawSettings(int windowID)
-        {
-            int width1 = 200;
-            int width2 = 100;
-            int lastSetting = settingSelected;
-            GUILayout.BeginVertical();
-            settingSelected = GUILayout.Toolbar(settingSelected, new string[] { "Game", "Global", "Time", "Defaults" });
-            if (lastSetting != settingSelected) settingsPosition.height = 1;
-            if (settingSelected == 0)
-            {
-                GUILayout.Label("Game Settings");
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Enabled for this save?", GUILayout.Width(width1));
-                enabledForSave = GUILayout.Toggle(enabledForSave, enabledForSave ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                if (KCT_Utilities.CurrentGameIsSandbox())
-                {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label("Number of Upgrade Points", GUILayout.Width(width1));
-                    newUpgradeCount = GUILayout.TextField(newUpgradeCount, 3, GUILayout.Width(50));
-                    GUILayout.EndHorizontal();
-                }
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Build Times", GUILayout.Width(width1));
-                disableBuildTimes = !GUILayout.Toggle(!disableBuildTimes, !disableBuildTimes ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                if (KCT_Utilities.CurrentGameHasScience())
-                {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label("Instant Tech Unlock", GUILayout.Width(width1));
-                    instantTechUnlock = GUILayout.Toggle(instantTechUnlock, instantTechUnlock ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                    GUILayout.EndHorizontal();
-                }
-                if (KCT_Utilities.CurrentGameIsCareer())
-                {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label("Instant KSC Upgrades", GUILayout.Width(width1));
-                    instantKSCUpgrades = GUILayout.Toggle(instantKSCUpgrades, instantKSCUpgrades ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                    GUILayout.EndHorizontal();
-                }
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Override Body Tracker", GUILayout.Width(width1));
-                enableAllBodies = GUILayout.Toggle(enableAllBodies, enableAllBodies ? " Overridden" : " Normal", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-              /*  if (KCT_Utilities.CurrentGameIsCareer())
-                {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label("Funds Recovery Mod", GUILayout.Width(width1));
-                    newRecoveryModifier = GUILayout.TextField(newRecoveryModifier, 4, GUILayout.Width(40));
-                    GUILayout.EndHorizontal();
-                }*/
-                if (KCT_Utilities.CurrentGameIsCareer())
-                {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label("Free Simulations", GUILayout.Width(width1));
-                    freeSims = GUILayout.Toggle(freeSims, freeSims ? " Free" : " Not Free", GUILayout.Width(width2));
-                    GUILayout.EndHorizontal();
-                }
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Reconditioning", GUILayout.Width(width1));
-                recon = GUILayout.Toggle(recon, recon ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-            }
-            //GUILayout.Label("");
-            if (settingSelected == 1)
-            {
-                GUILayout.Label("Global Settings");
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Max TimeWarp", GUILayout.Width(width1));
-                //string newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
-                int warpIndex = 0;
-                int.TryParse(newTimeWarp, out warpIndex);
-                GUILayout.Label(TimeWarp.fetch.warpRates[Math.Min(TimeWarp.fetch.warpRates.Count() - 1, Math.Max(0, warpIndex))].ToString() + "x");
-                newTimeWarp = GUILayout.TextField(newTimeWarp, 1, GUILayout.Width(20));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Force Stop Timewarp on Complete", GUILayout.Width(width1));
-                forceStopWarp = GUILayout.Toggle(forceStopWarp, forceStopWarp ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Recovery Messages", GUILayout.Width(width1));
-                disableRecMsgs = !GUILayout.Toggle(!disableRecMsgs, !disableRecMsgs ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("All Messages", GUILayout.Width(width1));
-                disableAllMsgs = !GUILayout.Toggle(!disableAllMsgs, !disableAllMsgs ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Override Launch Button", GUILayout.Width(width1));
-                overrideLaunchBtn = GUILayout.Toggle(overrideLaunchBtn, overrideLaunchBtn ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Enable Debugging", GUILayout.Width(width1));
-                debug = GUILayout.Toggle(debug, debug ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Automatic KAC Alarms", GUILayout.Width(width1));
-                autoAlarms = GUILayout.Toggle(autoAlarms, autoAlarms ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Prefered Toolbar", GUILayout.Width(width1));
-                useBlizzyToolbar = GUILayout.Toggle(useBlizzyToolbar, useBlizzyToolbar ? " Toolbar Mod" : " Stock", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-              /*  GUILayout.BeginHorizontal();
-                GUILayout.Label("Parachute Recovery", GUILayout.Width(width1));
-                allowParachuteRecovery = GUILayout.Toggle(allowParachuteRecovery, allowParachuteRecovery ? " Active" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();*/
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Auto Check For Updates", GUILayout.Width(width1));
-                checkForUpdates = GUILayout.Toggle(checkForUpdates, checkForUpdates ? " Enabled" : " Disabled");
-                if (GUILayout.Button("Check"))
-                    KCT_UpdateChecker.CheckForUpdate(true, versionSpecific);
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Check Only for this KSP Version?", GUILayout.Width(width1));
-                versionSpecific = GUILayout.Toggle(versionSpecific, versionSpecific ? " Yes" : " No");
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Current: " + KCT_UpdateChecker.CurrentVersion);
-                if (KCT_UpdateChecker.WebVersion != "")
-                    GUILayout.Label("Latest: " + KCT_UpdateChecker.WebVersion);
-                GUILayout.EndHorizontal();
-
-            }
-            //GUILayout.Label("");
-            if (settingSelected == 2)
-            {
-                GUILayout.Label("Global Time Settings");
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Overall Multiplier", GUILayout.Width(width1));
-                //string newMultiplier = KCT_GameStates.timeSettings.OverallMultiplier.ToString();
-                newMultiplier = GUILayout.TextField(newMultiplier, 10, GUILayout.Width(100));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Build Effect", GUILayout.Width(width1));
-                //string newBuildEffect = KCT_GameStates.timeSettings.BuildEffect.ToString();
-                newBuildEffect = GUILayout.TextField(newBuildEffect, 10, GUILayout.Width(100));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Inventory Effect", GUILayout.Width(width1));
-                //string newInvEffect = KCT_GameStates.timeSettings.InventoryEffect.ToString();
-                newInvEffect = GUILayout.TextField(newInvEffect, 10, GUILayout.Width(100));
-                GUILayout.EndHorizontal();
-
-              /*  GUILayout.BeginHorizontal();
-                GUILayout.Label("Tech Modifier", GUILayout.Width(width1));
-                newNodeModifier = GUILayout.TextField(newNodeModifier, 10, GUILayout.Width(100));
-                GUILayout.EndHorizontal();*/
-
-            /*    GUILayout.Label("Reconditioning/Rollout:");
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Total: ");
-                double mult;
-                if (!double.TryParse(newMultiplier, out mult)) mult = KCT_GameStates.timeSettings.OverallMultiplier;
-                double days = mult * 86400;
-                GUILayout.Label(days + " BP per ");
-                newReconEffect = GUILayout.TextField(newReconEffect, 10, GUILayout.Width(100));
-                GUILayout.Label(" tons.");
-                GUILayout.EndHorizontal();*/
-
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Max Recon.: ");
-                maxReconditioning = GUILayout.TextField(maxReconditioning, 10, GUILayout.Width(100));
-                GUILayout.EndHorizontal();
-
-                GUILayout.Label("Rollout %:");
-                GUILayout.BeginHorizontal();
-                reconSplit = GUILayout.HorizontalSlider((float)reconSplit, 0, 1);
-                reconSplit = Math.Round(reconSplit, 2);
-                GUILayout.Label(" "+reconSplit*100 + "%", GUILayout.Width(50));
-                GUILayout.EndHorizontal();
-            }
-            if (settingSelected == 3)
-            {
-                GUILayout.Label("Game Settings Defaults");
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Build Times", GUILayout.Width(width1));
-                disableBuildTimesDefault = !GUILayout.Toggle(!disableBuildTimesDefault, !disableBuildTimesDefault ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Instant Tech Unlock", GUILayout.Width(width1));
-                instantTechUnlockDefault = GUILayout.Toggle(instantTechUnlockDefault, instantTechUnlockDefault ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Instant KSC Upgrades", GUILayout.Width(width1));
-                instantKSCUpgradeDefault = GUILayout.Toggle(instantKSCUpgradeDefault, instantKSCUpgradeDefault ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Override Body Tracker", GUILayout.Width(width1));
-                enableAllBodiesDefault = GUILayout.Toggle(enableAllBodiesDefault, enableAllBodiesDefault ? " Overridden" : " Normal", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-              /*  GUILayout.BeginHorizontal();
-                GUILayout.Label("Funds Recovery Mod", GUILayout.Width(width1));
-                newRecoveryModDefault = GUILayout.TextField(newRecoveryModDefault, 4, GUILayout.Width(40));
-                GUILayout.EndHorizontal();*/
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Free Simulations", GUILayout.Width(width1));
-                freeSimsDefault = GUILayout.Toggle(freeSimsDefault, freeSimsDefault ? " Free" : " Not Free", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Upgrades for New Sandbox", GUILayout.Width(width1));
-                newSandboxUpgrades = GUILayout.TextField(newSandboxUpgrades, 3, GUILayout.Width(40));
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Reconditioning", GUILayout.Width(width1));
-                reconDefault = GUILayout.Toggle(reconDefault, reconDefault ? " Enabled" : " Disabled", GUILayout.Width(width2));
-                GUILayout.EndHorizontal();
-            }
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Save"))
-            {
-                if (!enabledForSave && KCT_GameStates.settings.enabledForSave)
-                    KCT_Utilities.DisableModFunctionality();
-                KCT_GameStates.settings.enabledForSave = enabledForSave;
-                //KCT_GameStates.TotalUpgradePoints = int.Parse(newUpgradeCount);
-                KCT_GameStates.settings.MaxTimeWarp = Math.Min(TimeWarp.fetch.warpRates.Count()-1, Math.Max(0, int.Parse(newTimeWarp)));
-          //      KCT_GameStates.settings.EnableAllBodies = enableAllBodies;
-                KCT_GameStates.settings.ForceStopWarp = forceStopWarp;
-          //      KCT_GameStates.settings.InstantTechUnlock = instantTechUnlock;
-          //      KCT_GameStates.settings.InstantKSCUpgrades = instantKSCUpgrades;
-             //   KCT_GameStates.settings.SandboxUpgrades = int.Parse(newSandboxUpgrades);
-          //      KCT_GameStates.settings.DisableBuildTime = disableBuildTimes;
-          //      KCT_GameStates.settings.RecoveryModifier = Math.Min(1, Math.Max(float.Parse(newRecoveryModifier) / 100f, 0));
-           //     KCT_GameStates.settings.CheckForUpdates = checkForUpdates;
-           //     KCT_GameStates.settings.VersionSpecific = versionSpecific;
-           //     KCT_GameStates.settings.DisableRecoveryMessages = disableRecMsgs;
-                KCT_GameStates.settings.DisableAllMessages = disableAllMsgs;
-          //      KCT_GameStates.settings.NoCostSimulations = freeSims;
-           //     KCT_GameStates.settings.Reconditioning = recon;
-                KCT_GameStates.settings.OverrideLaunchButton = overrideLaunchBtn;
-                KCT_GameStates.settings.Debug = debug;
-                KCT_GameStates.settings.AutoKACAlarams = autoAlarms;
-                KCT_GameStates.settings.PreferBlizzyToolbar = useBlizzyToolbar;
-           //     KCT_GameStates.settings.AllowParachuteRecovery = allowParachuteRecovery;
-
-           /*     KCT_GameStates.settings.DisableBuildTimeDefault = disableBuildTimesDefault;
-                KCT_GameStates.settings.InstantTechUnlockDefault = instantTechUnlockDefault;
-                KCT_GameStates.settings.InstantKSCUpgradeDefault = instantKSCUpgrades;
-                KCT_GameStates.settings.EnableAllBodiesDefault = enableAllBodiesDefault;
-                KCT_GameStates.settings.NoCostSimulationsDefault = freeSimsDefault;
-                KCT_GameStates.settings.RecoveryModifierDefault = Math.Min(1, Math.Max(float.Parse(newRecoveryModDefault) / 100f, 0));
-                KCT_GameStates.settings.ReconditioningDefault = reconDefault;*/
-
-                KCT_GameStates.settings.Save();
-
-              /*  KCT_GameStates.timeSettings.OverallMultiplier = double.Parse(newMultiplier);
-                KCT_GameStates.timeSettings.BuildEffect = double.Parse(newBuildEffect);
-                KCT_GameStates.timeSettings.InventoryEffect = double.Parse(newInvEffect);
-                KCT_GameStates.timeSettings.NodeModifier = double.Parse(newNodeModifier);
-                KCT_GameStates.timeSettings.MaxReconditioning = double.Parse(maxReconditioning);
-                KCT_GameStates.timeSettings.RolloutReconSplit = reconSplit;
-                double reconTime = double.Parse(newReconEffect);
-                reconTime = (86400 / reconTime);
-                KCT_GameStates.timeSettings.ReconditioningEffect = reconTime;
-                KCT_GameStates.timeSettings.Save();*/
-                showSettings = false;
-                if (!PrimarilyDisabled) showBuildList = true;
-                if (!enabledForSave) InputLockManager.RemoveControlLock("KCTKSCLock");
-            }
-            if (GUILayout.Button("Cancel"))
-            {
-                showSettings = false;
-                if (!PrimarilyDisabled) showBuildList = true;
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.EndVertical();
-            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
-                GUI.DragWindow();
         }
 
         public static void  CheckToolbar()
@@ -2655,7 +2352,10 @@ namespace KerbalConstructionTime
                 if (!PrimarilyDisabled)
                 {
                     //showBuildList = true;
-                    KCT_Events.instance.KCTButtonStock.SetTrue();
+                    if (KCT_Events.instance.KCTButtonStock != null)
+                        KCT_Events.instance.KCTButtonStock.SetTrue();
+                    else
+                        showBuildList = true;
                 }
             }
             GUILayout.EndVertical();
@@ -2721,12 +2421,24 @@ namespace KerbalConstructionTime
                 //ShowSettings();
                 showSettings = true;
             }
-            if (GUILayout.Button("2 - Spend Upgrades"))
+            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled && KCT_Utilities.TotalUpgradePoints() > 0)
             {
-                showFirstRun = false;
-                centralWindowPosition.height = 1;
-                centralWindowPosition.width = 150;
-                showUpgradeWindow = true;
+                if (GUILayout.Button("2 - Spend Upgrades"))
+                {
+                    showFirstRun = false;
+                    centralWindowPosition.height = 1;
+                    centralWindowPosition.width = 150;
+                    showUpgradeWindow = true;
+                }
+            }
+            else
+            {
+                if (GUILayout.Button("2 - Close Window"))
+                {
+                    showFirstRun = false;
+                    centralWindowPosition.height = 1;
+                    centralWindowPosition.width = 150;
+                }
             }
             
             /*if (GUILayout.Button("3 - Finished"))
