@@ -185,6 +185,17 @@ namespace KerbalConstructionTime
             }
         }
 
+        public void DeletePresetFile(string shortName)
+        {
+            KCT_Preset toDelete = FindPresetByShortName(shortName);
+            if (toDelete != null && toDelete.AllowDeletion)
+            {
+                File.Delete(toDelete.presetFileLocation);
+            }
+            FindPresetFiles();
+            LoadPresets();
+        }
+
         public int StartingUpgrades(Game.Modes mode)
         {
             if (mode == Game.Modes.CAREER)
@@ -204,12 +215,15 @@ namespace KerbalConstructionTime
 
     public class KCT_Preset
     {
+        public string presetFileLocation = "";
+
         public KCT_Preset_General generalSettings = new KCT_Preset_General();
         public KCT_Preset_Time timeSettings = new KCT_Preset_Time();
         public KCT_Preset_Formula formulaSettings = new KCT_Preset_Formula();
 
         public string name = "UNINIT", shortName = "UNINIT", description = "NA", author = "NA";
         public bool CareerEnabled = true, ScienceEnabled = true, SandboxEnabled = true; //These just control whether it should appear during these game types
+        public bool AllowDeletion = true;
 
 
         private int[] upgrades_internal;
@@ -248,6 +262,7 @@ namespace KerbalConstructionTime
             shortName = Source.shortName;
             description = Source.description;
             author = Source.author;
+            AllowDeletion = Source.AllowDeletion;
 
             CareerEnabled = Source.CareerEnabled;
             ScienceEnabled = Source.ScienceEnabled;
@@ -270,6 +285,8 @@ namespace KerbalConstructionTime
             node.AddValue("description", description);
             node.AddValue("author", author);
 
+            node.AddValue("allowDeletion", AllowDeletion);
+
             node.AddValue("career", CareerEnabled);
             node.AddValue("science", ScienceEnabled);
             node.AddValue("sandbox", SandboxEnabled);
@@ -287,9 +304,11 @@ namespace KerbalConstructionTime
             description = node.GetValue("description");
             author = node.GetValue("author");
 
-            CareerEnabled = bool.Parse(node.GetValue("career"));
-            ScienceEnabled = bool.Parse(node.GetValue("science"));
-            SandboxEnabled = bool.Parse(node.GetValue("sandbox"));
+            bool.TryParse(node.GetValue("allowDeletion"), out AllowDeletion);
+
+            bool.TryParse(node.GetValue("career"), out CareerEnabled);
+            bool.TryParse(node.GetValue("science"), out ScienceEnabled);
+            bool.TryParse(node.GetValue("sandbox"), out SandboxEnabled);
 
             //ConfigNode toLoad = new ConfigNode("KCT_Preset_General");
             //toLoad.AddNode(node.getn)
@@ -308,6 +327,7 @@ namespace KerbalConstructionTime
         public void LoadFromFile(string filePath)
         {
             KCTDebug.Log("Loading a preset from " + filePath);
+            presetFileLocation = filePath;
             ConfigNode node = ConfigNode.Load(filePath);
             this.FromConfigNode(node.GetNode("KCT_Preset")); //.GetNode("KCT_Preset")
         }

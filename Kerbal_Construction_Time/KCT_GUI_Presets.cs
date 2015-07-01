@@ -10,6 +10,7 @@ namespace KerbalConstructionTime
     {
         private static int presetsWidth = 900, presetsHeight = 600;
         private static Rect presetPosition = new Rect((Screen.width-presetsWidth) / 2, (Screen.height-presetsHeight) / 2, presetsWidth, presetsHeight);
+        private static Rect presetNamingWindowPosition = new Rect((Screen.width - 250) / 2, (Screen.height - 50) / 2, 250, 50);
         private static int presetIndex = -1;
         private static KCT_Preset WorkingPreset;
         private static Vector2 presetScrollView, presetMainScroll;
@@ -81,6 +82,14 @@ namespace KerbalConstructionTime
             {
                 //create new preset
                 SaveAsNewPreset(WorkingPreset);
+            }
+            if (WorkingPreset.AllowDeletion && presetIndex != presetShortNames.Length - 1 && GUILayout.Button("Delete Preset")) //allowed to be deleted and isn't Custom
+            {
+                DialogOption[] options = new DialogOption[2];
+                options[0] = new DialogOption("Delete File", DeleteActivePreset);
+                options[1] = new DialogOption("Cancel", DummyVoid);
+                MultiOptionDialog dialog = new MultiOptionDialog("Are you sure you want to delete the selected Preset, file and all? This cannot be undone!", windowTitle: "Confirm Deletion", options: options);
+                PopupDialog.SpawnPopupDialog(dialog, false, HighLogic.Skin);
             }
             GUILayout.EndVertical();
 
@@ -303,13 +312,13 @@ namespace KerbalConstructionTime
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("-", GUILayout.ExpandWidth(false)))
             {
-                KCT_GameStates.settings.MaxTimeWarp = Math.Max(KCT_GameStates.settings.MaxTimeWarp-1, 0);
+                newTimewarp = Math.Max(newTimewarp - 1, 0);
             }
             //current warp setting
-            GUILayout.Label(TimeWarp.fetch.warpRates[KCT_GameStates.settings.MaxTimeWarp] + "x");
+            GUILayout.Label(TimeWarp.fetch.warpRates[newTimewarp] + "x");
             if (GUILayout.Button("+", GUILayout.ExpandWidth(false)))
             {
-                KCT_GameStates.settings.MaxTimeWarp = Math.Min(KCT_GameStates.settings.MaxTimeWarp + 1, TimeWarp.fetch.warpRates.Length - 1);
+                newTimewarp = Math.Min(newTimewarp + 1, TimeWarp.fetch.warpRates.Length - 1);
             }
             GUILayout.EndHorizontal();
 
@@ -394,6 +403,8 @@ namespace KerbalConstructionTime
                 toSave.ScienceEnabled = saveScience;
                 toSave.SandboxEnabled = saveSandbox;
 
+                toSave.AllowDeletion = true;
+
                 toSave.SaveToFile(KSPUtil.ApplicationRootPath + "/GameData/KerbalConstructionTime/KCT_Presets/"+toSave.shortName+".cfg");
                 showPresetSaver = false;
                 KCT_PresetManager.Instance.FindPresetFiles();
@@ -423,6 +434,11 @@ namespace KerbalConstructionTime
             saveAuthor = newPreset.author;
 
             showPresetSaver = true;
+        }
+
+        public static void DeleteActivePreset()
+        {
+            KCT_PresetManager.Instance.DeletePresetFile(WorkingPreset.shortName);
         }
 
     }
