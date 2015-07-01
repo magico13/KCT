@@ -391,8 +391,15 @@ namespace KerbalConstructionTime
             saveScience = GUILayout.Toggle(saveScience, " Show in Science Games");
             saveSandbox = GUILayout.Toggle(saveSandbox, " Show in Sandbox Games");
 
+            KCT_Preset existing = KCT_PresetManager.Instance.FindPresetByShortName(saveShort);
+            bool AlreadyExists = existing != null;
+            bool CanOverwrite = AlreadyExists ? existing.AllowDeletion : true;
+
+            if (AlreadyExists)
+                GUILayout.Label("Warning: A preset with that short name already exists!");
+
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Save"))
+            if (CanOverwrite && GUILayout.Button("Save"))
             {
                 toSave.name = saveName;
                 toSave.shortName = saveShort;
