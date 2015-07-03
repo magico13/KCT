@@ -801,6 +801,7 @@ namespace KerbalConstructionTime
         private static void ClearOutInventory()
         {
             float totalValue = 0;
+            List<string> clearForClear = new List<string>();
             foreach (KeyValuePair<string, int> kvp in KCT_GameStates.PartInventory)
             {
                 AvailablePart part = KCT_Utilities.GetAvailablePartByName(kvp.Key);
@@ -815,8 +816,13 @@ namespace KerbalConstructionTime
                         totalValue += kvp.Value / 100.0F;
                     }
                     //Remove the parts from the inventory
-                    KCT_GameStates.PartInventory.Remove(kvp.Key);
+                    //KCT_GameStates.PartInventory.Remove(kvp.Key);
+                    clearForClear.Add(kvp.Key);
                 }
+            }
+            foreach (string clear in clearForClear)
+            {
+                KCT_GameStates.PartInventory.Remove(clear);
             }
             KCT_GameStates.InventorySaleUpgrades = (float)KCT_MathParsing.GetStandardFormulaValue("InventorySales", new Dictionary<string, string> { { "V", totalValue.ToString() }, { "P", KCT_GameStates.InventorySalesFigures.ToString() } });
             KCT_GameStates.InventorySalesFigures += totalValue;

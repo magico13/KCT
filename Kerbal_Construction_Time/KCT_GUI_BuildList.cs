@@ -8,7 +8,7 @@ namespace KerbalConstructionTime
 {
     public static partial class KCT_GUI
     {
-        private static bool MouseOnRolloutButton = false;
+        private static int MouseOnRolloutButton = -1;
         private static int listWindow = -1;
         private static bool VABSelected, SPHSelected, TechSelected;
         private static void SelectList(string list)
@@ -387,20 +387,20 @@ namespace KerbalConstructionTime
                         GUILayout.Label(status+"   ", textColor, GUILayout.ExpandWidth(false));
                         if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null)
                         {
-                            string rolloutText = MouseOnRolloutButton ? KCT_Utilities.GetColonFormattedTime(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()).AsBuildItem().GetTimeLeft()) : "Rollout";
+                            string rolloutText = (i == MouseOnRolloutButton ? KCT_Utilities.GetColonFormattedTime(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()).AsBuildItem().GetTimeLeft()) : "Rollout");
                             if (GUILayout.Button(rolloutText, GUILayout.ExpandWidth(false)))
-                        {
-                            if (rollout != null)
                             {
-                                rollout.SwapRolloutType();
+                                if (rollout != null)
+                                {
+                                    rollout.SwapRolloutType();
+                                }
+                                KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()));
                             }
-                            KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()));
-                        }
                             if (Event.current.type == EventType.Repaint)
                                 if (GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
-                                    MouseOnRolloutButton = true;
-                                else
-                                    MouseOnRolloutButton = false;
+                                    MouseOnRolloutButton = i;
+                                else if (i == MouseOnRolloutButton)
+                                    MouseOnRolloutButton = -1;
                         }
                         else if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && rollout != null && b.id.ToString() == rollout.associatedID && !rollout.AsBuildItem().IsComplete() && rollback == null &&
                             GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollout.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false)))
