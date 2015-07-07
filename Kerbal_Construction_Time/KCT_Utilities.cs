@@ -1141,7 +1141,7 @@ namespace KerbalConstructionTime
             {"87600", 12},
         };
 
-        public static float CostOfSimulation(CelestialBody body, string simulationLength, ShipConstruct ship, int SimCount)
+        public static float CostOfSimulation(CelestialBody body, string simulationLength, ShipConstruct ship, int SimCount, bool landed)
         {
             if (simulationLength == "" || simulationLength == "0" || simulationLength == "-1")
                 simulationLength = "31536000000"; //1000 Earth years
@@ -1181,7 +1181,7 @@ namespace KerbalConstructionTime
             vars.Add("SMA", orbitRatio.ToString());
             vars.Add("PM", Parent.Mass.ToString());
 
-            if (body.bodyName == "Kerbin" || body.bodyName == "Earth")
+            if ((body.bodyName == "Kerbin" || body.bodyName == "Earth") && landed)
             {
                 return (float)(KCT_MathParsing.GetStandardFormulaValue("KerbinSimCost", vars));
             }
@@ -2044,7 +2044,7 @@ namespace KerbalConstructionTime
             {
                 //if (RDController.Instance != null && RDController.Instance.nodes != null)
                 //    total += RDController.Instance.nodes.FindAll(n => n.IsResearched).Count;
-                total += ResearchAndDevelopment.Instance.snapshot.GetData().CountNodes;
+                total += ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length;
             }
             //Purchased funds
             total += KCT_GameStates.PurchasedUpgrades[0];

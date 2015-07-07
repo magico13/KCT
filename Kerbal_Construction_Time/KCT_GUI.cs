@@ -923,11 +923,11 @@ namespace KerbalConstructionTime
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Simulation Length: ");
-            simLength = GUILayout.TextField(simLength, 18, GUILayout.Width(180));
+            simLength = GUILayout.TextField(simLength, GUILayout.Width(150));
             /*GUILayout.Label(KCT_Utilities.GetColonFormattedTime(float.Parse(simLength) * 3600));
             if (GUILayout.Button("Select", GUILayout.ExpandWidth(false)))
             {
-                //show body chooser
+                //show sim length chooser
                 showSimConfig = false;
                 showSimLengthChooser = true;
                 centralWindowPosition.height = 1;
@@ -943,7 +943,7 @@ namespace KerbalConstructionTime
             {
                 //cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 1);
                 //cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
-                cost = KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength, EditorLogic.fetch.ship, KCT_GameStates.EditorSimulationCount + 1);
+                cost = KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength, EditorLogic.fetch.ship, KCT_GameStates.EditorSimulationCount + 1, !KCT_GameStates.simulateInOrbit);
                 GUILayout.Label("Cost: " + Math.Round(cost, 1));
             }
 
