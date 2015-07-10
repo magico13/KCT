@@ -2044,7 +2044,8 @@ namespace KerbalConstructionTime
             {
                 //if (RDController.Instance != null && RDController.Instance.nodes != null)
                 //    total += RDController.Instance.nodes.FindAll(n => n.IsResearched).Count;
-                total += ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length;
+                if (CurrentGameHasScience() && ResearchAndDevelopment.Instance != null)
+                    total += ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length;
             }
             //Purchased funds
             total += KCT_GameStates.PurchasedUpgrades[0];
