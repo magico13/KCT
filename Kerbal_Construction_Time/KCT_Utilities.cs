@@ -1281,57 +1281,12 @@ namespace KerbalConstructionTime
             {
                 //Check upgrades
                 //First, mass limit
-                bool passed = true;
-                string failedReason = "";
-                if (blv.type == KCT_BuildListVessel.ListType.VAB)
-                {
-                    if (blv.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)))
-                    {
-                        passed = false;
-                        failedReason += "Mass limit exceeded!\n";
-                    }
-                    if (blv.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.VehicleAssemblyBuilding)))
-                    {
-                        passed = false;
-                        failedReason += "Part Count limit exceeded!\n";
-                    }
-                    if (HighLogic.LoadedSceneIsEditor)
-                    {
-                        PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(EditorLogic.fetch.ship, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)));
-                        if (!sizeCheck.Test())
-                        {
-                            passed = false;
-                            failedReason += "Size limits exceeded!\n";
-                        }
-                    }
-                }
-                else if (blv.type == KCT_BuildListVessel.ListType.SPH)
-                {
-                    if (blv.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway)))
-                    {
-                        passed = false;
-                        failedReason += "Mass limit exceeded!\n";
-                    }
-                    if (blv.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.SpaceplaneHangar)))
-                    {
-                        passed = false;
-                        failedReason += "Part Count limit exceeded!\n";
-                    }
-                    if (HighLogic.LoadedSceneIsEditor)
-                    {
-                        PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(EditorLogic.fetch.ship, SpaceCenterFacility.Runway, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway)));
-                        if (!sizeCheck.Test())
-                        {
-                            passed = false;
-                            failedReason += "Size limits exceeded!\n";
-                        }
-                    }
-                }
-                if (!passed)
+                List<string> facilityChecks = blv.MeetsFacilityRequirements();
+                if (facilityChecks.Count != 0)
                 {
                     //ScreenMessages.PostScreenMessage("Did not pass editor checks!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     //ScreenMessages.PostScreenMessage(failedReason, 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                    PopupDialog.SpawnPopupDialog("Failed editor checks!", "Warning! This vessel did not pass the editor checks! It will still be built, but you will not be able to launch it without upgrading. Listed below are the failed checks:\n" + failedReason, "Acknowledged", false, GUI.skin);
+                    PopupDialog.SpawnPopupDialog("Failed editor checks!", "Warning! This vessel did not pass the editor checks! It will still be built, but you will not be able to launch it without upgrading. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.Skin);
                     //return null;
                 }
 
