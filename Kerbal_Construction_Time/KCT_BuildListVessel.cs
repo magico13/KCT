@@ -369,6 +369,50 @@ namespace KerbalConstructionTime
             KCT_GameStates.LaunchFromTS = false;
         }
 
+        public List<string> MeetsFacilityRequirements()
+        {
+            List<string> failedReasons = new List<string>();
+            if (!KCT_Utilities.CurrentGameIsCareer())
+                return failedReasons;
+
+            ShipTemplate template = new ShipTemplate();
+            template.LoadShip(shipNode);
+
+            if (this.type == KCT_BuildListVessel.ListType.VAB)
+            {
+                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)))
+                {
+                    failedReasons.Add("Mass limit exceeded");
+                }
+                if (this.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.VehicleAssemblyBuilding)))
+                {
+                    failedReasons.Add("Part Count limit exceeded");
+                }
+                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)));
+                if (!sizeCheck.Test())
+                {
+                    failedReasons.Add("Size limits exceeded");
+                }
+            }
+            else if (this.type == KCT_BuildListVessel.ListType.SPH)
+            {
+                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway)))
+                {
+                    failedReasons.Add("Mass limit exceeded");
+                }
+                if (this.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.SpaceplaneHangar)))
+                {
+                    failedReasons.Add("Part Count limit exceeded");
+                }
+                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.Runway, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway)));
+                if (!sizeCheck.Test())
+                {
+                    failedReasons.Add("Size limits exceeded");
+                }
+            }
+            return failedReasons;
+        }
+
         private void UpdateRFTanks()
         {
             foreach (ConfigNode cn in shipNode.GetNodes("PART"))

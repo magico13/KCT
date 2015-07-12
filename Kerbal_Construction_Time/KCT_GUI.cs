@@ -478,20 +478,7 @@ namespace KerbalConstructionTime
                     if (GUILayout.Button("Build"))
                     {
                         KCT_Utilities.AddVesselToBuildList(useInventory);
-                        PartCategories CategoryCurrent = PartCategories.none;
-                        switch (currentCategoryInt)
-                        {
-                            case 0: CategoryCurrent = PartCategories.Pods; break;
-                            case 1: CategoryCurrent = PartCategories.FuelTank; break;
-                            case 2: CategoryCurrent = PartCategories.Engine; break;
-                            case 3: CategoryCurrent = PartCategories.Control; break;
-                            case 4: CategoryCurrent = PartCategories.Structural; break;
-                            case 5: CategoryCurrent = PartCategories.Aero; break;
-                            case 6: CategoryCurrent = PartCategories.Utility; break;
-                            case 7: CategoryCurrent = PartCategories.Science; break;
-                            default: CategoryCurrent = PartCategories.none; break;
-                        }
-                        InventoryCategoryChanged(CategoryCurrent);
+                        SwitchCurrentPartCategory();
                         KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                     }
                     if (KCT_PresetManager.Instance.ActivePreset.generalSettings.Simulations && GUILayout.Button("Simulate"))
@@ -740,20 +727,8 @@ namespace KerbalConstructionTime
                 List<string> categories = new List<string> { "Pods", "Fuel.", "Eng.", "Ctl.", "Struct.", "Aero", "Util.", "Sci." };
                 int lastCat = currentCategoryInt;
                 currentCategoryInt = GUILayout.Toolbar(currentCategoryInt, categories.ToArray(), GUILayout.ExpandWidth(false));
-                
-                PartCategories CategoryCurrent = PartCategories.none;
-                switch (currentCategoryInt)
-                {
-                    case 0: CategoryCurrent = PartCategories.Pods; break;
-                    case 1: CategoryCurrent = PartCategories.FuelTank; break;
-                    case 2: CategoryCurrent = PartCategories.Engine; break;
-                    case 3: CategoryCurrent = PartCategories.Control; break;
-                    case 4: CategoryCurrent = PartCategories.Structural; break;
-                    case 5: CategoryCurrent = PartCategories.Aero; break;
-                    case 6: CategoryCurrent = PartCategories.Utility; break;
-                    case 7: CategoryCurrent = PartCategories.Science; break;
-                    default: CategoryCurrent = PartCategories.none; break;
-                }
+
+                SwitchCurrentPartCategory();
 
                 if (GUI.changed)
                 {
@@ -761,9 +736,8 @@ namespace KerbalConstructionTime
                     if (lastCat == currentCategoryInt)
                     {
                         currentCategoryInt = -1;
-                        CategoryCurrent = PartCategories.none;
                     }
-                    InventoryCategoryChanged(CategoryCurrent);
+                    SwitchCurrentPartCategory();
                 }
 
 
@@ -830,6 +804,24 @@ namespace KerbalConstructionTime
 
         private static Dictionary<string, int> InventoryForCategory = new Dictionary<string, int>();
         private static Dictionary<string, string> InventoryCommonNames = new Dictionary<string, string>();
+        private static void SwitchCurrentPartCategory()
+        {
+            PartCategories CategoryCurrent = PartCategories.none;
+            switch (currentCategoryInt)
+            {
+                case 0: CategoryCurrent = PartCategories.Pods; break;
+                case 1: CategoryCurrent = PartCategories.FuelTank; break;
+                case 2: CategoryCurrent = PartCategories.Engine; break;
+                case 3: CategoryCurrent = PartCategories.Control; break;
+                case 4: CategoryCurrent = PartCategories.Structural; break;
+                case 5: CategoryCurrent = PartCategories.Aero; break;
+                case 6: CategoryCurrent = PartCategories.Utility; break;
+                case 7: CategoryCurrent = PartCategories.Science; break;
+                default: CategoryCurrent = PartCategories.none; break;
+            }
+            InventoryCategoryChanged(CategoryCurrent);
+        }
+
         private static void InventoryCategoryChanged(PartCategories category)
         {
             InventoryForCategory.Clear();
@@ -839,16 +831,22 @@ namespace KerbalConstructionTime
                 string name = entry.Key;
                 string baseName = name.Split(',').Length == 1 ? name : name.Split(',')[0];
                 AvailablePart aPart = KCT_Utilities.GetAvailablePartByName(baseName);
-                if (aPart != null && aPart.category == category)
+                if (aPart != null)
                 {
-                    string tweakscale = "";
-                    if (name.Split(',').Length == 2)
-                        tweakscale = "," + name.Split(',')[1];
-                    name = aPart.title + tweakscale;
-                    if (!InventoryForCategory.ContainsKey(entry.Key))
+                    PartCategories aPartCategory = aPart.category;
+                    if (aPartCategory == PartCategories.Propulsion)
+                        aPartCategory = PartCategories.Engine;
+                    if (aPartCategory == category)
                     {
-                        InventoryForCategory.Add(entry.Key, entry.Value);
-                        InventoryCommonNames.Add(entry.Key, name);
+                        string tweakscale = "";
+                        if (name.Split(',').Length == 2)
+                            tweakscale = "," + name.Split(',')[1];
+                        name = aPart.title + tweakscale;
+                        if (!InventoryForCategory.ContainsKey(entry.Key))
+                        {
+                            InventoryForCategory.Add(entry.Key, entry.Value);
+                            InventoryCommonNames.Add(entry.Key, name);
+                        }
                     }
                 }
             }
@@ -936,7 +934,6 @@ namespace KerbalConstructionTime
             GUILayout.EndHorizontal();
 
             //simLength = GUILayout.TextField(simLength);
-            float nullFloat, nF2;
 
             float cost = 0;
             if (KCT_PresetManager.Instance.ActivePreset.generalSettings.SimulationCosts)
@@ -1020,18 +1017,36 @@ namespace KerbalConstructionTime
                     KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
                     KCT_GameStates.SimulationCost = cost;
                 }
-                if (KCT_Utilities.CurrentGameIsCareer())
+
+                string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
+                KCT_Utilities.MakeSimulationSave();
+
+               /* if (KCT_Utilities.CurrentGameIsCareer())
                 {
                     if (KCT_GameStates.FundsGivenForVessel != 0)
                         KCT_Utilities.SpendFunds(KCT_GameStates.FundsGivenForVessel, TransactionReasons.VesselRollout);
 
                     KCT_GameStates.FundsGivenForVessel = EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2);
                     KCT_Utilities.AddFunds(KCT_GameStates.FundsGivenForVessel, TransactionReasons.VesselRollout);
-                }
+                }*/
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 KCT_GameStates.EditorSimulationCount++;
                 KCT_GameStates.launchedVessel = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL);
-                EditorLogic.fetch.launchVessel();
+
+               /* List<ProtoVessel> atLaunchSite = ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, EditorLogic.fetch.launchSiteName);
+                
+                foreach (ProtoVessel pv in atLaunchSite)
+                    ShipConstruction.RecoverVesselFromFlight(pv, HighLogic.CurrentGame.flightState);*/
+
+                VesselCrewManifest manifest = CMAssignmentDialog.Instance.GetManifest();
+                if (manifest == null)
+                {
+                    manifest = HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(EditorLogic.fetch.ship.SaveShip(), null, true);
+                }
+
+                EditorLogic.fetch.ship.SaveShip().Save(tempFile);
+                FlightDriver.StartWithNewLaunch(tempFile, EditorLogic.FlagURL, EditorLogic.fetch.launchSiteName, manifest);
+                //EditorLogic.fetch.launchVessel();
             }
             if (GUILayout.Button("Cancel"))
             {
@@ -1114,19 +1129,7 @@ namespace KerbalConstructionTime
             if (GUILayout.Button("Build Vessel"))
             {
                 KCT_Utilities.AddVesselToBuildList(useInventory);
-                PartCategories CategoryCurrent = PartCategories.none;
-                switch (currentCategoryInt)
-                {
-                    case 0: CategoryCurrent = PartCategories.Pods; break;
-                    case 1: CategoryCurrent = PartCategories.Propulsion; break;
-                    case 2: CategoryCurrent = PartCategories.Control; break;
-                    case 3: CategoryCurrent = PartCategories.Structural; break;
-                    case 4: CategoryCurrent = PartCategories.Aero; break;
-                    case 5: CategoryCurrent = PartCategories.Utility; break;
-                    case 6: CategoryCurrent = PartCategories.Science; break;
-                    default: CategoryCurrent = PartCategories.none; break;
-                }
-                InventoryCategoryChanged(CategoryCurrent);
+                SwitchCurrentPartCategory();
 
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 showLaunchAlert = false;
@@ -1299,7 +1302,7 @@ namespace KerbalConstructionTime
                 KCT_GameStates.settings.Save();
             }
 
-            if (GUILayout.Button("Build It!"))
+            if (!KCT_GameStates.EditorShipEditingMode && GUILayout.Button("Build It!"))
             {
                 KCT_GameStates.buildSimulatedVessel = true;
                 KCTDebug.Log("Ship added from simulation.");

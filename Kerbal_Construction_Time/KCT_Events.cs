@@ -306,10 +306,10 @@ namespace KerbalConstructionTime
                 }
                 TechDisableEvent();
             }
-            if (!HighLogic.LoadedSceneIsFlight && scene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Backup save at simulation start
+            /*if (!HighLogic.LoadedSceneIsFlight && scene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Backup save at simulation start
             {
                 KCT_Utilities.MakeSimulationSave();
-            }
+            }*/
 
             if (HighLogic.LoadedScene == scene && scene == GameScenes.EDITOR) //Fix for null reference when using new or load buttons in editor
             {

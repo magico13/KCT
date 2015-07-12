@@ -1070,7 +1070,8 @@ namespace KerbalConstructionTime
             string backupFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs";
             string saveFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/persistent.sfs";
             KCTDebug.Log("Making simulation backup file.");
-            System.IO.File.Copy(saveFile, backupFile, true);
+            //System.IO.File.Copy(saveFile, backupFile, true);
+            GamePersistence.SaveGame("KCT_simulation_backup", HighLogic.SaveFolder, SaveMode.OVERWRITE);
         }
 
         public static void LoadSimulationSave(bool newMethod)
@@ -1287,12 +1288,12 @@ namespace KerbalConstructionTime
                     if (blv.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)))
                     {
                         passed = false;
-                        failedReason = "Mass limit exceeded!";
+                        failedReason += "Mass limit exceeded!\n";
                     }
                     if (blv.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.VehicleAssemblyBuilding)))
                     {
                         passed = false;
-                        failedReason = "Part Count limit exceeded!";
+                        failedReason += "Part Count limit exceeded!\n";
                     }
                     if (HighLogic.LoadedSceneIsEditor)
                     {
@@ -1300,7 +1301,7 @@ namespace KerbalConstructionTime
                         if (!sizeCheck.Test())
                         {
                             passed = false;
-                            failedReason = "Size limits exceeded!";
+                            failedReason += "Size limits exceeded!\n";
                         }
                     }
                 }
@@ -1309,12 +1310,12 @@ namespace KerbalConstructionTime
                     if (blv.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway)))
                     {
                         passed = false;
-                        failedReason = "Mass limit exceeded!";
+                        failedReason += "Mass limit exceeded!\n";
                     }
                     if (blv.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.SpaceplaneHangar)))
                     {
                         passed = false;
-                        failedReason = "Part Count limit exceeded!";
+                        failedReason += "Part Count limit exceeded!\n";
                     }
                     if (HighLogic.LoadedSceneIsEditor)
                     {
@@ -1322,15 +1323,16 @@ namespace KerbalConstructionTime
                         if (!sizeCheck.Test())
                         {
                             passed = false;
-                            failedReason = "Size limits exceeded!";
+                            failedReason += "Size limits exceeded!\n";
                         }
                     }
                 }
                 if (!passed)
                 {
-                    ScreenMessages.PostScreenMessage("Did not pass editor checks!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                    ScreenMessages.PostScreenMessage(failedReason, 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                    return null;
+                    //ScreenMessages.PostScreenMessage("Did not pass editor checks!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                    //ScreenMessages.PostScreenMessage(failedReason, 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                    PopupDialog.SpawnPopupDialog("Failed editor checks!", "Warning! This vessel did not pass the editor checks! It will still be built, but you will not be able to launch it without upgrading. Listed below are the failed checks:\n" + failedReason, "Acknowledged", false, GUI.skin);
+                    //return null;
                 }
 
 
