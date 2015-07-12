@@ -16,7 +16,7 @@ namespace KerbalConstructionTime
         //[Persistent] public bool DisableRecoveryMessages;
         [Persistent] public bool DisableAllMessages;
         //[Persistent] public bool CheckForUpdates, VersionSpecific;
-        [Persistent] public bool AutoKACAlarams;
+        [Persistent] public bool AutoKACAlarms;
         /*[Persistent] public float RecoveryModifierDefault;
         [Persistent] public bool NoCostSimulationsDefault;
         [Persistent] public bool InstantTechUnlockDefault;
@@ -64,7 +64,7 @@ namespace KerbalConstructionTime
             OverrideLaunchButton = true;
           //  RecoveryModifier = 0.75F;
           //  Reconditioning = true;
-            AutoKACAlarams = true;
+            AutoKACAlarms = true;
             PreferBlizzyToolbar = false;
           //  AllowParachuteRecovery = true;
             NoSimGUI = false;

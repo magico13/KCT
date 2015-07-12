@@ -2017,7 +2017,7 @@ namespace KerbalConstructionTime
             disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
             debug = KCT_GameStates.settings.Debug;
             overrideLaunchBtn = KCT_GameStates.settings.OverrideLaunchButton;
-            autoAlarms = KCT_GameStates.settings.AutoKACAlarams;
+            autoAlarms = KCT_GameStates.settings.AutoKACAlarms;
             useBlizzyToolbar = KCT_GameStates.settings.PreferBlizzyToolbar;
 
             showSettings = !showSettings;
