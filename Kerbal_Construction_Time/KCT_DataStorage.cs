@@ -77,7 +77,7 @@ namespace KerbalConstructionTime
 
 
 
-        [Persistent] bool firstStart = true;
+        //[Persistent] bool firstStart = true;
         [Persistent] List<int> VABUpgrades = new List<int>() {0};
         [Persistent] List<int> SPHUpgrades = new List<int>() {0};
         [Persistent] List<int> RDUpgrades = new List<int>() {0,0};
@@ -109,14 +109,14 @@ namespace KerbalConstructionTime
             KCT_GameStates.TechUpgradesTotal = TechUpgrades;
 
             SetSettings();
-            KCT_GameStates.firstStart = firstStart;
+            //KCT_GameStates.firstStart = firstStart;
         }
 
         public override void OnEncodeToConfigNode()
         {
             PartTracker = DictToList(KCT_GameStates.PartTracker);
             PartInventory = DictToList(KCT_GameStates.PartInventory);
-            enabledForSave = KCT_GameStates.settings.enabledForSave;
+           // enabledForSave = KCT_GameStates.settings.enabledForSave;
             BodiesVisited = KCT_GameStates.BodiesVisited;
             /*VABUpgrades = KCT_GameStates.VABUpgrades;
             SPHUpgrades = KCT_GameStates.SPHUpgrades;
@@ -124,7 +124,7 @@ namespace KerbalConstructionTime
             TechUpgrades = KCT_GameStates.TechUpgradesTotal;
             PurchasedUpgrades = KCT_GameStates.PurchasedUpgrades;
             fundsFromSimulation = KCT_GameStates.FundsGivenForVessel;
-            firstStart = KCT_GameStates.firstStart;
+            //firstStart = KCT_GameStates.firstStart;
             activeKSC = KCT_GameStates.ActiveKSC.KSCName;
             SimulationTime = KCT_GUI.simLength;
             SalesFigures = KCT_GameStates.InventorySalesFigures;
@@ -135,7 +135,7 @@ namespace KerbalConstructionTime
 
         private void SetSettings()
         {
-            KCT_GameStates.settings.enabledForSave = enabledForSave;
+            //KCT_GameStates.settings.enabledForSave = enabledForSave;
             /*KCT_GameStates.settings.RecoveryModifier = RecoveryModifier;
             KCT_GameStates.settings.NoCostSimulations = NoCostSimulations;
             KCT_GameStates.settings.DisableBuildTime = DisableBuildTime;
@@ -146,7 +146,7 @@ namespace KerbalConstructionTime
 
         private void GetSettings()
         {
-            enabledForSave = KCT_GameStates.settings.enabledForSave;
+           // enabledForSave = KCT_GameStates.settings.enabledForSave;
             /*RecoveryModifier = KCT_GameStates.settings.RecoveryModifier;
             NoCostSimulations = KCT_GameStates.settings.NoCostSimulations;
             DisableBuildTime = KCT_GameStates.settings.DisableBuildTime;

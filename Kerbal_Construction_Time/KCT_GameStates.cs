@@ -49,7 +49,7 @@ namespace KerbalConstructionTime
         public static List<CrewedPart> launchedCrew = new List<CrewedPart>();
         public static IButton kctToolbarButton;
         public static bool EditorShipEditingMode = false, buildSimulatedVessel = false;
-        public static bool firstStart = true;
+        public static bool firstStart = false;
         public static IKCTBuildItem targetedItem = null;
         public static double EditorBuildTime = 0;
         public static Dictionary<string, int> EditedVesselParts = new Dictionary<string, int>();
@@ -83,9 +83,11 @@ namespace KerbalConstructionTime
             flightSimulated = false;
             simulationInitialized = false;
             vesselDict = new Dictionary<string, string>();
+            BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
             simulationBody = KCT_Utilities.GetBodyByName(BodiesVisited[0]);
             simulateInOrbit = false;
-            BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
+            firstStart = false;
+            
           /*  VABUpgrades = new List<int>() {0};
             SPHUpgrades = new List<int>() {0};
             RDUpgrades = new List<int>() {0, 0};*/

@@ -141,7 +141,7 @@ namespace KerbalConstructionTime
 
         private void StageRecoverySuccessEvent(Vessel v, float[] infoArray, string reason)
         {
-            if (!KCT_GameStates.settings.enabledForSave) return;
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
             KCTDebug.Log("Recovery Success Event triggered.");
             float damage = 0;
             if (infoArray.Length == 3)
@@ -226,7 +226,7 @@ namespace KerbalConstructionTime
 
         public void TechUnlockEvent(GameEvents.HostTargetAction<RDTech, RDTech.OperationResult> ev)
         {
-            if (!KCT_GameStates.settings.enabledForSave) return;
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
             if (ev.target == RDTech.OperationResult.Successful)
             {
                 KCT_TechItem tech = new KCT_TechItem();
@@ -236,7 +236,8 @@ namespace KerbalConstructionTime
                 //if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime) tech.DisableTech();
                 if (!tech.isInList())
                 {
-                    ScreenMessages.PostScreenMessage("[KCT] Upgrade Point Added!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUpgrades)
+                        ScreenMessages.PostScreenMessage("[KCT] Upgrade Point Added!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
 
                     if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes && KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)
                     {
@@ -272,7 +273,7 @@ namespace KerbalConstructionTime
             if (scene == GameScenes.MAINMENU)
             {
                 KCT_GameStates.reset();
-                KCT_GameStates.firstStart = true;
+                KCT_GameStates.firstStart = false;
                 KCT_Utilities.disableSimulationLocks();
                 InputLockManager.RemoveControlLock("KCTLaunchLock");
                 KCT_GameStates.activeKSCName = "Stock";
@@ -295,7 +296,7 @@ namespace KerbalConstructionTime
                 }
             }*/
 
-            if (!KCT_GameStates.settings.enabledForSave) return;
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
             if (validScenes.Contains(scene))
             {
@@ -351,7 +352,7 @@ namespace KerbalConstructionTime
         {
             if (ev.from == Vessel.Situations.PRELAUNCH && ev.host == FlightGlobals.ActiveVessel)
             {
-                if (!KCT_GameStates.settings.enabledForSave) return;
+                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
                 if (KCT_GameStates.flightSimulated && KCT_GameStates.simulationTimeLimit > 0)
                 {
                     KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
@@ -368,7 +369,7 @@ namespace KerbalConstructionTime
 
         public void vesselRecoverEvent(ProtoVessel v)
         {
-            if (!KCT_GameStates.settings.enabledForSave) return;
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
             {
                // if (KCT_GameStates.settings.Debug && HighLogic.LoadedScene != GameScenes.TRACKSTATION && (v.wasControllable || v.protoPartSnapshots.Find(p => p.modules.Find(m => m.moduleName.ToLower() == "modulecommand") != null) != null))

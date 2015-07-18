@@ -131,7 +131,7 @@ namespace KerbalConstructionTime
                 KCT_GameStates.kctToolbarButton = ToolbarManager.Instance.add("Kerbal_Construction_Time", "MainButton");
                 if (KCT_GameStates.kctToolbarButton != null)
                 {
-                    if (!KCT_GameStates.settings.enabledForSave) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
+                    if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
                     else KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(new GameScenes[] { GameScenes.SPACECENTER, GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.EDITOR });
                     KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
                     KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
@@ -178,6 +178,12 @@ namespace KerbalConstructionTime
         {
             KCT_GameStates.settings.Load(); //Load the settings file, if it exists
             KCT_GameStates.settings.Save(); //Save the settings file, with defaults if it doesn't exist
+
+            string SavedFile = KSPUtil.ApplicationRootPath + "/saves/" + HighLogic.SaveFolder + "/KCT_Settings.cfg";
+            if (!System.IO.File.Exists(SavedFile))
+            {
+                KCT_GameStates.firstStart = true;
+            }
 
             if (KCT_PresetManager.Instance == null)
             {
@@ -244,7 +250,7 @@ namespace KerbalConstructionTime
                 KCT_Events.instance.addEvents();
             }
 
-            if (!KCT_GameStates.settings.enabledForSave)
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
             {
                 if (InputLockManager.GetControlLock("KCTKSCLock") == ControlTypes.KSC_FACILITIES)
                     InputLockManager.RemoveControlLock("KCTKSCLock");
@@ -377,7 +383,7 @@ namespace KerbalConstructionTime
         private static bool updateChecked = false;
         public void FixedUpdate()
         {
-            if (!KCT_GameStates.settings.enabledForSave)
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;
 
             if (!KCT_GameStates.erroredDuringOnLoad.AlertFired && KCT_GameStates.erroredDuringOnLoad.HasErrored())
@@ -554,7 +560,7 @@ namespace KerbalConstructionTime
                 updateChecked = true;
             }*/
 
-            if (!KCT_GameStates.settings.enabledForSave)
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;
 
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER };

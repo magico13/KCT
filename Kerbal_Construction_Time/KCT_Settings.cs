@@ -35,7 +35,7 @@ namespace KerbalConstructionTime
         [Persistent] public bool AutoHireCrew;
 
         //Game specific settings
-        public bool enabledForSave = true;
+        //public bool enabledForSave = true;
         /*public float RecoveryModifier;
         public bool NoCostSimulations;
         public bool InstantTechUnlock;

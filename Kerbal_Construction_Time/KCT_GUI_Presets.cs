@@ -265,9 +265,9 @@ namespace KerbalConstructionTime
                 showSettings = false;
 
 
-                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled && KCT_GameStates.settings.enabledForSave)
+                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                     KCT_Utilities.DisableModFunctionality();
-                KCT_GameStates.settings.enabledForSave = KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled;
+                //KCT_GameStates.settings.enabledForSave = KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled;
                 KCT_GameStates.settings.MaxTimeWarp = newTimewarp;
                 KCT_GameStates.settings.ForceStopWarp = forceStopWarp;
                 KCT_GameStates.settings.DisableAllMessages = disableAllMsgs;

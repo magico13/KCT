@@ -69,7 +69,7 @@ namespace KerbalConstructionTime
                 if (showSettings)
                     //settingsPosition = GUILayout.Window(8955, settingsPosition, KCT_GUI.DrawSettings, "KCT Settings", HighLogic.Skin.window);
                     presetPosition = GUILayout.Window(8955, presetPosition, KCT_GUI.DrawPresetWindow, "KCT Settings", HighLogic.Skin.window);
-                if (!KCT_GameStates.settings.enabledForSave)
+                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                     return;
 
                 if (showMainGUI)
@@ -141,7 +141,7 @@ namespace KerbalConstructionTime
             }
         }
 
-        public static bool PrimarilyDisabled { get { return (!KCT_GameStates.settings.enabledForSave || !KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes); } }
+        public static bool PrimarilyDisabled { get { return (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled || !KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes); } }
 
         private static void CheckKSCLock()
         {
@@ -2034,7 +2034,7 @@ namespace KerbalConstructionTime
                 KCT_GameStates.kctToolbarButton = ToolbarManager.Instance.add("Kerbal_Construction_Time", "MainButton");
                 if (KCT_GameStates.kctToolbarButton != null)
                 {
-                    if (!KCT_GameStates.settings.enabledForSave) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
+                    if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
                     else KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(new GameScenes[] { GameScenes.SPACECENTER, GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.EDITOR });
                     KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
                     KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";

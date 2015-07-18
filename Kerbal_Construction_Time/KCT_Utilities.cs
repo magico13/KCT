@@ -725,7 +725,7 @@ namespace KerbalConstructionTime
         {
             String textureReturn;
 
-            if (!KCT_GameStates.settings.enabledForSave)
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return "KerbalConstructionTime/Icons/KCT_off";
 
             //Flash for up to 3 seconds, at half second intervals per icon
@@ -1159,26 +1159,31 @@ namespace KerbalConstructionTime
             vars.Add("M", body.Mass.ToString()); //Body mass
             vars.Add("KM", Kerbin.Mass.ToString()); //Kerbin mass
             vars.Add("A", body.atmosphere ? "1" : "0"); //Presence of atmosphere
-            vars.Add("S", body.referenceBody != Planetarium.fetch.Sun ? "1" : "0"); //Is a moon (satellite)
+            vars.Add("S", (body != Planetarium.fetch.Sun && body.referenceBody != Planetarium.fetch.Sun) ? "1" : "0"); //Is a moon (satellite)
 
             float out1, out2;
-            vars.Add("m", ship.GetTotalMass().ToString()); //Vessel mass
-            vars.Add("C", ship.GetShipCosts(out out1, out out2).ToString()); //Vessel cost
+            vars.Add("m", ship.GetTotalMass().ToString()); //Vessel loaded mass
+            vars.Add("C", ship.GetShipCosts(out out1, out out2).ToString()); //Vessel loaded cost
 
             vars.Add("s", SimCount.ToString()); //Number of times simulated this editor session
 
 
             CelestialBody Parent = body;
-            while (Parent.referenceBody != Planetarium.fetch.Sun)
+            if (Parent != Planetarium.fetch.Sun)
             {
-                Parent = Parent.referenceBody;
+                while (Parent.referenceBody != Planetarium.fetch.Sun)
+                {
+                    Parent = Parent.referenceBody;
+                }
             }
             double orbitRatio = 1;
-            if (Parent.orbit.semiMajorAxis >= Kerbin.orbit.semiMajorAxis)
-                orbitRatio = Parent.orbit.semiMajorAxis / Kerbin.orbit.semiMajorAxis;
-            else
-                orbitRatio = Kerbin.orbit.semiMajorAxis / Parent.orbit.semiMajorAxis;
-
+            if (Parent.orbit != null)
+            {
+                if (Parent.orbit.semiMajorAxis >= Kerbin.orbit.semiMajorAxis)
+                    orbitRatio = Parent.orbit.semiMajorAxis / Kerbin.orbit.semiMajorAxis;
+                else
+                    orbitRatio = Kerbin.orbit.semiMajorAxis / Parent.orbit.semiMajorAxis;
+            }
             vars.Add("SMA", orbitRatio.ToString());
             vars.Add("PM", Parent.Mass.ToString());
 
@@ -1999,10 +2004,12 @@ namespace KerbalConstructionTime
             //R&D
             if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUpgrades)
             {
-                //if (RDController.Instance != null && RDController.Instance.nodes != null)
-                //    total += RDController.Instance.nodes.FindAll(n => n.IsResearched).Count;
+                //Completed tech nodes
                 if (CurrentGameHasScience() && ResearchAndDevelopment.Instance != null)
                     total += ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length;
+
+                //In progress tech nodes
+                total += KCT_GameStates.TechList.Count;
             }
             //Purchased funds
             total += KCT_GameStates.PurchasedUpgrades[0];
