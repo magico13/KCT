@@ -71,6 +71,7 @@ namespace KerbalConstructionTime
         public static int EditorSimulationCount = 0;
 
         public static bool TestFlightPartFailures = true;
+        public static bool RemoteTechEnabled = true;
 
         public static KCT_OnLoadError erroredDuringOnLoad = new KCT_OnLoadError();
 

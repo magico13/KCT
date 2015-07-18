@@ -1371,6 +1371,16 @@ namespace KerbalConstructionTime
                     }
                 }
             }
+            if (KCT_Utilities.RemoteTechInstalled && KCT_GameStates.RemoteTechEnabled && GUILayout.Button("Disable RemoteTech"))
+            {
+                KCT_Utilities.DisableRemoteTechLocks();
+                KCT_GameStates.RemoteTechEnabled = false;
+            }
+            if (KCT_Utilities.RemoteTechInstalled && !KCT_GameStates.RemoteTechEnabled && GUILayout.Button("Enable RemoteTech"))
+            {
+                KCT_Utilities.EnableRemoteTechLocks();
+                KCT_GameStates.RemoteTechEnabled = true;
+            }
             if (GUILayout.Button("Close"))
             {
                 showSimulationWindow = !showSimulationWindow;
@@ -2427,8 +2437,8 @@ namespace KerbalConstructionTime
                 //showFirstRun = false;
                 centralWindowPosition.height = 1;
                 centralWindowPosition.width = 150;
-                //ShowSettings();
-                showSettings = true;
+                ShowSettings();
+                //showSettings = true;
             }
             if (KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled && KCT_Utilities.TotalUpgradePoints() > 0)
             {

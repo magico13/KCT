@@ -296,7 +296,7 @@ namespace KerbalConstructionTime
                 }
             }*/
 
-            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
+            if (KCT_PresetManager.PresetLoaded() && !KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
             if (validScenes.Contains(scene))
             {

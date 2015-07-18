@@ -26,6 +26,11 @@ namespace KerbalConstructionTime
             //KCTDebug.Log("First preset name is " + Presets[0].name);
         }
 
+        public static bool PresetLoaded()
+        {
+            return Instance != null && Instance.ActivePreset != null;
+        }
+
         public KCT_Preset FindPresetByShortName(string name)
         {
             return Presets.Find(p => p.shortName == name);
@@ -141,7 +146,7 @@ namespace KerbalConstructionTime
 
             foreach (string dir in Directory.GetDirectories(KSPUtil.ApplicationRootPath + "GameData/"))
             {
-                if (dir == "KerbalConstructionTime") continue; //Don't check the KCT folder again
+                if (dir.Contains("KerbalConstructionTime")) continue; //Don't check the KCT folder again
                 foreach (string dir2 in Directory.GetDirectories(dir))
                 {
                     if (dir2.Contains("KCT_Presets")) //Found a presets folder

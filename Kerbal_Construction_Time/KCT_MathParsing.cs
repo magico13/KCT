@@ -195,6 +195,8 @@ namespace KerbalConstructionTime
         private static double DoMath(double currentVal, string operation, string newVal)
         {
             double newValue = 0;
+            if (String.IsNullOrEmpty(newVal))
+                return currentVal;
             if (!double.TryParse(newVal, out newValue))
             {
                 Debug.LogError("[KCT] Tried to parse a non-double value: " + newVal);

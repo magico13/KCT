@@ -1082,6 +1082,7 @@ namespace KerbalConstructionTime
             KCT_GameStates.flightSimulated = false;
             KerbalConstructionTime.moved = false;
             KCT_GameStates.simulationEndTime = 0;
+            KCT_GameStates.RemoteTechEnabled = true;
             KCTDebug.Log("Swapping persistent.sfs with simulation backup file.");
             if (newMethod)
             {
@@ -1579,8 +1580,115 @@ namespace KerbalConstructionTime
             }
         }
 
-        
+        private static bool? _RTInstalled = null;
+        public static bool RemoteTechInstalled
+        {
+            get
+            {
+                if (_RTInstalled == null)
+                {
+                    Type RTCore = AssemblyLoader.loadedAssemblies
+                    .Select(a => a.assembly.GetExportedTypes())
+                    .SelectMany(t => t)
+                    .FirstOrDefault(t => t.FullName == "RemoteTech.RTCore");
 
+                    _RTInstalled = (RTCore != null);
+                }
+                return (_RTInstalled == null ? false : (bool)_RTInstalled);
+            }
+        }
+
+        public static void DisableRemoteTechLocks()
+        {
+            /*InputLockManager.RemoveControlLock("RTLockStaging");
+            InputLockManager.RemoveControlLock("RTLockSAS");
+            InputLockManager.RemoveControlLock("RTLockRCS");
+            InputLockManager.RemoveControlLock("RTLockActions");*/
+           /* Type RTSettings = AssemblyLoader.loadedAssemblies
+                    .Select(a => a.assembly.GetExportedTypes())
+                    .SelectMany(t => t)
+                    .FirstOrDefault(t => t.FullName == "RemoteTech.RTSettings");
+
+            if (RTSettings == null)
+                return;
+
+            var RTSettingInstance = GetMemberInfoValue(RTSettings.GetMember("Instance")[0], RTSettings);
+
+            System.Reflection.PropertyInfo multiplier = RTSettingInstance.GetType().GetProperty("RangeMultiplier");
+            multiplier.SetValue(RTSettingInstance, float.PositiveInfinity, null);*/
+
+            //Not working when an antenna is also attached
+            Type RTCore = AssemblyLoader.loadedAssemblies
+                    .Select(a => a.assembly.GetExportedTypes())
+                    .SelectMany(t => t)
+                    .FirstOrDefault(t => t.FullName == "RemoteTech.RTCore");
+            if (RTCore == null)
+                return;
+            System.Object RTInstance = GetMemberInfoValue(RTCore.GetMember("Instance")[0], null);
+
+
+            foreach (Part p in FlightGlobals.ActiveVessel.parts)
+            {
+                if (p.Modules.Contains("ModuleRTAntenna"))
+                {
+                    PartModule antenna = p.Modules["ModuleRTAntenna"];
+                    if (antenna != null)
+                    {
+                        //System.Reflection.MethodInfo onDestroy = antenna.GetType().GetMethod("OnDestroy");
+                        //onDestroy.Invoke(antenna, null);
+                        System.Object RTAntennas = GetMemberInfoValue(RTInstance.GetType().GetMember("Antennas")[0], RTInstance);
+                        System.Reflection.MethodInfo unRegisterMethod = RTAntennas.GetType().GetMethod("Unregister");
+                        unRegisterMethod.Invoke(RTAntennas, new object[] { FlightGlobals.ActiveVessel.id, antenna });
+
+                        System.Reflection.MethodInfo unRegisterProtosMethod = RTAntennas.GetType().GetMethod("UnregisterProtos");
+                        unRegisterProtosMethod.Invoke(RTAntennas, new object[] { FlightGlobals.ActiveVessel.id });
+                    }
+                }
+             /*   if (p.Modules.Contains("ModuleSPU"))
+                {
+                    PartModule spu = p.Modules["ModuleSPU"];
+                    if (spu != null)
+                    {
+                        System.Reflection.MethodInfo onDestroy = spu.GetType().GetMethod("OnDestroy");
+                        onDestroy.Invoke(spu, null);
+                    }
+                }*/
+            }
+
+            foreach (Part p in FlightGlobals.ActiveVessel.parts)
+            {
+                if (p.Modules.Contains("ModuleSPU"))
+                {
+                    PartModule spu = p.Modules["ModuleSPU"];
+                    if (spu != null)
+                    {
+                        System.Reflection.MethodInfo onDestroy = spu.GetType().GetMethod("OnDestroy");
+                        onDestroy.Invoke(spu, null);
+                    }
+                }
+            }
+
+            InputLockManager.RemoveControlLock("RTLockStaging");
+            InputLockManager.RemoveControlLock("RTLockSAS");
+            InputLockManager.RemoveControlLock("RTLockRCS");
+            InputLockManager.RemoveControlLock("RTLockActions");
+        }
+
+        public static void EnableRemoteTechLocks()
+        {
+
+            //Not quite working properly
+            /*Type RTCore = AssemblyLoader.loadedAssemblies
+                    .Select(a => a.assembly.GetExportedTypes())
+                    .SelectMany(t => t)
+                    .FirstOrDefault(t => t.FullName == "RemoteTech.RTCore");
+
+            System.Object RTInstance = GetMemberInfoValue(RTCore.GetMember("Instance")[0], null);
+            System.Object RTSatellites = GetMemberInfoValue(RTInstance.GetType().GetMember("Satellites")[0], RTInstance);
+            Type RTSatType = RTSatellites.GetType();
+            System.Reflection.MethodInfo registerMethod = RTSatType.GetMethod("RegisterProto");
+            registerMethod.Invoke(RTSatellites, new object[] { FlightGlobals.ActiveVessel });*/
+        }
 
         private static bool? _KSCSwitcherInstalled = null;
         public static bool KSCSwitcherInstalled
