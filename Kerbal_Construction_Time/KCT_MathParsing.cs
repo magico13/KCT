@@ -257,6 +257,7 @@ namespace KerbalConstructionTime
             variables.Add("S", ScienceValue.ToString());
             variables.Add("N", upgrades.ToString());
             variables.Add("R", RnDLvl.ToString());
+            variables.Add("O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString());
 
             return GetStandardFormulaValue("Node", variables);
         }

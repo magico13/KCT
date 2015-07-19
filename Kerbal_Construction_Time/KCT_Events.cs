@@ -264,6 +264,8 @@ namespace KerbalConstructionTime
                     {
                         tech.DisableTech();
                     }
+                    //Need to somehow update the R&D instance
+                    GamePersistence.SaveGame("persistence", HighLogic.SaveFolder, SaveMode.OVERWRITE);
                 }
             }
         }
