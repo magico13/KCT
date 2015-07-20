@@ -468,6 +468,9 @@ namespace KerbalConstructionTime
                     GUILayout.Label("Invalid Build Rate");
                 }
 
+                if (KCT_GameStates.EditorRolloutCosts > 0)
+                    GUILayout.Label("Rollout Cost: " + Math.Round(KCT_GameStates.EditorRolloutCosts, 1));
+
                 bool useHolder = useInventory;
                 useInventory = GUILayout.Toggle(useInventory, " Use parts from inventory?");
                 if (useInventory != useHolder) KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);

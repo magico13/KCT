@@ -20,6 +20,7 @@ namespace KerbalConstructionTime
         public Guid id;
         public bool cannotEarnScience;
         public float cost = 0, TotalMass = 0, DistanceFromKSC = 0;
+        public float emptyCost = 0, emptyMass = 0;
         public double buildRate { get { return KCT_Utilities.GetBuildRate(this); } }
         public double timeLeft
         {
@@ -64,15 +65,9 @@ namespace KerbalConstructionTime
             shipNode = s.SaveShip();
             shipName = s.shipName;
             //Get total ship cost
-            float dry, fuel;
-            s.GetShipCosts(out dry, out fuel);
-            cost = dry + fuel;
-            TotalMass = 0;
-            foreach (Part p in s.Parts)
-            {
-                TotalMass += p.mass;
-                TotalMass += p.GetResourceMass();
-            }
+            float fuel;
+            cost = s.GetShipCosts(out emptyCost, out fuel);
+            TotalMass = s.GetShipMass(out emptyMass, out fuel);
 
             launchSite = ls;
             buildPoints = bP;
@@ -120,7 +115,9 @@ namespace KerbalConstructionTime
             shipNode = FromInFlightVessel(vessel);
 
             cost = KCT_Utilities.GetTotalVesselCost(shipNode);
+            emptyCost = KCT_Utilities.GetTotalVesselCost(shipNode, false);
             TotalMass = 0;
+            emptyMass = 0;
             InventoryParts = new Dictionary<string, int>();
             foreach (ProtoPartSnapshot p in vessel.protoVessel.protoPartSnapshots)
             {
@@ -140,6 +137,7 @@ namespace KerbalConstructionTime
                 KCT_Utilities.AddToDict(InventoryParts, name, amt);
 
                 TotalMass += p.mass;
+                emptyMass += p.mass;
                 foreach (ProtoPartResourceSnapshot rsc in p.resources)
                 {
                     PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.resourceName);
@@ -343,6 +341,9 @@ namespace KerbalConstructionTime
                 ret.buildPoints = KCT_Utilities.GetBuildTime(ret.ExtractedPartNodes, true, this.InventoryParts.Count > 0);
             }
             ret.TotalMass = this.TotalMass;
+            ret.emptyMass = this.emptyMass;
+            ret.cost = this.cost;
+            ret.emptyCost = this.emptyCost;
             return ret;
         }
 
@@ -434,20 +435,25 @@ namespace KerbalConstructionTime
         //NOTE: This is an approximation. This won't properly take into account for resources and tweakscale! DO NOT USE IF YOU CARE 100% ABOUT THE MASS
         public double GetTotalMass()
         {
-            if (TotalMass != 0) return TotalMass;
-            double mass = 0;
+            if (TotalMass != 0 && emptyMass != 0) return TotalMass;
+            TotalMass = 0;
+            emptyMass = 0;
             foreach (ConfigNode p in this.ExtractedPartNodes)
             {
                 float n1, n2;
-                mass += ShipConstruction.GetPartTotalMass(p, KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(p)), out n1, out n2);
+                TotalMass += ShipConstruction.GetPartTotalMass(p, KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(p)), out n1, out n2);
+                emptyMass += n1;
             }
-            return mass;
+            return TotalMass;
         }
 
         public double GetTotalCost()
         {
-            if (cost != 0) return cost;
-            return KCT_Utilities.GetTotalVesselCost(shipNode);
+            if (cost != 0 && emptyCost != 0) return cost;
+            cost = KCT_Utilities.GetTotalVesselCost(shipNode);
+            emptyCost = KCT_Utilities.GetTotalVesselCost(shipNode, false);
+            //return KCT_Utilities.GetTotalVesselCost(shipNode);
+            return cost;
         }
 
         public bool RemoveFromBuildList()

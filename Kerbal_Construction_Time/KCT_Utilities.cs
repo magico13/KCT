@@ -543,8 +543,21 @@ namespace KerbalConstructionTime
 
                     foreach (KCT_Recon_Rollout rr in ksc.Recon_Rollout)
                     {
+                        double prog = rr.progress;
                         rr.progress += rr.AsBuildItem().GetBuildRate() * (UT - lastUT);
                         if (rr.progress > rr.BP) rr.progress = rr.BP;
+
+                        if (KCT_Utilities.CurrentGameIsCareer() && rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.cost > 0)
+                        {
+                            int steps = 0;
+                            if ((steps = (int)(Math.Floor((rr.progress/rr.BP)*10) - Math.Floor((prog/rr.BP)*10))) > 0) //passed 10% of the progress
+                            {
+                                if (Funding.Instance.Funds < rr.cost / 10) //If they can't afford to continue the rollout, progress stops
+                                    rr.progress = prog;
+                                else
+                                    KCT_Utilities.SpendFunds(rr.cost / 10, TransactionReasons.None);
+                            }
+                        }
                     }
 
                     ksc.Recon_Rollout.RemoveAll(rr => !KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));
@@ -579,23 +592,27 @@ namespace KerbalConstructionTime
             lastUT = UT;
         }
 
-        public static float GetTotalVesselCost(ProtoVessel vessel)
+        public static float GetTotalVesselCost(ProtoVessel vessel, bool includeFuel = true)
         {
-            float total = 0;
+            float total = 0, totalDry = 0;
             foreach (ProtoPartSnapshot part in vessel.protoPartSnapshots)
             {
                 float dry, wet;
                 total += ShipConstruction.GetPartCosts(part, part.partInfo, out dry, out wet);
+                totalDry += dry;
             }
-            return total;
+            if (includeFuel)
+                return total;
+            else
+                return totalDry;
         }
 
-        public static float GetTotalVesselCost(ConfigNode vessel)
+        public static float GetTotalVesselCost(ConfigNode vessel, bool includeFuel = true)
         {
             float total = 0;
             foreach (ConfigNode part in vessel.GetNodes("PART"))
             {
-                total += GetPartCostFromNode(part);
+                total += GetPartCostFromNode(part, includeFuel);
             }
             return total;
         }
@@ -633,7 +650,7 @@ namespace KerbalConstructionTime
                 }
             }*/
 
-            ShipConstruction.GetPartTotalMass(part, GetAvailablePartByName(PartNameFromNode(part)), out dry, out wet);
+            total = ShipConstruction.GetPartTotalMass(part, GetAvailablePartByName(PartNameFromNode(part)), out dry, out wet);
             if (includeFuel)
                 return total;
             else
@@ -1837,15 +1854,18 @@ namespace KerbalConstructionTime
             }
 
             if (!KCT_GameStates.EditorShipEditingMode)
+            {
                 KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(ship.Parts, true, KCT_GUI.useInventory);
+                KCT_GameStates.EditorRolloutCosts = KCT_MathParsing.ParseRolloutCostFormula(new KCT_BuildListVessel(ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL));
+            }
             else
             {
                 //List<string> partsForInventory = new List<string>();
                 Dictionary<string, int> partsForInventory = new Dictionary<string, int>();
                 if (KCT_GUI.useInventory)
                 {
-                    Dictionary<string, int> newParts = new Dictionary<string,int>(KCT_GUI.PartsInUse);
-                    Dictionary<string, int> theInventory = new Dictionary<string,int>(KCT_GameStates.PartInventory);
+                    Dictionary<string, int> newParts = new Dictionary<string, int>(KCT_GUI.PartsInUse);
+                    Dictionary<string, int> theInventory = new Dictionary<string, int>(KCT_GameStates.PartInventory);
                     foreach (KeyValuePair<string, int> kvp in KCT_GameStates.EditedVesselParts)
                     {
                         if (newParts.ContainsKey(kvp.Key))
@@ -1880,8 +1900,8 @@ namespace KerbalConstructionTime
                                 KCT_Utilities.AddToDict(partsForInventory, kvp.Key, theInventory[kvp.Key]);
                                 theInventory[kvp.Key] = 0;
                             }
-                           // theInventory.Remove(s);
-                           // partsForInventory.Add(s);
+                            // theInventory.Remove(s);
+                            // partsForInventory.Add(s);
                         }
                     }
                 }
@@ -1889,6 +1909,9 @@ namespace KerbalConstructionTime
                     KCT_Utilities.AddToDict(partsForInventory, kvp.Key, kvp.Value);
 
                 KCT_GameStates.EditorBuildTime = KCT_Utilities.GetBuildTime(ship.parts, true, partsForInventory);
+
+                KCT_GameStates.EditorRolloutCosts = KCT_MathParsing.ParseRolloutCostFormula(new KCT_BuildListVessel(ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL));
+
             }
         }
 

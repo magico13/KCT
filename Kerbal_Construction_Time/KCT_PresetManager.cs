@@ -372,9 +372,10 @@ namespace KerbalConstructionTime
             KSCUpgradeFormula = "([C]^(1/2))*1000*[O]",
             ReconditioningFormula = "min([M]*[O]*[E], [X])",
             BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)", //TODO: Implement simulation cost formulas, reset formula
-            SimCostFormula = "max([C]/50000 * ([PM]/[KM]) * ([S]/10 + 1) * ([A]/10 + 1) * ([L]^0.5) * 100, 1000)", //[M] = body mass, [PM] = parent mass, [A] = presence of atmosphere (1 or 0), [m] = mass of vessel, [C] = cost of vessel, [s] = # times simulated this editor session, [SMA] = ratio parent planet SMA to Kerbin SMA, [L] = Simulation length in seconds, [KM] = Kerbin Mass, [S] = 1/0 if a satellite
+            SimCostFormula = "max([C]/50000 * min([PM]/[KM], 80) * ([S]/10 + 1) * ([A]/10 + 1) * ([L]^0.5) * 100, 500)", //[M] = body mass, [PM] = parent mass, [A] = presence of atmosphere (1 or 0), [m] = mass of vessel, [C] = cost of vessel, [s] = # times simulated this editor session, [SMA] = ratio parent planet SMA to Kerbin SMA, [L] = Simulation length in seconds, [KM] = Kerbin Mass, [S] = 1/0 if a satellite
             KerbinSimCostFormula = "max([C]/50000 * ([L]^0.5) * 10, 100)",
             UpgradeResetFormula = "2*([N]+1)", //N = number of times it's been reset
-            InventorySaleFormula = "([V]+[P] / 10000)^(0.5)"; //Gives the TOTAL amount of points, decimals are kept //[V] = inventory value in funds, [P] = Value of all previous sales combined
+            InventorySaleFormula = "([V]+[P] / 10000)^(0.5)", //Gives the TOTAL amount of points, decimals are kept //[V] = inventory value in funds, [P] = Value of all previous sales combined
+            RolloutCostFormula = "0"; //[M]=Vessel loaded mass, [m]=vessel empty mass, [C]=vessel loaded cost, [c]=vessel empty cost, [BP]=vessel BPs, [E]=editor level, [L]=launch site level (pad), [VAB]=1 if VAB craft, 0 if SPH
     }
 }

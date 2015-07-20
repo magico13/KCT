@@ -51,7 +51,7 @@ namespace KerbalConstructionTime
         public static bool EditorShipEditingMode = false, buildSimulatedVessel = false;
         public static bool firstStart = false;
         public static IKCTBuildItem targetedItem = null;
-        public static double EditorBuildTime = 0;
+        public static double EditorBuildTime = 0, EditorRolloutCosts = 0;
         public static Dictionary<string, int> EditedVesselParts = new Dictionary<string, int>();
         public static bool LaunchFromTS = false;
         public static bool LoadingSimulationSave = false;

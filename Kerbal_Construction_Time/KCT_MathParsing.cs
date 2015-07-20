@@ -26,6 +26,7 @@ namespace KerbalConstructionTime
                 case "KerbinSimCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KerbinSimCostFormula, variables);
                 case "UpgradeReset": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeResetFormula, variables);
                 case "InventorySales": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.InventorySaleFormula, variables);
+                case "RolloutCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.RolloutCostFormula, variables);
                 default: return 0;
             }
         }
@@ -260,6 +261,42 @@ namespace KerbalConstructionTime
             variables.Add("O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString());
 
             return GetStandardFormulaValue("Node", variables);
+        }
+
+        public static double ParseRolloutCostFormula(KCT_BuildListVessel vessel)
+        {
+            double loadedMass, emptyMass, loadedCost, emptyCost;
+            loadedCost = vessel.GetTotalCost();
+            emptyCost = vessel.emptyCost;
+            loadedMass = vessel.GetTotalMass();
+            emptyMass = vessel.emptyMass;
+
+            int EditorLevel = 0, LaunchSiteLvl = 0;
+            int isVABVessel = 0;
+            if (vessel.type == KCT_BuildListVessel.ListType.VAB)
+            {
+                EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
+                LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
+                isVABVessel = 1;
+            }
+            else
+            {
+                EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.SpaceplaneHangar);
+                LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.Runway);
+            }
+            double BP = vessel.buildPoints;
+
+            Dictionary<string, string> variables = new Dictionary<string, string>();
+            variables.Add("M", loadedMass.ToString());
+            variables.Add("m", emptyMass.ToString());
+            variables.Add("C", loadedCost.ToString());
+            variables.Add("c", emptyCost.ToString());
+            variables.Add("VAB", isVABVessel.ToString());
+            variables.Add("BP", BP.ToString());
+            variables.Add("L", LaunchSiteLvl.ToString());
+            variables.Add("E", EditorLevel.ToString());
+
+            return GetStandardFormulaValue("RolloutCost", variables);
         }
     }
 }

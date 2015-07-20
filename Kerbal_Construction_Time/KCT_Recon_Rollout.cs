@@ -8,7 +8,7 @@ namespace KerbalConstructionTime
     public class KCT_Recon_Rollout : IKCTBuildItem
     {
         [Persistent] private string name = "";
-        [Persistent] public double BP = 0, progress = 0;
+        [Persistent] public double BP = 0, progress = 0, cost = 0;
         [Persistent] public string associatedID = "";
         [Persistent] public string launchPadID = "LaunchPad";
         public enum RolloutReconType { Reconditioning, Rollout, Rollback, Recovery, None };
@@ -45,6 +45,7 @@ namespace KerbalConstructionTime
             name = "LaunchPad Reconditioning";
             progress = 0;
             BP = 0;
+            cost = 0;
             RRType = RolloutReconType.None;
             associatedID = "";
             launchPadID = "LaunchPad";
@@ -103,6 +104,7 @@ namespace KerbalConstructionTime
             {
                 BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
                 name = "Vessel Rollout";
+                cost = KCT_MathParsing.ParseRolloutCostFormula(vessel);
             }
             else if (type == RolloutReconType.Rollback)
             {

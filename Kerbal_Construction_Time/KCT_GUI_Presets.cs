@@ -248,6 +248,11 @@ namespace KerbalConstructionTime
                 GUILayout.Label("InventorySale: ");
                 WorkingPreset.formulaSettings.InventorySaleFormula = GUILayout.TextField(WorkingPreset.formulaSettings.InventorySaleFormula, GUILayout.Width(textWidth));
                 GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("RolloutCosts: ");
+                WorkingPreset.formulaSettings.RolloutCostFormula = GUILayout.TextField(WorkingPreset.formulaSettings.RolloutCostFormula, GUILayout.Width(textWidth));
+                GUILayout.EndHorizontal();
             }
 
             GUILayout.EndVertical(); 
