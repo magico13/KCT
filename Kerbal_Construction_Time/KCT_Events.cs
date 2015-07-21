@@ -256,6 +256,11 @@ namespace KerbalConstructionTime
 
         public void TechDisableEvent()
         {
+            TechDisableEventFinal(true);
+        }
+
+        public void TechDisableEventFinal(bool save=false)
+        {
             if (KCT_PresetManager.Instance != null && KCT_PresetManager.Instance.ActivePreset != null)
             {
                 if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes && KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)
@@ -265,7 +270,8 @@ namespace KerbalConstructionTime
                         tech.DisableTech();
                     }
                     //Need to somehow update the R&D instance
-                    GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+                    if (save)
+                        GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
                 }
             }
         }
@@ -307,7 +313,7 @@ namespace KerbalConstructionTime
                 {
                     KCT_Utilities.LoadSimulationSave(false);
                 }
-                TechDisableEvent();
+                TechDisableEventFinal();
             }
             /*if (!HighLogic.LoadedSceneIsFlight && scene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Backup save at simulation start
             {

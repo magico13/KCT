@@ -1162,7 +1162,7 @@ namespace KerbalConstructionTime
 
         public static float CostOfSimulation(CelestialBody body, string simulationLength, ShipConstruct ship, int SimCount, bool landed)
         {
-            if (simulationLength == "" || simulationLength == "0" || simulationLength == "-1")
+            if (simulationLength == "" || simulationLength == "-1")
                 simulationLength = "31536000000"; //1000 Earth years
             CelestialBody Kerbin = GetBodyByName("Kerbin");
             if (Kerbin == null)
@@ -1170,7 +1170,7 @@ namespace KerbalConstructionTime
 
             double length = KCT_Utilities.ParseColonFormattedTime(simulationLength, false);
             length = Math.Min(length, 31536000000.0);
-            if (length < 0)
+            if (length <= 0)
                 length = 31536000000.0;
             Dictionary<string, string> vars = new Dictionary<string, string>();
             vars.Add("L", length.ToString()); //Sim length in seconds

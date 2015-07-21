@@ -370,7 +370,7 @@ namespace KerbalConstructionTime
             ProceduralPartFormula = "(([C]-[A]) + ([A]*10/max([I],1))) / max([B]*([U]+1),1)",
             BPFormula = "([E]^(1/2))*2000*[O]",
             KSCUpgradeFormula = "([C]^(1/2))*1000*[O]",
-            ReconditioningFormula = "min([M]*[O]*[E], [X])",
+            ReconditioningFormula = "min([M]*[O]*[E], [X])*abs([RE]-[S])",
             BuildRateFormula = "(([I]+1)*0.05*[N] + max(0.1-[I], 0))*sign(2*[L]-[I]+1)", //TODO: Implement simulation cost formulas, reset formula
             SimCostFormula = "max([C]/50000 * min([PM]/[KM], 80) * ([S]/10 + 1) * ([A]/10 + 1) * ([L]^0.5) * 100, 500)", //[M] = body mass, [PM] = parent mass, [A] = presence of atmosphere (1 or 0), [m] = mass of vessel, [C] = cost of vessel, [s] = # times simulated this editor session, [SMA] = ratio parent planet SMA to Kerbin SMA, [L] = Simulation length in seconds, [KM] = Kerbin Mass, [S] = 1/0 if a satellite
             KerbinSimCostFormula = "max([C]/50000 * ([L]^0.5) * 10, 100)",

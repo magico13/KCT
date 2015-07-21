@@ -56,29 +56,33 @@ namespace KerbalConstructionTime
             RRType = type;
             associatedID = id;
             //BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
-            BP = KCT_MathParsing.GetStandardFormulaValue("Reconditioning", new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()},
-                {"E", KCT_PresetManager.Instance.ActivePreset.timeSettings.ReconditioningEffect.ToString()}, {"X", KCT_PresetManager.Instance.ActivePreset.timeSettings.MaxReconditioning.ToString()}});
+            //BP = KCT_MathParsing.GetStandardFormulaValue("Reconditioning", new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()},
+            //    {"E", KCT_PresetManager.Instance.ActivePreset.timeSettings.ReconditioningEffect.ToString()}, {"X", KCT_PresetManager.Instance.ActivePreset.timeSettings.MaxReconditioning.ToString()}});
             //if (BP > KCT_GameStates.timeSettings.MaxReconditioning) BP = KCT_GameStates.timeSettings.MaxReconditioning;
             progress = 0;
             if (type == RolloutReconType.Reconditioning) 
             {
-                BP *= (1 - KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit);
+                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), true);
+                //BP *= (1 - KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit);
                 name = "LaunchPad Reconditioning";
             }
             else if (type == RolloutReconType.Rollout)
             {
-                BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
+                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
+                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
                 name = "Vessel Rollout";
             }
             else if (type == RolloutReconType.Rollback)
             {
-                BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
+                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
+                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
                 name = "Vessel Rollback";
                 progress = BP;
             }
             else if (type == RolloutReconType.Recovery)
             {
-                BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
+                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
+                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
                 name = "Vessel Recovery";
                 double KSCDistance = (float)SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(vessel.latitude, vessel.longitude));
                 double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
@@ -91,30 +95,34 @@ namespace KerbalConstructionTime
             RRType = type;
             associatedID = id;
             //BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
-            BP = KCT_MathParsing.GetStandardFormulaValue("Reconditioning", new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()},
-                {"E", KCT_PresetManager.Instance.ActivePreset.timeSettings.ReconditioningEffect.ToString()}, {"X", KCT_PresetManager.Instance.ActivePreset.timeSettings.MaxReconditioning.ToString()}});
+            //BP = KCT_MathParsing.GetStandardFormulaValue("Reconditioning", new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()},
+            //    {"E", KCT_PresetManager.Instance.ActivePreset.timeSettings.ReconditioningEffect.ToString()}, {"X", KCT_PresetManager.Instance.ActivePreset.timeSettings.MaxReconditioning.ToString()}});
             //if (BP > KCT_GameStates.timeSettings.MaxReconditioning) BP = KCT_GameStates.timeSettings.MaxReconditioning;
             progress = 0;
             if (type == RolloutReconType.Reconditioning)
             {
-                BP *= (1 - KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit);
+                BP = KCT_MathParsing.ParseReconditioningFormula(vessel, true);
+                //BP *= (1 - KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit);
                 name = "LaunchPad Reconditioning";
             }
             else if (type == RolloutReconType.Rollout)
             {
-                BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
+                BP = KCT_MathParsing.ParseReconditioningFormula(vessel, false);
+                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
                 name = "Vessel Rollout";
                 cost = KCT_MathParsing.ParseRolloutCostFormula(vessel);
             }
             else if (type == RolloutReconType.Rollback)
             {
-                BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
+                BP = KCT_MathParsing.ParseReconditioningFormula(vessel, false);
+                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
                 progress = BP;
                 name = "Vessel Rollback";
             }
             else if (type == RolloutReconType.Recovery)
             {
-                BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
+                BP = KCT_MathParsing.ParseReconditioningFormula(vessel, false);
+                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
                 name = "Vessel Recovery";
                 double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
                 BP += BP * (vessel.DistanceFromKSC / maxDist);

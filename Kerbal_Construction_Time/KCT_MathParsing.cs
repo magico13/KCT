@@ -294,9 +294,57 @@ namespace KerbalConstructionTime
             variables.Add("VAB", isVABVessel.ToString());
             variables.Add("BP", BP.ToString());
             variables.Add("L", LaunchSiteLvl.ToString());
-            variables.Add("E", EditorLevel.ToString());
+            variables.Add("EL", EditorLevel.ToString());
 
             return GetStandardFormulaValue("RolloutCost", variables);
+        }
+
+        public static double ParseReconditioningFormula(KCT_BuildListVessel vessel, bool isReconditioning)
+        {
+           // new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()},
+            //    {"E", KCT_PresetManager.Instance.ActivePreset.timeSettings.ReconditioningEffect.ToString()}, {"X", KCT_PresetManager.Instance.ActivePreset.timeSettings.MaxReconditioning.ToString()}});
+            Dictionary<string, string> variables = new Dictionary<string, string>();
+
+            double loadedMass, emptyMass, loadedCost, emptyCost;
+            loadedCost = vessel.GetTotalCost();
+            emptyCost = vessel.emptyCost;
+            loadedMass = vessel.GetTotalMass();
+            emptyMass = vessel.emptyMass;
+
+            int EditorLevel = 0, LaunchSiteLvl = 0;
+            int isVABVessel = 0;
+            if (vessel.type == KCT_BuildListVessel.ListType.VAB)
+            {
+                EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
+                LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
+                isVABVessel = 1;
+            }
+            else
+            {
+                EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.SpaceplaneHangar);
+                LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.Runway);
+            }
+            double BP = vessel.buildPoints;
+            double OverallMult = KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier;
+            double ReconEffect = KCT_PresetManager.Instance.ActivePreset.timeSettings.ReconditioningEffect;
+            double MaxRecon = KCT_PresetManager.Instance.ActivePreset.timeSettings.MaxReconditioning;
+
+            variables.Add("M", loadedMass.ToString());
+            variables.Add("m", emptyMass.ToString());
+            variables.Add("C", loadedCost.ToString());
+            variables.Add("c", emptyCost.ToString());
+            variables.Add("VAB", isVABVessel.ToString());
+            variables.Add("BP", BP.ToString());
+            variables.Add("L", LaunchSiteLvl.ToString());
+            variables.Add("EL", EditorLevel.ToString());
+            variables.Add("O", OverallMult.ToString());
+            variables.Add("E", ReconEffect.ToString());
+            variables.Add("X", MaxRecon.ToString());
+            int isRecon = isReconditioning ? 1 : 0;
+            variables.Add("RE", isRecon.ToString());
+            variables.Add("S", KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit.ToString());
+
+            return GetStandardFormulaValue("Reconditioning", variables);
         }
     }
 }
