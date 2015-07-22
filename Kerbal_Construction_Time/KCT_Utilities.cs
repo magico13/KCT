@@ -586,6 +586,8 @@ namespace KerbalConstructionTime
                         if (tech.protoNode == null) continue;
                         tech.EnableTech();
                         KCT_GameStates.TechList.Remove(tech);
+                        if (KCT_PresetManager.PresetLoaded() && KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUpgrades)
+                            KCT_GameStates.MiscellaneousTempUpgrades++;
                     }
                 }
             }
@@ -2137,7 +2139,12 @@ namespace KerbalConstructionTime
             {
                 //Completed tech nodes
                 if (CurrentGameHasScience() && ResearchAndDevelopment.Instance != null)
-                    total += ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length;
+                {
+                    if (AssetBase.RnDTechTree != null)
+                        total += AssetBase.RnDTechTree.GetTreeNodes().Count(n => n.tech.state == RDTech.State.Available);
+                    else
+                        total += ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length;
+                }
 
                 //In progress tech nodes
                 total += KCT_GameStates.TechList.Count;
@@ -2148,7 +2155,11 @@ namespace KerbalConstructionTime
             total += KCT_GameStates.PurchasedUpgrades[1];
             //Inventory sales
             total += (int)KCT_GameStates.InventorySaleUpgrades;
+            //Temp upgrades (currently for when tech nodes finish)
+            total += KCT_GameStates.MiscellaneousTempUpgrades;
+            
             //Misc. (when API)
+
 
 
             return total;

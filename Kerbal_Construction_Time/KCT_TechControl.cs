@@ -21,7 +21,7 @@ namespace KerbalConstructionTime
             {
                 if (bRate_int < 0)
                 {
-                    UpdateBuildRate();
+                    UpdateBuildRate(Math.Max(KCT_GameStates.TechList.IndexOf(this), 0));
                 }
                 return bRate_int;
             }
@@ -56,13 +56,15 @@ namespace KerbalConstructionTime
 
         public KCT_TechItem() {}
 
-        public double UpdateBuildRate()
+        public double UpdateBuildRate(int index)
         {
           //  double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
-            double rate = KCT_MathParsing.ParseNodeRateFormula(scienceCost);
+            double rate = KCT_MathParsing.ParseNodeRateFormula(scienceCost, index);
             //KCT_MathParsing.GetStandardFormulaValue("Node",
               //  new Dictionary<string, string>() { { "N", KCT_GameStates.TechUpgradesTotal.ToString() }, { "S", scienceCost.ToString() }, {"R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
           //  if (max > 0 && rate > max) rate = max;
+            if (rate < 0)
+                rate = 0;
             bRate_int = rate;
             return bRate_int;
         }

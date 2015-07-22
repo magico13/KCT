@@ -41,6 +41,7 @@ namespace KerbalConstructionTime
         public static List<KCT_TechItem> TechList = new List<KCT_TechItem>();
 
         public static List<int> PurchasedUpgrades = new List<int>() { 0, 0 };
+        public static int MiscellaneousTempUpgrades = 0;
         public static float InventorySaleUpgrades = 0, InventorySalesFigures = 0;
         public static int UpgradesResetCounter = 0;
         //public static int TotalUpgradePoints = 0;
@@ -55,6 +56,7 @@ namespace KerbalConstructionTime
         public static Dictionary<string, int> EditedVesselParts = new Dictionary<string, int>();
         public static bool LaunchFromTS = false;
         public static bool LoadingSimulationSave = false;
+        public static List<AvailablePart> ExperimentalParts = new List<AvailablePart>();
 
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
         public static string KACAlarmId = "";
@@ -104,6 +106,9 @@ namespace KerbalConstructionTime
 
             InventorySaleUpgrades = 0;
             InventorySalesFigures = 0;
+
+            ExperimentalParts.Clear();
+            MiscellaneousTempUpgrades = 0;
 
             //ActiveKSC = new KCT_KSC("Stock");
             //KSCs = new List<KCT_KSC>() {ActiveKSC};

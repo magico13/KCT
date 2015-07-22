@@ -103,7 +103,7 @@ namespace KerbalConstructionTime
                 }
                 foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                 {
-                    tech.UpdateBuildRate();
+                    tech.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(tech));
                 }
             }
            /* if (lvl <= lastLvl)
@@ -206,6 +206,12 @@ namespace KerbalConstructionTime
                     GameDatabase.Instance.GetTexture(texturePath, false));
 
                 ApplicationLauncher.Instance.EnableMutuallyExclusive(KCT_Events.instance.KCTButtonStock);
+
+              /*  if (HighLogic.LoadedScene == GameScenes.SPACECENTER && KCT_GameStates.showWindows[0])
+                {
+                    KCTButtonStock.SetTrue(true);
+                    KCT_GUI.clicked = true;
+                }*/
             }
         }
         public void DummyVoid() { }
@@ -226,12 +232,19 @@ namespace KerbalConstructionTime
 
         public void TechUnlockEvent(GameEvents.HostTargetAction<RDTech, RDTech.OperationResult> ev)
         {
+            //TODO: Check if any of the parts are experimental, if so, do the normal KCT stuff and then set them experimental again
             if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
             if (ev.target == RDTech.OperationResult.Successful)
             {
                 KCT_TechItem tech = new KCT_TechItem();
                 if (ev.host != null) 
                     tech = new KCT_TechItem(ev.host);
+
+                foreach (AvailablePart expt in ev.host.partsPurchased)
+                {
+                    if (ResearchAndDevelopment.IsExperimentalPart(expt))
+                        KCT_GameStates.ExperimentalParts.Add(expt);
+                }
 
                 //if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime) tech.DisableTech();
                 if (!tech.isInList())
@@ -267,8 +280,18 @@ namespace KerbalConstructionTime
                 {
                     foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                     {
+                        foreach (String partName in tech.UnlockedParts)
+                        {
+                            AvailablePart expt = KCT_Utilities.GetAvailablePartByName(partName);
+                            if (expt != null && ResearchAndDevelopment.IsExperimentalPart(expt))
+                                if (!KCT_GameStates.ExperimentalParts.Contains(expt))
+                                    KCT_GameStates.ExperimentalParts.Add(expt);
+                        }
+                        //ResearchAndDevelopment.AddExperimentalPart()
                         tech.DisableTech();
                     }
+                    foreach (AvailablePart expt in KCT_GameStates.ExperimentalParts)
+                        ResearchAndDevelopment.AddExperimentalPart(expt);
                     //Need to somehow update the R&D instance
                     if (save)
                         GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
@@ -289,8 +312,11 @@ namespace KerbalConstructionTime
                 KCT_GameStates.KSCs = new List<KCT_KSC>() { KCT_GameStates.ActiveKSC };
                 KCT_GameStates.EditorSimulationCount = 0;
 
-                KCT_PresetManager.Instance.ClearPresets();
-                KCT_PresetManager.Instance = null;
+                if (KCT_PresetManager.Instance != null)
+                {
+                    KCT_PresetManager.Instance.ClearPresets();
+                    KCT_PresetManager.Instance = null;
+                }
 
                 return;
             }

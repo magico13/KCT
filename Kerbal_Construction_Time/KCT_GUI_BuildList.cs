@@ -707,6 +707,34 @@ namespace KerbalConstructionTime
                 foreach (KCT_UpgradingBuilding KCTTech in KSCList)
                 {
                     GUILayout.BeginHorizontal();
+                    /*
+                    int i = KSCList.IndexOf(KCTTech);
+                    if (i > 0 && GUILayout.Button("^", GUILayout.Width(butW)))
+                    {
+                        KSCList.RemoveAt(i);
+                        if (GameSettings.MODIFIER_KEY.GetKey())
+                        {
+                            KSCList.Insert(0, KCTTech);
+                        }
+                        else
+                        {
+                            KSCList.Insert(i - 1, KCTTech);
+                        }
+                    }
+                    if (i < KSCList.Count - 1 && GUILayout.Button("v", GUILayout.Width(butW)))
+                    {
+                        KSCList.RemoveAt(i);
+                        if (GameSettings.MODIFIER_KEY.GetKey())
+                        {
+                            KSCList.Add(KCTTech);
+                        }
+                        else
+                        {
+                            KSCList.Insert(i + 1, KCTTech);
+                        }
+                    }
+                    */
+
                     GUILayout.Label(KCTTech.AsIKCTBuildItem().GetItemName());
                     GUILayout.Label(Math.Round(100 * KCTTech.progress / KCTTech.BP, 2) + " %", GUILayout.Width(width1 / 2));
                     GUILayout.Label(KCT_Utilities.GetColonFormattedTime(KCTTech.AsIKCTBuildItem().GetTimeLeft()), GUILayout.Width(width1));
@@ -725,22 +753,69 @@ namespace KerbalConstructionTime
 
                 if (techList.Count == 0)
                     GUILayout.Label("No tech nodes are being researched!\nBegin research by unlocking tech in the R&D building.");
+                bool forceRecheck = false;
                 for (int i = 0; i < techList.Count; i++)
                 {
                     KCT_TechItem t = techList[i];
                     GUILayout.BeginHorizontal();
+
+                    if (i > 0 && t.BuildRate != techList[0].BuildRate)
+                    {
+                        if (i > 0 && GUILayout.Button("^", GUILayout.Width(butW)))
+                        {
+                            techList.RemoveAt(i);
+                            if (GameSettings.MODIFIER_KEY.GetKey())
+                            {
+                                techList.Insert(0, t);
+                            }
+                            else
+                            {
+                                techList.Insert(i - 1, t);
+                            }
+                            forceRecheck = true;
+                        }
+                    }
+                    if ((i == 0 && t.BuildRate != techList[techList.Count - 1].BuildRate) || t.BuildRate != techList[techList.Count - 1].BuildRate)
+                    {
+                        if (i < techList.Count - 1 && GUILayout.Button("v", GUILayout.Width(butW)))
+                        {
+                            techList.RemoveAt(i);
+                            if (GameSettings.MODIFIER_KEY.GetKey())
+                            {
+                                techList.Add(t);
+                            }
+                            else
+                            {
+                                techList.Insert(i + 1, t);
+                            }
+                            forceRecheck = true;
+                        }
+                    }
+                    if (forceRecheck)
+                    {
+                        forceRecheck = false;
+                        for (int j=0; j<techList.Count; j++)
+                            techList[j].UpdateBuildRate(j);
+                    }
+
                     GUILayout.Label(t.techName);
                     GUILayout.Label(Math.Round(100 * t.progress / t.scienceCost, 2) + " %", GUILayout.Width(width1/2));
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(t.TimeLeft), GUILayout.Width(width1));
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(70)))
+                    if (t.BuildRate > 0)
                     {
-                        KCT_GameStates.targetedItem = t;
-                        KCT_GameStates.canWarp = true;
-                        KCT_Utilities.RampUpWarp(t);
-                        KCT_GameStates.warpInitiated = true;
+                        GUILayout.Label(KCT_Utilities.GetColonFormattedTime(t.TimeLeft), GUILayout.Width(width1));
+                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(70)))
+                        {
+                            KCT_GameStates.targetedItem = t;
+                            KCT_GameStates.canWarp = true;
+                            KCT_Utilities.RampUpWarp(t);
+                            KCT_GameStates.warpInitiated = true;
+                        }
+                        else if (HighLogic.LoadedSceneIsEditor)
+                            GUILayout.Space(70);
                     }
-                    else if (HighLogic.LoadedSceneIsEditor)
-                        GUILayout.Space(70);
+                    else
+                        GUILayout.Space(width1+70);
+                    
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();

@@ -125,6 +125,21 @@ namespace KerbalConstructionTime
         internal KerbalConstructionTime()
         {
             instance = this;
+
+            KCT_GameStates.settings.Load(); //Load the settings file, if it exists
+
+            string SavedFile = KSPUtil.ApplicationRootPath + "/saves/" + HighLogic.SaveFolder + "/KCT_Settings.cfg";
+            if (!System.IO.File.Exists(SavedFile))
+            {
+                KCT_GameStates.firstStart = true;
+            }
+
+            if (KCT_PresetManager.Instance == null)
+            {
+                KCT_PresetManager.Instance = new KCT_PresetManager();
+            }
+            KCT_PresetManager.Instance.SetActiveFromSaveData();
+
             if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null && KCT_GameStates.settings.PreferBlizzyToolbar)
             {
                 KCTDebug.Log("Adding Toolbar Button");
@@ -176,20 +191,7 @@ namespace KerbalConstructionTime
 
         public void Start()
         {
-            KCT_GameStates.settings.Load(); //Load the settings file, if it exists
             KCT_GameStates.settings.Save(); //Save the settings file, with defaults if it doesn't exist
-
-            string SavedFile = KSPUtil.ApplicationRootPath + "/saves/" + HighLogic.SaveFolder + "/KCT_Settings.cfg";
-            if (!System.IO.File.Exists(SavedFile))
-            {
-                KCT_GameStates.firstStart = true;
-            }
-
-            if (KCT_PresetManager.Instance == null)
-            {
-                KCT_PresetManager.Instance = new KCT_PresetManager();
-            }
-            KCT_PresetManager.Instance.SetActiveFromSaveData();
             KCT_PresetManager.Instance.SaveActiveToSaveData();
 
            /* KCT_GameStates.timeSettings.Load(); //Load the time settings
@@ -675,7 +677,22 @@ namespace KerbalConstructionTime
             {
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
-                    KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
+                    if (ToolbarManager.ToolbarAvailable && KCT_GameStates.settings.PreferBlizzyToolbar)
+                        KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
+                    else
+                    {
+                        if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
+                        {
+                            //KCT_Events.instance.KCTButtonStock.SetTrue(true);
+                            //KCT_GUI.clicked = true;
+                            if (KCT_GameStates.showWindows[0])
+                                KCT_GUI.ClickOn();
+                        }
+                      /*  else
+                        {
+                            KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[0];
+                        }*/
+                    }
                     KCT_GUI.ResetBLWindow();
                 }
                 else

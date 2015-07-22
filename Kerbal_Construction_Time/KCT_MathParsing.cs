@@ -249,7 +249,7 @@ namespace KerbalConstructionTime
             return GetStandardFormulaValue("BuildRate", variables);
         }
 
-        public static double ParseNodeRateFormula(double ScienceValue, bool UpgradedRates = false)
+        public static double ParseNodeRateFormula(double ScienceValue, int index = 0, bool UpgradedRates = false)
         {
             int RnDLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment);
             int upgrades = KCT_GameStates.TechUpgradesTotal;
@@ -259,6 +259,7 @@ namespace KerbalConstructionTime
             variables.Add("N", upgrades.ToString());
             variables.Add("R", RnDLvl.ToString());
             variables.Add("O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString());
+            variables.Add("I", index.ToString());
 
             return GetStandardFormulaValue("Node", variables);
         }

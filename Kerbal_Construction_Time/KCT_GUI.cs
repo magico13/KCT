@@ -141,7 +141,7 @@ namespace KerbalConstructionTime
             }
         }
 
-        public static bool PrimarilyDisabled { get { return (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled || !KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes); } }
+        public static bool PrimarilyDisabled { get { return (KCT_PresetManager.PresetLoaded() && (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled || !KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)); } }
 
         private static void CheckKSCLock()
         {
@@ -224,7 +224,7 @@ namespace KerbalConstructionTime
                 else
                     showSettings = false;
             }
-            else if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes && HighLogic.LoadedSceneIsEditor)
+            else if (HighLogic.LoadedSceneIsEditor && KCT_PresetManager.PresetLoaded() && !KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)
             {
                 if (KCT_PresetManager.Instance.ActivePreset.generalSettings.Simulations)
                 {
@@ -270,13 +270,16 @@ namespace KerbalConstructionTime
 
             if (!KCT_GameStates.settings.PreferBlizzyToolbar)
             {
-                if (showBuildList || showSettings || showEditorGUI || showSimulationWindow)
+                if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
                 {
-                    KCT_Events.instance.KCTButtonStock.SetTrue(false);
-                }
-                else
-                {
-                    KCT_Events.instance.KCTButtonStock.SetFalse(false);
+                    if (showBuildList || showSettings || showEditorGUI || showSimulationWindow)
+                    {
+                        KCT_Events.instance.KCTButtonStock.SetTrue(false);
+                    }
+                    else
+                    {
+                        KCT_Events.instance.KCTButtonStock.SetFalse(false);
+                    }
                 }
             }
         }
@@ -1400,6 +1403,8 @@ namespace KerbalConstructionTime
         {
             buildListWindowPosition.height = 1;
             buildListWindowPosition.width = 400;
+            SelectList("None");
+            
           //  listWindow = -1;
         }
 
@@ -2186,7 +2191,7 @@ namespace KerbalConstructionTime
                         KCT_GameStates.ActiveKSC.RecalculateUpgradedBuildRates();
 
                         foreach (KCT_TechItem tech in KCT_GameStates.TechList)
-                            tech.UpdateBuildRate();
+                            tech.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(tech));
 
                     }
                 }
@@ -2328,7 +2333,7 @@ namespace KerbalConstructionTime
                    // double max = double.Parse(KCT_GameStates.formulaSettings.NodeMax);
                   //  if (max > 0 && nodeRate > max) nodeRate = max;
 
-                    upNodeRate = KCT_MathParsing.ParseNodeRateFormula(0, true);
+                    upNodeRate = KCT_MathParsing.ParseNodeRateFormula(0, 0, true);
                     //KCT_MathParsing.GetStandardFormulaValue("Node", new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[1] + 1).ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
                   //  if (max > 0 && upNodeRate > max) upNodeRate = max;
                 }
@@ -2361,7 +2366,7 @@ namespace KerbalConstructionTime
 
                         foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                         {
-                            tech.UpdateBuildRate();
+                            tech.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(tech));
                         }
                     }
                 }
@@ -2503,10 +2508,10 @@ namespace KerbalConstructionTime
     public class GUIDataSaver
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Windows.txt";
-        [Persistent] GUIPosition editorPositionSaved, timeLimitPositionSaved;
+        [Persistent] GUIPosition editorPositionSaved, timeLimitPositionSaved, buildListPositionSaved;
         public void Save()
         {
-           // buildListPositionSaved = new GUIPosition("buildList", KCT_GUI.buildListWindowPosition.x, KCT_GUI.buildListWindowPosition.y, KCT_GameStates.showWindows[0]);
+            buildListPositionSaved = new GUIPosition("buildList", KCT_GUI.buildListWindowPosition.x, KCT_GUI.buildListWindowPosition.y, KCT_GameStates.showWindows[0]);
             editorPositionSaved = new GUIPosition("editor", KCT_GUI.editorWindowPosition.x, KCT_GUI.editorWindowPosition.y, KCT_GameStates.showWindows[1]);
             timeLimitPositionSaved = new GUIPosition("timeLimit", KCT_GUI.timeRemainingPosition.x, KCT_GUI.timeRemainingPosition.y, KCT_GUI.showTimeRemaining);
 
@@ -2522,9 +2527,12 @@ namespace KerbalConstructionTime
             ConfigNode cnToLoad = ConfigNode.Load(filePath);
             ConfigNode.LoadObjectFromConfig(this, cnToLoad);
 
-            /*KCT_GUI.buildListWindowPosition.x = buildListPositionSaved.xPos;
-            KCT_GUI.buildListWindowPosition.y = buildListPositionSaved.yPos;
-            KCT_GameStates.showWindows[0] = buildListPositionSaved.visible;*/
+            if (KCT_GameStates.settings.PreferBlizzyToolbar && ToolbarManager.ToolbarAvailable)
+            {
+                KCT_GUI.buildListWindowPosition.x = buildListPositionSaved.xPos;
+                KCT_GUI.buildListWindowPosition.y = buildListPositionSaved.yPos;
+            }
+            KCT_GameStates.showWindows[0] = buildListPositionSaved.visible;
 
             KCT_GUI.editorWindowPosition.x = editorPositionSaved.xPos;
             KCT_GUI.editorWindowPosition.y = editorPositionSaved.yPos;

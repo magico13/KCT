@@ -288,7 +288,10 @@ namespace KerbalConstructionTime
                     if (KCT_Events.instance.KCTButtonStock != null)
                         KCT_Events.instance.KCTButtonStock.SetTrue();
                     else
+                    {
                         showBuildList = true;
+                        ResetBLWindow();
+                    }
                 }
                 if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) InputLockManager.RemoveControlLock("KCTKSCLock");
             }
