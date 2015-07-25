@@ -490,6 +490,9 @@ namespace KerbalConstructionTime
 
         public static double GetBuildRate(KCT_BuildListVessel ship)
         {
+            if (ship.type == KCT_BuildListVessel.ListType.None)
+                ship.FindTypeFromLists();
+
             if (ship.type == KCT_BuildListVessel.ListType.VAB)
                 return GetBuildRate(ship.KSC.VABList.IndexOf(ship), ship.type, ship.KSC);
             else if (ship.type == KCT_BuildListVessel.ListType.SPH)

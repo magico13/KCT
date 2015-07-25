@@ -13,7 +13,7 @@ namespace KerbalConstructionTime
         public double progress, buildPoints;
         public String launchSite, flag, shipName;
         public ListType type;
-        public enum ListType { VAB, SPH, TechNode, Reconditioning, KSC };
+        public enum ListType { None, VAB, SPH, TechNode, Reconditioning, KSC };
         //public List<string> InventoryParts;
         public Dictionary<string, int> InventoryParts;
         public ConfigNode shipNode;
@@ -75,8 +75,10 @@ namespace KerbalConstructionTime
             flag = flagURL;
             if (s.shipFacility == EditorFacility.VAB)
                 type = ListType.VAB;
-            else
+            else if (s.shipFacility == EditorFacility.SPH)
                 type = ListType.SPH;
+            else
+                type = ListType.None;
             InventoryParts = new Dictionary<string, int>();
             id = Guid.NewGuid();
             cannotEarnScience = false;
@@ -92,8 +94,10 @@ namespace KerbalConstructionTime
             flag = flagURL;
             if (EditorFacility == (int)EditorFacilities.VAB)
                 type = ListType.VAB;
-            else
+            else if (EditorFacility == (int)EditorFacilities.SPH)
                 type = ListType.SPH;
+            else
+                type = ListType.None;
             InventoryParts = new Dictionary<string, int>();
             cannotEarnScience = false;
             cost = spentFunds;
@@ -422,6 +426,12 @@ namespace KerbalConstructionTime
                 }
             }
             return failedReasons;
+        }
+
+        public ListType FindTypeFromLists()
+        {
+            type = KSC.VABList.Contains(this) ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
+            return type;
         }
 
         private void UpdateRFTanks()

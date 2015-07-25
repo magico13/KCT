@@ -247,7 +247,8 @@ namespace KerbalConstructionTime
                 buildListWindowPosition.height = 1;
                 showBuildList = clicked;
                 showBLPlus = false;
-                listWindow = -1;
+                //listWindow = -1;
+                ResetBLWindow();
             }
             else if (HighLogic.LoadedScene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated)
             {
@@ -264,7 +265,8 @@ namespace KerbalConstructionTime
                 buildListWindowPosition.height = 1;
                 showBuildList = clicked;
                 showBLPlus = false;
-                listWindow = -1;
+                //listWindow = -1;
+                ResetBLWindow();
                // KCT_GameStates.showWindows[0] = showBuildList;
             }
 
@@ -290,6 +292,8 @@ namespace KerbalConstructionTime
             {
                 if (HighLogic.LoadedScene == GameScenes.SPACECENTER || (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated))
                 {
+                    if (!showBuildList)
+                        ResetBLWindow();
                     showBuildList = true;
                 }
             }
@@ -331,10 +335,11 @@ namespace KerbalConstructionTime
             showPresetSaver = false;
             clicked = false;
 
-            VABSelected = false;
-            SPHSelected = false;
-            TechSelected = false;
-            listWindow = -1;
+            //VABSelected = false;
+            //SPHSelected = false;
+            //TechSelected = false;
+            //listWindow = -1;
+            ResetBLWindow();
         }
 
         public static void DrawGUIs(int windowID)
