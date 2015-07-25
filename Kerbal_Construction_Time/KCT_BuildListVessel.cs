@@ -73,7 +73,7 @@ namespace KerbalConstructionTime
             buildPoints = bP;
             progress = 0;
             flag = flagURL;
-            if (launchSite == "LaunchPad")
+            if (s.shipFacility == EditorFacility.VAB)
                 type = ListType.VAB;
             else
                 type = ListType.SPH;
@@ -82,7 +82,7 @@ namespace KerbalConstructionTime
             cannotEarnScience = false;
         }
 
-        public KCT_BuildListVessel(String name, String ls, double bP, String flagURL, float spentFunds)
+        public KCT_BuildListVessel(String name, String ls, double bP, String flagURL, float spentFunds, int EditorFacility)
         {
             ship = new ShipConstruct();
             launchSite = ls;
@@ -90,7 +90,7 @@ namespace KerbalConstructionTime
             buildPoints = bP;
             progress = 0;
             flag = flagURL;
-            if (launchSite == "LaunchPad")
+            if (EditorFacility == (int)EditorFacilities.VAB)
                 type = ListType.VAB;
             else
                 type = ListType.SPH;
@@ -333,7 +333,7 @@ namespace KerbalConstructionTime
 
         public KCT_BuildListVessel NewCopy(bool RecalcTime)
         {
-            KCT_BuildListVessel ret = new KCT_BuildListVessel(this.shipName, this.launchSite, this.buildPoints, this.flag, this.cost);
+            KCT_BuildListVessel ret = new KCT_BuildListVessel(this.shipName, this.launchSite, this.buildPoints, this.flag, this.cost, (int)GetEditorFacility());
             ret.shipNode = this.shipNode.CreateCopy();
             ret.id = Guid.NewGuid();
             if (RecalcTime)
@@ -345,6 +345,11 @@ namespace KerbalConstructionTime
             ret.cost = this.cost;
             ret.emptyCost = this.emptyCost;
             return ret;
+        }
+
+        public EditorFacilities GetEditorFacility()
+        {
+            return (type == KCT_BuildListVessel.ListType.VAB ? EditorFacilities.VAB : EditorFacilities.SPH);
         }
 
         public ShipConstruct GetShip()
@@ -362,6 +367,11 @@ namespace KerbalConstructionTime
 
         public void Launch()
         {
+            if (type == ListType.VAB)
+                HighLogic.CurrentGame.editorFacility = EditorFacility.VAB;
+            else
+                HighLogic.CurrentGame.editorFacility = EditorFacility.SPH;
+            
             KCT_GameStates.flightSimulated = false;
             string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
             UpdateRFTanks();

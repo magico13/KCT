@@ -51,10 +51,12 @@ namespace KerbalConstructionTime
             launchPadID = "LaunchPad";
         }
 
-        public KCT_Recon_Rollout(Vessel vessel, RolloutReconType type, string id)
+        public KCT_Recon_Rollout(Vessel vessel, RolloutReconType type, string id, string launchSite)
         {
             RRType = type;
             associatedID = id;
+            launchPadID = launchSite;
+            KCTDebug.Log("New recon_rollout at launchsite: " + launchPadID);
             //BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
             //BP = KCT_MathParsing.GetStandardFormulaValue("Reconditioning", new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()},
             //    {"E", KCT_PresetManager.Instance.ActivePreset.timeSettings.ReconditioningEffect.ToString()}, {"X", KCT_PresetManager.Instance.ActivePreset.timeSettings.MaxReconditioning.ToString()}});
@@ -90,10 +92,14 @@ namespace KerbalConstructionTime
             }
         }
 
-        public KCT_Recon_Rollout(KCT_BuildListVessel vessel, RolloutReconType type, string id)
+        public KCT_Recon_Rollout(KCT_BuildListVessel vessel, RolloutReconType type, string id, string launchSite="")
         {
             RRType = type;
             associatedID = id;
+            if (launchSite != "") //For when we add custom launchpads
+                launchPadID = launchSite;
+            else
+                launchPadID = vessel.launchSite;
             //BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
             //BP = KCT_MathParsing.GetStandardFormulaValue("Reconditioning", new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()},
             //    {"E", KCT_PresetManager.Instance.ActivePreset.timeSettings.ReconditioningEffect.ToString()}, {"X", KCT_PresetManager.Instance.ActivePreset.timeSettings.MaxReconditioning.ToString()}});

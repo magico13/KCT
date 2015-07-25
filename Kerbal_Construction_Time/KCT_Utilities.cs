@@ -1359,6 +1359,7 @@ namespace KerbalConstructionTime
                 }
             }
             KCTDebug.Log("Added " + blv.shipName + " to " + type + " build list at KSC "+KCT_GameStates.ActiveKSC.KSCName+". Cost: "+blv.cost);
+            KCTDebug.Log("Launch site is " + blv.launchSite);
             //KCTDebug.Log("Cost Breakdown (total, parts, fuel): " + blv.totalCost + ", " + blv.dryCost + ", " + blv.fuelCost);
             var message = new ScreenMessage("[KCT] Added " + blv.shipName + " to " + type + " build list.", 4.0f, ScreenMessageStyle.UPPER_CENTER);
             ScreenMessages.PostScreenMessage(message, true);
@@ -1961,11 +1962,11 @@ namespace KerbalConstructionTime
             return false;
         }
 
-        public static bool ReconditioningActive(KCT_KSC KSC)
+        public static bool ReconditioningActive(KCT_KSC KSC, string launchSite = "LaunchPad")
         {
             if (KSC == null) KSC = KCT_GameStates.ActiveKSC;
 
-            KCT_Recon_Rollout recon = KSC.GetReconditioning();
+            KCT_Recon_Rollout recon = KSC.GetReconditioning(launchSite);
             return (recon != null);
         }
 

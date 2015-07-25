@@ -30,14 +30,14 @@ namespace KerbalConstructionTime
             //TechList = KCT_GameStates.ActiveKSC.TechList;
         }
 
-        public KCT_Recon_Rollout GetReconditioning()
+        public KCT_Recon_Rollout GetReconditioning(string launchSite = "LaunchPad")
         {
-            return Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
+            return Recon_Rollout.FirstOrDefault(r => r.launchPadID == launchSite && ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
         }
 
-        public KCT_Recon_Rollout GetReconRollout(KCT_Recon_Rollout.RolloutReconType type)
+        public KCT_Recon_Rollout GetReconRollout(KCT_Recon_Rollout.RolloutReconType type, string launchSite = "LaunchPad")
         {
-            return Recon_Rollout.FirstOrDefault(r => r.RRType == type);
+            return Recon_Rollout.FirstOrDefault(r => r.RRType == type && r.launchPadID == launchSite);
         }
 
         public void RecalculateBuildRates()

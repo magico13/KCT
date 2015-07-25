@@ -392,11 +392,13 @@ namespace KerbalConstructionTime
                     KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
                     KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd, TransactionReasons.None);
                 }
-                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes)
+                if (!KCT_GameStates.flightSimulated && KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes)
                 {
-                    KCT_Recon_Rollout reconditioning = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
-                    if (reconditioning == null)
-                        KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(ev.host, KCT_Recon_Rollout.RolloutReconType.Reconditioning, ev.host.id.ToString()));
+                    //KCT_Recon_Rollout reconditioning = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
+                    //if (reconditioning == null)
+                    if (HighLogic.CurrentGame.editorFacility == EditorFacility.VAB)
+                        KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(ev.host, KCT_Recon_Rollout.RolloutReconType.Reconditioning, ev.host.id.ToString(), FlightDriver.LaunchSiteName));
+                    
                 }
             }
         }

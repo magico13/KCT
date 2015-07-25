@@ -122,10 +122,12 @@ namespace KerbalConstructionTime
             bool cannotEarnScience;
             [Persistent]
             float cost = 0, mass = 0, kscDistance = 0;
+            [Persistent]
+            int EditorFacility = 0;
 
             public KCT_BuildListVessel ToBuildListVessel()
             {
-                KCT_BuildListVessel ret = new KCT_BuildListVessel(shipName, launchSite, buildTime, flag, cost);
+                KCT_BuildListVessel ret = new KCT_BuildListVessel(shipName, launchSite, buildTime, flag, cost, EditorFacility);
                 ret.progress = progress;
                 if (InventoryParts != null)
                 {
@@ -157,6 +159,7 @@ namespace KerbalConstructionTime
                 this.cost = blv.cost;
                 this.mass = blv.TotalMass;
                 this.kscDistance = blv.DistanceFromKSC;
+                this.EditorFacility = (int)blv.GetEditorFacility();
                 return this;
 
             }

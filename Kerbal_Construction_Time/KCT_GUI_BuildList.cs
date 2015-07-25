@@ -213,21 +213,24 @@ namespace KerbalConstructionTime
                 GUILayout.Label("Time Left:", GUILayout.Width(width2));
                 //GUILayout.Label("BP:", GUILayout.Width(width1 / 2 + 10));
                 GUILayout.EndHorizontal();
-                if (KCT_Utilities.ReconditioningActive(null))
+                //if (KCT_Utilities.ReconditioningActive(null))
+                foreach (KCT_Recon_Rollout reconditioning in KCT_GameStates.ActiveKSC.Recon_Rollout.FindAll(r => r.RRType == KCT_Recon_Rollout.RolloutReconType.Reconditioning))
                 {
                     GUILayout.BeginHorizontal();
-                    IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning();
-                    GUILayout.Label(item.GetItemName());
-                    GUILayout.Label(KCT_GameStates.ActiveKSC.GetReconditioning().ProgressPercent().ToString() + "%", GUILayout.Width(width1 / 2));
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(item.GetTimeLeft()), GUILayout.Width(width2));
-                    //GUILayout.Label(Math.Round(KCT_GameStates.ActiveKSC.GetReconditioning().BP, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width((butW + 4) * 2)))
+                    IKCTBuildItem item = reconditioning.AsBuildItem();
+                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width((butW + 4) * 3)))
                     {
                         KCT_GameStates.targetedItem = item;
                         KCT_GameStates.canWarp = true;
                         KCT_Utilities.RampUpWarp(item);
                         KCT_GameStates.warpInitiated = true;
                     }
+                    
+                    GUILayout.Label("Reconditioning: "+reconditioning.launchPadID);
+                    GUILayout.Label(reconditioning.ProgressPercent().ToString() + "%", GUILayout.Width(width1 / 2));
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(item.GetTimeLeft()), GUILayout.Width(width2));
+                    //GUILayout.Label(Math.Round(KCT_GameStates.ActiveKSC.GetReconditioning().BP, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
+                    
                     //GUILayout.Space((butW + 4) * 3);
                     GUILayout.EndHorizontal();
                 }
@@ -336,12 +339,13 @@ namespace KerbalConstructionTime
                     {
                         GUILayout.Label("No vessels in storage!\nThey will be stored here when they are complete.");
                     }
-                    KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout);
+                    
                     //KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollback);
                     bool rolloutEnabled = KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes && KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit > 0;
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];
+                        KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout, b.launchSite);
                         KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Rollback);
                         KCT_Recon_Rollout recovery = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Recovery);
                         GUIStyle textColor = new GUIStyle(GUI.skin.label);
@@ -387,7 +391,8 @@ namespace KerbalConstructionTime
                         GUILayout.Label(status+"   ", textColor, GUILayout.ExpandWidth(false));
                         if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null)
                         {
-                            string rolloutText = (i == MouseOnRolloutButton ? KCT_Utilities.GetColonFormattedTime(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()).AsBuildItem().GetTimeLeft()) : "Rollout");
+                            KCT_Recon_Rollout tmpRollout = new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString());
+                            string rolloutText = (i == MouseOnRolloutButton ? KCT_Utilities.GetColonFormattedTime(tmpRollout.AsBuildItem().GetTimeLeft()) : "Rollout");
                             if (GUILayout.Button(rolloutText, GUILayout.ExpandWidth(false)))
                             {
                                 List<string> facilityChecks = b.MeetsFacilityRequirements();
@@ -397,7 +402,7 @@ namespace KerbalConstructionTime
                                     {
                                         rollout.SwapRolloutType();
                                     }
-                                    KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()));
+                                    KCT_GameStates.ActiveKSC.Recon_Rollout.Add(tmpRollout);
                                 }
                                 else
                                 {
@@ -443,11 +448,11 @@ namespace KerbalConstructionTime
                                     {
                                         ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                                     }
-                                    else if (KCT_Utilities.ReconditioningActive(null))
+                                    else if (KCT_Utilities.ReconditioningActive(null, b.launchSite))
                                     {
                                         //can't launch now
                                         ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in "
-                                            + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning()).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                                            + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning(b.launchSite)).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
                                         ScreenMessages.PostScreenMessage(message, true);
                                     }
                                     else
@@ -455,7 +460,7 @@ namespace KerbalConstructionTime
                                         /*if (rollout != null)
                                             KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);*/
                                         KCT_GameStates.launchedVessel = b;
-                                        if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "LaunchPad").Count == 0)//  ShipConstruction.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
+                                        if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, b.launchSite).Count == 0)//  ShipConstruction.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
                                         {
                                             showBLPlus = false;
                                             // buildList.RemoveAt(i);
