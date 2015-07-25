@@ -11,7 +11,7 @@ namespace KerbalConstructionTime
     {
         public static bool showMainGUI, showEditorGUI, showSOIAlert, showLaunchAlert, showSimulationCompleteEditor, showSimulationWindow, showTimeRemaining, 
             showSimulationCompleteFlight, showBuildList, showClearLaunch, showShipRoster, showCrewSelect, showSettings, showSimConfig, showBodyChooser, showUpgradeWindow,
-            showBLPlus, showRename, showFirstRun, showSimLengthChooser;
+            showBLPlus, showRename, showFirstRun, showSimLengthChooser, showLaunchSiteSelector;
 
         public static bool clicked = false;
 
@@ -112,6 +112,9 @@ namespace KerbalConstructionTime
                     centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimLengthChooser, "Time Limit", HighLogic.Skin.window);
                 if (showPresetSaver)
                     presetNamingWindowPosition = GUILayout.Window(8952, presetNamingWindowPosition, KCT_GUI.DrawPresetSaveWindow, "Save as New Preset", HighLogic.Skin.window);
+                if (showLaunchSiteSelector)
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, DrawLaunchSiteChooser, "Select Site", HighLogic.Skin.window);
+
 
                 if (unlockEditor)
                 {
@@ -333,6 +336,7 @@ namespace KerbalConstructionTime
             showFirstRun = false;
             showSimLengthChooser = false;
             showPresetSaver = false;
+            showLaunchSiteSelector = false;
             clicked = false;
 
             //VABSelected = false;

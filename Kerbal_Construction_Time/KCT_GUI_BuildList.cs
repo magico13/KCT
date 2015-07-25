@@ -8,6 +8,7 @@ namespace KerbalConstructionTime
 {
     public static partial class KCT_GUI
     {
+        private static List<string> launchSites = new List<string>();
         private static int MouseOnRolloutButton = -1;
         private static int listWindow = -1;
         private static bool VABSelected, SPHSelected, TechSelected;
@@ -851,6 +852,13 @@ namespace KerbalConstructionTime
             //bLPlusPosition.height = bLPlusPosition.yMax - bLPlusPosition.yMin;
             KCT_BuildListVessel b = KCT_Utilities.FindBLVesselByID(IDSelected);
             GUILayout.BeginVertical();
+            if (GUILayout.Button("Select LaunchSite"))
+            {
+                string launchType = b.type == KCT_BuildListVessel.ListType.VAB ? "RocketPad" : "Runway";
+                launchSites = KCT_Utilities.GetAllOpenKKLaunchSites();
+                showBLPlus = false;
+                showLaunchSiteSelector = true;
+            }
             if (GUILayout.Button("Scrap"))
             {
                 InputLockManager.SetControlLock(ControlTypes.KSC_ALL, "KCTPopupLock");
@@ -951,6 +959,24 @@ namespace KerbalConstructionTime
             float width = bLPlusPosition.width;
             bLPlusPosition.x = buildListWindowPosition.x - width;
             bLPlusPosition.width = width;
+        }
+
+        public static void DrawLaunchSiteChooser(int windowID)
+        {
+            GUILayout.BeginVertical();
+            foreach (string launchsite in launchSites)
+            {
+                if (GUILayout.Button(launchsite))
+                {
+                    //Set the chosen vessel's launch site to the selected site
+                    KCT_BuildListVessel blv = KCT_Utilities.FindBLVesselByID(IDSelected);
+                    blv.launchSite = launchsite;
+                    showLaunchSiteSelector = false;
+                }
+            }
+
+            GUILayout.EndVertical();
+            CenterWindow(ref centralWindowPosition);
         }
     }
 }

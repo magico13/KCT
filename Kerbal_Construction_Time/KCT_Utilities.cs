@@ -1713,6 +1713,49 @@ namespace KerbalConstructionTime
             registerMethod.Invoke(RTSatellites, new object[] { FlightGlobals.ActiveVessel });*/
         }
 
+        public static List<string> GetAllOpenKKLaunchSites(string type = "RocketPad")
+        {
+            List<string> sites = new List<string>();
+            Type KKLaunchSiteManager = AssemblyLoader.loadedAssemblies
+                    .Select(a => a.assembly.GetExportedTypes())
+                    .SelectMany(t => t)
+                    .FirstOrDefault(t => t.FullName == "KerbalKonstructs.LaunchSites.LaunchSiteManager");
+            if (KKLaunchSiteManager == null)
+            {
+                if (type == "RocketPad")
+                    sites.Add("LaunchPad");
+                else
+                    sites.Add("Runway");
+                return sites;
+            }
+            KCTDebug.Log("Site manager is good.");
+
+            System.Object siteProperty = GetMemberInfoValue(KKLaunchSiteManager.GetProperty("AllLaunchSites", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy), null);
+            if (siteProperty == null)
+            {
+                KCTDebug.Log("siteProperty null");
+                if (type == "RocketPad")
+                    sites.Add("LaunchPad");
+                else
+                    sites.Add("Runway");
+                return sites;
+            }
+
+            foreach (var launchSite in siteProperty as System.Collections.IList)
+            {
+                //get each launch site available
+                string name = GetMemberInfoValue(launchSite.GetType().GetMember("name")[0], launchSite) as string;
+                string openState = GetMemberInfoValue(launchSite.GetType().GetMember("openclosestate")[0], launchSite) as string;
+                string category = GetMemberInfoValue(launchSite.GetType().GetMember("category")[0], launchSite) as string;
+
+                KCTDebug.Log("Launchsite info: Name: " + name + " Status: " + openState + " Category: " + category);
+                if (category == type && (!CurrentGameIsCareer() || openState == "Open"))
+                    sites.Add(name);
+            }
+            
+            return sites;
+        }
+
         private static bool? _KSCSwitcherInstalled = null;
         public static bool KSCSwitcherInstalled
         {
