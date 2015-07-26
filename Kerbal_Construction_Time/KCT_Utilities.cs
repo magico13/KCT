@@ -2187,9 +2187,9 @@ namespace KerbalConstructionTime
                 //Completed tech nodes
                 if (CurrentGameHasScience() && ResearchAndDevelopment.Instance != null)
                 {
-                    if (AssetBase.RnDTechTree != null)
+                   /* if (AssetBase.RnDTechTree != null)
                         total += AssetBase.RnDTechTree.GetTreeNodes().Count(n => n.tech.state == RDTech.State.Available);
-                    else
+                    else*/
                         total += ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length;
                 }
 

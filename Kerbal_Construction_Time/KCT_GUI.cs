@@ -2457,7 +2457,7 @@ namespace KerbalConstructionTime
                 ShowSettings();
                 //showSettings = true;
             }
-            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled && KCT_Utilities.TotalUpgradePoints() > 0)
+            if (!PrimarilyDisabled && KCT_Utilities.TotalUpgradePoints() > 0)
             {
                 if (GUILayout.Button("2 - Spend Upgrades"))
                 {

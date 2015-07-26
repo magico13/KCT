@@ -280,18 +280,18 @@ namespace KerbalConstructionTime
                 {
                     foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                     {
-                        foreach (String partName in tech.UnlockedParts)
+                       /* foreach (String partName in tech.UnlockedParts)
                         {
                             AvailablePart expt = KCT_Utilities.GetAvailablePartByName(partName);
                             if (expt != null && ResearchAndDevelopment.IsExperimentalPart(expt))
                                 if (!KCT_GameStates.ExperimentalParts.Contains(expt))
                                     KCT_GameStates.ExperimentalParts.Add(expt);
-                        }
+                        }*/
                         //ResearchAndDevelopment.AddExperimentalPart()
                         tech.DisableTech();
                     }
-                    foreach (AvailablePart expt in KCT_GameStates.ExperimentalParts)
-                        ResearchAndDevelopment.AddExperimentalPart(expt);
+                /*    foreach (AvailablePart expt in KCT_GameStates.ExperimentalParts)
+                        ResearchAndDevelopment.AddExperimentalPart(expt);*/
                     //Need to somehow update the R&D instance
                     if (save)
                         GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
