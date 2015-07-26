@@ -353,7 +353,12 @@ namespace KerbalConstructionTime
 
         public EditorFacilities GetEditorFacility()
         {
-            return (type == KCT_BuildListVessel.ListType.VAB ? EditorFacilities.VAB : EditorFacilities.SPH);
+            EditorFacilities ret = EditorFacilities.NONE;
+            if (type == ListType.VAB)
+                ret = EditorFacilities.VAB;
+            else if (type == ListType.SPH)
+                ret = EditorFacilities.SPH;
+            return ret;
         }
 
         public ShipConstruct GetShip()

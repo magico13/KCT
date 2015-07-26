@@ -855,7 +855,7 @@ namespace KerbalConstructionTime
             if (GUILayout.Button("Select LaunchSite"))
             {
                 string launchType = b.type == KCT_BuildListVessel.ListType.VAB ? "RocketPad" : "Runway";
-                launchSites = KCT_Utilities.GetAllOpenKKLaunchSites();
+                launchSites = KCT_Utilities.GetAllOpenKKLaunchSites(launchType);
                 showBLPlus = false;
                 showLaunchSiteSelector = true;
             }
