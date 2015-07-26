@@ -430,6 +430,11 @@ namespace KerbalConstructionTime
 
         public ListType FindTypeFromLists()
         {
+            if (KSC == null  || KSC.VABList == null || KSC.SPHList == null)
+            {
+                type = ListType.None;
+                return type;
+            }
             type = KSC.VABList.Contains(this) ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
             return type;
         }
