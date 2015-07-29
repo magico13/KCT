@@ -54,9 +54,8 @@ namespace KerbalConstructionTime
         }
         public bool isFinished { get { return progress >= buildPoints; } }
         public KCT_KSC KSC { get { 
-            return KCT_GameStates.KSCs.FirstOrDefault(k => ( type == ListType.VAB ? (
-                k.VABList.FirstOrDefault(s => s.id == this.id) != null || k.VABWarehouse.FirstOrDefault(s => s.id == this.id) != null)
-            : (k.SPHList.FirstOrDefault(s => s.id == this.id) != null || k.SPHWarehouse.FirstOrDefault(s => s.id == this.id) != null))); 
+            return KCT_GameStates.KSCs.FirstOrDefault(k => ((k.VABList.FirstOrDefault(s => s.id == this.id) != null || k.VABWarehouse.FirstOrDefault(s => s.id == this.id) != null)
+            || (k.SPHList.FirstOrDefault(s => s.id == this.id) != null || k.SPHWarehouse.FirstOrDefault(s => s.id == this.id) != null))); 
         } }
 
         public KCT_BuildListVessel(ShipConstruct s, String ls, double bP, String flagURL)
@@ -86,7 +85,7 @@ namespace KerbalConstructionTime
 
         public KCT_BuildListVessel(String name, String ls, double bP, String flagURL, float spentFunds, int EditorFacility)
         {
-            ship = new ShipConstruct();
+            //ship = new ShipConstruct();
             launchSite = ls;
             shipName = name;
             buildPoints = bP;
@@ -354,11 +353,37 @@ namespace KerbalConstructionTime
         public EditorFacilities GetEditorFacility()
         {
             EditorFacilities ret = EditorFacilities.NONE;
+            if (type == ListType.None)
+            {
+                BruteForceLocateVessel();
+            }
+
             if (type == ListType.VAB)
                 ret = EditorFacilities.VAB;
             else if (type == ListType.SPH)
                 ret = EditorFacilities.SPH;
+
             return ret;
+        }
+
+        public void BruteForceLocateVessel()
+        {
+            bool found = false;
+            found = KSC.VABList.Exists(b => b.id == this.id);
+            if (found) { type = ListType.VAB; return; }
+            found = KSC.VABWarehouse.Exists(b => b.id == this.id);
+            if (found) { type = ListType.VAB; return; }
+
+            found = KSC.SPHList.Exists(b => b.id == this.id);
+            if (found) { type = ListType.SPH; return; }
+            found = KSC.SPHWarehouse.Exists(b => b.id == this.id);
+            if (found) { type = ListType.SPH; return; }
+
+            if (!found)
+            {
+                KCTDebug.Log("Still can't find ship even after checking every list...");
+                //KCTDebug.Log("Guess we'll do it for every single KSC then!");
+            }
         }
 
         public ShipConstruct GetShip()
@@ -440,7 +465,7 @@ namespace KerbalConstructionTime
                 type = ListType.None;
                 return type;
             }
-            type = KSC.VABList.Contains(this) ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
+            BruteForceLocateVessel();
             return type;
         }
 

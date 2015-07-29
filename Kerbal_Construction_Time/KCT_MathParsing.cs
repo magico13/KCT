@@ -274,13 +274,15 @@ namespace KerbalConstructionTime
 
             int EditorLevel = 0, LaunchSiteLvl = 0;
             int isVABVessel = 0;
+            if (vessel.type == KCT_BuildListVessel.ListType.None)
+                vessel.FindTypeFromLists();
             if (vessel.type == KCT_BuildListVessel.ListType.VAB)
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
                 LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
                 isVABVessel = 1;
             }
-            else
+            else if (vessel.type == KCT_BuildListVessel.ListType.SPH)
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.SpaceplaneHangar);
                 LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.Runway);
