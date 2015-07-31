@@ -270,7 +270,7 @@ namespace KerbalConstructionTime
                 showBLPlus = false;
                 //listWindow = -1;
                 ResetBLWindow();
-               // KCT_GameStates.showWindows[0] = showBuildList;
+                KCT_GameStates.showWindows[0] = showBuildList;
             }
 
             if (!KCT_GameStates.settings.PreferBlizzyToolbar)
@@ -1408,11 +1408,12 @@ namespace KerbalConstructionTime
             CenterWindow(ref simulationWindowPosition);
         }
 
-        public static void ResetBLWindow()
+        public static void ResetBLWindow(bool deselectList = true)
         {
             buildListWindowPosition.height = 1;
             buildListWindowPosition.width = 400;
-            SelectList("None");
+            if (deselectList)
+                SelectList("None");
             
           //  listWindow = -1;
         }
@@ -2352,7 +2353,20 @@ namespace KerbalConstructionTime
                 //days *= KCT_GameStates.timeSettings.NodeModifier;
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Development");
-                GUILayout.Label(sciPerDay + " sci/day");
+                bool usingPerYear = false;
+                if (sciPerDay > 0.001)
+                {
+                    GUILayout.Label(sciPerDay.ToString("N2") + " sci/day");
+                }
+                else
+                {
+                    //Well, looks like we need sci/year instead
+                    int daysPerYear = 365;
+                    if (GameSettings.KERBIN_TIME)
+                        daysPerYear = 426;
+                    GUILayout.Label((sciPerDay*daysPerYear).ToString("N2") + " sci/year");
+                    usingPerYear = true;
+                }
                 if (upNodeRate != nodeRate && upgrades - spentPoints > 0)
                 {
                     bool everyKSCCanUpgrade = true;
@@ -2364,18 +2378,29 @@ namespace KerbalConstructionTime
                             break;
                         }
                     }
-                    if (everyKSCCanUpgrade && GUILayout.Button(86400*upNodeRate/days + " sci/day", GUILayout.ExpandWidth(false)))
+                    if (everyKSCCanUpgrade)
                     {
-                        ++KCT_GameStates.TechUpgradesTotal;
-                        foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
-                            ksc.RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
-
-                        nodeRate = -13;
-                        upNodeRate = -13;
-
-                        foreach (KCT_TechItem tech in KCT_GameStates.TechList)
+                        string buttonText = (86400 * upNodeRate / days).ToString("N2") + " sci/day";
+                        if (usingPerYear)
                         {
-                            tech.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(tech));
+                            int daysPerYear = 365;
+                            if (GameSettings.KERBIN_TIME)
+                                daysPerYear = 426;
+                            buttonText = (daysPerYear * 86400 * upNodeRate / days).ToString("N2") + " sci/year";
+                        }
+                        if (GUILayout.Button(buttonText, GUILayout.ExpandWidth(false)))
+                        {
+                            ++KCT_GameStates.TechUpgradesTotal;
+                            foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                                ksc.RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
+
+                            nodeRate = -13;
+                            upNodeRate = -13;
+
+                            foreach (KCT_TechItem tech in KCT_GameStates.TechList)
+                            {
+                                tech.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(tech));
+                            }
                         }
                     }
                 }

@@ -765,6 +765,15 @@ namespace KerbalConstructionTime
                     KCT_TechItem t = techList[i];
                     GUILayout.BeginHorizontal();
 
+                    if (GUILayout.Button("X", GUILayout.Width(butW)))
+                    {
+                        forceRecheck = true;
+                        CancelTechNode(i);
+                        i--;
+                        GUILayout.EndHorizontal();
+                        continue;
+                    }
+
                     if (i > 0 && t.BuildRate != techList[0].BuildRate)
                     {
                         if (i > 0 && GUILayout.Button("^", GUILayout.Width(butW)))
@@ -840,6 +849,17 @@ namespace KerbalConstructionTime
             if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null && KCT_GameStates.settings.PreferBlizzyToolbar)
                 if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                     GUI.DragWindow();
+        }
+
+        public static void CancelTechNode(int index)
+        {
+            KCT_TechItem node = KCT_GameStates.TechList[index];
+            if (KCT_Utilities.CurrentGameHasScience())
+            {
+                ResearchAndDevelopment.Instance.AddScience(node.scienceCost, TransactionReasons.None); //Should maybe do tech research as the reason
+            }
+            node.DisableTech();
+            KCT_GameStates.TechList.RemoveAt(index);
         }
 
         private static Guid IDSelected = new Guid();

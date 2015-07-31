@@ -19,6 +19,20 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.2.0.0 (7/30/15)
+WARNING: This update is semi-save breaking. If you're using custom configs you MUST update them to the new Presets system.
+ - Presets! Easily create, share, and switch between different settings. Mod authors can include Presets in their releases (see RP-0), players can save their most commonly used configurations, and config modders can create any number of new gameplay styles and easily share them.
+ - Numerous new settings and formulas.
+ - Clear out the part inventory in exchange for upgrade points.
+ - Kerbal Konstructs support. Different launch sites now have their own rollout and reconditioning queues.
+ - Rollout times are displayed when hovering over the rollout button.
+ - Simulations can now be performed without recovering craft at the launch site and even if the vessel is too big for the launch site.
+ - You can now build vessels that are too big to launch, but can't launch them until you upgrade the facilities.
+ - Kinda crappy half-finished attempt to disable RemoteTech during simulations. Doesn't work properly if there's an antenna on the craft. I'll get this fixed for a hotfix later on.
+ - Included several "stock" Presets: default, 7 days (every launch requires 7 days of down time), Up Free (doesn't use the KCT upgrade system), and simOnly (disables build times and just uses simulations)
+ - Included Rodhern's Low-Tech Preset, which starts out easier than Default. http://forum.kerbalspaceprogram.com/threads/69310-Kerbal-Construction-Time-StageRecovery-Dev-Thread?p=2086346&viewfull=1#post2086346
+ - Removed built in update checker. With KSP-AVC, CKAN, Kerbal Stuff and others, it isn't needed anymore.
+ 
 v1.1.8.0 (6/18/15)
  - Fixed several GUI issues
  - Main GUI now uses buttons (actually Toggles) rather than a Toolbar, meaning warping won't close it now

@@ -678,7 +678,8 @@ namespace KerbalConstructionTime
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
                     if (ToolbarManager.ToolbarAvailable && KCT_GameStates.settings.PreferBlizzyToolbar)
-                        KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
+                        if (KCT_GameStates.showWindows[0])
+                            KCT_GUI.ClickOn();
                     else
                     {
                         if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
