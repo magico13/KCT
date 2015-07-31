@@ -125,13 +125,28 @@ namespace KerbalConstructionTime
         internal KerbalConstructionTime()
         {
             instance = this;
+
+            KCT_GameStates.settings.Load(); //Load the settings file, if it exists
+
+            string SavedFile = KSPUtil.ApplicationRootPath + "/saves/" + HighLogic.SaveFolder + "/KCT_Settings.cfg";
+            if (!System.IO.File.Exists(SavedFile))
+            {
+                KCT_GameStates.firstStart = true;
+            }
+
+            if (KCT_PresetManager.Instance == null)
+            {
+                KCT_PresetManager.Instance = new KCT_PresetManager();
+            }
+            KCT_PresetManager.Instance.SetActiveFromSaveData();
+
             if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null && KCT_GameStates.settings.PreferBlizzyToolbar)
             {
                 KCTDebug.Log("Adding Toolbar Button");
                 KCT_GameStates.kctToolbarButton = ToolbarManager.Instance.add("Kerbal_Construction_Time", "MainButton");
                 if (KCT_GameStates.kctToolbarButton != null)
                 {
-                    if (!KCT_GameStates.settings.enabledForSave) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
+                    if (KCT_PresetManager.PresetLoaded() && !KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(GameScenes.SPACECENTER);
                     else KCT_GameStates.kctToolbarButton.Visibility = new GameScenesVisibility(new GameScenes[] { GameScenes.SPACECENTER, GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.EDITOR });
                     KCT_GameStates.kctToolbarButton.TexturePath = KCT_Utilities.GetButtonTexture();
                     KCT_GameStates.kctToolbarButton.ToolTip = "Kerbal Construction Time";
@@ -176,13 +191,14 @@ namespace KerbalConstructionTime
 
         public void Start()
         {
-            KCT_GameStates.settings.Load(); //Load the settings file, if it exists
             KCT_GameStates.settings.Save(); //Save the settings file, with defaults if it doesn't exist
-            KCT_GameStates.timeSettings.Load(); //Load the time settings
+            KCT_PresetManager.Instance.SaveActiveToSaveData();
+
+           /* KCT_GameStates.timeSettings.Load(); //Load the time settings
             KCT_GameStates.timeSettings.Save(); //Save the time settings
             UpdateOldFormulaCFG(); //Update the formula cfg file to the new format so things aren't broken
             KCT_GameStates.formulaSettings.Load();
-            KCT_GameStates.formulaSettings.Save();
+            KCT_GameStates.formulaSettings.Save();*/
 
             // Ghetto event queue
             if (HighLogic.LoadedScene == GameScenes.EDITOR)
@@ -236,7 +252,7 @@ namespace KerbalConstructionTime
                 KCT_Events.instance.addEvents();
             }
 
-            if (!KCT_GameStates.settings.enabledForSave)
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
             {
                 if (InputLockManager.GetControlLock("KCTKSCLock") == ControlTypes.KSC_FACILITIES)
                     InputLockManager.RemoveControlLock("KCTKSCLock");
@@ -285,10 +301,6 @@ namespace KerbalConstructionTime
                     KCT_Utilities.LoadSimulationSave();
                 }*/
                 KCT_GUI.hideAll();
-                if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
-                {
-                    KCT_GameStates.TotalUpgradePoints = KCT_GameStates.settings.SandboxUpgrades;
-                }
             }
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
@@ -373,7 +385,7 @@ namespace KerbalConstructionTime
         private static bool updateChecked = false;
         public void FixedUpdate()
         {
-            if (!KCT_GameStates.settings.enabledForSave)
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;
 
             if (!KCT_GameStates.erroredDuringOnLoad.AlertFired && KCT_GameStates.erroredDuringOnLoad.HasErrored())
@@ -543,14 +555,14 @@ namespace KerbalConstructionTime
           //  KCTDebug.Log(ScenarioUpgradeableFacilities.protoUpgradeables.Values.ElementAt(0).facilityRefs[0].name);
 
 
-            if (!updateChecked)
+           /* if (!updateChecked)
             {
                 if (KCT_GameStates.settings.CheckForUpdates && !KCT_GameStates.firstStart) //Check for updates
                     KCT_UpdateChecker.CheckForUpdate(false, KCT_GameStates.settings.VersionSpecific);
                 updateChecked = true;
-            }
+            }*/
 
-            if (!KCT_GameStates.settings.enabledForSave)
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;
 
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER };
@@ -663,17 +675,25 @@ namespace KerbalConstructionTime
             }
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
-                if (KCT_Utilities.CurrentGameHasScience() && KCT_GameStates.TotalUpgradePoints == 0)
-                {
-                    ConfigNode CN = new ConfigNode();
-                    ResearchAndDevelopment.Instance.snapshot.Save(CN);
-                    ConfigNode[] techNodes = CN.GetNodes("Tech");
-                    KCTDebug.Log("technodes length: " + techNodes.Length);
-                    KCT_GameStates.TotalUpgradePoints = techNodes.Length + 14;
-                }
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
-                    KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
+                    if (ToolbarManager.ToolbarAvailable && KCT_GameStates.settings.PreferBlizzyToolbar)
+                        if (KCT_GameStates.showWindows[0])
+                            KCT_GUI.ClickOn();
+                    else
+                    {
+                        if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
+                        {
+                            //KCT_Events.instance.KCTButtonStock.SetTrue(true);
+                            //KCT_GUI.clicked = true;
+                            if (KCT_GameStates.showWindows[0])
+                                KCT_GUI.ClickOn();
+                        }
+                      /*  else
+                        {
+                            KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[0];
+                        }*/
+                    }
                     KCT_GUI.ResetBLWindow();
                 }
                 else

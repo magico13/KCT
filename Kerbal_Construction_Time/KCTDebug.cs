@@ -65,6 +65,10 @@ namespace KerbalConstructionTime
                 Debug.LogError("[KCT] ERROR! An error while KCT loading data occurred. Things will be seriously broken!");
                 //Display error to user
                 PopupDialog.SpawnPopupDialog("Error Loading KCT Data", "ERROR! An error occurred while loading KCT data. Things will be seriously broken! Please report this error to the KCT forum thread and attach the log file. The game will be UNPLAYABLE in this state!", "Understood", false, HighLogic.Skin);
+
+                //Enable debug messages for future reports
+                KCT_GameStates.settings.Debug = true;
+                KCT_GameStates.settings.Save();
             }
         }
     }

@@ -20,8 +20,8 @@ namespace KerbalConstructionTime
         public static bool flightSimulated = false;
         public static String simulationReason;
         public static KCT_Settings settings = new KCT_Settings();
-        public static KCT_TimeSettings timeSettings = new KCT_TimeSettings();
-        public static KCT_FormulaSettings formulaSettings = new KCT_FormulaSettings();
+       // public static KCT_TimeSettings timeSettings = new KCT_TimeSettings();
+      //  public static KCT_FormulaSettings formulaSettings = new KCT_FormulaSettings();
         //public static ShipBackup recoveryRequestVessel;
 
         public static KCT_KSC ActiveKSC = null;
@@ -41,18 +41,22 @@ namespace KerbalConstructionTime
         public static List<KCT_TechItem> TechList = new List<KCT_TechItem>();
 
         public static List<int> PurchasedUpgrades = new List<int>() { 0, 0 };
-        public static int TotalUpgradePoints = 0;
+        public static int MiscellaneousTempUpgrades = 0;
+        public static float InventorySaleUpgrades = 0, InventorySalesFigures = 0;
+        public static int UpgradesResetCounter = 0;
+        //public static int TotalUpgradePoints = 0;
         public static KCT_BuildListVessel launchedVessel, editedVessel, recoveredVessel;
         //public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
         public static List<CrewedPart> launchedCrew = new List<CrewedPart>();
         public static IButton kctToolbarButton;
         public static bool EditorShipEditingMode = false, buildSimulatedVessel = false;
-        public static bool firstStart = true;
+        public static bool firstStart = false;
         public static IKCTBuildItem targetedItem = null;
-        public static double EditorBuildTime = 0;
+        public static double EditorBuildTime = 0, EditorRolloutCosts = 0;
         public static Dictionary<string, int> EditedVesselParts = new Dictionary<string, int>();
         public static bool LaunchFromTS = false;
         public static bool LoadingSimulationSave = false;
+        public static List<AvailablePart> ExperimentalParts = new List<AvailablePart>();
 
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
         public static string KACAlarmId = "";
@@ -66,8 +70,10 @@ namespace KerbalConstructionTime
         public static double simOrbitAltitude = 0, simInclination = 0;
         public static List<String> BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
         public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;
+        public static int EditorSimulationCount = 0;
 
         public static bool TestFlightPartFailures = true;
+        public static bool RemoteTechEnabled = true;
 
         public static KCT_OnLoadError erroredDuringOnLoad = new KCT_OnLoadError();
 
@@ -80,10 +86,11 @@ namespace KerbalConstructionTime
             flightSimulated = false;
             simulationInitialized = false;
             vesselDict = new Dictionary<string, string>();
+            BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
             simulationBody = KCT_Utilities.GetBodyByName(BodiesVisited[0]);
             simulateInOrbit = false;
-            BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
-            TotalUpgradePoints = 0;
+            firstStart = false;
+            
           /*  VABUpgrades = new List<int>() {0};
             SPHUpgrades = new List<int>() {0};
             RDUpgrades = new List<int>() {0, 0};*/
@@ -96,6 +103,13 @@ namespace KerbalConstructionTime
             KCT_GUI.upNodeRate = -13;
             KCT_GUI.researchRate = -13;
             KCT_GUI.upResearchRate = -13;
+
+            InventorySaleUpgrades = 0;
+            InventorySalesFigures = 0;
+
+            ExperimentalParts.Clear();
+            MiscellaneousTempUpgrades = 0;
+
             //ActiveKSC = new KCT_KSC("Stock");
             //KSCs = new List<KCT_KSC>() {ActiveKSC};
 

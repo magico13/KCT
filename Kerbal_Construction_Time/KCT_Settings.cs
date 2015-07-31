@@ -9,40 +9,40 @@ namespace KerbalConstructionTime
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Config.txt";
         //[Persistent] public double BuildTimeModifier;
-        [Persistent] public bool SandboxEnabled;
+        //[Persistent] public bool SandboxEnabled;
         [Persistent] public int MaxTimeWarp;
-        [Persistent] public int SandboxUpgrades;
+        //[Persistent] public int SandboxUpgrades;
         [Persistent] public bool ForceStopWarp;
-        [Persistent] public bool DisableRecoveryMessages;
+        //[Persistent] public bool DisableRecoveryMessages;
         [Persistent] public bool DisableAllMessages;
-        [Persistent] public bool CheckForUpdates, VersionSpecific;
-        [Persistent] public bool AutoKACAlarams;
-        [Persistent] public float RecoveryModifierDefault;
+        //[Persistent] public bool CheckForUpdates, VersionSpecific;
+        [Persistent] public bool AutoKACAlarms;
+        /*[Persistent] public float RecoveryModifierDefault;
         [Persistent] public bool NoCostSimulationsDefault;
         [Persistent] public bool InstantTechUnlockDefault;
         [Persistent] public bool InstantKSCUpgradeDefault;
         [Persistent] public bool DisableBuildTimeDefault;
         [Persistent] public bool EnableAllBodiesDefault;
-        [Persistent] public bool ReconditioningDefault;
+        [Persistent] public bool ReconditioningDefault;*/
         [Persistent] public bool Debug;
         [Persistent] public bool OverrideLaunchButton;
         [Persistent] public bool PreferBlizzyToolbar;
-        [Persistent] public bool AllowParachuteRecovery;
+        //[Persistent] public bool AllowParachuteRecovery;
         [Persistent] public bool NoSimGUI;
-        [Persistent] public bool DisableSpecialSurprise;
+        //[Persistent] public bool DisableSpecialSurprise;
 
         [Persistent] public bool RandomizeCrew;
         [Persistent] public bool AutoHireCrew;
 
         //Game specific settings
-        public bool enabledForSave = true;
-        public float RecoveryModifier;
+        //public bool enabledForSave = true;
+        /*public float RecoveryModifier;
         public bool NoCostSimulations;
         public bool InstantTechUnlock;
         public bool InstantKSCUpgrades;
         public bool DisableBuildTime;
         public bool EnableAllBodies;
-        public bool Reconditioning;
+        public bool Reconditioning;*/
         
         //[Persistent] public bool AutoRevertOnCrash;
         //[Persistent] public bool Use6HourDays;
@@ -51,32 +51,32 @@ namespace KerbalConstructionTime
         public KCT_Settings() 
         {
            // BuildTimeModifier = 1.0;
-            SandboxEnabled = true;
+           // SandboxEnabled = true;
             MaxTimeWarp = TimeWarp.fetch.warpRates.Count() - 1;
             
             ForceStopWarp = false;
-            SandboxUpgrades = 45;
-            DisableRecoveryMessages = false;
+            //SandboxUpgrades = 45;
+            //DisableRecoveryMessages = false;
             DisableAllMessages = false;
-            CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
-            VersionSpecific = false;
+           // CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
+            //VersionSpecific = false;
             Debug = false;
             OverrideLaunchButton = true;
-            RecoveryModifier = 0.75F;
-            Reconditioning = true;
-            AutoKACAlarams = true;
+          //  RecoveryModifier = 0.75F;
+          //  Reconditioning = true;
+            AutoKACAlarms = true;
             PreferBlizzyToolbar = false;
-            AllowParachuteRecovery = true;
+          //  AllowParachuteRecovery = true;
             NoSimGUI = false;
-            DisableSpecialSurprise = false;
+           // DisableSpecialSurprise = false;
 
-            RecoveryModifierDefault = 0.75f;
+          /*  RecoveryModifierDefault = 0.75f;
             NoCostSimulationsDefault = false;
             InstantTechUnlockDefault = false;
             InstantKSCUpgradeDefault = false;
             DisableBuildTimeDefault = false;
             EnableAllBodiesDefault = false;
-            ReconditioningDefault = true;
+            ReconditioningDefault = true;*/
 
            // AutoRevertOnCrash = true;
             //Use6HourDays = GameSettings.KERBIN_TIME;
@@ -89,7 +89,7 @@ namespace KerbalConstructionTime
                 ConfigNode cnToLoad = ConfigNode.Load(filePath);
                 ConfigNode.LoadObjectFromConfig(this, cnToLoad);
 
-                if (RecoveryModifierDefault < 0) RecoveryModifierDefault = 0;
+             /*   if (RecoveryModifierDefault < 0) RecoveryModifierDefault = 0;
                 if (RecoveryModifierDefault > 1) RecoveryModifierDefault = 1;
 
                 if (KCT_GameStates.firstStart)
@@ -101,7 +101,7 @@ namespace KerbalConstructionTime
                     DisableBuildTime = DisableBuildTimeDefault;
                     EnableAllBodies = EnableAllBodiesDefault;
                     Reconditioning = ReconditioningDefault;
-                }
+                }*/
 
                 KCT_GUI.autoHire = AutoHireCrew;
                 KCT_GUI.randomCrew = RandomizeCrew;
@@ -115,7 +115,7 @@ namespace KerbalConstructionTime
         }
     }
 
-    public class KCT_TimeSettings
+    /*public class KCT_TimeSettings
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_TimeSettings.txt";
         [Persistent] public double OverallMultiplier, BuildEffect, InventoryEffect, ReconditioningEffect, MaxReconditioning, RolloutReconSplit, NodeModifier;
@@ -151,9 +151,9 @@ namespace KerbalConstructionTime
             ConfigNode cnTemp = ConfigNode.CreateConfigFromObject(this, new ConfigNode());
             cnTemp.Save(filePath);
         }
-    }
+    }*/
 
-    public class KCT_FormulaSettings
+    /*public class KCT_FormulaSettings
     {
         protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Formulas.cfg";
         [Persistent] public string NodeFormula, UpgradeFundsFormula, UpgradeScienceFormula, ResearchFormula, EffectivePartFormula, ProceduralPartFormula, BPFormula,
@@ -194,7 +194,7 @@ namespace KerbalConstructionTime
             toSave.AddNode(cnTemp);
             toSave.Save(filePath);
         }
-    }
+    }*/
 }
 /*
 Copyright (C) 2014  Michael Marvin, Zachary Eck

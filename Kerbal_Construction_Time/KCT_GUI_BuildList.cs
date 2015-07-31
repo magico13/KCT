@@ -8,6 +8,8 @@ namespace KerbalConstructionTime
 {
     public static partial class KCT_GUI
     {
+        private static List<string> launchSites = new List<string>();
+        private static int MouseOnRolloutButton = -1;
         private static int listWindow = -1;
         private static bool VABSelected, SPHSelected, TechSelected;
         private static void SelectList(string list)
@@ -72,6 +74,8 @@ namespace KerbalConstructionTime
             if (buildListWindowPosition.xMax > Screen.width)
                 buildListWindowPosition.x = Screen.width - buildListWindowPosition.width;
 
+            //if (Input.touchCount == 0) MouseOnRolloutButton = false;
+
             //GUI.skin = HighLogic.Skin;
             GUIStyle redText = new GUIStyle(GUI.skin.label);
             redText.normal.textColor = Color.red;
@@ -128,7 +132,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.lastWarpRate = 0;
                 }
 
-                if (KCT_GameStates.settings.AutoKACAlarams && KACWrapper.APIReady && buildItem.GetTimeLeft() > 30) //don't check if less than 30 seconds to completion. Might fix errors people are seeing
+                if (KCT_GameStates.settings.AutoKACAlarms && KACWrapper.APIReady && buildItem.GetTimeLeft() > 30) //don't check if less than 30 seconds to completion. Might fix errors people are seeing
                 {
                     double UT = Planetarium.GetUniversalTime();
                     if (!KCT_Utilities.ApproximatelyEqual(KCT_GameStates.KACAlarmUT - UT, buildItem.GetTimeLeft()))
@@ -210,21 +214,24 @@ namespace KerbalConstructionTime
                 GUILayout.Label("Time Left:", GUILayout.Width(width2));
                 //GUILayout.Label("BP:", GUILayout.Width(width1 / 2 + 10));
                 GUILayout.EndHorizontal();
-                if (KCT_Utilities.ReconditioningActive(null))
+                //if (KCT_Utilities.ReconditioningActive(null))
+                foreach (KCT_Recon_Rollout reconditioning in KCT_GameStates.ActiveKSC.Recon_Rollout.FindAll(r => r.RRType == KCT_Recon_Rollout.RolloutReconType.Reconditioning))
                 {
                     GUILayout.BeginHorizontal();
-                    IKCTBuildItem item = (IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning();
-                    GUILayout.Label(item.GetItemName());
-                    GUILayout.Label(KCT_GameStates.ActiveKSC.GetReconditioning().ProgressPercent().ToString() + "%", GUILayout.Width(width1 / 2));
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(item.GetTimeLeft()), GUILayout.Width(width2));
-                    //GUILayout.Label(Math.Round(KCT_GameStates.ActiveKSC.GetReconditioning().BP, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width((butW + 4) * 2)))
+                    IKCTBuildItem item = reconditioning.AsBuildItem();
+                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width((butW + 4) * 3)))
                     {
                         KCT_GameStates.targetedItem = item;
                         KCT_GameStates.canWarp = true;
                         KCT_Utilities.RampUpWarp(item);
                         KCT_GameStates.warpInitiated = true;
                     }
+                    
+                    GUILayout.Label("Reconditioning: "+reconditioning.launchPadID);
+                    GUILayout.Label(reconditioning.ProgressPercent().ToString() + "%", GUILayout.Width(width1 / 2));
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(item.GetTimeLeft()), GUILayout.Width(width2));
+                    //GUILayout.Label(Math.Round(KCT_GameStates.ActiveKSC.GetReconditioning().BP, 2).ToString(), GUILayout.Width(width1 / 2 + 10));
+                    
                     //GUILayout.Space((butW + 4) * 3);
                     GUILayout.EndHorizontal();
                 }
@@ -333,12 +340,13 @@ namespace KerbalConstructionTime
                     {
                         GUILayout.Label("No vessels in storage!\nThey will be stored here when they are complete.");
                     }
-                    KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout);
+                    
                     //KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollback);
-                    bool rolloutEnabled = KCT_GameStates.settings.Reconditioning && KCT_GameStates.timeSettings.RolloutReconSplit > 0;
+                    bool rolloutEnabled = KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes && KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit > 0;
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];
+                        KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout, b.launchSite);
                         KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Rollback);
                         KCT_Recon_Rollout recovery = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Recovery);
                         GUIStyle textColor = new GUIStyle(GUI.skin.label);
@@ -382,13 +390,31 @@ namespace KerbalConstructionTime
 
                         GUILayout.Label(b.shipName, textColor);
                         GUILayout.Label(status+"   ", textColor, GUILayout.ExpandWidth(false));
-                        if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null && GUILayout.Button("Rollout", GUILayout.ExpandWidth(false)))
+                        if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null)
                         {
-                            if (rollout != null)
+                            KCT_Recon_Rollout tmpRollout = new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString());
+                            string rolloutText = (i == MouseOnRolloutButton ? KCT_Utilities.GetColonFormattedTime(tmpRollout.AsBuildItem().GetTimeLeft()) : "Rollout");
+                            if (GUILayout.Button(rolloutText, GUILayout.ExpandWidth(false)))
                             {
-                                rollout.SwapRolloutType();
+                                List<string> facilityChecks = b.MeetsFacilityRequirements();
+                                if (facilityChecks.Count == 0)
+                                {
+                                    if (rollout != null)
+                                    {
+                                        rollout.SwapRolloutType();
+                                    }
+                                    KCT_GameStates.ActiveKSC.Recon_Rollout.Add(tmpRollout);
+                                }
+                                else
+                                {
+                                    PopupDialog.SpawnPopupDialog("Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the VAB and/or Launchpad it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.Skin);
+                                }
                             }
-                            KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString()));
+                            if (Event.current.type == EventType.Repaint)
+                                if (GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
+                                    MouseOnRolloutButton = i;
+                                else if (i == MouseOnRolloutButton)
+                                    MouseOnRolloutButton = -1;
                         }
                         else if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && rollout != null && b.id.ToString() == rollout.associatedID && !rollout.AsBuildItem().IsComplete() && rollback == null &&
                             GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollout.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false)))
@@ -415,48 +441,56 @@ namespace KerbalConstructionTime
                             }
                             else if (!GameSettings.MODIFIER_KEY.GetKey() && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                             {
-                                bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
-                                if (!operational)
+                                List<string> facilityChecks = b.MeetsFacilityRequirements();
+                                if (facilityChecks.Count == 0)
                                 {
-                                    ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                                }
-                                else if (KCT_Utilities.ReconditioningActive(null))
-                                {
-                                    //can't launch now
-                                    ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in "
-                                        + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning()).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                                    ScreenMessages.PostScreenMessage(message, true);
-                                }
-                                else
-                                {
-                                    /*if (rollout != null)
-                                        KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);*/
-                                    KCT_GameStates.launchedVessel = b;
-                                    if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "LaunchPad").Count == 0)//  ShipConstruction.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
+                                    bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
+                                    if (!operational)
                                     {
-                                        showBLPlus = false;
-                                        // buildList.RemoveAt(i);
-                                        if (!IsCrewable(b.ExtractedParts))
-                                            b.Launch();
-                                        else
-                                        {
-                                            showBuildList = false;
-                                            centralWindowPosition.height = 1;
-                                            KCT_GameStates.launchedCrew.Clear();
-                                            parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                                            pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
-                                            KCT_GameStates.launchedCrew = new List<CrewedPart>();
-                                            foreach (PseudoPart pp in pseudoParts)
-                                                KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
-                                            CrewFirstAvailable();
-                                            showShipRoster = true;
-                                        }
+                                        ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                                    }
+                                    else if (KCT_Utilities.ReconditioningActive(null, b.launchSite))
+                                    {
+                                        //can't launch now
+                                        ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in "
+                                            + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning(b.launchSite)).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                                        ScreenMessages.PostScreenMessage(message, true);
                                     }
                                     else
                                     {
-                                        showBuildList = false;
-                                        showClearLaunch = true;
+                                        /*if (rollout != null)
+                                            KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);*/
+                                        KCT_GameStates.launchedVessel = b;
+                                        if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, b.launchSite).Count == 0)//  ShipConstruction.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
+                                        {
+                                            showBLPlus = false;
+                                            // buildList.RemoveAt(i);
+                                            if (!IsCrewable(b.ExtractedParts))
+                                                b.Launch();
+                                            else
+                                            {
+                                                showBuildList = false;
+                                                centralWindowPosition.height = 1;
+                                                KCT_GameStates.launchedCrew.Clear();
+                                                parts = KCT_GameStates.launchedVessel.ExtractedParts;
+                                                pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
+                                                KCT_GameStates.launchedCrew = new List<CrewedPart>();
+                                                foreach (PseudoPart pp in pseudoParts)
+                                                    KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
+                                                CrewFirstAvailable();
+                                                showShipRoster = true;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            showBuildList = false;
+                                            showClearLaunch = true;
+                                        }
                                     }
+                                }
+                                else
+                                {
+                                    PopupDialog.SpawnPopupDialog("Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the VAB and/or Launchpad it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.Skin);
                                 }
                             }
                         }
@@ -464,6 +498,7 @@ namespace KerbalConstructionTime
                         {
                             GUILayout.Label(KCT_Utilities.GetColonFormattedTime(recovery.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false));
                         }
+
                         GUILayout.EndHorizontal();
                     }
                 }
@@ -603,38 +638,46 @@ namespace KerbalConstructionTime
                         //ScenarioDestructibles.protoDestructibles["KSCRunway"].
                         if (HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
-                            bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.SPH);//new PreFlightTests.FacilityOperational("Runway", "building").Test();
-                            if (!operational)
+                            List<string> facilityChecks = b.MeetsFacilityRequirements();
+                            if (facilityChecks.Count == 0)
                             {
-                                ScreenMessages.PostScreenMessage("You must repair the runway prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                            }
-                            else
-                            {
-                                showBLPlus = false;
-                                KCT_GameStates.launchedVessel = b;
-                                if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "Runway").Count == 0)
+                                bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.SPH);//new PreFlightTests.FacilityOperational("Runway", "building").Test();
+                                if (!operational)
                                 {
-                                    if (!IsCrewable(b.ExtractedParts))
-                                        b.Launch();
-                                    else
-                                    {
-                                        showBuildList = false;
-                                        centralWindowPosition.height = 1;
-                                        KCT_GameStates.launchedCrew.Clear();
-                                        parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                                        pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
-                                        KCT_GameStates.launchedCrew = new List<CrewedPart>();
-                                        foreach (PseudoPart pp in pseudoParts)
-                                            KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
-                                        CrewFirstAvailable();
-                                        showShipRoster = true;
-                                    }
+                                    ScreenMessages.PostScreenMessage("You must repair the runway prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                                 }
                                 else
                                 {
-                                    showBuildList = false;
-                                    showClearLaunch = true;
+                                    showBLPlus = false;
+                                    KCT_GameStates.launchedVessel = b;
+                                    if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "Runway").Count == 0)
+                                    {
+                                        if (!IsCrewable(b.ExtractedParts))
+                                            b.Launch();
+                                        else
+                                        {
+                                            showBuildList = false;
+                                            centralWindowPosition.height = 1;
+                                            KCT_GameStates.launchedCrew.Clear();
+                                            parts = KCT_GameStates.launchedVessel.ExtractedParts;
+                                            pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
+                                            KCT_GameStates.launchedCrew = new List<CrewedPart>();
+                                            foreach (PseudoPart pp in pseudoParts)
+                                                KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
+                                            CrewFirstAvailable();
+                                            showShipRoster = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        showBuildList = false;
+                                        showClearLaunch = true;
+                                    }
                                 }
+                            }
+                            else
+                            {
+                                PopupDialog.SpawnPopupDialog("Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the SPH and/or Runway it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.Skin);
                             }
                         }
                         else if (recovery != null)
@@ -665,45 +708,129 @@ namespace KerbalConstructionTime
 
                 if (KCT_Utilities.CurrentGameIsCareer())
                 {
-                    if (KSCList.Count == 0)
+                if (KSCList.Count == 0)
                         GUILayout.Label("No KSC upgrade projects are currently underway.");
-                    foreach (KCT_UpgradingBuilding KCTTech in KSCList)
-                    {
-                        GUILayout.BeginHorizontal();
-                        GUILayout.Label(KCTTech.AsIKCTBuildItem().GetItemName());
-                        GUILayout.Label(Math.Round(100 * KCTTech.progress / KCTTech.BP, 2) + " %", GUILayout.Width(width1 / 2));
-                        GUILayout.Label(KCT_Utilities.GetColonFormattedTime(KCTTech.AsIKCTBuildItem().GetTimeLeft()), GUILayout.Width(width1));
-                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(70)))
-                        {
-                            KCT_GameStates.targetedItem = KCTTech;
-                            KCT_GameStates.canWarp = true;
-                            KCT_Utilities.RampUpWarp(KCTTech);
-                            KCT_GameStates.warpInitiated = true;
-                        }
-                        else if (HighLogic.LoadedSceneIsEditor)
-                            GUILayout.Space(70);
-                        GUILayout.EndHorizontal();
-                    }
-                }
-
-                if (techList.Count == 0)
-                    GUILayout.Label("No tech nodes are being researched!\nBegin research by unlocking tech in the R&D building.");
-                for (int i = 0; i < techList.Count; i++)
+                foreach (KCT_UpgradingBuilding KCTTech in KSCList)
                 {
-                    KCT_TechItem t = techList[i];
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(t.techName);
-                    GUILayout.Label(Math.Round(100 * t.progress / t.scienceCost, 2) + " %", GUILayout.Width(width1/2));
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(t.TimeLeft), GUILayout.Width(width1));
+                    /*
+                    int i = KSCList.IndexOf(KCTTech);
+                    if (i > 0 && GUILayout.Button("^", GUILayout.Width(butW)))
+                    {
+                        KSCList.RemoveAt(i);
+                        if (GameSettings.MODIFIER_KEY.GetKey())
+                        {
+                            KSCList.Insert(0, KCTTech);
+                        }
+                        else
+                        {
+                            KSCList.Insert(i - 1, KCTTech);
+                        }
+                    }
+                    if (i < KSCList.Count - 1 && GUILayout.Button("v", GUILayout.Width(butW)))
+                    {
+                        KSCList.RemoveAt(i);
+                        if (GameSettings.MODIFIER_KEY.GetKey())
+                        {
+                            KSCList.Add(KCTTech);
+                        }
+                        else
+                        {
+                            KSCList.Insert(i + 1, KCTTech);
+                        }
+                    }
+                    */
+
+                    GUILayout.Label(KCTTech.AsIKCTBuildItem().GetItemName());
+                    GUILayout.Label(Math.Round(100 * KCTTech.progress / KCTTech.BP, 2) + " %", GUILayout.Width(width1 / 2));
+                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(KCTTech.AsIKCTBuildItem().GetTimeLeft()), GUILayout.Width(width1));
                     if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(70)))
                     {
-                        KCT_GameStates.targetedItem = t;
+                        KCT_GameStates.targetedItem = KCTTech;
                         KCT_GameStates.canWarp = true;
-                        KCT_Utilities.RampUpWarp(t);
+                        KCT_Utilities.RampUpWarp(KCTTech);
                         KCT_GameStates.warpInitiated = true;
                     }
                     else if (HighLogic.LoadedSceneIsEditor)
                         GUILayout.Space(70);
+                    GUILayout.EndHorizontal();
+                }
+            }
+
+                if (techList.Count == 0)
+                    GUILayout.Label("No tech nodes are being researched!\nBegin research by unlocking tech in the R&D building.");
+                bool forceRecheck = false;
+                for (int i = 0; i < techList.Count; i++)
+                {
+                    KCT_TechItem t = techList[i];
+                    GUILayout.BeginHorizontal();
+
+                    if (GUILayout.Button("X", GUILayout.Width(butW)))
+                    {
+                        forceRecheck = true;
+                        CancelTechNode(i);
+                        i--;
+                        GUILayout.EndHorizontal();
+                        continue;
+                    }
+
+                    if (i > 0 && t.BuildRate != techList[0].BuildRate)
+                    {
+                        if (i > 0 && GUILayout.Button("^", GUILayout.Width(butW)))
+                        {
+                            techList.RemoveAt(i);
+                            if (GameSettings.MODIFIER_KEY.GetKey())
+                            {
+                                techList.Insert(0, t);
+                            }
+                            else
+                            {
+                                techList.Insert(i - 1, t);
+                            }
+                            forceRecheck = true;
+                        }
+                    }
+                    if ((i == 0 && t.BuildRate != techList[techList.Count - 1].BuildRate) || t.BuildRate != techList[techList.Count - 1].BuildRate)
+                    {
+                        if (i < techList.Count - 1 && GUILayout.Button("v", GUILayout.Width(butW)))
+                        {
+                            techList.RemoveAt(i);
+                            if (GameSettings.MODIFIER_KEY.GetKey())
+                            {
+                                techList.Add(t);
+                            }
+                            else
+                            {
+                                techList.Insert(i + 1, t);
+                            }
+                            forceRecheck = true;
+                        }
+                    }
+                    if (forceRecheck)
+                    {
+                        forceRecheck = false;
+                        for (int j=0; j<techList.Count; j++)
+                            techList[j].UpdateBuildRate(j);
+                    }
+
+                    GUILayout.Label(t.techName);
+                    GUILayout.Label(Math.Round(100 * t.progress / t.scienceCost, 2) + " %", GUILayout.Width(width1/2));
+                    if (t.BuildRate > 0)
+                    {
+                        GUILayout.Label(KCT_Utilities.GetColonFormattedTime(t.TimeLeft), GUILayout.Width(width1));
+                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(70)))
+                        {
+                            KCT_GameStates.targetedItem = t;
+                            KCT_GameStates.canWarp = true;
+                            KCT_Utilities.RampUpWarp(t);
+                            KCT_GameStates.warpInitiated = true;
+                        }
+                        else if (HighLogic.LoadedSceneIsEditor)
+                            GUILayout.Space(70);
+                    }
+                    else
+                        GUILayout.Space(width1+70);
+                    
                     GUILayout.EndHorizontal();
                 }
                 GUILayout.EndScrollView();
@@ -724,6 +851,17 @@ namespace KerbalConstructionTime
                     GUI.DragWindow();
         }
 
+        public static void CancelTechNode(int index)
+        {
+            KCT_TechItem node = KCT_GameStates.TechList[index];
+            if (KCT_Utilities.CurrentGameHasScience())
+            {
+                ResearchAndDevelopment.Instance.AddScience(node.scienceCost, TransactionReasons.None); //Should maybe do tech research as the reason
+            }
+            node.DisableTech();
+            KCT_GameStates.TechList.RemoveAt(index);
+        }
+
         private static Guid IDSelected = new Guid();
         private static void DrawBLPlusWindow(int windowID)
         {
@@ -734,6 +872,13 @@ namespace KerbalConstructionTime
             //bLPlusPosition.height = bLPlusPosition.yMax - bLPlusPosition.yMin;
             KCT_BuildListVessel b = KCT_Utilities.FindBLVesselByID(IDSelected);
             GUILayout.BeginVertical();
+            if (GUILayout.Button("Select LaunchSite"))
+            {
+                string launchType = b.type == KCT_BuildListVessel.ListType.VAB ? "RocketPad" : "Runway";
+                launchSites = KCT_Utilities.GetAllOpenKKLaunchSites(launchType);
+                showBLPlus = false;
+                showLaunchSiteSelector = true;
+            }
             if (GUILayout.Button("Scrap"))
             {
                 InputLockManager.SetControlLock(ControlTypes.KSC_ALL, "KCTPopupLock");
@@ -834,6 +979,24 @@ namespace KerbalConstructionTime
             float width = bLPlusPosition.width;
             bLPlusPosition.x = buildListWindowPosition.x - width;
             bLPlusPosition.width = width;
+        }
+
+        public static void DrawLaunchSiteChooser(int windowID)
+        {
+            GUILayout.BeginVertical();
+            foreach (string launchsite in launchSites)
+            {
+                if (GUILayout.Button(launchsite))
+                {
+                    //Set the chosen vessel's launch site to the selected site
+                    KCT_BuildListVessel blv = KCT_Utilities.FindBLVesselByID(IDSelected);
+                    blv.launchSite = launchsite;
+                    showLaunchSiteSelector = false;
+                }
+            }
+
+            GUILayout.EndVertical();
+            CenterWindow(ref centralWindowPosition);
         }
     }
 }
