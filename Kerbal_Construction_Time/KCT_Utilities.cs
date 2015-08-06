@@ -2185,12 +2185,11 @@ namespace KerbalConstructionTime
             if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUpgrades)
             {
                 //Completed tech nodes
-                if (CurrentGameHasScience() && ResearchAndDevelopment.Instance != null)
+                if (CurrentGameHasScience())
                 {
-                   /* if (AssetBase.RnDTechTree != null)
-                        total += AssetBase.RnDTechTree.GetTreeNodes().Count(n => n.tech.state == RDTech.State.Available);
-                    else*/
-                        total += ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length;
+                    total += KCT_GameStates.LastKnownTechCount;
+                    if (KCT_GameStates.LastKnownTechCount == 0)
+                        total += ResearchAndDevelopment.Instance != null ? ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length : 0;
                 }
 
                 //In progress tech nodes

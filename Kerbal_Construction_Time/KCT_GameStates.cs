@@ -41,7 +41,7 @@ namespace KerbalConstructionTime
         public static List<KCT_TechItem> TechList = new List<KCT_TechItem>();
 
         public static List<int> PurchasedUpgrades = new List<int>() { 0, 0 };
-        public static int MiscellaneousTempUpgrades = 0;
+        public static int MiscellaneousTempUpgrades = 0, LastKnownTechCount = 0;
         public static float InventorySaleUpgrades = 0, InventorySalesFigures = 0;
         public static int UpgradesResetCounter = 0;
         //public static int TotalUpgradePoints = 0;

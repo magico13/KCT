@@ -58,6 +58,12 @@ namespace KerbalConstructionTime
         public void PersistenceLoadEvent(ConfigNode node)
         {
             KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
+            ConfigNode rnd = node.GetNodes("SCENARIO").FirstOrDefault(n => n.GetValue("name") == "ResearchAndDevelopment");
+            if (rnd != null)
+            {
+                KCT_GameStates.LastKnownTechCount = rnd.GetNodes("Tech").Length;
+                KCTDebug.Log("Counting " + KCT_GameStates.LastKnownTechCount + " tech nodes.");
+            }
         }
 
         //private static int lastLvl = -1;
@@ -294,7 +300,9 @@ namespace KerbalConstructionTime
                         ResearchAndDevelopment.AddExperimentalPart(expt);*/
                     //Need to somehow update the R&D instance
                     if (save)
+                    {
                         GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+                    }
                 }
             }
         }
@@ -311,6 +319,7 @@ namespace KerbalConstructionTime
                 KCT_GameStates.ActiveKSC = new KCT_KSC("Stock");
                 KCT_GameStates.KSCs = new List<KCT_KSC>() { KCT_GameStates.ActiveKSC };
                 KCT_GameStates.EditorSimulationCount = 0;
+                KCT_GameStates.LastKnownTechCount = 0;
 
                 if (KCT_PresetManager.Instance != null)
                 {
