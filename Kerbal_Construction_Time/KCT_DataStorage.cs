@@ -88,7 +88,7 @@ namespace KerbalConstructionTime
         [Persistent] string activeKSC = "";
         [Persistent] string SimulationTime = "";
         [Persistent] float SalesFigures = 0;
-        [Persistent] int UpgradesResetCounter = 0, TechUpgrades = 0;
+        [Persistent] int UpgradesResetCounter = 0, TechUpgrades = 0, SavedUpgradePointsPreAPI;
 
 
         public override void OnDecodeFromConfigNode()
@@ -107,6 +107,7 @@ namespace KerbalConstructionTime
             KCT_GameStates.InventorySaleUpgrades = (float)KCT_MathParsing.GetStandardFormulaValue("InventorySales", new Dictionary<string, string> { { "V", "0" }, { "P", SalesFigures.ToString() } });
             KCT_GameStates.UpgradesResetCounter = UpgradesResetCounter;
             KCT_GameStates.TechUpgradesTotal = TechUpgrades;
+            KCT_GameStates.PermanentModAddedUpgradesButReallyWaitForTheAPI = SavedUpgradePointsPreAPI;
 
             SetSettings();
             //KCT_GameStates.firstStart = firstStart;
@@ -129,6 +130,7 @@ namespace KerbalConstructionTime
             SimulationTime = KCT_GUI.simLength;
             SalesFigures = KCT_GameStates.InventorySalesFigures;
             UpgradesResetCounter = KCT_GameStates.UpgradesResetCounter;
+            SavedUpgradePointsPreAPI = KCT_GameStates.PermanentModAddedUpgradesButReallyWaitForTheAPI;
 
             GetSettings();
         }

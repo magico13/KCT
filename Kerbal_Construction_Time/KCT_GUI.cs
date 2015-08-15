@@ -956,7 +956,13 @@ namespace KerbalConstructionTime
                 //cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 1);
                 //cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
                 cost = KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength, EditorLogic.fetch.ship, KCT_GameStates.EditorSimulationCount + 1, !KCT_GameStates.simulateInOrbit);
-                GUILayout.Label("Cost: " + Math.Round(cost, 1));
+                if (cost >= 0)
+                    GUILayout.Label("Cost: " + Math.Round(cost, 1));
+                else
+                {
+                    GUILayout.Label("Invalid Time");
+                    cost = float.PositiveInfinity;
+                }
             }
 
 

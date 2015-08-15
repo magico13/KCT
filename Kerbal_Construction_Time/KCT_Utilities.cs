@@ -75,7 +75,7 @@ namespace KerbalConstructionTime
         public static double ParseColonFormattedTime(string timeString, bool toUT=true)
         {
             //toUT is for converting a string that is given as a formatted UT (Starting with Y1, D1)
-            double time = 0;
+            double time = -1;
             string[] parts = timeString.Split(':');
             int len = parts.Length;
             double sPerDay = GameSettings.KERBIN_TIME ? 6 * 3600 : 24 * 3600;
@@ -102,7 +102,7 @@ namespace KerbalConstructionTime
             }
             catch
             {
-                KCTDebug.Log("Error parsing time string.");
+                //KCTDebug.Log("Error parsing time string.");
                 time = -1;
             }
             return time;
@@ -1175,8 +1175,10 @@ namespace KerbalConstructionTime
 
             double length = KCT_Utilities.ParseColonFormattedTime(simulationLength, false);
             length = Math.Min(length, 31536000000.0);
-            if (length <= 0)
+            if (length == 0)
                 length = 31536000000.0;
+            if (length < 0) //An error while parsing the value
+                return -1;
             Dictionary<string, string> vars = new Dictionary<string, string>();
             vars.Add("L", length.ToString()); //Sim length in seconds
             vars.Add("M", body.Mass.ToString()); //Body mass
@@ -2149,11 +2151,11 @@ namespace KerbalConstructionTime
 
         public static bool PartIsProcedural(Part part)
         {
-            if (part.Modules != null)
+            if (part != null && part.Modules != null)
             {
                 for (int i = 0; i < part.Modules.Count; i++ )
                 {
-                    if (part.Modules[i].moduleName.ToLower().Contains("procedural"))
+                    if (part.Modules[i] != null && part.Modules[i].moduleName != null && part.Modules[i].moduleName.ToLower().Contains("procedural"))
                         return true;
                 }
             }
@@ -2205,7 +2207,8 @@ namespace KerbalConstructionTime
             total += KCT_GameStates.MiscellaneousTempUpgrades;
             
             //Misc. (when API)
-
+            total += KCT_GameStates.TemporaryModAddedUpgradesButReallyWaitForTheAPI;
+            total += KCT_GameStates.PermanentModAddedUpgradesButReallyWaitForTheAPI;
 
 
             return total;

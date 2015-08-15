@@ -321,6 +321,9 @@ namespace KerbalConstructionTime
                 KCT_GameStates.EditorSimulationCount = 0;
                 KCT_GameStates.LastKnownTechCount = 0;
 
+                KCT_GameStates.PermanentModAddedUpgradesButReallyWaitForTheAPI = 0;
+                KCT_GameStates.TemporaryModAddedUpgradesButReallyWaitForTheAPI = 0;
+
                 if (KCT_PresetManager.Instance != null)
                 {
                     KCT_PresetManager.Instance.ClearPresets();
