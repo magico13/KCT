@@ -29,6 +29,7 @@ namespace KerbalConstructionTime
         [Persistent] public bool PreferBlizzyToolbar;
         //[Persistent] public bool AllowParachuteRecovery;
         [Persistent] public bool NoSimGUI;
+        [Persistent] public bool CheckForDebugUpdates = GameSettings.SEND_PROGRESS_DATA;
         //[Persistent] public bool DisableSpecialSurprise;
 
         [Persistent] public bool RandomizeCrew;

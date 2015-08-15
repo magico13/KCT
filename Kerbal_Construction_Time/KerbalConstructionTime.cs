@@ -385,6 +385,14 @@ namespace KerbalConstructionTime
         private static bool updateChecked = false;
         public void FixedUpdate()
         {
+            #if DEBUG
+            if (!updateChecked && KCT_GameStates.settings.CheckForDebugUpdates && !KCT_GameStates.firstStart)
+            {
+                KCT_UpdateChecker.CheckForUpdate(false, false);
+                updateChecked = true;
+            }
+            #endif
+
             if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;
 
