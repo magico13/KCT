@@ -26,7 +26,7 @@ namespace KerbalConstructionTime
         public static Rect editorWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 275, 135);
         private static Rect SOIAlertPosition = new Rect(Screen.width / 3, Screen.height / 3, 250, 100);
 
-        private static Rect centralWindowPosition = new Rect((Screen.width - 150) / 2, (Screen.height - 50) / 2, 150, 50);
+        public static Rect centralWindowPosition = new Rect((Screen.width - 150) / 2, (Screen.height - 50) / 2, 150, 50);
         
 
         //private static Rect launchAlertPosition = new Rect((Screen.width-75)/2, (Screen.height-100)/2, 150, 100);
@@ -1147,7 +1147,7 @@ namespace KerbalConstructionTime
         public static void DrawLaunchAlert(int windowID)
         {
             GUILayout.BeginVertical();
-            if (GUILayout.Button("Build Vessel"))
+            if (GUILayout.Button("Build" + (KCT_GameStates.settings.WindowMode != 1 ? " Vessel" : "")))
             {
                 KCT_Utilities.AddVesselToBuildList(useInventory);
                 SwitchCurrentPartCategory();
@@ -1155,22 +1155,25 @@ namespace KerbalConstructionTime
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 showLaunchAlert = false;
                 unlockEditor = true;
-                
+                KCT_GUI.centralWindowPosition.width = 150;
             }
-            if (GUILayout.Button("Simulate Vessel"))
+            if (GUILayout.Button("Simulate" + (KCT_GameStates.settings.WindowMode != 1 ? " Vessel" : "")))
             {
                 simulationConfigPosition.height = 1;
                 showLaunchAlert = false;
                 showSimConfig = true;
+                KCT_GUI.centralWindowPosition.width = 150;
             }
             if (GUILayout.Button("Cancel"))
             {
                 showLaunchAlert = false;
                 centralWindowPosition.height = 1;
                 unlockEditor = true;
+                KCT_GUI.centralWindowPosition.width = 150;
             }
             GUILayout.EndVertical();
-            CenterWindow(ref centralWindowPosition);
+            if (KCT_GameStates.settings.WindowMode != 1)
+                CenterWindow(ref centralWindowPosition);
         }
 
         public static void DrawSimulationCompleteEditor(int windowID)

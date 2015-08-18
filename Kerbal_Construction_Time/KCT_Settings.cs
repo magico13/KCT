@@ -35,6 +35,8 @@ namespace KerbalConstructionTime
         [Persistent] public bool RandomizeCrew;
         [Persistent] public bool AutoHireCrew;
 
+        [Persistent] public int WindowMode = 1;
+
         //Game specific settings
         //public bool enabledForSave = true;
         /*public float RecoveryModifier;

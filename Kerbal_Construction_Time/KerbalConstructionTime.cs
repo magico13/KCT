@@ -760,6 +760,14 @@ namespace KerbalConstructionTime
                 KCT_GUI.showLaunchAlert = true;
                 EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
 
+                //Pop up the window at the mouse cursor if we're in mode 1
+                if (KCT_GameStates.settings.WindowMode == 1)
+                {
+                    KCT_GUI.centralWindowPosition.width = 50;
+                    KCT_GUI.centralWindowPosition.y = Mouse.screenPos.y;
+                    KCT_GUI.centralWindowPosition.x = Mouse.screenPos.x - (KCT_GUI.centralWindowPosition.width/2);
+                }
+
                 // This is how you hide tooltips.
                 EditorTooltip.Instance.HideToolTip();
                 GameEvents.onTooltipDestroyRequested.Fire();
