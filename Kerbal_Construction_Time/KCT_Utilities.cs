@@ -513,12 +513,17 @@ namespace KerbalConstructionTime
             return KSC.SPHRates;
         }
 
-        private static double lastUT=0.0, UT;
         public static void ProgressBuildTime()
         {
-            UT = Planetarium.GetUniversalTime();
-            double UTDiff = UT - lastUT;
-            if (UTDiff > 0 && UTDiff < (TimeWarp.fetch.warpRates[TimeWarp.fetch.warpRates.Length-1]*2) && lastUT > 0)
+            double UT = 0;
+            if (HighLogic.LoadedSceneIsEditor) //support for EditorTime
+                UT = HighLogic.CurrentGame.flightState.universalTime;
+            else
+                UT = Planetarium.GetUniversalTime();
+            if (KCT_GameStates.lastUT == 0)
+                KCT_GameStates.lastUT = UT;
+            double UTDiff = UT - KCT_GameStates.lastUT;
+            if (UTDiff > 0 && UTDiff < (TimeWarp.fetch.warpRates[TimeWarp.fetch.warpRates.Length - 1] * 2))
             {
                 foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                 {
@@ -528,7 +533,7 @@ namespace KerbalConstructionTime
                         for (int i = 0; i < ksc.VABList.Count; i++)
                         {
                             buildRate = GetBuildRate(i, KCT_BuildListVessel.ListType.VAB, ksc);
-                            ksc.VABList[i].AddProgress(buildRate * (UT - lastUT));
+                            ksc.VABList[i].AddProgress(buildRate * (UTDiff));
                             if (((IKCTBuildItem)ksc.VABList[i]).IsComplete())
                                 MoveVesselToWarehouse(0, i, ksc);
                         }
@@ -538,7 +543,7 @@ namespace KerbalConstructionTime
                         for (int i = 0; i < ksc.SPHList.Count; i++)
                         {
                             buildRate = GetBuildRate(i, KCT_BuildListVessel.ListType.SPH, ksc);
-                            ksc.SPHList[i].AddProgress(buildRate * (UT - lastUT));
+                            ksc.SPHList[i].AddProgress(buildRate * (UTDiff));
                             if (((IKCTBuildItem)ksc.SPHList[i]).IsComplete())
                                 MoveVesselToWarehouse(1, i, ksc);
                         }
@@ -547,7 +552,7 @@ namespace KerbalConstructionTime
                     foreach (KCT_Recon_Rollout rr in ksc.Recon_Rollout)
                     {
                         double prog = rr.progress;
-                        rr.progress += rr.AsBuildItem().GetBuildRate() * (UT - lastUT);
+                        rr.progress += rr.AsBuildItem().GetBuildRate() * (UTDiff);
                         if (rr.progress > rr.BP) rr.progress = rr.BP;
 
                         if (KCT_Utilities.CurrentGameIsCareer() && rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.cost > 0)
@@ -567,7 +572,7 @@ namespace KerbalConstructionTime
 
                     foreach (KCT_UpgradingBuilding kscTech in ksc.KSCTech)
                     {
-                        if (!kscTech.AsIKCTBuildItem().IsComplete()) kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UT - lastUT));
+                        if (!kscTech.AsIKCTBuildItem().IsComplete()) kscTech.AddProgress(kscTech.AsIKCTBuildItem().GetBuildRate() * (UTDiff));
                         if (HighLogic.LoadedScene == GameScenes.SPACECENTER && (kscTech.AsIKCTBuildItem().IsComplete() || !KCT_PresetManager.Instance.ActivePreset.generalSettings.KSCUpgradeTimes))
                         {
                             if (ScenarioUpgradeableFacilities.Instance != null && KCT_GameStates.erroredDuringOnLoad.OnLoadFinished)
@@ -581,7 +586,7 @@ namespace KerbalConstructionTime
                 {
                     KCT_TechItem tech = KCT_GameStates.TechList[i];
                     double buildRate = tech.BuildRate;
-                    tech.progress += (buildRate * (UT - lastUT));
+                    tech.progress += (buildRate * (UTDiff));
                     if (tech.isComplete || !KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes)
                     {
                         if (KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRate > 1f)
@@ -594,7 +599,7 @@ namespace KerbalConstructionTime
                     }
                 }
             }
-            lastUT = UT;
+            KCT_GameStates.lastUT = UT;
         }
 
         public static float GetTotalVesselCost(ProtoVessel vessel, bool includeFuel = true)

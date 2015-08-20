@@ -7,7 +7,7 @@ namespace KerbalConstructionTime
 {
     public static class KCT_GameStates
     {
-        public static double UT;
+        public static double UT, lastUT=0.0;
         public static bool canWarp = false, warpInitiated = false;
         public static int lastWarpRate = 0;
         public static string lastSOIVessel = "";
@@ -114,6 +114,8 @@ namespace KerbalConstructionTime
             ExperimentalParts.Clear();
             MiscellaneousTempUpgrades = 0;
 
+
+            lastUT = 0;
             //ActiveKSC = new KCT_KSC("Stock");
             //KSCs = new List<KCT_KSC>() {ActiveKSC};
 

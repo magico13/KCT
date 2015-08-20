@@ -404,6 +404,7 @@ namespace KerbalConstructionTime
             {
                 KCT_Utilities.LoadSimulationSave(true);
             }
+            
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
