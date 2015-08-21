@@ -12,7 +12,7 @@ namespace KerbalConstructionTime
         private static int MouseOnRolloutButton = -1;
         private static int listWindow = -1;
         private static bool VABSelected, SPHSelected, TechSelected;
-        private static void SelectList(string list)
+        public static void SelectList(string list)
         {
             buildListWindowPosition.height = 1;
             switch (list)
