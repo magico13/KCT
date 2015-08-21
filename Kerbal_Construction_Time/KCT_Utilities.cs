@@ -596,6 +596,9 @@ namespace KerbalConstructionTime
                         KCT_GameStates.TechList.Remove(tech);
                         if (KCT_PresetManager.PresetLoaded() && KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUpgrades)
                             KCT_GameStates.MiscellaneousTempUpgrades++;
+
+                        for (int j = 0; j < KCT_GameStates.TechList.Count; j++)
+                            KCT_GameStates.TechList[j].UpdateBuildRate(j);
                     }
                 }
             }

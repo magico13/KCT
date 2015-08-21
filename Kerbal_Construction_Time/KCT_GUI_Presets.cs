@@ -295,6 +295,9 @@ namespace KerbalConstructionTime
                     }
                 }
                 if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) InputLockManager.RemoveControlLock("KCTKSCLock");
+
+                for (int j = 0; j < KCT_GameStates.TechList.Count; j++)
+                    KCT_GameStates.TechList[j].UpdateBuildRate(j);
             }
             if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
             {
@@ -308,6 +311,9 @@ namespace KerbalConstructionTime
                     else
                         showBuildList = true;
                 }
+
+                for (int j = 0; j < KCT_GameStates.TechList.Count; j++)
+                    KCT_GameStates.TechList[j].UpdateBuildRate(j);
             }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();

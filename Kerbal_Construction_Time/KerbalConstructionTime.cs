@@ -500,6 +500,17 @@ namespace KerbalConstructionTime
                     KCT_Utilities.SetActiveKSCToRSS();
                 }
 
+                if (!KCT_GUI.PrimarilyDisabled && HighLogic.LoadedScene == GameScenes.SPACECENTER)
+                {
+                    if (VesselSpawnDialog.Instance.Visible)
+                    {
+                        POINTER_INFO ptr = new POINTER_INFO();
+                        ptr.evt = POINTER_INFO.INPUT_EVENT.TAP;
+                        VesselSpawnDialog.Instance.ButtonClose(ref ptr);
+                        KCTDebug.Log("Attempting to close spawn dialog!");
+                    }
+                }
+
                /* if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.recoveredVessel != null)
                 {
                     InputLockManager.SetControlLock(ControlTypes.All, "KCTPopupLock");

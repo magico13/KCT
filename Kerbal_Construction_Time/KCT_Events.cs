@@ -333,6 +333,8 @@ namespace KerbalConstructionTime
                 return;
             }
 
+            KCT_GameStates.MiscellaneousTempUpgrades = 0;
+
             /*if (HighLogic.LoadedScene == GameScenes.MAINMENU)
             {
                 if (scene == GameScenes.SPACECENTER)
