@@ -26,7 +26,7 @@ namespace KerbalConstructionTime
         public static Rect editorWindowPosition = new Rect(Screen.width / 3.5f, Screen.height / 3.5f, 275, 135);
         private static Rect SOIAlertPosition = new Rect(Screen.width / 3, Screen.height / 3, 250, 100);
 
-        private static Rect centralWindowPosition = new Rect((Screen.width - 150) / 2, (Screen.height - 50) / 2, 150, 50);
+        public static Rect centralWindowPosition = new Rect((Screen.width - 150) / 2, (Screen.height - 50) / 2, 150, 50);
         
 
         //private static Rect launchAlertPosition = new Rect((Screen.width-75)/2, (Screen.height-100)/2, 150, 100);
@@ -956,7 +956,13 @@ namespace KerbalConstructionTime
                 //cost = KCT_GameStates.simulateInOrbit ? KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength) : 100 * (KCT_Utilities.TimeMultipliers.ContainsKey(simLength) ? KCT_Utilities.TimeMultipliers[simLength] : 1);
                 //cost *= (EditorLogic.fetch.ship.GetShipCosts(out nullFloat, out nF2) / 25000); //Cost of simulation is less for ships less than 25k funds, and more for higher amounts
                 cost = KCT_Utilities.CostOfSimulation(KCT_GameStates.simulationBody, simLength, EditorLogic.fetch.ship, KCT_GameStates.EditorSimulationCount + 1, !KCT_GameStates.simulateInOrbit);
-                GUILayout.Label("Cost: " + Math.Round(cost, 1));
+                if (cost >= 0)
+                    GUILayout.Label("Cost: " + Math.Round(cost, 1));
+                else
+                {
+                    GUILayout.Label("Invalid Time");
+                    cost = float.PositiveInfinity;
+                }
             }
 
 
@@ -1141,7 +1147,7 @@ namespace KerbalConstructionTime
         public static void DrawLaunchAlert(int windowID)
         {
             GUILayout.BeginVertical();
-            if (GUILayout.Button("Build Vessel"))
+            if (GUILayout.Button("Build" + (KCT_GameStates.settings.WindowMode != 1 ? " Vessel" : "")))
             {
                 KCT_Utilities.AddVesselToBuildList(useInventory);
                 SwitchCurrentPartCategory();
@@ -1149,22 +1155,25 @@ namespace KerbalConstructionTime
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 showLaunchAlert = false;
                 unlockEditor = true;
-                
+                KCT_GUI.centralWindowPosition.width = 150;
             }
-            if (GUILayout.Button("Simulate Vessel"))
+            if (GUILayout.Button("Simulate" + (KCT_GameStates.settings.WindowMode != 1 ? " Vessel" : "")))
             {
                 simulationConfigPosition.height = 1;
                 showLaunchAlert = false;
                 showSimConfig = true;
+                KCT_GUI.centralWindowPosition.width = 150;
             }
             if (GUILayout.Button("Cancel"))
             {
                 showLaunchAlert = false;
                 centralWindowPosition.height = 1;
                 unlockEditor = true;
+                KCT_GUI.centralWindowPosition.width = 150;
             }
             GUILayout.EndVertical();
-            CenterWindow(ref centralWindowPosition);
+            if (KCT_GameStates.settings.WindowMode != 1)
+                CenterWindow(ref centralWindowPosition);
         }
 
         public static void DrawSimulationCompleteEditor(int windowID)
@@ -2035,7 +2044,7 @@ namespace KerbalConstructionTime
         public static bool enabledForSave, enableAllBodies, forceStopWarp, instantTechUnlock, disableBuildTimes, checkForUpdates, versionSpecific, disableRecMsgs, disableAllMsgs, 
             freeSims, recon, debug, overrideLaunchBtn, autoAlarms, useBlizzyToolbar, allowParachuteRecovery, instantKSCUpgrades;
         */
-        public static bool forceStopWarp, disableAllMsgs, debug, overrideLaunchBtn, autoAlarms, useBlizzyToolbar;
+        public static bool forceStopWarp, disableAllMsgs, debug, overrideLaunchBtn, autoAlarms, useBlizzyToolbar, debugUpdateChecking;
         public static int newTimewarp;
 
         public static double reconSplit;
@@ -2050,6 +2059,7 @@ namespace KerbalConstructionTime
             overrideLaunchBtn = KCT_GameStates.settings.OverrideLaunchButton;
             autoAlarms = KCT_GameStates.settings.AutoKACAlarms;
             useBlizzyToolbar = KCT_GameStates.settings.PreferBlizzyToolbar;
+            debugUpdateChecking = KCT_GameStates.settings.CheckForDebugUpdates;
 
             showSettings = !showSettings;
         }

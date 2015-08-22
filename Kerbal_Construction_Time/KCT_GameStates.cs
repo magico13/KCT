@@ -7,7 +7,7 @@ namespace KerbalConstructionTime
 {
     public static class KCT_GameStates
     {
-        public static double UT;
+        public static double UT, lastUT=0.0;
         public static bool canWarp = false, warpInitiated = false;
         public static int lastWarpRate = 0;
         public static string lastSOIVessel = "";
@@ -41,7 +41,7 @@ namespace KerbalConstructionTime
         public static List<KCT_TechItem> TechList = new List<KCT_TechItem>();
 
         public static List<int> PurchasedUpgrades = new List<int>() { 0, 0 };
-        public static int MiscellaneousTempUpgrades = 0;
+        public static int MiscellaneousTempUpgrades = 0, LastKnownTechCount = 0;
         public static float InventorySaleUpgrades = 0, InventorySalesFigures = 0;
         public static int UpgradesResetCounter = 0;
         //public static int TotalUpgradePoints = 0;
@@ -78,6 +78,10 @@ namespace KerbalConstructionTime
         public static KCT_OnLoadError erroredDuringOnLoad = new KCT_OnLoadError();
 
 
+        public static int TemporaryModAddedUpgradesButReallyWaitForTheAPI = 0; //Reset when returned to the MainMenu
+        public static int PermanentModAddedUpgradesButReallyWaitForTheAPI = 0; //Saved to the save file
+
+
         public static void reset()
         {
             //firstStart = true;
@@ -110,6 +114,8 @@ namespace KerbalConstructionTime
             ExperimentalParts.Clear();
             MiscellaneousTempUpgrades = 0;
 
+
+            lastUT = 0;
             //ActiveKSC = new KCT_KSC("Stock");
             //KSCs = new List<KCT_KSC>() {ActiveKSC};
 

@@ -19,6 +19,14 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.2.1.0 (8/21/15)
+ - Some tweaks to the UpFree Preset so that VAB upgrades affect the build rates and tech nodes research quicker
+ - Re-added automatic update checking for development builds (only)
+ - When pressing the launch button in the editor, the launch/sim window now appears at the mouse as a "drop-down"-like menu. To switch back, change WindowMode to 0 in the KCT_Config.txt file.
+ - Some potential fixes for the weird fluctuations people are seeing in Upgrade totals
+ - The vessel launch dialog no longer opens when clicking the runway/launchpad, but now the Build List will open to the appropriate tab automatically
+ - Added support for my EditorTime modlet
+
 v1.2.0.0 (7/30/15)
 WARNING: This update is semi-save breaking. If you're using custom configs you MUST update them to the new Presets system.
  - Presets! Easily create, share, and switch between different settings. Mod authors can include Presets in their releases (see RP-0), players can save their most commonly used configurations, and config modders can create any number of new gameplay styles and easily share them.

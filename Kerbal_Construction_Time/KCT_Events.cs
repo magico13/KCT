@@ -58,6 +58,12 @@ namespace KerbalConstructionTime
         public void PersistenceLoadEvent(ConfigNode node)
         {
             KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
+            ConfigNode rnd = node.GetNodes("SCENARIO").FirstOrDefault(n => n.GetValue("name") == "ResearchAndDevelopment");
+            if (rnd != null)
+            {
+                KCT_GameStates.LastKnownTechCount = rnd.GetNodes("Tech").Length;
+                KCTDebug.Log("Counting " + KCT_GameStates.LastKnownTechCount + " tech nodes.");
+            }
         }
 
         //private static int lastLvl = -1;
@@ -294,7 +300,9 @@ namespace KerbalConstructionTime
                         ResearchAndDevelopment.AddExperimentalPart(expt);*/
                     //Need to somehow update the R&D instance
                     if (save)
+                    {
                         GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+                    }
                 }
             }
         }
@@ -311,6 +319,10 @@ namespace KerbalConstructionTime
                 KCT_GameStates.ActiveKSC = new KCT_KSC("Stock");
                 KCT_GameStates.KSCs = new List<KCT_KSC>() { KCT_GameStates.ActiveKSC };
                 KCT_GameStates.EditorSimulationCount = 0;
+                KCT_GameStates.LastKnownTechCount = 0;
+
+                KCT_GameStates.PermanentModAddedUpgradesButReallyWaitForTheAPI = 0;
+                KCT_GameStates.TemporaryModAddedUpgradesButReallyWaitForTheAPI = 0;
 
                 if (KCT_PresetManager.Instance != null)
                 {
@@ -320,6 +332,8 @@ namespace KerbalConstructionTime
 
                 return;
             }
+
+            KCT_GameStates.MiscellaneousTempUpgrades = 0;
 
             /*if (HighLogic.LoadedScene == GameScenes.MAINMENU)
             {
@@ -377,8 +391,16 @@ namespace KerbalConstructionTime
         {
             if (!KCT_GUI.PrimarilyDisabled)
             {
-                KCT_GameStates.flightSimulated = true;
-                PopupDialog.SpawnPopupDialog("Warning!", "To launch vessels you must first build them in the VAB or SPH, then launch them through the main KCT window in the Space Center!\n\nDo not use this menu to launch vessels!", "Ok", false, HighLogic.Skin);
+                //KCT_GameStates.flightSimulated = true; //no longer needed b/c that gui wont appear anymore!
+               // PopupDialog.SpawnPopupDialog("Warning!", "To launch vessels you must first build them in the VAB or SPH, then launch them through the main KCT window in the Space Center!", "Ok", false, HighLogic.Skin);
+                //open the build list to the right page
+                string selection = "VAB";
+                if (v.craftSubfolder.Contains("SPH"))
+                    selection = "SPH";
+                KCT_GUI.ClickOn();
+                KCT_GUI.SelectList("");
+                KCT_GUI.SelectList(selection);
+                KCTDebug.Log("Opening the GUI to the " + selection);
             }
         }
 

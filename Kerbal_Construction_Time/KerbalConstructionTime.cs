@@ -385,6 +385,14 @@ namespace KerbalConstructionTime
         private static bool updateChecked = false;
         public void FixedUpdate()
         {
+            #if DEBUG
+            if (!updateChecked && KCT_GameStates.settings.CheckForDebugUpdates && !KCT_GameStates.firstStart)
+            {
+                KCT_UpdateChecker.CheckForUpdate(false, false);
+                updateChecked = true;
+            }
+            #endif
+
             if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;
 
@@ -396,6 +404,7 @@ namespace KerbalConstructionTime
             {
                 KCT_Utilities.LoadSimulationSave(true);
             }
+            
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
@@ -489,6 +498,17 @@ namespace KerbalConstructionTime
                 if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
                 {
                     KCT_Utilities.SetActiveKSCToRSS();
+                }
+
+                if (!KCT_GUI.PrimarilyDisabled && HighLogic.LoadedScene == GameScenes.SPACECENTER)
+                {
+                    if (VesselSpawnDialog.Instance.Visible)
+                    {
+                        POINTER_INFO ptr = new POINTER_INFO();
+                        ptr.evt = POINTER_INFO.INPUT_EVENT.TAP;
+                        VesselSpawnDialog.Instance.ButtonClose(ref ptr);
+                        KCTDebug.Log("Attempting to close spawn dialog!");
+                    }
                 }
 
                /* if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.recoveredVessel != null)
@@ -751,6 +771,14 @@ namespace KerbalConstructionTime
             {
                 KCT_GUI.showLaunchAlert = true;
                 EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
+
+                //Pop up the window at the mouse cursor if we're in mode 1
+                if (KCT_GameStates.settings.WindowMode == 1)
+                {
+                    KCT_GUI.centralWindowPosition.width = 50;
+                    KCT_GUI.centralWindowPosition.y = Mouse.screenPos.y;
+                    KCT_GUI.centralWindowPosition.x = Mouse.screenPos.x - (KCT_GUI.centralWindowPosition.width/2);
+                }
 
                 // This is how you hide tooltips.
                 EditorTooltip.Instance.HideToolTip();
