@@ -298,6 +298,8 @@ namespace KerbalConstructionTime
 
                 for (int j = 0; j < KCT_GameStates.TechList.Count; j++)
                     KCT_GameStates.TechList[j].UpdateBuildRate(j);
+
+                KCT_GUI.ResetFormulaRateHolders();
             }
             if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
             {

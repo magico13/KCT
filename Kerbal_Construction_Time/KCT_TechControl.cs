@@ -29,6 +29,22 @@ namespace KerbalConstructionTime
         public double TimeLeft { get { return (scienceCost - progress) / BuildRate; } }
         public bool isComplete { get { return progress >= scienceCost; } }
 
+        public double EstimatedTimeLeft
+        {
+            get
+            {
+                if (BuildRate > 0)
+                {
+                    return TimeLeft;
+                }
+                else
+                {
+                    double rate = KCT_MathParsing.ParseNodeRateFormula(scienceCost, 0);
+                    return (scienceCost - progress) / rate;
+                }
+            }
+        }
+
         public KCT_TechItem(RDTech techNode)
         {
             scienceCost = techNode.scienceCost;
