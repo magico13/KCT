@@ -19,6 +19,16 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.2.2.0 (8/25/15)
+ - Fixed several issues with Tech node rates
+ - Fixed an issue with automatic updating of Presets
+ - Switched to using Planetarium.fetch.Home rather than searching for "Kerbin" or "Earth"
+ - Fixed some display issues with science per day/year
+ - Made the Upgrades window ever so slightly wider, plus a few other minor tweaks
+ - Should now fill tanks of Procedural Parts correctly
+ - Fixed bug where resetting upgrades wasn't incrementing the counter
+ - Rates should be more correct after saving Presets now (w/o requiring scene change)
+ 
 v1.2.1.0 (8/21/15)
  - Some tweaks to the UpFree Preset so that VAB upgrades affect the build rates and tech nodes research quicker
  - Re-added automatic update checking for development builds (only)
