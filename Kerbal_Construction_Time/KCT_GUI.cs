@@ -37,7 +37,7 @@ namespace KerbalConstructionTime
         public static Rect buildListWindowPosition = new Rect(Screen.width - 400, 40, 400, 1);
         private static Rect crewListWindowPosition = new Rect((Screen.width-360)/2, (Screen.height / 4), 360, 1);
         private static Rect settingsPosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 300, 1);
-        private static Rect upgradePosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 240, 1);
+        private static Rect upgradePosition = new Rect((Screen.width-260) / 2, (Screen.height / 4), 260, 1);
         private static Rect simulationConfigPosition = new Rect((Screen.width / 2)-150, (Screen.height / 4), 300, 1);
         private static Rect bLPlusPosition = new Rect(Screen.width-500, 40, 100, 1);
 
@@ -699,11 +699,21 @@ namespace KerbalConstructionTime
                     foreach (Part p in EditorLogic.fetch.ship.parts)
                     {
                         //fill as part prefab would be filled?
-                        foreach (PartResource rsc in p.Resources)
+                        if (KCT_Utilities.PartIsProcedural(p))
                         {
-                            PartResource templateRsc = p.partInfo.partPrefab.Resources.list.Find(r => r.resourceName == rsc.resourceName);
-                            if (templateRsc != null)
-                                rsc.amount = templateRsc.amount;
+                            foreach (PartResource rsc in p.Resources)
+                            {
+                                rsc.amount = rsc.maxAmount;
+                            }
+                        }
+                        else
+                        {
+                            foreach (PartResource rsc in p.Resources)
+                            {
+                                PartResource templateRsc = p.partInfo.partPrefab.Resources.list.Find(r => r.resourceName == rsc.resourceName);
+                                if (templateRsc != null)
+                                    rsc.amount = templateRsc.amount;
+                            }
                         }
                     }
                 }
@@ -898,9 +908,7 @@ namespace KerbalConstructionTime
             GUILayout.Label("Body: ");
             if (KCT_GameStates.simulationBody == null)
             {
-                KCT_GameStates.simulationBody = KCT_Utilities.GetBodyByName("Kerbin");
-                if (KCT_GameStates.simulationBody == null) //Still null? Probably RSS then.
-                    KCT_GameStates.simulationBody = KCT_Utilities.GetBodyByName("Earth");
+                KCT_GameStates.simulationBody = Planetarium.fetch.Home;
             }
             
             GUILayout.Label(KCT_GameStates.simulationBody.bodyName);
@@ -913,14 +921,14 @@ namespace KerbalConstructionTime
                 simulationConfigPosition.height = 1;
             }
             GUILayout.EndHorizontal();
-            if (KCT_GameStates.simulationBody.bodyName == "Kerbin" || KCT_GameStates.simulationBody.bodyName == "Earth")
+            if (KCT_GameStates.simulationBody == Planetarium.fetch.Home)
             {
                 bool changed = KCT_GameStates.simulateInOrbit;
                 KCT_GameStates.simulateInOrbit = GUILayout.Toggle(KCT_GameStates.simulateInOrbit, " Start in orbit?");
                 if (KCT_GameStates.simulateInOrbit != changed)
                     simulationConfigPosition.height = 1;
             }
-            if ((KCT_GameStates.simulationBody.bodyName != "Kerbin" && KCT_GameStates.simulationBody.bodyName != "Earth") || KCT_GameStates.simulateInOrbit)
+            if (KCT_GameStates.simulationBody != Planetarium.fetch.Home || KCT_GameStates.simulateInOrbit)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Orbit Altitude (km): ");
@@ -996,7 +1004,7 @@ namespace KerbalConstructionTime
             if (((KCT_Utilities.CurrentGameIsCareer() && Funding.Instance.Funds >= cost)
                 || !KCT_Utilities.CurrentGameIsCareer()) && GUILayout.Button("Simulate"))
             {
-                if (KCT_GameStates.simulationBody.bodyName != "Kerbin" && KCT_GameStates.simulationBody.bodyName != "Earth")
+                if (KCT_GameStates.simulationBody != Planetarium.fetch.Home)
                     KCT_GameStates.simulateInOrbit = true;
 
                 KCT_GameStates.simulationTimeLimit = KCT_Utilities.ParseColonFormattedTime(simLength, false);
@@ -2213,6 +2221,7 @@ namespace KerbalConstructionTime
                         foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                             tech.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(tech));
 
+                        KCT_GameStates.UpgradesResetCounter++;
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -2230,7 +2239,7 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("VAB Upgrades");
                 GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.VABUpgrades.Count + 1) * 26), GUILayout.MaxHeight(1 * Screen.height / 4));
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.VABUpgrades.Count + 1) * 26 + 5), GUILayout.MaxHeight(1 * Screen.height / 4));
                 GUILayout.BeginVertical();
                 for (int i = 0; i < KSC.VABRates.Count; i++)
                 {
@@ -2276,7 +2285,7 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("SPH Upgrades");
                 GUILayout.EndHorizontal();
-                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.SPHUpgrades.Count + 1) * 26), GUILayout.MaxHeight(1 * Screen.height / 4));
+                scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height((KSC.SPHUpgrades.Count + 1) * 26 + 5), GUILayout.MaxHeight(1 * Screen.height / 4));
                 GUILayout.BeginVertical();
                 for (int i = 0; i < KSC.SPHRates.Count; i++)
                 {
@@ -2362,19 +2371,17 @@ namespace KerbalConstructionTime
                 double sciPerDay = sci / days;
                 //days *= KCT_GameStates.timeSettings.NodeModifier;
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Development");
+                GUILayout.Label("Devel.");
                 bool usingPerYear = false;
-                if (sciPerDay > 0.001)
+                if (sciPerDay > 0.1)
                 {
-                    GUILayout.Label(sciPerDay.ToString("N2") + " sci/day");
+                    GUILayout.Label(Math.Round(sciPerDay*1000)/1000 + " sci/day");
                 }
                 else
                 {
                     //Well, looks like we need sci/year instead
-                    int daysPerYear = 365;
-                    if (GameSettings.KERBIN_TIME)
-                        daysPerYear = 426;
-                    GUILayout.Label((sciPerDay*daysPerYear).ToString("N2") + " sci/year");
+                    int daysPerYear = KSPUtil.Year/KSPUtil.Day;
+                    GUILayout.Label(Math.Round(sciPerDay * daysPerYear * 1000) / 1000 + " sci/yr");
                     usingPerYear = true;
                 }
                 if (upNodeRate != nodeRate && upgrades - spentPoints > 0)
@@ -2390,13 +2397,12 @@ namespace KerbalConstructionTime
                     }
                     if (everyKSCCanUpgrade)
                     {
-                        string buttonText = (86400 * upNodeRate / days).ToString("N2") + " sci/day";
+                        double upSciPerDay = 86400 * upNodeRate / days;
+                        string buttonText = Math.Round(1000 * upSciPerDay) / 1000 + " sci/day";
                         if (usingPerYear)
                         {
-                            int daysPerYear = 365;
-                            if (GameSettings.KERBIN_TIME)
-                                daysPerYear = 426;
-                            buttonText = (daysPerYear * 86400 * upNodeRate / days).ToString("N2") + " sci/year";
+                            int daysPerYear = KSPUtil.Year / KSPUtil.Day;
+                            buttonText = Math.Round(upSciPerDay * daysPerYear * 1000) / 1000 + " sci/yr";
                         }
                         if (GUILayout.Button(buttonText, GUILayout.ExpandWidth(false)))
                         {
@@ -2432,6 +2438,16 @@ namespace KerbalConstructionTime
             GUILayout.EndVertical();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                 GUI.DragWindow();
+        }
+
+        public static void ResetFormulaRateHolders()
+        {
+            fundsCost = -13;
+            sciCost = -13;
+            nodeRate = -13;
+            upNodeRate = -13;
+            researchRate = -13;
+            upResearchRate = -13;
         }
 
         private static string newName = "";

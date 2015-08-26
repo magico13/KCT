@@ -88,7 +88,7 @@ namespace KerbalConstructionTime
         [Persistent] string activeKSC = "";
         [Persistent] string SimulationTime = "";
         [Persistent] float SalesFigures = 0;
-        [Persistent] int UpgradesResetCounter = 0, TechUpgrades = 0, SavedUpgradePointsPreAPI;
+        [Persistent] int UpgradesResetCounter = 0, TechUpgrades = 0, SavedUpgradePointsPreAPI = 0;
 
 
         public override void OnDecodeFromConfigNode()

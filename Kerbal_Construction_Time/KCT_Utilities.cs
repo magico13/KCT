@@ -1177,9 +1177,7 @@ namespace KerbalConstructionTime
         {
             if (simulationLength == "" || simulationLength == "-1")
                 simulationLength = "31536000000"; //1000 Earth years
-            CelestialBody Kerbin = GetBodyByName("Kerbin");
-            if (Kerbin == null)
-                Kerbin = GetBodyByName("Earth");
+            CelestialBody Kerbin = Planetarium.fetch.Home;
 
             double length = KCT_Utilities.ParseColonFormattedTime(simulationLength, false);
             length = Math.Min(length, 31536000000.0);
@@ -1220,7 +1218,7 @@ namespace KerbalConstructionTime
             vars.Add("SMA", orbitRatio.ToString());
             vars.Add("PM", Parent.Mass.ToString());
 
-            if ((body.bodyName == "Kerbin" || body.bodyName == "Earth") && landed)
+            if ((body == Kerbin) && landed)
             {
                 return (float)(KCT_MathParsing.GetStandardFormulaValue("KerbinSimCost", vars));
             }

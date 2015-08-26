@@ -100,9 +100,10 @@ namespace KerbalConstructionTime
             if (System.IO.File.Exists(SavedFile))
             {
                 KCT_Preset saved = new KCT_Preset(SavedFile);
-                if (FindPresetByShortName(saved.name) != null) //Get settings from the original preset, if it exists
+                KCT_Preset source = FindPresetByShortName(saved.shortName);
+                if (source != null) //Get settings from the original preset, if it exists
                 {
-                    ActivePreset = FindPresetByShortName(saved.shortName);
+                    ActivePreset = source;
                     KCTDebug.Log("Loading settings from preset, rather than save. Name: " + ActivePreset.name);
                 }
                 else
