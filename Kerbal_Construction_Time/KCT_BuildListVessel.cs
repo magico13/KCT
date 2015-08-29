@@ -12,6 +12,7 @@ namespace KerbalConstructionTime
         private ShipConstruct ship;
         public double progress, buildPoints;
         public String launchSite, flag, shipName;
+        public int launchSiteID = -1;
         public ListType type;
         public enum ListType { None, VAB, SPH, TechNode, Reconditioning, KSC };
         //public List<string> InventoryParts;
@@ -425,7 +426,7 @@ namespace KerbalConstructionTime
 
             if (this.type == KCT_BuildListVessel.ListType.VAB)
             {
-                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)))
+                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].level/2.0F))
                 {
                     failedReasons.Add("Mass limit exceeded");
                 }
@@ -433,7 +434,7 @@ namespace KerbalConstructionTime
                 {
                     failedReasons.Add("Part Count limit exceeded");
                 }
-                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)));
+                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].level/2.0F));
                 if (!sizeCheck.Test())
                 {
                     failedReasons.Add("Size limits exceeded");

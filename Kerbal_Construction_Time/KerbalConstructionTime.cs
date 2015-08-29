@@ -301,6 +301,7 @@ namespace KerbalConstructionTime
                     KCT_Utilities.LoadSimulationSave();
                 }*/
                 KCT_GUI.hideAll();
+                KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID);
             }
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)

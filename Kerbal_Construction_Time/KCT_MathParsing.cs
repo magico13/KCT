@@ -27,6 +27,7 @@ namespace KerbalConstructionTime
                 case "UpgradeReset": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeResetFormula, variables);
                 case "InventorySales": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.InventorySaleFormula, variables);
                 case "RolloutCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.RolloutCostFormula, variables);
+                case "NewLaunchPadCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.NewLaunchPadCostFormula, variables);
                 default: return 0;
             }
         }
@@ -279,7 +280,7 @@ namespace KerbalConstructionTime
             if (vessel.type == KCT_BuildListVessel.ListType.VAB)
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
-                LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
+                LaunchSiteLvl = KCT_GameStates.ActiveKSC.ActiveLPInstance.level;//KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
                 isVABVessel = 1;
             }
             else if (vessel.type == KCT_BuildListVessel.ListType.SPH)
@@ -319,7 +320,7 @@ namespace KerbalConstructionTime
             if (vessel.type == KCT_BuildListVessel.ListType.VAB)
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
-                LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
+                LaunchSiteLvl = KCT_GameStates.ActiveKSC.ActiveLPInstance.level;//KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
                 isVABVessel = 1;
             }
             else

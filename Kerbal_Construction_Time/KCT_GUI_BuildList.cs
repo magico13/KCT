@@ -346,7 +346,16 @@ namespace KerbalConstructionTime
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];
-                        KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout, b.launchSite);
+                        string launchSite = b.launchSite;
+                        string activeLaunchSite = b.launchSite;
+                        if (launchSite == "LaunchPad")
+                        {
+                            if (b.launchSiteID >= 0)
+                                launchSite = b.KSC.LaunchPads[b.launchSiteID].name;
+                            else
+                                launchSite = b.KSC.ActiveLPInstance.name;
+                        }
+                        KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout, launchSite);
                         KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Rollback);
                         KCT_Recon_Rollout recovery = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Recovery);
                         GUIStyle textColor = new GUIStyle(GUI.skin.label);
@@ -392,13 +401,15 @@ namespace KerbalConstructionTime
                         GUILayout.Label(status+"   ", textColor, GUILayout.ExpandWidth(false));
                         if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null)
                         {
-                            KCT_Recon_Rollout tmpRollout = new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString());
+                            KCT_Recon_Rollout tmpRollout = new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString(), launchSite);
                             string rolloutText = (i == MouseOnRolloutButton ? KCT_Utilities.GetColonFormattedTime(tmpRollout.AsBuildItem().GetTimeLeft()) : "Rollout");
                             if (GUILayout.Button(rolloutText, GUILayout.ExpandWidth(false)))
                             {
                                 List<string> facilityChecks = b.MeetsFacilityRequirements();
                                 if (facilityChecks.Count == 0)
                                 {
+                                    b.launchSiteID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
+
                                     if (rollout != null)
                                     {
                                         rollout.SwapRolloutType();
@@ -441,6 +452,12 @@ namespace KerbalConstructionTime
                             }
                             else if (!GameSettings.MODIFIER_KEY.GetKey() && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                             {
+                                if (b.launchSiteID >= 0)
+                                {
+                                    KCT_GameStates.ActiveKSC.SwitchLaunchPad(b.launchSiteID);
+                                }
+                                b.launchSiteID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
+
                                 List<string> facilityChecks = b.MeetsFacilityRequirements();
                                 if (facilityChecks.Count == 0)
                                 {
@@ -449,11 +466,11 @@ namespace KerbalConstructionTime
                                     {
                                         ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                                     }
-                                    else if (KCT_Utilities.ReconditioningActive(null, b.launchSite))
+                                    else if (KCT_Utilities.ReconditioningActive(null, launchSite))
                                     {
                                         //can't launch now
                                         ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in "
-                                            + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning(b.launchSite)).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                                            + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning(launchSite)).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
                                         ScreenMessages.PostScreenMessage(message, true);
                                     }
                                     else
@@ -503,6 +520,53 @@ namespace KerbalConstructionTime
                     }
                 }
                 GUILayout.EndScrollView();
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("<<", GUILayout.ExpandWidth(false)))
+                {
+                    KCTDebug.Log((KCT_GameStates.ActiveKSC.ActiveLaunchPadID - 1) % KCT_GameStates.ActiveKSC.LaunchPadCount);
+                    KCT_GameStates.ActiveKSC.SwitchLaunchPad((KCT_GameStates.ActiveKSC.ActiveLaunchPadID - 1) % KCT_GameStates.ActiveKSC.LaunchPadCount);
+
+                }
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("Current LaunchPad: " + KCT_GameStates.ActiveKSC.ActiveLPInstance.name);
+                if (GUILayout.Button("New", GUILayout.ExpandWidth(false)))
+                {
+                    //open dialog to unlock new
+                    double costOfNew = KCT_MathParsing.GetStandardFormulaValue("NewLaunchPadCost", new Dictionary<string, string> { { "N", KCT_GameStates.ActiveKSC.LaunchPads.Count.ToString() } });
+                    DialogOption[] options = new DialogOption[2];
+                    options[0] = new DialogOption("Yes", () =>
+                    {
+                        if (Funding.CanAfford((float)costOfNew))
+                        {
+                            KCTDebug.Log("Building new launchpad!");
+                            //take the funds
+                            KCT_Utilities.SpendFunds(costOfNew, TransactionReasons.StructureConstruction);
+                            //create new launchpad at level -1
+                            KCT_GameStates.ActiveKSC.LaunchPads.Add(new KCT_LaunchPad("LaunchPad " + (KCT_GameStates.ActiveKSC.LaunchPads.Count + 1), -1, false));
+                            //create new upgradeable
+                            KCT_UpgradingBuilding newPad = new KCT_UpgradingBuilding();//(null, 0, -1, "LaunchPad");
+                            newPad.id = "SpaceCenter/LaunchPad";
+                            newPad.isLaunchpad = true;
+                            newPad.launchpadID = KCT_GameStates.ActiveKSC.LaunchPads.Count-1;
+                            newPad.upgradeLevel = 0;
+                            newPad.currentLevel = -1;
+                            newPad.cost = costOfNew;
+                            newPad.SetBP(costOfNew);
+                            newPad.commonName = "LaunchPad " + (KCT_GameStates.ActiveKSC.LaunchPads.Count);
+                            KCT_GameStates.ActiveKSC.KSCTech.Add(newPad);
+
+                        }
+                    });
+                    options[1] = new DialogOption("No", DummyVoid);
+                    MultiOptionDialog diag = new MultiOptionDialog("It will cost "+Math.Round(costOfNew, 2).ToString("N")+" funds to build a new launchpad. Would you like to build it?", windowTitle: "Build LaunchPad", options: options);
+                    PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                }
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button(">>", GUILayout.ExpandWidth(false)))
+                {
+                    KCT_GameStates.ActiveKSC.SwitchLaunchPad((KCT_GameStates.ActiveKSC.ActiveLaunchPadID + 1) % KCT_GameStates.ActiveKSC.LaunchPadCount);
+                }
+                GUILayout.EndHorizontal();
             }
             else if (listWindow == 1) //SPH Build List
             {

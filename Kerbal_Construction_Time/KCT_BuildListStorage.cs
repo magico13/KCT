@@ -123,7 +123,7 @@ namespace KerbalConstructionTime
             [Persistent]
             float cost = 0, mass = 0, kscDistance = 0;
             [Persistent]
-            int EditorFacility = 0;
+            int EditorFacility = 0, LaunchPadID = -1;
 
             public KCT_BuildListVessel ToBuildListVessel()
             {
@@ -142,6 +142,7 @@ namespace KerbalConstructionTime
                 ret.cannotEarnScience = cannotEarnScience;
                 ret.TotalMass = mass;
                 ret.DistanceFromKSC = kscDistance;
+                ret.launchSiteID = LaunchPadID;
                 return ret;
             }
 
@@ -160,6 +161,7 @@ namespace KerbalConstructionTime
                 this.mass = blv.TotalMass;
                 this.kscDistance = blv.DistanceFromKSC;
                 this.EditorFacility = (int)blv.GetEditorFacility();
+                this.LaunchPadID = blv.launchSiteID;
                 return this;
 
             }

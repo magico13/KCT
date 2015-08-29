@@ -2173,7 +2173,7 @@ namespace KerbalConstructionTime
             int lvl = 0;
             if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
             {
-                lvl = (int)(2*ScenarioUpgradeableFacilities.GetFacilityLevel(facility));
+                lvl = (int)(2 * ScenarioUpgradeableFacilities.GetFacilityLevel(facility));
             }
             else
             {
@@ -2182,7 +2182,6 @@ namespace KerbalConstructionTime
             }
             return lvl;
         }
-
 
         public static int TotalUpgradePoints()
         {
