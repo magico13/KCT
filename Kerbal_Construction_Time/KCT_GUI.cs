@@ -2448,6 +2448,7 @@ namespace KerbalConstructionTime
             upNodeRate = -13;
             researchRate = -13;
             upResearchRate = -13;
+            costOfNewLP = -13;
         }
 
         private static string newName = "";

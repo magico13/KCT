@@ -69,6 +69,7 @@ namespace KerbalConstructionTime
         }
 
         public enum VesselPadStatus { InStorage, RollingOut, RolledOut, RollingBack, Recovering };
+        private static double costOfNewLP = -13;
 
         public static void DrawBuildListWindow(int windowID)
         {
@@ -536,27 +537,29 @@ namespace KerbalConstructionTime
                 }
                 GUILayout.EndScrollView();
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("<<", GUILayout.ExpandWidth(false)))
+                int lpCount = KCT_GameStates.ActiveKSC.LaunchPadCount;
+                if (lpCount > 1 && GUILayout.Button("<<", GUILayout.ExpandWidth(false)))
                 {
                     //Simple fix for mod function being "weird" in the negative direction
                     //http://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
-                    int lpCount = KCT_GameStates.ActiveKSC.LaunchPadCount;
                     KCT_GameStates.ActiveKSC.SwitchLaunchPad(((KCT_GameStates.ActiveKSC.ActiveLaunchPadID - 1) % lpCount + lpCount) % lpCount);
                 }
                 GUILayout.FlexibleSpace();
                 GUILayout.Label("Current LaunchPad: " + KCT_GameStates.ActiveKSC.ActiveLPInstance.name);
-                if (GUILayout.Button("New", GUILayout.ExpandWidth(false)))
+                if (costOfNewLP == -13)
+                    costOfNewLP = KCT_MathParsing.GetStandardFormulaValue("NewLaunchPadCost", new Dictionary<string, string> { { "N", KCT_GameStates.ActiveKSC.LaunchPads.Count.ToString() } });
+                if (costOfNewLP >= 0 && GUILayout.Button("New", GUILayout.ExpandWidth(false)))
                 {
                     //open dialog to unlock new
-                    double costOfNew = KCT_MathParsing.GetStandardFormulaValue("NewLaunchPadCost", new Dictionary<string, string> { { "N", KCT_GameStates.ActiveKSC.LaunchPads.Count.ToString() } });
+                    costOfNewLP = KCT_MathParsing.GetStandardFormulaValue("NewLaunchPadCost", new Dictionary<string, string> { { "N", KCT_GameStates.ActiveKSC.LaunchPads.Count.ToString() } });
                     DialogOption[] options = new DialogOption[2];
                     options[0] = new DialogOption("Yes", () =>
                     {
-                        if (Funding.CanAfford((float)costOfNew))
+                        if (Funding.CanAfford((float)costOfNewLP))
                         {
                             KCTDebug.Log("Building new launchpad!");
                             //take the funds
-                            KCT_Utilities.SpendFunds(costOfNew, TransactionReasons.StructureConstruction);
+                            KCT_Utilities.SpendFunds(costOfNewLP, TransactionReasons.StructureConstruction);
                             //create new launchpad at level -1
                             KCT_GameStates.ActiveKSC.LaunchPads.Add(new KCT_LaunchPad("LaunchPad " + (KCT_GameStates.ActiveKSC.LaunchPads.Count + 1), -1, false));
                             //create new upgradeable
@@ -566,19 +569,20 @@ namespace KerbalConstructionTime
                             newPad.launchpadID = KCT_GameStates.ActiveKSC.LaunchPads.Count-1;
                             newPad.upgradeLevel = 0;
                             newPad.currentLevel = -1;
-                            newPad.cost = costOfNew;
-                            newPad.SetBP(costOfNew);
+                            newPad.cost = costOfNewLP;
+                            newPad.SetBP(costOfNewLP);
                             newPad.commonName = "LaunchPad " + (KCT_GameStates.ActiveKSC.LaunchPads.Count);
                             KCT_GameStates.ActiveKSC.KSCTech.Add(newPad);
 
                         }
+                        costOfNewLP = -13;
                     });
                     options[1] = new DialogOption("No", DummyVoid);
-                    MultiOptionDialog diag = new MultiOptionDialog("It will cost "+Math.Round(costOfNew, 2).ToString("N")+" funds to build a new launchpad. Would you like to build it?", windowTitle: "Build LaunchPad", options: options);
+                    MultiOptionDialog diag = new MultiOptionDialog("It will cost " + Math.Round(costOfNewLP, 2).ToString("N") + " funds to build a new launchpad. Would you like to build it?", windowTitle: "Build LaunchPad", options: options);
                     PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
                 }
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(">>", GUILayout.ExpandWidth(false)))
+                if (lpCount > 1 && GUILayout.Button(">>", GUILayout.ExpandWidth(false)))
                 {
                     KCT_GameStates.ActiveKSC.SwitchLaunchPad((KCT_GameStates.ActiveKSC.ActiveLaunchPadID + 1) % KCT_GameStates.ActiveKSC.LaunchPadCount);
                 }
