@@ -27,7 +27,7 @@ namespace KerbalConstructionTime
         public static KCT_KSC ActiveKSC = null;
         public static List<KCT_KSC> KSCs = new List<KCT_KSC>();
         public static string activeKSCName = "";
-
+        public static bool UpdateLaunchpadDestructionState = false;
         /*public static List<KCT_BuildListVessel> VABList = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();

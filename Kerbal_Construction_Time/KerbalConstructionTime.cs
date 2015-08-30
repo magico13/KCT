@@ -301,7 +301,7 @@ namespace KerbalConstructionTime
                     KCT_Utilities.LoadSimulationSave();
                 }*/
                 KCT_GUI.hideAll();
-                KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID);
+         //       KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID);
             }
 
             if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
@@ -406,6 +406,12 @@ namespace KerbalConstructionTime
                 KCT_Utilities.LoadSimulationSave(true);
             }
             
+            if (KCT_GameStates.UpdateLaunchpadDestructionState)
+            {
+                KCT_GameStates.UpdateLaunchpadDestructionState = false;
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDesctructibleState();
+            }
+
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
@@ -732,6 +738,8 @@ namespace KerbalConstructionTime
                 {
                     KCT_GameStates.launchedVessel.Launch();
                 }
+
+                KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID);
             }
         }
 

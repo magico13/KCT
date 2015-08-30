@@ -68,6 +68,7 @@ namespace KerbalConstructionTime
             }
         }
 
+        public enum VesselPadStatus { InStorage, RollingOut, RolledOut, RollingBack, Recovering };
 
         public static void DrawBuildListWindow(int windowID)
         {
@@ -347,7 +348,6 @@ namespace KerbalConstructionTime
                     {
                         KCT_BuildListVessel b = buildList[i];
                         string launchSite = b.launchSite;
-                        string activeLaunchSite = b.launchSite;
                         if (launchSite == "LaunchPad")
                         {
                             if (b.launchSiteID >= 0)
@@ -360,14 +360,22 @@ namespace KerbalConstructionTime
                         KCT_Recon_Rollout recovery = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Recovery);
                         GUIStyle textColor = new GUIStyle(GUI.skin.label);
                         GUIStyle buttonColor = new GUIStyle(GUI.skin.button);
+
+                        VesselPadStatus padStatus = VesselPadStatus.InStorage;
+                        if (rollback != null)
+                            padStatus = VesselPadStatus.RollingBack;
+                        if (recovery != null)
+                            padStatus = VesselPadStatus.Recovering;
+
                         string status = "In Storage";
                         if (rollout != null && rollout.associatedID == b.id.ToString())
                         {
+                            padStatus = VesselPadStatus.RollingOut;
                             status = "Rolling Out";
                             textColor = yellowText;
                             if (rollout.AsBuildItem().IsComplete())
                             {
-                                status = "On the Pad";
+                                status = "At "+launchSite;
                                 textColor = greenText;
                             }
                         }
@@ -383,7 +391,7 @@ namespace KerbalConstructionTime
                         }
 
                         GUILayout.BeginHorizontal();
-                        if (!HighLogic.LoadedSceneIsEditor && (status == "In Storage" || status == "On the Pad"))
+                        if (!HighLogic.LoadedSceneIsEditor && (padStatus == VesselPadStatus.InStorage || padStatus == VesselPadStatus.RolledOut))
                         {
                             if (GUILayout.Button("*", GUILayout.Width(butW)))
                             {
@@ -408,13 +416,20 @@ namespace KerbalConstructionTime
                                 List<string> facilityChecks = b.MeetsFacilityRequirements();
                                 if (facilityChecks.Count == 0)
                                 {
-                                    b.launchSiteID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
-
-                                    if (rollout != null)
+                                    if (!KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed && KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB))
                                     {
-                                        rollout.SwapRolloutType();
+                                        b.launchSiteID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
+
+                                        if (rollout != null)
+                                        {
+                                            rollout.SwapRolloutType();
+                                        }
+                                        KCT_GameStates.ActiveKSC.Recon_Rollout.Add(tmpRollout);
                                     }
-                                    KCT_GameStates.ActiveKSC.Recon_Rollout.Add(tmpRollout);
+                                    else
+                                    {
+                                        PopupDialog.SpawnPopupDialog("Cannot Launch!", "You must repair the launchpad before you can launch a vessel from it!", "Acknowledged", false, HighLogic.Skin);
+                                    }
                                 }
                                 else
                                 {
@@ -461,7 +476,7 @@ namespace KerbalConstructionTime
                                 List<string> facilityChecks = b.MeetsFacilityRequirements();
                                 if (facilityChecks.Count == 0)
                                 {
-                                    bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
+                                    bool operational = !KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed && KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
                                     if (!operational)
                                     {
                                         ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
@@ -523,9 +538,10 @@ namespace KerbalConstructionTime
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("<<", GUILayout.ExpandWidth(false)))
                 {
-                    KCTDebug.Log((KCT_GameStates.ActiveKSC.ActiveLaunchPadID - 1) % KCT_GameStates.ActiveKSC.LaunchPadCount);
-                    KCT_GameStates.ActiveKSC.SwitchLaunchPad((KCT_GameStates.ActiveKSC.ActiveLaunchPadID - 1) % KCT_GameStates.ActiveKSC.LaunchPadCount);
-
+                    //Simple fix for mod function being "weird" in the negative direction
+                    //http://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
+                    int lpCount = KCT_GameStates.ActiveKSC.LaunchPadCount;
+                    KCT_GameStates.ActiveKSC.SwitchLaunchPad(((KCT_GameStates.ActiveKSC.ActiveLaunchPadID - 1) % lpCount + lpCount) % lpCount);
                 }
                 GUILayout.FlexibleSpace();
                 GUILayout.Label("Current LaunchPad: " + KCT_GameStates.ActiveKSC.ActiveLPInstance.name);
@@ -939,117 +955,115 @@ namespace KerbalConstructionTime
             //bLPlusPosition.height = bLPlusPosition.yMax - bLPlusPosition.yMin;
             KCT_BuildListVessel b = KCT_Utilities.FindBLVesselByID(IDSelected);
             GUILayout.BeginVertical();
-            KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout, b.launchSite);
-            if (rollout != null && rollout.AsBuildItem().IsComplete() && rollout.associatedID == b.id.ToString())
+            string launchSite = b.launchSite;
+            if (launchSite == "LaunchPad")
             {
-                //This vessel is rolled out onto the pad
-                if (GUILayout.Button("Roll Back"))
+                if (b.launchSiteID >= 0)
+                    launchSite = b.KSC.LaunchPads[b.launchSiteID].name;
+                else
+                    launchSite = b.KSC.ActiveLPInstance.name;
+            }
+            KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout, launchSite);
+            bool onPad = rollout != null && rollout.AsBuildItem().IsComplete() && rollout.associatedID == b.id.ToString();
+            //This vessel is rolled out onto the pad
+            if (!onPad && GUILayout.Button("Select LaunchSite"))
+            {
+                string launchType = b.type == KCT_BuildListVessel.ListType.VAB ? "RocketPad" : "Runway";
+                launchSites = KCT_Utilities.GetAllOpenKKLaunchSites(launchType);
+                showBLPlus = false;
+                showLaunchSiteSelector = true;
+            }
+            if (!onPad && GUILayout.Button("Scrap"))
+            {
+                InputLockManager.SetControlLock(ControlTypes.KSC_ALL, "KCTPopupLock");
+                DialogOption[] options = new DialogOption[2];
+                options[0] = new DialogOption("Yes", ScrapVessel);
+                options[1] = new DialogOption("No", DummyVoid);
+                MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", windowTitle: "Scrap Vessel", options: options);
+                PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                showBLPlus = false;
+                ResetBLWindow();
+            }
+            if (!onPad && GUILayout.Button("Edit"))
+            {
+                showBLPlus = false;
+                editorWindowPosition.height = 1;
+                string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
+                b.shipNode.Save(tempFile);
+                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+                KCT_GameStates.editedVessel = b;
+                KCT_GameStates.EditorShipEditingMode = true;
+                KCT_GameStates.delayStart = true;
+
+                InputLockManager.SetControlLock(ControlTypes.EDITOR_EXIT, "KCTEditExit");
+                InputLockManager.SetControlLock(ControlTypes.EDITOR_LOAD, "KCTEditLoad");
+                InputLockManager.SetControlLock(ControlTypes.EDITOR_NEW, "KCTEditNew");
+                InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTEditLaunch");
+
+                KCT_GameStates.EditedVesselParts.Clear();
+                foreach (ConfigNode node in b.ExtractedPartNodes)
                 {
-                    rollout.SwapRolloutType();
-                    showBLPlus = false;
+                    string name = KCT_Utilities.PartNameFromNode(node) + KCT_Utilities.GetTweakScaleSize(node);
+                    if (!KCT_GameStates.EditedVesselParts.ContainsKey(name))
+                        KCT_GameStates.EditedVesselParts.Add(name, 1);
+                    else
+                        ++KCT_GameStates.EditedVesselParts[name];
+                }
+
+                //EditorDriver.StartAndLoadVessel(tempFile);
+                EditorDriver.StartAndLoadVessel(tempFile, b.type == KCT_BuildListVessel.ListType.VAB ? EditorFacility.VAB : EditorFacility.SPH);
+            }
+            if (GUILayout.Button("Rename"))
+            {
+                centralWindowPosition.width = 360;
+                centralWindowPosition.x = (Screen.width - 360) / 2;
+                centralWindowPosition.height = 1;
+                showBuildList = false;
+                showBLPlus = false;
+                showRename = true;
+                newName = b.shipName;
+                //newDesc = b.getShip().shipDescription;
+            }
+            if (GUILayout.Button("Duplicate"))
+            {
+                KCT_Utilities.AddVesselToBuildList(b.NewCopy(true), b.InventoryParts.Count > 0);
+            }
+            if (KCT_GameStates.ActiveKSC.Recon_Rollout.Find(rr => rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.associatedID == b.id.ToString()) != null && GUILayout.Button("Rollback"))
+            {
+                KCT_GameStates.ActiveKSC.Recon_Rollout.Find(rr => rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.associatedID == b.id.ToString()).SwapRolloutType();
+            }
+            if (!b.isFinished && GUILayout.Button("Warp To"))
+            {
+                KCT_GameStates.targetedItem = b;
+                KCT_GameStates.canWarp = true;
+                KCT_Utilities.RampUpWarp(b);
+                KCT_GameStates.warpInitiated = true;
+                showBLPlus = false;
+            }
+            if (!b.isFinished && GUILayout.Button("Move to Top"))
+            {
+                if (b.type == KCT_BuildListVessel.ListType.VAB)
+                {
+                    b.RemoveFromBuildList();
+                    KCT_GameStates.ActiveKSC.VABList.Insert(0, b);
+                }
+                else if (b.type == KCT_BuildListVessel.ListType.SPH)
+                {
+                    b.RemoveFromBuildList();
+                    KCT_GameStates.ActiveKSC.SPHList.Insert(0, b);
                 }
             }
-            else
+            if (!b.isFinished && GUILayout.Button("Rush Build 10%\n√" + Math.Round(0.2 * b.GetTotalCost())))
             {
-                if (GUILayout.Button("Select LaunchSite"))
+                double cost = b.GetTotalCost();
+                cost *= 0.2;
+                double remainingBP = b.buildPoints - b.progress;
+                if (Funding.Instance.Funds >= cost)
                 {
-                    string launchType = b.type == KCT_BuildListVessel.ListType.VAB ? "RocketPad" : "Runway";
-                    launchSites = KCT_Utilities.GetAllOpenKKLaunchSites(launchType);
-                    showBLPlus = false;
-                    showLaunchSiteSelector = true;
+                    b.AddProgress(remainingBP * 0.1);
+                    KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
                 }
-                if (GUILayout.Button("Scrap"))
-                {
-                    InputLockManager.SetControlLock(ControlTypes.KSC_ALL, "KCTPopupLock");
-                    DialogOption[] options = new DialogOption[2];
-                    options[0] = new DialogOption("Yes", ScrapVessel);
-                    options[1] = new DialogOption("No", DummyVoid);
-                    MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", windowTitle: "Scrap Vessel", options: options);
-                    PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
-                    showBLPlus = false;
-                    ResetBLWindow();
-                }
-                if (GUILayout.Button("Edit"))
-                {
-                    showBLPlus = false;
-                    editorWindowPosition.height = 1;
-                    string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
-                    b.shipNode.Save(tempFile);
-                    GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
-                    KCT_GameStates.editedVessel = b;
-                    KCT_GameStates.EditorShipEditingMode = true;
-                    KCT_GameStates.delayStart = true;
 
-                    InputLockManager.SetControlLock(ControlTypes.EDITOR_EXIT, "KCTEditExit");
-                    InputLockManager.SetControlLock(ControlTypes.EDITOR_LOAD, "KCTEditLoad");
-                    InputLockManager.SetControlLock(ControlTypes.EDITOR_NEW, "KCTEditNew");
-                    InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTEditLaunch");
-
-                    KCT_GameStates.EditedVesselParts.Clear();
-                    foreach (ConfigNode node in b.ExtractedPartNodes)
-                    {
-                        string name = KCT_Utilities.PartNameFromNode(node) + KCT_Utilities.GetTweakScaleSize(node);
-                        if (!KCT_GameStates.EditedVesselParts.ContainsKey(name))
-                            KCT_GameStates.EditedVesselParts.Add(name, 1);
-                        else
-                            ++KCT_GameStates.EditedVesselParts[name];
-                    }
-
-                    //EditorDriver.StartAndLoadVessel(tempFile);
-                    EditorDriver.StartAndLoadVessel(tempFile, b.type == KCT_BuildListVessel.ListType.VAB ? EditorFacility.VAB : EditorFacility.SPH);
-                }
-                if (GUILayout.Button("Rename"))
-                {
-                    centralWindowPosition.width = 360;
-                    centralWindowPosition.x = (Screen.width - 360) / 2;
-                    centralWindowPosition.height = 1;
-                    showBuildList = false;
-                    showBLPlus = false;
-                    showRename = true;
-                    newName = b.shipName;
-                    //newDesc = b.getShip().shipDescription;
-                }
-                if (GUILayout.Button("Duplicate"))
-                {
-                    KCT_Utilities.AddVesselToBuildList(b.NewCopy(true), b.InventoryParts.Count > 0);
-                }
-                if (KCT_GameStates.ActiveKSC.Recon_Rollout.Find(rr => rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.associatedID == b.id.ToString()) != null && GUILayout.Button("Rollback"))
-                {
-                    KCT_GameStates.ActiveKSC.Recon_Rollout.Find(rr => rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.associatedID == b.id.ToString()).SwapRolloutType();
-                }
-                if (!b.isFinished && GUILayout.Button("Warp To"))
-                {
-                    KCT_GameStates.targetedItem = b;
-                    KCT_GameStates.canWarp = true;
-                    KCT_Utilities.RampUpWarp(b);
-                    KCT_GameStates.warpInitiated = true;
-                    showBLPlus = false;
-                }
-                if (!b.isFinished && GUILayout.Button("Move to Top"))
-                {
-                    if (b.type == KCT_BuildListVessel.ListType.VAB)
-                    {
-                        b.RemoveFromBuildList();
-                        KCT_GameStates.ActiveKSC.VABList.Insert(0, b);
-                    }
-                    else if (b.type == KCT_BuildListVessel.ListType.SPH)
-                    {
-                        b.RemoveFromBuildList();
-                        KCT_GameStates.ActiveKSC.SPHList.Insert(0, b);
-                    }
-                }
-                if (!b.isFinished && GUILayout.Button("Rush Build 10%\n√" + Math.Round(0.2 * b.GetTotalCost())))
-                {
-                    double cost = b.GetTotalCost();
-                    cost *= 0.2;
-                    double remainingBP = b.buildPoints - b.progress;
-                    if (Funding.Instance.Funds >= cost)
-                    {
-                        b.AddProgress(remainingBP * 0.1);
-                        KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
-                    }
-
-                }
             }
             if (GUILayout.Button("Close"))
             {

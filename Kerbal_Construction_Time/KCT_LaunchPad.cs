@@ -27,6 +27,7 @@ namespace KerbalConstructionTime
         {
             try
             {
+                KCTDebug.Log("Switching to LaunchPad: "+name+ " lvl: "+level+" destroyed? "+destroyed);
                 KCT_GameStates.ActiveKSC.ActiveLaunchPadID = KCT_GameStates.ActiveKSC.LaunchPads.IndexOf(this);
 
                 //set the level to this level
@@ -37,17 +38,34 @@ namespace KerbalConstructionTime
                 }
 
                 //set the destroyed state to this destroyed state
-                foreach (DestructibleBuilding facility in GetDestructibleFacilityReferences())
-                {
-                    foreach (DestructibleBuilding.CollapsibleObject collapsable in facility.CollapsibleObjects)
-                    {
-                        collapsable.SetDestroyed(destroyed);
-                    }
-                }
+                //might need to do this one frame later?
+               // RefreshDesctructibleState();
+                KCT_GameStates.UpdateLaunchpadDestructionState = true;
             }
             catch (Exception e)
             {
                 KCTDebug.Log("Exception while calling SetActive " + e.StackTrace);
+            }
+        }
+
+        public void RefreshDesctructibleState()
+        {
+            foreach (DestructibleBuilding facility in GetDestructibleFacilityReferences())
+            {
+               /* KCTDebug.Log(facility.id);
+
+                if (destroyed)
+                    facility.Demolish();
+                else
+                    facility.Repair();*/
+
+
+                
+                foreach (DestructibleBuilding.CollapsibleObject collapsable in facility.CollapsibleObjects)
+                {
+                    collapsable.SetDestroyed(destroyed);
+                }
+                
             }
         }
 
@@ -59,7 +77,16 @@ namespace KerbalConstructionTime
 
         List<DestructibleBuilding> GetDestructibleFacilityReferences()
         {
-            return ScenarioDestructibles.protoDestructibles[LPID].dBuildingRefs;
+
+            List<DestructibleBuilding> destructibles = new List<DestructibleBuilding>();
+            foreach (KeyValuePair<string, ScenarioDestructibles.ProtoDestructible> kvp in ScenarioDestructibles.protoDestructibles)
+            {
+                if (kvp.Key.Contains("LaunchPad"))
+                {
+                    destructibles.AddRange(kvp.Value.dBuildingRefs);
+                }
+            }
+            return destructibles;
         }
     }
 }

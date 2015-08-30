@@ -567,7 +567,16 @@ namespace KerbalConstructionTime
                             }
                         }
                     }
-
+                    //Reset the associated launchpad id when rollback completes
+                    ksc.Recon_Rollout.ForEach(delegate(KCT_Recon_Rollout rr)
+                    {
+                        if (rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollback && rr.AsBuildItem().IsComplete())
+                        {
+                            KCT_BuildListVessel blv = KCT_Utilities.FindBLVesselByID(new Guid(rr.associatedID));
+                            if (blv != null)
+                                blv.launchSiteID = -1;
+                        }
+                    });
                     ksc.Recon_Rollout.RemoveAll(rr => !KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes || (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Rollout && rr.AsBuildItem().IsComplete()));
 
                     foreach (KCT_UpgradingBuilding kscTech in ksc.KSCTech)

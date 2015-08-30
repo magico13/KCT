@@ -732,7 +732,9 @@ namespace KerbalConstructionTime
             {
                 KCT_GameStates.ActiveKSC.LaunchPads[launchpadID].level = currentLevel;
                 if (KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
-                    KCT_GameStates.ActiveKSC.SwitchLaunchPad(launchpadID);
+                {
+                    return;
+                }
             }
             foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
             {
@@ -749,7 +751,10 @@ namespace KerbalConstructionTime
             {
                 KCT_GameStates.ActiveKSC.LaunchPads[launchpadID].level = upgradeLevel;
                 if (KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
-                    KCT_GameStates.ActiveKSC.SwitchLaunchPad(launchpadID);
+                {
+                    UpgradeProcessed = true;
+                    return;
+                }
             }
             foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
             {
