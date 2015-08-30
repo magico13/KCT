@@ -154,7 +154,8 @@ namespace KerbalConstructionTime
         {
             if (facility.id.Contains("LaunchPad"))
             {
-                KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].destroyed = false;
+                //KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].destroyed = false;
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
             }
         }
 
@@ -162,7 +163,8 @@ namespace KerbalConstructionTime
         {
             if (facility.id.Contains("LaunchPad"))
             {
-                KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].destroyed = !KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);
+                //KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].destroyed = !KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
             }
         }
 
@@ -750,6 +752,7 @@ namespace KerbalConstructionTime
             if (isLaunchpad)
             {
                 KCT_GameStates.ActiveKSC.LaunchPads[launchpadID].level = upgradeLevel;
+                KCT_GameStates.ActiveKSC.LaunchPads[launchpadID].DestructionNode = new ConfigNode("DestructionState");
                 if (KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
                 {
                     UpgradeProcessed = true;

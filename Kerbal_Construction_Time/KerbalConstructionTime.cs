@@ -409,7 +409,7 @@ namespace KerbalConstructionTime
             if (KCT_GameStates.UpdateLaunchpadDestructionState)
             {
                 KCT_GameStates.UpdateLaunchpadDestructionState = false;
-                KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDesctructibleState();
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
             }
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();

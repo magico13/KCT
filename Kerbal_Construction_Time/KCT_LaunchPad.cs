@@ -10,16 +10,27 @@ namespace KerbalConstructionTime
     public class KCT_LaunchPad : ConfigNodeStorage
     {
         [Persistent] public int level = 0;
-        [Persistent] public bool destroyed = false;
         [Persistent] public string name = "LaunchPad";
+        public ConfigNode DestructionNode = new ConfigNode("DestructionState");
+
+        public bool destroyed
+        {
+            get
+            {
+                ConfigNode mainNode = DestructionNode.GetNode("SpaceCenter/LaunchPad/Facility/building");
+                if (mainNode == null)
+                    return false;
+                else
+                    return !bool.Parse(mainNode.GetValue("intact"));
+            }
+        }
 
         private string LPID = "SpaceCenter/LaunchPad";
 
-        public KCT_LaunchPad(string LPName, int lvl=0, bool dstry=false)
+        public KCT_LaunchPad(string LPName, int lvl=0)
         {
             name = LPName;
             level = lvl;
-            destroyed = dstry;
         }
 
 
@@ -39,36 +50,38 @@ namespace KerbalConstructionTime
 
                 //set the destroyed state to this destroyed state
                 //might need to do this one frame later?
-               // RefreshDesctructibleState();
+             //   RefreshDesctructibleState();
                 KCT_GameStates.UpdateLaunchpadDestructionState = true;
             }
             catch (Exception e)
             {
-                KCTDebug.Log("Exception while calling SetActive " + e.StackTrace);
+                KCTDebug.Log("Error while calling SetActive: " + e.Message + e.StackTrace);
             }
         }
 
-        public void RefreshDesctructibleState()
+        public void SetDestructibleStateFromNode()
         {
             foreach (DestructibleBuilding facility in GetDestructibleFacilityReferences())
             {
-               /* KCTDebug.Log(facility.id);
-
-                if (destroyed)
-                    facility.Demolish();
-                else
-                    facility.Repair();*/
-
-
-                
-                foreach (DestructibleBuilding.CollapsibleObject collapsable in facility.CollapsibleObjects)
-                {
-                    collapsable.SetDestroyed(destroyed);
-                }
-                
+                /*ConfigNode aNode = new ConfigNode();
+                facility.Save(aNode);
+                aNode.SetValue("intact", (!destroyed).ToString());*/
+                ConfigNode aNode = DestructionNode.GetNode(facility.id);
+                if (aNode != null)
+                    facility.Load(aNode);
             }
         }
 
+        public void RefreshDestructionNode()
+        {
+            DestructionNode = new ConfigNode("DestructionState");
+            foreach (DestructibleBuilding facility in GetDestructibleFacilityReferences())
+            {
+                ConfigNode aNode = new ConfigNode(facility.id);
+                facility.Save(aNode);
+                DestructionNode.AddNode(aNode);
+            }
+        }
 
         List<Upgradeables.UpgradeableFacility> GetUpgradeableFacilityReferences()
         {

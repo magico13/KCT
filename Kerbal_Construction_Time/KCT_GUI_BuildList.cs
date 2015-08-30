@@ -376,6 +376,7 @@ namespace KerbalConstructionTime
                             textColor = yellowText;
                             if (rollout.AsBuildItem().IsComplete())
                             {
+                                padStatus = VesselPadStatus.RolledOut;
                                 status = "At "+launchSite;
                                 textColor = greenText;
                             }
@@ -417,7 +418,7 @@ namespace KerbalConstructionTime
                                 List<string> facilityChecks = b.MeetsFacilityRequirements();
                                 if (facilityChecks.Count == 0)
                                 {
-                                    if (!KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed && KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB))
+                                    if (!KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed)
                                     {
                                         b.launchSiteID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
 
@@ -477,10 +478,11 @@ namespace KerbalConstructionTime
                                 List<string> facilityChecks = b.MeetsFacilityRequirements();
                                 if (facilityChecks.Count == 0)
                                 {
-                                    bool operational = !KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed && KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
+                                    bool operational = !KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed;// && KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
                                     if (!operational)
                                     {
-                                        ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                                        //ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+                                        PopupDialog.SpawnPopupDialog("Cannot Launch!", "You must repair the launchpad before you can launch a vessel from it!", "Acknowledged", false, HighLogic.Skin);
                                     }
                                     else if (KCT_Utilities.ReconditioningActive(null, launchSite))
                                     {
@@ -555,13 +557,18 @@ namespace KerbalConstructionTime
                     DialogOption[] options = new DialogOption[2];
                     options[0] = new DialogOption("Yes", () =>
                     {
-                        if (Funding.CanAfford((float)costOfNewLP))
+                        if (!KCT_Utilities.CurrentGameIsCareer())
+                        {
+                            KCTDebug.Log("Building new launchpad!");
+                            KCT_GameStates.ActiveKSC.LaunchPads.Add(new KCT_LaunchPad("LaunchPad " + (KCT_GameStates.ActiveKSC.LaunchPads.Count + 1), 2));
+                        }
+                        else if (Funding.CanAfford((float)costOfNewLP))
                         {
                             KCTDebug.Log("Building new launchpad!");
                             //take the funds
                             KCT_Utilities.SpendFunds(costOfNewLP, TransactionReasons.StructureConstruction);
                             //create new launchpad at level -1
-                            KCT_GameStates.ActiveKSC.LaunchPads.Add(new KCT_LaunchPad("LaunchPad " + (KCT_GameStates.ActiveKSC.LaunchPads.Count + 1), -1, false));
+                            KCT_GameStates.ActiveKSC.LaunchPads.Add(new KCT_LaunchPad("LaunchPad " + (KCT_GameStates.ActiveKSC.LaunchPads.Count + 1), -1));
                             //create new upgradeable
                             KCT_UpgradingBuilding newPad = new KCT_UpgradingBuilding();//(null, 0, -1, "LaunchPad");
                             newPad.id = "SpaceCenter/LaunchPad";
