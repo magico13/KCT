@@ -261,7 +261,10 @@ namespace KerbalConstructionTime
                     if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes && KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)
                     {
                         KCT_GameStates.TechList.Add(tech);
-                        ScreenMessages.PostScreenMessage("[KCT] Node will unlock in " + KCT_Utilities.GetFormattedTime(tech.TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                        foreach (KCT_TechItem techItem in KCT_GameStates.TechList)
+                            techItem.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(techItem));
+                        double timeLeft = tech.BuildRate > 0 ? tech.TimeLeft : tech.EstimatedTimeLeft;
+                        ScreenMessages.PostScreenMessage("[KCT] Node will unlock in " + KCT_Utilities.GetFormattedTime(timeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
                     }
                 }
                 else

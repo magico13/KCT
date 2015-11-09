@@ -68,7 +68,7 @@ namespace KerbalConstructionTime
         public static double simulationUT = 0;
         public static double simulationEndTime = 0, simulationTimeLimit = 0, simulationDefaultTimeLimit = 0;
         public static double simOrbitAltitude = 0, simInclination = 0;
-        public static List<String> BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
+        public static List<String> BodiesVisited = new List<string> { Planetarium.fetch.Home.name };
         public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;
         public static int EditorSimulationCount = 0;
 
@@ -90,7 +90,7 @@ namespace KerbalConstructionTime
             flightSimulated = false;
             simulationInitialized = false;
             vesselDict = new Dictionary<string, string>();
-            BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
+            BodiesVisited = new List<string> { Planetarium.fetch.Home.name };
             simulationBody = KCT_Utilities.GetBodyByName(BodiesVisited[0]);
             simulateInOrbit = false;
             firstStart = false;
@@ -101,12 +101,7 @@ namespace KerbalConstructionTime
             PurchasedUpgrades = new List<int>() { 0, 0 };
            // LaunchPadReconditioning = null;
             targetedItem = null;
-            KCT_GUI.fundsCost = -13;
-            KCT_GUI.sciCost = -13;
-            KCT_GUI.nodeRate = -13;
-            KCT_GUI.upNodeRate = -13;
-            KCT_GUI.researchRate = -13;
-            KCT_GUI.upResearchRate = -13;
+            KCT_GUI.ResetFormulaRateHolders();
 
             InventorySaleUpgrades = 0;
             InventorySalesFigures = 0;

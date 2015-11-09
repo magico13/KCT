@@ -816,9 +816,12 @@ namespace KerbalConstructionTime
                     GUILayout.Label(t.techName);
                     GUILayout.Label(Math.Round(100 * t.progress / t.scienceCost, 2) + " %", GUILayout.Width(width1/2));
                     if (t.BuildRate > 0)
-                    {
                         GUILayout.Label(KCT_Utilities.GetColonFormattedTime(t.TimeLeft), GUILayout.Width(width1));
-                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(70)))
+                    else
+                        GUILayout.Label("Est: " + KCT_Utilities.GetColonFormattedTime(t.EstimatedTimeLeft), GUILayout.Width(width1));
+                    if (t.BuildRate > 0)
+                    {
+                        if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp", GUILayout.Width(45)))
                         {
                             KCT_GameStates.targetedItem = t;
                             KCT_GameStates.canWarp = true;
@@ -826,10 +829,10 @@ namespace KerbalConstructionTime
                             KCT_GameStates.warpInitiated = true;
                         }
                         else if (HighLogic.LoadedSceneIsEditor)
-                            GUILayout.Space(70);
+                            GUILayout.Space(45);
                     }
                     else
-                        GUILayout.Space(width1+70);
+                        GUILayout.Space(45);
                     
                     GUILayout.EndHorizontal();
                 }
