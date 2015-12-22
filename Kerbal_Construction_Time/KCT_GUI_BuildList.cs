@@ -851,6 +851,7 @@ namespace KerbalConstructionTime
                 if (techList.Count == 0)
                     GUILayout.Label("No tech nodes are being researched!\nBegin research by unlocking tech in the R&D building.");
                 bool forceRecheck = false;
+                int cancelID = -1;
                 for (int i = 0; i < techList.Count; i++)
                 {
                     KCT_TechItem t = techList[i];
@@ -859,10 +860,19 @@ namespace KerbalConstructionTime
                     if (GUILayout.Button("X", GUILayout.Width(butW)))
                     {
                         forceRecheck = true;
-                        CancelTechNode(i);
-                        i--;
-                        GUILayout.EndHorizontal();
-                        continue;
+                        cancelID = i;
+                        DialogOption[] options = new DialogOption[2];
+                        options[0] = new DialogOption("Yes", () => { CancelTechNode(cancelID); });
+                        options[1] = new DialogOption("No", DummyVoid);
+                        MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to stop researching "+t.techName+"?", windowTitle: "Cancel Node?", options: options);
+                        PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+
+                        /*if (CancelTechNode(i))
+                        {
+                            i--;
+                            GUILayout.EndHorizontal();
+                            continue;
+                        }*/
                     }
 
                     if (i > 0 && t.BuildRate != techList[0].BuildRate)
@@ -947,13 +957,18 @@ namespace KerbalConstructionTime
 
         public static void CancelTechNode(int index)
         {
-            KCT_TechItem node = KCT_GameStates.TechList[index];
-            if (KCT_Utilities.CurrentGameHasScience())
+            
+            if (KCT_GameStates.TechList.Count > index)
             {
-                ResearchAndDevelopment.Instance.AddScience(node.scienceCost, TransactionReasons.None); //Should maybe do tech research as the reason
+                KCT_TechItem node = KCT_GameStates.TechList[index];
+                KCTDebug.Log("Cancelling tech: " + node.techName);
+                if (KCT_Utilities.CurrentGameHasScience())
+                {
+                    ResearchAndDevelopment.Instance.AddScience(node.scienceCost, TransactionReasons.None); //Should maybe do tech research as the reason
+                }
+                node.DisableTech();
+                KCT_GameStates.TechList.RemoveAt(index);
             }
-            node.DisableTech();
-            KCT_GameStates.TechList.RemoveAt(index);
         }
 
         private static Guid IDSelected = new Guid();
