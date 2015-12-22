@@ -247,6 +247,8 @@ namespace KerbalConstructionTime
                 numNodes = ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length;
             variables.Add("S", numNodes.ToString());
 
+            AddCrewVariables(variables);
+
             return GetStandardFormulaValue("BuildRate", variables);
         }
 
@@ -261,6 +263,8 @@ namespace KerbalConstructionTime
             variables.Add("R", RnDLvl.ToString());
             variables.Add("O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString());
             variables.Add("I", index.ToString());
+
+            AddCrewVariables(variables);
 
             return GetStandardFormulaValue("Node", variables);
         }
@@ -299,6 +303,8 @@ namespace KerbalConstructionTime
             variables.Add("BP", BP.ToString());
             variables.Add("L", LaunchSiteLvl.ToString());
             variables.Add("EL", EditorLevel.ToString());
+
+            AddCrewVariables(variables);
 
             return GetStandardFormulaValue("RolloutCost", variables);
         }
@@ -348,7 +354,53 @@ namespace KerbalConstructionTime
             variables.Add("RE", isRecon.ToString());
             variables.Add("S", KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit.ToString());
 
+            AddCrewVariables(variables);
+
             return GetStandardFormulaValue("Reconditioning", variables);
+        }
+
+        public static void AddCrewVariables(Dictionary<string, string> crewVars)
+        {
+            //Dictionary<string, string> crewVars = new Dictionary<string, string>();
+            int pilots=0, engineers=0, scientists=0;
+            int pLevels=0, eLevels=0, sLevels=0;
+
+            foreach (ProtoCrewMember pcm in HighLogic.CurrentGame.CrewRoster.Crew)
+            {
+                if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                {
+                    if (pcm.trait == "Pilot")
+                    {
+                        pilots++;
+                        pLevels += pcm.experienceLevel;
+                    }
+                    else if (pcm.trait == "Engineer")
+                    {
+                        engineers++;
+                        eLevels += pcm.experienceLevel;
+                    }
+                    else if (pcm.trait == "Scientist")
+                    {
+                        scientists++;
+                        sLevels += pcm.experienceLevel;
+                    }
+                }
+            }
+
+            //KCTDebug.Log(pilots + " pilots " + pLevels + " levels");
+            //KCTDebug.Log(engineers + " engineers " + eLevels + " levels");
+            //KCTDebug.Log(scientists + " scientists " + sLevels + " levels");
+
+            crewVars.Add("PK", pilots.ToString());
+            crewVars.Add("PL", pLevels.ToString());
+
+            crewVars.Add("EK", engineers.ToString());
+            crewVars.Add("EL", eLevels.ToString());
+
+            crewVars.Add("SK", scientists.ToString());
+            crewVars.Add("SL", sLevels.ToString());
+
+            //return crewVars;
         }
     }
 }
