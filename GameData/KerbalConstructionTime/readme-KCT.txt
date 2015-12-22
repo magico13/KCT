@@ -19,6 +19,9 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.2.3.0 (11/09/15)
+ - Update to KSP 1.0.5
+ 
 v1.2.2.0 (8/25/15)
  - Fixed several issues with Tech node rates
  - Fixed an issue with automatic updating of Presets
