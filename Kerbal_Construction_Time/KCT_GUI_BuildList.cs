@@ -124,8 +124,12 @@ namespace KerbalConstructionTime
                 {
                     KCT_GameStates.targetedItem = buildItem;
                     KCT_GameStates.canWarp = true;
-                    KCT_Utilities.RampUpWarp();
+                   // KCT_Utilities.RampUpWarp();
                     KCT_GameStates.warpInitiated = true;
+                    if (buildItem.GetBuildRate() > 0)
+                    {
+                        TimeWarp.fetch.WarpTo(Planetarium.GetUniversalTime() + buildItem.GetTimeLeft(), KCT_GameStates.settings.MaxTimeWarp, 1);
+                    }
                 }
                 else if (!HighLogic.LoadedSceneIsEditor && TimeWarp.CurrentRateIndex > 0 && GUILayout.Button("Stop" + System.Environment.NewLine + "Warp"))
                 {
@@ -225,8 +229,12 @@ namespace KerbalConstructionTime
                     {
                         KCT_GameStates.targetedItem = item;
                         KCT_GameStates.canWarp = true;
-                        KCT_Utilities.RampUpWarp(item);
+                        //KCT_Utilities.RampUpWarp(item);
                         KCT_GameStates.warpInitiated = true;
+                        if (item.GetBuildRate() > 0)
+                        {
+                            TimeWarp.fetch.WarpTo(Planetarium.GetUniversalTime() + item.GetTimeLeft(), KCT_GameStates.settings.MaxTimeWarp, 1);
+                        }
                     }
                     
                     GUILayout.Label("Reconditioning: "+reconditioning.launchPadID);
@@ -839,8 +847,12 @@ namespace KerbalConstructionTime
                     {
                         KCT_GameStates.targetedItem = KCTTech;
                         KCT_GameStates.canWarp = true;
-                        KCT_Utilities.RampUpWarp(KCTTech);
+                        //KCT_Utilities.RampUpWarp(KCTTech);
                         KCT_GameStates.warpInitiated = true;
+                        if (KCTTech.AsIKCTBuildItem().GetBuildRate() > 0)
+                        {
+                            TimeWarp.fetch.WarpTo(Planetarium.GetUniversalTime() + KCTTech.AsIKCTBuildItem().GetTimeLeft(), KCT_GameStates.settings.MaxTimeWarp, 1);
+                        }
                     }
                     else if (HighLogic.LoadedSceneIsEditor)
                         GUILayout.Space(70);
@@ -1062,9 +1074,13 @@ namespace KerbalConstructionTime
             {
                 KCT_GameStates.targetedItem = b;
                 KCT_GameStates.canWarp = true;
-                KCT_Utilities.RampUpWarp(b);
+               // KCT_Utilities.RampUpWarp(b);
                 KCT_GameStates.warpInitiated = true;
                 showBLPlus = false;
+                if (b.buildRate > 0)
+                {
+                    TimeWarp.fetch.WarpTo(Planetarium.GetUniversalTime() + b.timeLeft, KCT_GameStates.settings.MaxTimeWarp, 1);
+                }
             }
             if (!b.isFinished && GUILayout.Button("Move to Top"))
             {

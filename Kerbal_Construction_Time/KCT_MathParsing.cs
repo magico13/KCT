@@ -391,14 +391,14 @@ namespace KerbalConstructionTime
             //KCTDebug.Log(engineers + " engineers " + eLevels + " levels");
             //KCTDebug.Log(scientists + " scientists " + sLevels + " levels");
 
-            crewVars.Add("PK", pilots.ToString());
-            crewVars.Add("PL", pLevels.ToString());
+            crewVars.Add("PiK", pilots.ToString());
+            crewVars.Add("PiL", pLevels.ToString());
 
-            crewVars.Add("EK", engineers.ToString());
-            crewVars.Add("EL", eLevels.ToString());
+            crewVars.Add("EnK", engineers.ToString());
+            crewVars.Add("EnL", eLevels.ToString());
 
-            crewVars.Add("SK", scientists.ToString());
-            crewVars.Add("SL", sLevels.ToString());
+            crewVars.Add("ScK", scientists.ToString());
+            crewVars.Add("ScL", sLevels.ToString());
 
             //return crewVars;
         }

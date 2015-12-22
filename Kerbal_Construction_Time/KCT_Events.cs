@@ -46,7 +46,7 @@ namespace KerbalConstructionTime
        //     GameEvents.OnKSCStructureRepairing.Add(FacilityRepairingEvent);
           //  GameEvents.onLevelWasLoaded.Add(LevelLoadedEvent);
 
-            GameEvents.OnCrewmemberHired.Add((ProtoCrewMember m, int i) =>
+          /*  GameEvents.OnCrewmemberHired.Add((ProtoCrewMember m, int i) =>
             {
                 foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                 {
@@ -61,7 +61,7 @@ namespace KerbalConstructionTime
                     ksc.RecalculateBuildRates();
                     ksc.RecalculateUpgradedBuildRates();
                 }
-            });
+            });*/
 
 
             eventAdded = true;
