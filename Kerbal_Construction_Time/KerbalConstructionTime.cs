@@ -646,6 +646,43 @@ namespace KerbalConstructionTime
             if (KCT_GUI.PrimarilyDisabled) return;
             
             //The following should only be executed when fully enabled for the save
+            
+            //check that all parts are valid in all ships. If not, warn the user and disable that vessel (once that code is written)
+            foreach (KCT_KSC KSC in KCT_GameStates.KSCs) //this is faster one subsequent scene changes
+            {
+                foreach (KCT_BuildListVessel blv in KSC.VABList)
+                {
+                    if (!blv.allPartsValid)
+                    {
+                        //error!
+                        PopUpVesselError(blv);
+                    }
+                }
+                foreach (KCT_BuildListVessel blv in KSC.VABWarehouse)
+                {
+                    if (!blv.allPartsValid)
+                    {
+                        //error!
+                        PopUpVesselError(blv);
+                    }
+                }
+                foreach (KCT_BuildListVessel blv in KSC.SPHList)
+                {
+                    if (!blv.allPartsValid)
+                    {
+                        //error!
+                        PopUpVesselError(blv);
+                    }
+                }
+                foreach (KCT_BuildListVessel blv in KSC.SPHWarehouse)
+                {
+                    if (!blv.allPartsValid)
+                    {
+                        //error!
+                        PopUpVesselError(blv);
+                    }
+                }
+            }
 
             foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
             {
@@ -771,6 +808,11 @@ namespace KerbalConstructionTime
                 }
             }
             return false;
+        }
+
+        public static void PopUpVesselError(KCT_BuildListVessel errored)
+        {
+            PopupDialog.SpawnPopupDialog("Vessel Contains Missing Parts", "The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Understood", false, HighLogic.Skin);
         }
 
         public void ShowLaunchAlert()

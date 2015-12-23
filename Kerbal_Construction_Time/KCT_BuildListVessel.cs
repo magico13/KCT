@@ -59,6 +59,17 @@ namespace KerbalConstructionTime
             || (k.SPHList.FirstOrDefault(s => s.id == this.id) != null || k.SPHWarehouse.FirstOrDefault(s => s.id == this.id) != null))); 
         } }
 
+        private bool? _allPartsValid;
+        public bool allPartsValid
+        {
+            get
+            {
+                if (_allPartsValid == null)
+                    _allPartsValid = CheckPartsValid();
+                return (bool)_allPartsValid;
+            }
+        }
+
         public KCT_BuildListVessel(ShipConstruct s, String ls, double bP, String flagURL)
         {
             ship = s;
@@ -621,6 +632,24 @@ namespace KerbalConstructionTime
                 retList.Add(returnPart);
             }
             return retList;
+        }
+
+        public bool CheckPartsValid()
+        {
+            //loop through the ship's parts and check if any don't have AvailableParts that match.
+
+            bool valid = true;
+            foreach (ConfigNode pNode in shipNode.GetNodes("PART"))
+            {
+                if (KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(pNode)) == null)
+                {
+                    //invalid part detected!
+                    valid = false;
+                    break;
+                }
+            }
+
+            return valid;
         }
 
         public double AddProgress(double toAdd)

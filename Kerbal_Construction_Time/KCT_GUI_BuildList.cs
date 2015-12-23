@@ -255,6 +255,8 @@ namespace KerbalConstructionTime
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];
+                        if (!b.allPartsValid)
+                            continue;
                         GUILayout.BeginHorizontal();
                         //GUILayout.Label(b.shipName, GUILayout.Width(width1));
 
@@ -356,6 +358,8 @@ namespace KerbalConstructionTime
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];
+                        if (!b.allPartsValid)
+                            continue;
                         string launchSite = b.launchSite;
                         if (launchSite == "LaunchPad")
                         {
@@ -622,6 +626,8 @@ namespace KerbalConstructionTime
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];
+                        if (!b.allPartsValid)
+                            continue;
                         GUILayout.BeginHorizontal();
                         if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("*", GUILayout.Width(butW)))
                         {
@@ -712,6 +718,8 @@ namespace KerbalConstructionTime
                     for (int i = 0; i < buildList.Count; i++)
                     {
                         KCT_BuildListVessel b = buildList[i];
+                        if (!b.allPartsValid)
+                            continue;
                         string status = "";
                         KCT_Recon_Rollout recovery = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Recovery);
                         if (recovery != null)

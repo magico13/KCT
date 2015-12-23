@@ -642,8 +642,11 @@ namespace KerbalConstructionTime
         public static float GetPartCostFromNode(ConfigNode part, bool includeFuel = true)
         {
             string name = PartNameFromNode(part);
+            AvailablePart aPart = GetAvailablePartByName(name);
+            if (aPart == null)
+                return 0;
             float dry, wet;
-            float total = ShipConstruction.GetPartCosts(part, GetAvailablePartByName(name), out dry, out wet);
+            float total = ShipConstruction.GetPartCosts(part, aPart, out dry, out wet);
             if (includeFuel)
                 return total;
             else
@@ -671,8 +674,10 @@ namespace KerbalConstructionTime
                     wet = dry + p.partPrefab.GetResourceMass();
                 }
             }*/
-
-            total = ShipConstruction.GetPartTotalMass(part, GetAvailablePartByName(PartNameFromNode(part)), out dry, out wet);
+            AvailablePart aPart = GetAvailablePartByName(PartNameFromNode(part));
+            if (aPart == null)
+                return 0;
+            total = ShipConstruction.GetPartTotalMass(part, aPart, out dry, out wet);
             if (includeFuel)
                 return total;
             else
