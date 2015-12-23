@@ -891,7 +891,7 @@ namespace KerbalConstructionTime
                 GUI.DragWindow();
         }
 
-        private static string orbitAltString = "", orbitIncString = "", UTString = "";
+        private static string orbitAltString = "", orbitIncString = "", UTString = "", delayString = "0";
         public static string simLength = "";
         private static bool advancedSimConfig = false, fromCurrentUT = false;
         public static void DrawSimulationConfigure(int windowID)
@@ -984,7 +984,12 @@ namespace KerbalConstructionTime
             {
                 if (KCT_GameStates.simulateInOrbit)
                 {
-                    KCT_GameStates.delayMove = GUILayout.Toggle(KCT_GameStates.delayMove, " Delay move to orbit");
+                    //KCT_GameStates.delayMove = GUILayout.Toggle(KCT_GameStates.delayMove, " Delay move to orbit");
+
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Delay: (s)");
+                    delayString = GUILayout.TextField(delayString, 3, GUILayout.Width(40));
+                    GUILayout.EndHorizontal();
 
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Inclination: ");
@@ -1025,12 +1030,15 @@ namespace KerbalConstructionTime
                 //if (!advancedSimConfig || !double.TryParse(UTString, out KCT_GameStates.simulationUT))
 
                 double currentUT = HighLogic.CurrentGame.flightState.universalTime;
+                KCT_GameStates.DelayMoveSeconds = 0;
                 if (advancedSimConfig)
                 {
                     if (fromCurrentUT)
                         KCT_GameStates.simulationUT = currentUT + KCT_Utilities.ParseColonFormattedTime(UTString, false);
                     else
                         KCT_GameStates.simulationUT = KCT_Utilities.ParseColonFormattedTime(UTString, true);
+
+                    int.TryParse(delayString, out KCT_GameStates.DelayMoveSeconds);
                 }
                 if (!advancedSimConfig || KCT_GameStates.simulationUT < 0)
                     KCT_GameStates.simulationUT = currentUT;

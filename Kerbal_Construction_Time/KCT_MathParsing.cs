@@ -271,6 +271,9 @@ namespace KerbalConstructionTime
 
         public static double ParseRolloutCostFormula(KCT_BuildListVessel vessel)
         {
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled || !KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes)
+                return 0;
+
             double loadedMass, emptyMass, loadedCost, emptyCost;
             loadedCost = vessel.GetTotalCost();
             emptyCost = vessel.emptyCost;

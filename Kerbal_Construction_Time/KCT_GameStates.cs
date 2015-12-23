@@ -14,7 +14,7 @@ namespace KerbalConstructionTime
         public static Dictionary<string, string> vesselDict = new Dictionary<string, string>();
         public static List<VesselType> VesselTypesForSOI = new List<VesselType>() { VesselType.Base, VesselType.Lander, VesselType.Probe, VesselType.Ship, VesselType.Station };
         public static List<Orbit.PatchTransitionType> SOITransitions = new List<Orbit.PatchTransitionType> { Orbit.PatchTransitionType.ENCOUNTER, Orbit.PatchTransitionType.ESCAPE };
-        public static bool delayStart = false, delayMove = false;
+        public static bool delayStart = false;
         public static Dictionary<String, int> PartTracker = new Dictionary<string, int>();
         public static Dictionary<String, int> PartInventory = new Dictionary<string, int>();
         public static bool flightSimulated = false;
@@ -71,6 +71,7 @@ namespace KerbalConstructionTime
         public static List<String> BodiesVisited = new List<string> { Planetarium.fetch.Home.name };
         public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;
         public static int EditorSimulationCount = 0;
+        public static int DelayMoveSeconds = 0;
 
         public static bool TestFlightPartFailures = true;
         public static bool RemoteTechEnabled = true;

@@ -469,12 +469,12 @@ namespace KerbalConstructionTime
                     if (FlightGlobals.ActiveVessel.loaded && !FlightGlobals.ActiveVessel.packed && !moved)
                     {
                         //moved = true;
-                        int secondsForMove = 3;
+                        int secondsForMove = KCT_GameStates.DelayMoveSeconds;
                         if (KCT_GameStates.simulateInOrbit && loadDeferTime == DateTime.MaxValue)
                         {
                             loadDeferTime = DateTime.Now;
                         }
-                        else if (KCT_GameStates.simulateInOrbit && (!KCT_GameStates.delayMove || DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0))
+                        else if (KCT_GameStates.simulateInOrbit && (DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0))
                         {
                             KCTDebug.Log("Moving vessel to orbit. " + KCT_GameStates.simulationBody.bodyName + ":" + KCT_GameStates.simOrbitAltitude + ":" + KCT_GameStates.simInclination);
                             KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simOrbitAltitude, KCT_GameStates.simInclination);
@@ -493,6 +493,7 @@ namespace KerbalConstructionTime
                     }
                     if (KCT_GameStates.simulationEndTime > 0 && KCT_GameStates.UT >= KCT_GameStates.simulationEndTime)
                     {
+                        TimeWarp.SetRate(0, true);
                         FlightDriver.SetPause(true);
                         KCT_GUI.showSimulationCompleteFlight = true;
                     }
