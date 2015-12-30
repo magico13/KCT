@@ -1801,18 +1801,31 @@ namespace KerbalConstructionTime
         public static string GetActiveRSSKSC()
         {
             if (!KSCSwitcherInstalled) return "Stock";
-            Type Switcher = AssemblyLoader.loadedAssemblies
+            /*Type Switcher = AssemblyLoader.loadedAssemblies
                     .Select(a => a.assembly.GetExportedTypes())
                     .SelectMany(t => t)
                     .FirstOrDefault(t => t.FullName == "regexKSP.KSCSwitcher");
 
             UnityEngine.Object KSCSwitcherInstance = GameObject.FindObjectOfType(Switcher);
 
-            return (string)GetMemberInfoValue(Switcher.GetMember("activeSite")[0], KSCSwitcherInstance);
+            return (string)GetMemberInfoValue(Switcher.GetMember("activeSite")[0], KSCSwitcherInstance);*/
 
-            //System.Reflection.FieldInfo site = RSS.GetField("activeSite");
+            //get the LastKSC.KSCLoader.instance object
+            //check the Sites object (KSCSiteManager) for the lastSite, if "" then get defaultSite
+            Type Loader = AssemblyLoader.loadedAssemblies
+                    .Select(a => a.assembly.GetExportedTypes())
+                    .SelectMany(t => t)
+                    .FirstOrDefault(t => t.FullName == "regexKSP.KSCLoader");
+            object LoaderInstance = GetMemberInfoValue(Loader.GetMember("instance")[0], null);
+            object SitesObj = GetMemberInfoValue(Loader.GetMember("Sites")[0], LoaderInstance);
+            string lastSite = (string)GetMemberInfoValue(SitesObj.GetType().GetMember("lastSite")[0], SitesObj);
 
-            //return (string)KCT_Utilities.GetMemberInfoValue(site, null);
+            if (lastSite == "")
+            {
+                string defaultSite = (string)GetMemberInfoValue(SitesObj.GetType().GetMember("defaultSite")[0], SitesObj);
+                return defaultSite;
+            }
+            return lastSite;
         }
 
         public static void SetActiveKSCToRSS()

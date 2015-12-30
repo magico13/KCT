@@ -92,8 +92,8 @@ namespace KerbalConstructionTime
                         KCT_GameStates.KSCs.Add(loaded_KSC);
                 }
             }
-            //KCT_Utilities.SetActiveKSCToRSS();
-            KCT_Utilities.SetActiveKSC(KCT_GameStates.activeKSCName);
+            KCT_Utilities.SetActiveKSCToRSS();
+            //KCT_Utilities.SetActiveKSC(KCT_GameStates.activeKSCName);
 
             
             ConfigNode tmp = node.GetNode("TechList");
