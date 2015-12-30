@@ -474,7 +474,7 @@ namespace KerbalConstructionTime
                     if (HighLogic.CurrentGame.editorFacility == EditorFacility.VAB)
                     {
                         string launchSite = FlightDriver.LaunchSiteName;
-                        if (launchSite == "LaunchPad") launchSite = KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].name;
+                        if (launchSite == "LaunchPad") launchSite = KCT_GameStates.ActiveKSC.ActiveLPInstance.name;
                         KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(ev.host, KCT_Recon_Rollout.RolloutReconType.Reconditioning, ev.host.id.ToString(), launchSite));
 
                     }

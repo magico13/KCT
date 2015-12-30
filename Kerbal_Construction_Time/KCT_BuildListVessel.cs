@@ -437,7 +437,7 @@ namespace KerbalConstructionTime
 
             if (this.type == KCT_BuildListVessel.ListType.VAB)
             {
-                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].level/2.0F))
+                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(KCT_GameStates.ActiveKSC.ActiveLPInstance.level/2.0F))
                 {
                     failedReasons.Add("Mass limit exceeded");
                 }
@@ -445,7 +445,7 @@ namespace KerbalConstructionTime
                 {
                     failedReasons.Add("Part Count limit exceeded");
                 }
-                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].level/2.0F));
+                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(KCT_GameStates.ActiveKSC.ActiveLPInstance.level/2.0F));
                 if (!sizeCheck.Test())
                 {
                     failedReasons.Add("Size limits exceeded");

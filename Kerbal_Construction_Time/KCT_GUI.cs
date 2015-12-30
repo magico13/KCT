@@ -1342,11 +1342,11 @@ namespace KerbalConstructionTime
                 KCT_GameStates.settings.Save();
             }
 
-            if (!KCT_GameStates.EditorShipEditingMode && GUILayout.Button("Build It!"))
+            if (!PrimarilyDisabled && !KCT_GameStates.EditorShipEditingMode && GUILayout.Button("Build It!"))
             {
                 KCT_GameStates.buildSimulatedVessel = true;
                 KCTDebug.Log("Ship added from simulation.");
-                var message = new ScreenMessage("[KCT] Ship will be added upon simulation completion!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                var message = new ScreenMessage("[KCT] Ship will be built upon simulation completion!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
                 ScreenMessages.PostScreenMessage(message, true);
             }
             if (FlightDriver.CanRevertToPostInit && GUILayout.Button("Restart Simulation"))
@@ -1373,9 +1373,9 @@ namespace KerbalConstructionTime
                 KCT_GameStates.TestFlightPartFailures = true;
               //  if (MCEWrapper.MCEAvailable) //Support for MCE
               //      MCEWrapper.IloadMCEbackup();
-                if (FlightDriver.LaunchSiteName == "LaunchPad")
+                if (KCT_GameStates.launchedVessel.type == KCT_BuildListVessel.ListType.VAB)
                     FlightDriver.RevertToPrelaunch(EditorFacility.VAB);
-                else if (FlightDriver.LaunchSiteName == "Runway")
+                else
                     FlightDriver.RevertToPrelaunch(EditorFacility.SPH);
                 centralWindowPosition.height = 1;
             }
@@ -2208,7 +2208,7 @@ namespace KerbalConstructionTime
                 GUILayout.Label("Reset Upgrades: ");
                 if (GUILayout.Button(ResetCost+" Points", GUILayout.ExpandWidth(false)))
                 {
-                    if (upgrades - spentPoints >= ResetCost)
+                    if (spentPoints > 0 && (upgrades - spentPoints >= ResetCost)) //you have to spend some points before resetting does anything
                     {
                         KCT_GameStates.ActiveKSC.VABUpgrades = new List<int>() { 0 };
                         KCT_GameStates.ActiveKSC.SPHUpgrades = new List<int>() { 0 };

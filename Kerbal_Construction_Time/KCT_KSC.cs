@@ -41,7 +41,7 @@ namespace KerbalConstructionTime
         {
             get
             {
-                return LaunchPads[ActiveLaunchPadID];
+                return LaunchPads.Count > ActiveLaunchPadID ? LaunchPads[ActiveLaunchPadID] : null; 
             }
         }
 
@@ -269,7 +269,7 @@ namespace KerbalConstructionTime
             KSCTech.Clear();
             //TechList.Clear();
             Recon_Rollout.Clear();
-            LaunchPads.Clear();
+            
 
 
             this.KSCName = node.GetValue("KSCName");
@@ -362,6 +362,7 @@ namespace KerbalConstructionTime
 
             if (node.HasNode("LaunchPads"))
             {
+                LaunchPads.Clear();
                 tmp = node.GetNode("LaunchPads");
                 foreach (ConfigNode LP in tmp.GetNodes("KCT_LaunchPad"))
                 {
