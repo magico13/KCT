@@ -648,40 +648,48 @@ namespace KerbalConstructionTime
             //The following should only be executed when fully enabled for the save
             
             //check that all parts are valid in all ships. If not, warn the user and disable that vessel (once that code is written)
-            foreach (KCT_KSC KSC in KCT_GameStates.KSCs) //this is faster one subsequent scene changes
+            if (!KCT_GameStates.vesselErrorAlerted)
             {
-                foreach (KCT_BuildListVessel blv in KSC.VABList)
+                foreach (KCT_KSC KSC in KCT_GameStates.KSCs) //this is faster one subsequent scene changes
                 {
-                    if (!blv.allPartsValid)
+                    foreach (KCT_BuildListVessel blv in KSC.VABList)
                     {
-                        //error!
-                        PopUpVesselError(blv);
+                        if (!blv.allPartsValid)
+                        {
+                            //error!
+                            KCTDebug.Log(blv.shipName + " contains invalid parts!");
+                            PopUpVesselError(blv);
+                        }
+                    }
+                    foreach (KCT_BuildListVessel blv in KSC.VABWarehouse)
+                    {
+                        if (!blv.allPartsValid)
+                        {
+                            //error!
+                            KCTDebug.Log(blv.shipName + " contains invalid parts!");
+                            PopUpVesselError(blv);
+                        }
+                    }
+                    foreach (KCT_BuildListVessel blv in KSC.SPHList)
+                    {
+                        if (!blv.allPartsValid)
+                        {
+                            //error!
+                            KCTDebug.Log(blv.shipName + " contains invalid parts!");
+                            PopUpVesselError(blv);
+                        }
+                    }
+                    foreach (KCT_BuildListVessel blv in KSC.SPHWarehouse)
+                    {
+                        if (!blv.allPartsValid)
+                        {
+                            //error!
+                            KCTDebug.Log(blv.shipName + " contains invalid parts!");
+                            PopUpVesselError(blv);
+                        }
                     }
                 }
-                foreach (KCT_BuildListVessel blv in KSC.VABWarehouse)
-                {
-                    if (!blv.allPartsValid)
-                    {
-                        //error!
-                        PopUpVesselError(blv);
-                    }
-                }
-                foreach (KCT_BuildListVessel blv in KSC.SPHList)
-                {
-                    if (!blv.allPartsValid)
-                    {
-                        //error!
-                        PopUpVesselError(blv);
-                    }
-                }
-                foreach (KCT_BuildListVessel blv in KSC.SPHWarehouse)
-                {
-                    if (!blv.allPartsValid)
-                    {
-                        //error!
-                        PopUpVesselError(blv);
-                    }
-                }
+                KCT_GameStates.vesselErrorAlerted = true;
             }
 
             foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
@@ -816,8 +824,8 @@ namespace KerbalConstructionTime
             options[0] = new DialogOption("Understood", () => {} ); //do nothing and close the window
             options[1] = new DialogOption("Delete Vessel", () => { errored.RemoveFromBuildList(); KCT_Utilities.AddFunds(errored.cost, TransactionReasons.VesselRollout); }); //remove the vessel from the game and refund the cost
 
-            MultiOptionDialog diag = new MultiOptionDialog("The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Vessel Contains Missing Parts", KCT_GUI.windowSkin, options);
-            PopupDialog.SpawnPopupDialog(diag, false, KCT_GUI.windowSkin);
+            MultiOptionDialog diag = new MultiOptionDialog("The KCT vessel \"" + errored.shipName + "\" contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Vessel Contains Missing Parts", GUI.skin, options);
+            PopupDialog.SpawnPopupDialog(diag, false, GUI.skin);
             //PopupDialog.SpawnPopupDialog("Vessel Contains Missing Parts", "The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Understood", false, HighLogic.Skin);
         }
 

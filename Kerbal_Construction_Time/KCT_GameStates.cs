@@ -82,6 +82,7 @@ namespace KerbalConstructionTime
         public static int TemporaryModAddedUpgradesButReallyWaitForTheAPI = 0; //Reset when returned to the MainMenu
         public static int PermanentModAddedUpgradesButReallyWaitForTheAPI = 0; //Saved to the save file
 
+        public static bool vesselErrorAlerted = false;
 
         public static void reset()
         {
@@ -95,6 +96,7 @@ namespace KerbalConstructionTime
             simulationBody = KCT_Utilities.GetBodyByName(BodiesVisited[0]);
             simulateInOrbit = false;
             firstStart = false;
+            vesselErrorAlerted = false;
             
           /*  VABUpgrades = new List<int>() {0};
             SPHUpgrades = new List<int>() {0};
