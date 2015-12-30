@@ -211,13 +211,13 @@ namespace KerbalConstructionTime
             {
                 foreach(ConfigNode module in part.GetNodes("MODULE"))
                 {
-                    SanitizeNode(module, templates);
+                    SanitizeNode(KCT_Utilities.PartNameFromNode(part), module, templates);
                 }
             }
             return node;
         }
 
-        private void SanitizeNode(ConfigNode module, ConfigNode[] templates)
+        private void SanitizeNode(string partName, ConfigNode module, ConfigNode[] templates)
         {
             string name = module.GetValue("name");
 
@@ -228,7 +228,7 @@ namespace KerbalConstructionTime
             if (name == "Log")
                 module.ClearValues();
 
-            ConfigNode template = templates.FirstOrDefault(t => t.GetValue("name") == name);
+            ConfigNode template = templates.FirstOrDefault(t => t.GetValue("name") == name && (!t.HasValue("parts") || t.GetValue("parts").Split(',').Contains(partName)));
             if (template == null) return;
             ConfigNode.ValueList values = template.values;
             foreach (ConfigNode.Value val in values)
@@ -246,7 +246,7 @@ namespace KerbalConstructionTime
             }
 
             foreach (ConfigNode node in module.GetNodes("MODULE"))
-                SanitizeNode(node, templates);
+                SanitizeNode(partName, node, templates);
 
             
             /*
@@ -347,6 +347,13 @@ namespace KerbalConstructionTime
             module = new ConfigNode("MODULE");
             module.AddValue("name", "ModuleWheel");
             module.AddValue("isDamaged", "False");
+            templates.AddNode(module);
+
+            //reset goo and materials bay
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleAnimateGeneric");
+            module.AddValue("parts", "GooExperiment,science.module");
+            module.AddValue("animTime", "0");
             templates.AddNode(module);
 
             templates.Save(KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_ModuleTemplates.cfg");

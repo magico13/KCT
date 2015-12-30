@@ -42,10 +42,13 @@ namespace KerbalConstructionTime
                 KCT_GameStates.ActiveKSC.ActiveLaunchPadID = KCT_GameStates.ActiveKSC.LaunchPads.IndexOf(this);
 
                 //set the level to this level
-                foreach (Upgradeables.UpgradeableFacility facility in GetUpgradeableFacilityReferences())
+                if (KCT_Utilities.CurrentGameIsCareer())
                 {
-                    KCT_Events.allowedToUpgrade = true;
-                    facility.SetLevel(level);
+                    foreach (Upgradeables.UpgradeableFacility facility in GetUpgradeableFacilityReferences())
+                    {
+                        KCT_Events.allowedToUpgrade = true;
+                        facility.SetLevel(level);
+                    }
                 }
 
                 //set the destroyed state to this destroyed state
