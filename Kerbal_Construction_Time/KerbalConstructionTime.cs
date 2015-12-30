@@ -812,7 +812,13 @@ namespace KerbalConstructionTime
 
         public static void PopUpVesselError(KCT_BuildListVessel errored)
         {
-            PopupDialog.SpawnPopupDialog("Vessel Contains Missing Parts", "The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Understood", false, HighLogic.Skin);
+            DialogOption[] options = new DialogOption[2];
+            options[0] = new DialogOption("Understood", () => {} ); //do nothing and close the window
+            options[1] = new DialogOption("Delete Vessel", () => { errored.RemoveFromBuildList(); KCT_Utilities.AddFunds(errored.cost, TransactionReasons.VesselRollout); }); //remove the vessel from the game and refund the cost
+
+            MultiOptionDialog diag = new MultiOptionDialog("The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Vessel Contains Missing Parts", KCT_GUI.windowSkin, options);
+            PopupDialog.SpawnPopupDialog(diag, false, KCT_GUI.windowSkin);
+            //PopupDialog.SpawnPopupDialog("Vessel Contains Missing Parts", "The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Understood", false, HighLogic.Skin);
         }
 
         public void ShowLaunchAlert()
