@@ -343,6 +343,12 @@ namespace KerbalConstructionTime
             module.AddValue("targetAngle", "0");
             templates.AddNode(module);
 
+            //Repair wheels
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleWheel");
+            module.AddValue("isDamaged", "False");
+            templates.AddNode(module);
+
             templates.Save(KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_ModuleTemplates.cfg");
         }
 
