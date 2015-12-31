@@ -1620,9 +1620,22 @@ namespace KerbalConstructionTime
         {
             if (ksc == null) ksc = KCT_GameStates.ActiveKSC;
             int spentPoints = 0;
-            foreach (int i in ksc.VABUpgrades) spentPoints += i;
-            foreach (int i in ksc.SPHUpgrades) spentPoints += i;
-            foreach (int i in ksc.RDUpgrades) spentPoints += i;
+            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.SharedUpgradePool)
+            {
+                foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
+                {
+                    foreach (int i in KSC.VABUpgrades) spentPoints += i;
+                    foreach (int i in KSC.SPHUpgrades) spentPoints += i;
+                    spentPoints += KSC.RDUpgrades[0];
+                }
+                spentPoints += ksc.RDUpgrades[1]; //only count this once, all KSCs share this value
+            }
+            else
+            {
+                foreach (int i in ksc.VABUpgrades) spentPoints += i;
+                foreach (int i in ksc.SPHUpgrades) spentPoints += i;
+                foreach (int i in ksc.RDUpgrades) spentPoints += i;
+            }
             return spentPoints;
         }
 

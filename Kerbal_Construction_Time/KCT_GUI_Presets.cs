@@ -117,6 +117,7 @@ namespace KerbalConstructionTime
             WorkingPreset.generalSettings.SimulationCosts = GUILayout.Toggle(WorkingPreset.generalSettings.SimulationCosts, "Simulation Costs", HighLogic.Skin.button);
             WorkingPreset.generalSettings.RequireVisitsForSimulations = GUILayout.Toggle(WorkingPreset.generalSettings.RequireVisitsForSimulations, "Must Visit Planets", HighLogic.Skin.button);
             WorkingPreset.generalSettings.TechUpgrades = GUILayout.Toggle(WorkingPreset.generalSettings.TechUpgrades, "Upgrades From Tech Tree", HighLogic.Skin.button);
+            WorkingPreset.generalSettings.SharedUpgradePool = GUILayout.Toggle(WorkingPreset.generalSettings.SharedUpgradePool, "Shared Upgrade Pool (KSCSwitcher)", HighLogic.Skin.button);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Starting Upgrades:");
@@ -146,7 +147,7 @@ namespace KerbalConstructionTime
             double.TryParse(ReEffTmp = GUILayout.TextField(ReEffTmp, 10, GUILayout.Width(80)), out WorkingPreset.timeSettings.ReconditioningEffect);
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Max Reocnditioning: ");
+            GUILayout.Label("Max Reconditioning: ");
             double.TryParse(MaxReTmp = GUILayout.TextField(MaxReTmp, 10, GUILayout.Width(80)), out WorkingPreset.timeSettings.MaxReconditioning);
             GUILayout.EndHorizontal();
             GUILayout.Label("Rollout-Reconditioning Split:");

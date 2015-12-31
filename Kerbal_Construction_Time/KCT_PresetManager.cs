@@ -349,7 +349,7 @@ namespace KerbalConstructionTime
         [Persistent]
         public bool Enabled = true, BuildTimes = true, ReconditioningTimes = true, TechUnlockTimes = true, KSCUpgradeTimes = true,
             Simulations = true, SimulationCosts = true, RequireVisitsForSimulations = true,
-            TechUpgrades = true;
+            TechUpgrades = true, SharedUpgradePool = false;
         [Persistent]
         public string StartingPoints = "15,15,45"; //Career, Science, and Sandbox modes
     }

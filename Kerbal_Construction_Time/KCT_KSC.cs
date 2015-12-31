@@ -16,7 +16,7 @@ namespace KerbalConstructionTime
         //public List<KCT_TechItem> TechList = new List<KCT_TechItem>();
         public List<int> VABUpgrades = new List<int>() { 0 };
         public List<int> SPHUpgrades = new List<int>() { 0 };
-        public List<int> RDUpgrades = new List<int>() { 0, 0 };
+        public List<int> RDUpgrades = new List<int>() { 0, 0 }; //research/development
         public List<KCT_Recon_Rollout> Recon_Rollout = new List<KCT_Recon_Rollout>();
         public List<double> VABRates = new List<double>(), SPHRates = new List<double>();
         public List<double> UpVABRates = new List<double>(), UpSPHRates = new List<double>();

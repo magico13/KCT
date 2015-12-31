@@ -17,7 +17,8 @@ namespace KerbalConstructionTime
         {
             get
             {
-                ConfigNode mainNode = DestructionNode.GetNode("SpaceCenter/LaunchPad/Facility/building");
+                string nodeStr = level == 2 ? "SpaceCenter/LaunchPad/Facility/LaunchPadMedium/ksp_pad_launchPad" : "SpaceCenter/LaunchPad/Facility/building";
+                ConfigNode mainNode = DestructionNode.GetNode(nodeStr);
                 if (mainNode == null)
                     return false;
                 else

@@ -562,6 +562,8 @@ namespace KerbalConstructionTime
                 GUILayout.Label("Current LaunchPad: " + KCT_GameStates.ActiveKSC.ActiveLPInstance.name);
                 if (costOfNewLP == -13)
                     costOfNewLP = KCT_MathParsing.GetStandardFormulaValue("NewLaunchPadCost", new Dictionary<string, string> { { "N", KCT_GameStates.ActiveKSC.LaunchPads.Count.ToString() } });
+                if (KCT_Utilities.KSCSwitcherInstalled)
+                    costOfNewLP = -1; //disable purchasing additional launchpads when playing with KSC Switcher (until upgrades are properly per KSC)
                 if (costOfNewLP >= 0 && GUILayout.Button("New", GUILayout.ExpandWidth(false)))
                 {
                     //open dialog to unlock new
