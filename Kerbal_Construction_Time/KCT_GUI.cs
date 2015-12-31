@@ -901,7 +901,7 @@ namespace KerbalConstructionTime
                 if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.SimulationCosts || !KCT_Utilities.CurrentGameIsCareer())
                     simLength = "00:00:00:00:00";
                 else
-                    simLength = "00:00:00:15:00";
+                    simLength = "15m";
             }
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
@@ -1012,7 +1012,7 @@ namespace KerbalConstructionTime
                 if (KCT_GameStates.simulationBody != Planetarium.fetch.Home)
                     KCT_GameStates.simulateInOrbit = true;
 
-                KCT_GameStates.simulationTimeLimit = KCT_Utilities.ParseColonFormattedTime(simLength, false);
+                KCT_GameStates.simulationTimeLimit = KCT_Utilities.ParseTimeString(simLength, false);
                 KCT_GameStates.simulationDefaultTimeLimit = KCT_GameStates.simulationTimeLimit;
 
                 if (KCT_GameStates.simulateInOrbit)
@@ -1034,9 +1034,9 @@ namespace KerbalConstructionTime
                 if (advancedSimConfig)
                 {
                     if (fromCurrentUT)
-                        KCT_GameStates.simulationUT = currentUT + KCT_Utilities.ParseColonFormattedTime(UTString, false);
+                        KCT_GameStates.simulationUT = currentUT + KCT_Utilities.ParseTimeString(UTString, false);
                     else
-                        KCT_GameStates.simulationUT = KCT_Utilities.ParseColonFormattedTime(UTString, true);
+                        KCT_GameStates.simulationUT = KCT_Utilities.ParseTimeString(UTString, true);
 
                     int.TryParse(delayString, out KCT_GameStates.DelayMoveSeconds);
                 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace KerbalConstructionTime
@@ -70,6 +71,84 @@ namespace KerbalConstructionTime
             {
                 return "00:00:00:00";
             }
+        }
+
+        public static double ParseTimeString(string timeString, bool toUT = true)
+        {
+            //if it doesn't contain colons, we assume it's not colon formatted
+            if (timeString.Contains(":"))
+            {
+                return ParseColonFormattedTime(timeString, toUT);
+            }
+            else if (timeString.Contains("s") || timeString.Contains("m") || timeString.Contains("h") || timeString.Contains("d") || timeString.Contains("y"))
+            {
+                return ParseCommonFormattedTime(timeString, toUT);
+            }
+            else
+            {
+                return double.Parse(timeString);
+            }
+                
+        }
+
+        public static double ParseCommonFormattedTime(string timeString, bool toUT=true)
+        {
+            //parses strings like "12d 14h 32m" or "3y8d"
+            double time = -1;
+            timeString = timeString.ToLower(); //make sure everything is lowercase
+            string[] parts = Regex.Split(timeString, "([a-z])");//split on characters (should also include the character as the next element of the array)
+            int len = parts.Length;
+            double sPerDay = GameSettings.KERBIN_TIME ? 6 * 3600 : 24 * 3600;
+            double sPerYear = GameSettings.KERBIN_TIME ? 426 * sPerDay : 365 * sPerDay;
+
+            //loop over all the elements, if it's y,d,h,m,s then take the previous element as the number
+            if (len > 1)
+            {
+                for (int i = 1; i < len; i++)
+                {
+                    double multiplier = 1;
+                    double value = 0;
+
+                    string s = parts[i].Trim();
+                    if (s == "s")
+                    {
+                        //seconds
+                        multiplier = 1;
+                        double.TryParse(parts[i - 1], out value);
+                    }
+                    else if (s == "m")
+                    {
+                        //minutes
+                        multiplier = 60;
+                        double.TryParse(parts[i - 1], out value);
+                    }
+                    else if (s == "h")
+                    {
+                        //hours
+                        multiplier = 3600;
+                        double.TryParse(parts[i - 1], out value);
+                    }
+                    else if (s == "d")
+                    {
+                        //days
+                        multiplier = sPerDay;
+                        double.TryParse(parts[i - 1], out value);
+                        if (toUT)
+                            value -= 1;
+                    }
+                    else if (s == "y")
+                    {
+                        //years
+                        multiplier = sPerYear;
+                        double.TryParse(parts[i - 1], out value);
+                        if (toUT)
+                            value -= 1;
+                    }
+
+                    time += multiplier * value;
+                }
+            }
+            return time;
         }
 
         public static double ParseColonFormattedTime(string timeString, bool toUT=true)
@@ -1193,7 +1272,7 @@ namespace KerbalConstructionTime
                 simulationLength = "31536000000"; //1000 Earth years
             CelestialBody Kerbin = Planetarium.fetch.Home;
 
-            double length = KCT_Utilities.ParseColonFormattedTime(simulationLength, false);
+            double length = KCT_Utilities.ParseTimeString(simulationLength, false);
             length = Math.Min(length, 31536000000.0);
             if (length == 0)
                 length = 31536000000.0;
