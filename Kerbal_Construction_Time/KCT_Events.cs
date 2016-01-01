@@ -109,11 +109,12 @@ namespace KerbalConstructionTime
 
                 if (!upgrading.AlreadyInProgress())
                 {
+                    KCT_GameStates.ActiveKSC.KSCTech.Add(upgrading);
                     upgrading.Downgrade();
                     double cost = facility.GetUpgradeCost();
                     upgrading.SetBP(cost);
                     upgrading.cost = cost;
-                    KCT_GameStates.ActiveKSC.KSCTech.Add(upgrading);
+                    
                     ScreenMessages.PostScreenMessage("Facility upgrade requested!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     KCTDebug.Log("Facility " + facility.id + " upgrade requested to lvl " + lvl + " for " + cost + " funds, resulting in a BP of " + upgrading.BP);
                 }
@@ -750,8 +751,8 @@ namespace KerbalConstructionTime
             KCTDebug.Log("Downgrading " + commonName + " to level " + currentLevel);
             if (isLaunchpad)
             {
-                KCT_GameStates.ActiveKSC.LaunchPads[launchpadID].level = currentLevel;
-                if (KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
+                KSC.LaunchPads[launchpadID].level = currentLevel;
+                if (KCT_GameStates.activeKSCName != KSC.KSCName || KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
                 {
                     return;
                 }
@@ -769,9 +770,9 @@ namespace KerbalConstructionTime
             KCTDebug.Log("Upgrading " + commonName + " to level " + upgradeLevel);
             if (isLaunchpad)
             {
-                KCT_GameStates.ActiveKSC.LaunchPads[launchpadID].level = upgradeLevel;
-                KCT_GameStates.ActiveKSC.LaunchPads[launchpadID].DestructionNode = new ConfigNode("DestructionState");
-                if (KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
+                KSC.LaunchPads[launchpadID].level = upgradeLevel;
+                KSC.LaunchPads[launchpadID].DestructionNode = new ConfigNode("DestructionState");
+                if (KCT_GameStates.activeKSCName != KSC.KSCName || KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
                 {
                     UpgradeProcessed = true;
                     return;

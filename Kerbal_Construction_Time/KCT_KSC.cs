@@ -118,14 +118,15 @@ namespace KerbalConstructionTime
             }
         }
 
-        public void SwitchLaunchPad(int LP_ID)
+        public void SwitchLaunchPad(int LP_ID, bool updateDestrNode = true)
         {
             //set the active LP's new state
             //activate new pad
 
             //LaunchPads[ActiveLaunchPadID].level = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
             //LaunchPads[ActiveLaunchPadID].destroyed = !KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB); //Might want to remove this as well
-            ActiveLPInstance.RefreshDestructionNode();
+            if (updateDestrNode)
+                ActiveLPInstance.RefreshDestructionNode();
 
             LaunchPads[LP_ID].SetActive();
         }

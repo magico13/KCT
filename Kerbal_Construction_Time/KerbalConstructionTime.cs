@@ -384,6 +384,7 @@ namespace KerbalConstructionTime
 
         public static bool moved = false;
         private static bool updateChecked = false;
+        private static int failedLvlChecks = 0;
         public void FixedUpdate()
         {
             #if DEBUG
@@ -405,7 +406,7 @@ namespace KerbalConstructionTime
             {
                 KCT_Utilities.LoadSimulationSave(true);
             }
-            
+
             if (KCT_GameStates.UpdateLaunchpadDestructionState)
             {
                 KCT_GameStates.UpdateLaunchpadDestructionState = false;
@@ -415,6 +416,17 @@ namespace KerbalConstructionTime
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
+
+                if (HighLogic.LoadedScene == GameScenes.SPACECENTER && KCT_Utilities.CurrentGameIsCareer() && KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad) != KCT_GameStates.ActiveKSC.ActiveLPInstance.level)
+                {
+                    failedLvlChecks++;
+                    if (failedLvlChecks > 3)
+                    {
+                        KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID, false);
+                        KCT_GameStates.UpdateLaunchpadDestructionState = true;
+                        failedLvlChecks = 0;
+                    }
+                }
                 /* if (!KCT_GUI.PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated))
                  {
                      IKCTBuildItem ikctItem = KCT_Utilities.NextThingToFinish();

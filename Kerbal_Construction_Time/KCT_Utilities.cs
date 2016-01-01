@@ -1976,7 +1976,8 @@ namespace KerbalConstructionTime
             bool intact = true;
             if (type == KCT_BuildListVessel.ListType.VAB)
             {
-                intact = new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
+                //intact = new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
+                intact = new PreFlightTests.FacilityOperational("LaunchPad", "LaunchPad").Test();
             }
             else if (type == KCT_BuildListVessel.ListType.SPH)
             {
@@ -1984,7 +1985,7 @@ namespace KerbalConstructionTime
                     intact = false;
                 if (!new PreFlightTests.FacilityOperational("Runway", "End27").Test())
                     intact = false;*/
-                if (!new PreFlightTests.FacilityOperational("Runway", "Section1").Test())
+               /* if (!new PreFlightTests.FacilityOperational("Runway", "Section1").Test())
                     intact = false;
                 if (!new PreFlightTests.FacilityOperational("Runway", "Section2").Test())
                     intact = false;
@@ -1993,6 +1994,8 @@ namespace KerbalConstructionTime
                 if (!new PreFlightTests.FacilityOperational("Runway", "Section4").Test())
                     intact = false;
                 if (!new PreFlightTests.FacilityOperational("Runway", "Section5").Test())
+                    intact = false;*/
+                if (!new PreFlightTests.FacilityOperational("Runway", "Runway").Test())
                     intact = false;
             }
             return intact;
