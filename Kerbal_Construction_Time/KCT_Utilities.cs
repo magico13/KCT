@@ -1958,6 +1958,8 @@ namespace KerbalConstructionTime
                 else
                 {
                     setActive = new KCT_KSC(site);
+                    if (CurrentGameIsCareer())
+                        setActive.ActiveLPInstance.level = 0;
                     KCT_GameStates.KSCs.Add(setActive);
                     KCT_GameStates.ActiveKSC = setActive;
                 }
