@@ -650,6 +650,7 @@ namespace KerbalConstructionTime
             //check that all parts are valid in all ships. If not, warn the user and disable that vessel (once that code is written)
             if (!KCT_GameStates.vesselErrorAlerted)
             {
+                List<KCT_BuildListVessel> erroredVessels = new List<KCT_BuildListVessel>();
                 foreach (KCT_KSC KSC in KCT_GameStates.KSCs) //this is faster one subsequent scene changes
                 {
                     foreach (KCT_BuildListVessel blv in KSC.VABList)
@@ -658,7 +659,7 @@ namespace KerbalConstructionTime
                         {
                             //error!
                             KCTDebug.Log(blv.shipName + " contains invalid parts!");
-                            PopUpVesselError(blv);
+                            erroredVessels.Add(blv);
                         }
                     }
                     foreach (KCT_BuildListVessel blv in KSC.VABWarehouse)
@@ -667,7 +668,7 @@ namespace KerbalConstructionTime
                         {
                             //error!
                             KCTDebug.Log(blv.shipName + " contains invalid parts!");
-                            PopUpVesselError(blv);
+                            erroredVessels.Add(blv);
                         }
                     }
                     foreach (KCT_BuildListVessel blv in KSC.SPHList)
@@ -676,7 +677,7 @@ namespace KerbalConstructionTime
                         {
                             //error!
                             KCTDebug.Log(blv.shipName + " contains invalid parts!");
-                            PopUpVesselError(blv);
+                            erroredVessels.Add(blv);
                         }
                     }
                     foreach (KCT_BuildListVessel blv in KSC.SPHWarehouse)
@@ -685,10 +686,12 @@ namespace KerbalConstructionTime
                         {
                             //error!
                             KCTDebug.Log(blv.shipName + " contains invalid parts!");
-                            PopUpVesselError(blv);
+                            erroredVessels.Add(blv);
                         }
                     }
                 }
+                if (erroredVessels.Count > 0)
+                    PopUpVesselError(erroredVessels);
                 KCT_GameStates.vesselErrorAlerted = true;
             }
 
@@ -818,13 +821,34 @@ namespace KerbalConstructionTime
             return false;
         }
 
-        public static void PopUpVesselError(KCT_BuildListVessel errored)
+        public static void PopUpVesselError(List<KCT_BuildListVessel> errored)
         {
             DialogOption[] options = new DialogOption[2];
             options[0] = new DialogOption("Understood", () => {} ); //do nothing and close the window
-            options[1] = new DialogOption("Delete Vessel", () => { errored.RemoveFromBuildList(); KCT_Utilities.AddFunds(errored.cost, TransactionReasons.VesselRollout); }); //remove the vessel from the game and refund the cost
+            options[1] = new DialogOption("Delete Vessels", () => {
+                foreach (KCT_BuildListVessel blv in errored)
+                {
+                    blv.RemoveFromBuildList(); 
+                    KCT_Utilities.AddFunds(blv.cost, TransactionReasons.VesselRollout);
+                }
+            }); //remove the vessel from the game and refund the cost
 
-            MultiOptionDialog diag = new MultiOptionDialog("The KCT vessel \"" + errored.shipName + "\" contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Vessel Contains Missing Parts", KCT_GUI.windowSkin, options);
+            string txt = "The following KCT vessels contain missing or invalid parts and have been quarantined. Either add the missing parts back into your game or delete the vessels. A file containing the ship names and missing parts has been added to your save folder.\n";
+            string txtToWrite = "";
+            foreach (KCT_BuildListVessel blv in errored)
+            {
+                txt += blv.shipName + "\n";
+                txtToWrite += blv.shipName+"\n";
+                txtToWrite += String.Join("\n", blv.MissingParts().ToArray());
+                txtToWrite += "\n\n";
+            }
+
+            //HighLogic.SaveFolder
+            //make new file for missing ships
+            string filename = KSPUtil.ApplicationRootPath + "/saves/" + HighLogic.SaveFolder + "/missingParts.txt";
+            System.IO.File.WriteAllText(filename, txtToWrite);
+
+            MultiOptionDialog diag = new MultiOptionDialog(txt, "Vessels Contain Missing Parts", KCT_GUI.windowSkin, options);
             PopupDialog.SpawnPopupDialog(diag, false, KCT_GUI.windowSkin);
             //PopupDialog.SpawnPopupDialog("Vessel Contains Missing Parts", "The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Understood", false, HighLogic.Skin);
         }

@@ -665,6 +665,21 @@ namespace KerbalConstructionTime
             return valid;
         }
 
+        public List<string> MissingParts()
+        {
+            List<string> missing = new List<string>();
+            foreach (ConfigNode pNode in shipNode.GetNodes("PART"))
+            {
+                string name = KCT_Utilities.PartNameFromNode(pNode);
+                if (KCT_Utilities.GetAvailablePartByName(name) == null)
+                {
+                    //invalid part detected!
+                    missing.Add(name);
+                }
+            }
+            return missing;
+        }
+
         public double AddProgress(double toAdd)
         {
             progress+=toAdd;
