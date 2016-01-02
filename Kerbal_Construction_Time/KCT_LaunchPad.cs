@@ -12,6 +12,7 @@ namespace KerbalConstructionTime
         [Persistent] public int level = 0;
         [Persistent] public string name = "LaunchPad";
         public ConfigNode DestructionNode = new ConfigNode("DestructionState");
+        public bool upgradeRepair = false;
 
         public bool destroyed
         {
@@ -34,6 +35,14 @@ namespace KerbalConstructionTime
             level = lvl;
         }
 
+        public void Upgrade(int lvl)
+        {
+            //sets the new level, assumes completely repaired
+            level = lvl;
+
+            KCT_GameStates.UpdateLaunchpadDestructionState = true;
+            upgradeRepair = true;
+        }
 
         public void SetActive()
         {
@@ -56,6 +65,7 @@ namespace KerbalConstructionTime
                 //might need to do this one frame later?
              //   RefreshDesctructibleState();
                 KCT_GameStates.UpdateLaunchpadDestructionState = true;
+                upgradeRepair = false;
             }
             catch (Exception e)
             {
@@ -84,6 +94,15 @@ namespace KerbalConstructionTime
                 ConfigNode aNode = new ConfigNode(facility.id);
                 facility.Save(aNode);
                 DestructionNode.AddNode(aNode);
+            }
+        }
+
+        public void CompletelyRepairNode()
+        {
+            foreach (ConfigNode node in DestructionNode.GetNodes())
+            {
+                if (node.HasValue("intact"))
+                    node.SetValue("intact", "True");
             }
         }
 

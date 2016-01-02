@@ -133,6 +133,13 @@ namespace KerbalConstructionTime
             else
             {
                 KCTDebug.Log("Facility " + facility.id + " upgraded to lvl " + lvl);
+                if (facility.id.ToLower().Contains("launchpad"))
+                {
+                    if (!allowedToUpgrade)
+                        KCT_GameStates.ActiveKSC.ActiveLPInstance.Upgrade(lvl); //also repairs the launchpad
+                    else
+                        KCT_GameStates.ActiveKSC.ActiveLPInstance.level = lvl;
+                }
                 allowedToUpgrade = false;
                 foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                 {
@@ -143,7 +150,6 @@ namespace KerbalConstructionTime
                 {
                     tech.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(tech));
                 }
-                KCT_GameStates.ActiveKSC.ActiveLPInstance.level = lvl;
             }
            /* if (lvl <= lastLvl)
             {
@@ -173,8 +179,10 @@ namespace KerbalConstructionTime
         {
             if (facility.id.Contains("LaunchPad"))
             {
+                KCTDebug.Log("LaunchPad was repaired.");
                 //KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].destroyed = false;
                 KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.CompletelyRepairNode();
             }
         }
 
@@ -182,6 +190,7 @@ namespace KerbalConstructionTime
         {
             if (facility.id.Contains("LaunchPad"))
             {
+                KCTDebug.Log("LaunchPad was damaged.");
                 //KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].destroyed = !KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);
                 KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
             }
@@ -777,6 +786,7 @@ namespace KerbalConstructionTime
                     UpgradeProcessed = true;
                     return;
                 }
+                KSC.LaunchPads[launchpadID].Upgrade(upgradeLevel);
             }
             foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
             {

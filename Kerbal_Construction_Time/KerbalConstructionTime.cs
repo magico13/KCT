@@ -411,6 +411,14 @@ namespace KerbalConstructionTime
             {
                 KCT_GameStates.UpdateLaunchpadDestructionState = false;
                 KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
+                if (KCT_GameStates.ActiveKSC.ActiveLPInstance.upgradeRepair)
+                {
+                    //repair everything, then update the node
+                    KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
+                    KCT_GameStates.ActiveKSC.ActiveLPInstance.CompletelyRepairNode();
+                    KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
+                }
+                
             }
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
@@ -420,7 +428,7 @@ namespace KerbalConstructionTime
                 if (HighLogic.LoadedScene == GameScenes.SPACECENTER && KCT_Utilities.CurrentGameIsCareer() && KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad) != KCT_GameStates.ActiveKSC.ActiveLPInstance.level)
                 {
                     failedLvlChecks++;
-                    if (failedLvlChecks > 3)
+                    if (failedLvlChecks > 10)
                     {
                         KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID, false);
                         KCT_GameStates.UpdateLaunchpadDestructionState = true;
