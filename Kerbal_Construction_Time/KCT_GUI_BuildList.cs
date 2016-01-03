@@ -564,7 +564,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.ActiveKSC.SwitchLaunchPad(((KCT_GameStates.ActiveKSC.ActiveLaunchPadID - 1) % lpCount + lpCount) % lpCount);
                 }
                 GUILayout.FlexibleSpace();
-                GUILayout.Label("Current: " + KCT_GameStates.ActiveKSC.ActiveLPInstance.name);
+                GUILayout.Label("Current: " + KCT_GameStates.ActiveKSC.ActiveLPInstance.name+" ("+(KCT_GameStates.ActiveKSC.ActiveLPInstance.level+1)+")");
                 if (costOfNewLP == -13)
                     costOfNewLP = KCT_MathParsing.GetStandardFormulaValue("NewLaunchPadCost", new Dictionary<string, string> { { "N", KCT_GameStates.ActiveKSC.LaunchPads.Count.ToString() } });
               //  if (KCT_Utilities.KSCSwitcherInstalled) //todo
