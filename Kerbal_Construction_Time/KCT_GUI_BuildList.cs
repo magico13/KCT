@@ -517,6 +517,11 @@ namespace KerbalConstructionTime
                                             else
                                             {
                                                 showBuildList = false;
+                                                if (KCT_Events.instance.KCTButtonStock != null)
+                                                {
+                                                    KCT_Events.instance.KCTButtonStock.SetFalse();
+                                                }
+
                                                 centralWindowPosition.height = 1;
                                                 KCT_GameStates.launchedCrew.Clear();
                                                 parts = KCT_GameStates.launchedVessel.ExtractedParts;
@@ -559,11 +564,19 @@ namespace KerbalConstructionTime
                     KCT_GameStates.ActiveKSC.SwitchLaunchPad(((KCT_GameStates.ActiveKSC.ActiveLaunchPadID - 1) % lpCount + lpCount) % lpCount);
                 }
                 GUILayout.FlexibleSpace();
-                GUILayout.Label("Current LaunchPad: " + KCT_GameStates.ActiveKSC.ActiveLPInstance.name);
+                GUILayout.Label("Current: " + KCT_GameStates.ActiveKSC.ActiveLPInstance.name);
                 if (costOfNewLP == -13)
                     costOfNewLP = KCT_MathParsing.GetStandardFormulaValue("NewLaunchPadCost", new Dictionary<string, string> { { "N", KCT_GameStates.ActiveKSC.LaunchPads.Count.ToString() } });
               //  if (KCT_Utilities.KSCSwitcherInstalled) //todo
               //      costOfNewLP = -1; //disable purchasing additional launchpads when playing with KSC Switcher (until upgrades are properly per KSC)
+                if (GUILayout.Button("Rename", GUILayout.ExpandWidth(false)))
+                {
+                    renamingLaunchPad = true;
+                    newName = KCT_GameStates.ActiveKSC.ActiveLPInstance.name;
+                    showRename = true;
+                    showBuildList = false;
+                    showBLPlus = false;
+                }
                 if (costOfNewLP >= 0 && GUILayout.Button("New", GUILayout.ExpandWidth(false)))
                 {
                     //open dialog to unlock new
@@ -766,6 +779,10 @@ namespace KerbalConstructionTime
                                         else
                                         {
                                             showBuildList = false;
+                                            if (KCT_Events.instance.KCTButtonStock != null)
+                                            {
+                                                KCT_Events.instance.KCTButtonStock.SetFalse();
+                                            }
                                             centralWindowPosition.height = 1;
                                             KCT_GameStates.launchedCrew.Clear();
                                             parts = KCT_GameStates.launchedVessel.ExtractedParts;
@@ -1070,6 +1087,7 @@ namespace KerbalConstructionTime
                 showBLPlus = false;
                 showRename = true;
                 newName = b.shipName;
+                renamingLaunchPad = false;
                 //newDesc = b.getShip().shipDescription;
             }
             if (GUILayout.Button("Duplicate"))

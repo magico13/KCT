@@ -1698,7 +1698,7 @@ namespace KerbalConstructionTime
                 {
                     cP.crewList.Clear();
                 }
-                AvailableCrew = null;
+                AvailableCrew = CrewAvailable();
             }
             GUILayout.EndHorizontal();
             int numberItems = 0;
@@ -1802,7 +1802,7 @@ namespace KerbalConstructionTime
                     if (GUILayout.Button("Clear", GUILayout.Width(75)))
                     {
                         KCT_GameStates.launchedCrew[j].crewList.Clear();
-                        AvailableCrew = null;
+                        AvailableCrew = CrewAvailable();
                     }
                     GUILayout.EndHorizontal();
                     for (int i = 0; i < p.CrewCapacity; i++)
@@ -2460,6 +2460,7 @@ namespace KerbalConstructionTime
         }
 
         private static string newName = "";
+        private static bool renamingLaunchPad = false;
         public static void DrawRenameWindow(int windowID)
         {
           /*  if (centralWindowPosition.y != (Screen.height - centralWindowPosition.height) / 2)
@@ -2473,9 +2474,17 @@ namespace KerbalConstructionTime
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Save"))
             {
-                KCT_BuildListVessel b = KCT_Utilities.FindBLVesselByID(IDSelected);
-                b.shipName = newName; //Change the name from our point of view
-                b.shipNode.SetValue("ship", newName);
+                if (!renamingLaunchPad)
+                {
+                    KCT_BuildListVessel b = KCT_Utilities.FindBLVesselByID(IDSelected);
+                    b.shipName = newName; //Change the name from our point of view
+                    b.shipNode.SetValue("ship", newName);
+                }
+                else
+                {
+                    KCT_LaunchPad lp = KCT_GameStates.ActiveKSC.ActiveLPInstance;
+                    lp.Rename(newName);
+                }
                 showRename = false;
                 centralWindowPosition.width = 150;
                 centralWindowPosition.x = (Screen.width - 150) / 2;

@@ -44,6 +44,38 @@ namespace KerbalConstructionTime
             upgradeRepair = true;
         }
 
+        public void Rename(string newName)
+        {
+            //find everything that references this launchpad by name and update the name reference
+            foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+            {
+                if (ksc.LaunchPads.Contains(this))
+                {
+                    if (ksc.LaunchPads.Exists(lp => lp.name == newName))
+                        return; //can't name it something that already is named that
+
+                    foreach (KCT_Recon_Rollout rr in ksc.Recon_Rollout)
+                    {
+                        if (rr.launchPadID == name)
+                        {
+                            rr.launchPadID = newName;
+                        }
+                    }
+                    /*foreach (KCT_UpgradingBuilding up in ksc.KSCTech)
+                    {
+                        if (up.isLaunchpad && up.launchpadID == name)
+                            up.launchpadID = newName;
+                    }*/ //Done by index not by name, should be fine
+                    /*foreach (KCT_BuildListVessel blv in ksc.VABWarehouse)
+                    {
+                        if (blv.la)
+                    }*/ //I think also done by index and not by name
+                    break;
+                }
+            }
+            name = newName;
+        }
+
         public void SetActive()
         {
             try
