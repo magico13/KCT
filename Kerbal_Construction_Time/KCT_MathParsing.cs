@@ -368,26 +368,45 @@ namespace KerbalConstructionTime
             int pilots=0, engineers=0, scientists=0;
             int pLevels=0, eLevels=0, sLevels=0;
 
+            int pilots_total = 0, engineers_total = 0, scientists_total = 0;
+            int pLevels_total = 0, eLevels_total = 0, sLevels_total = 0;
+
             foreach (ProtoCrewMember pcm in HighLogic.CurrentGame.CrewRoster.Crew)
             {
-                if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available || pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
                 {
                     if (pcm.trait == "Pilot")
                     {
-                        pilots++;
-                        pLevels += pcm.experienceLevel;
+                        if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                        {
+                            pilots++;
+                            pLevels += pcm.experienceLevel;
+                        }
+                        pilots_total++;
+                        pLevels_total += pcm.experienceLevel;
                     }
                     else if (pcm.trait == "Engineer")
                     {
-                        engineers++;
-                        eLevels += pcm.experienceLevel;
+                        if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                        {
+                            engineers++;
+                            eLevels += pcm.experienceLevel;
+                        }
+                        engineers_total++;
+                        eLevels_total += pcm.experienceLevel;
                     }
                     else if (pcm.trait == "Scientist")
                     {
-                        scientists++;
-                        sLevels += pcm.experienceLevel;
+                        if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                        {
+                            scientists++;
+                            sLevels += pcm.experienceLevel;
+                        }
+                        scientists_total++;
+                        sLevels_total += pcm.experienceLevel;
                     }
                 }
+                
             }
 
             //KCTDebug.Log(pilots + " pilots " + pLevels + " levels");
@@ -402,6 +421,15 @@ namespace KerbalConstructionTime
 
             crewVars.Add("ScK", scientists.ToString());
             crewVars.Add("ScL", sLevels.ToString());
+
+            crewVars.Add("TPiK", pilots_total.ToString());
+            crewVars.Add("TPiL", pLevels_total.ToString());
+
+            crewVars.Add("TEnK", engineers_total.ToString());
+            crewVars.Add("TEnL", eLevels_total.ToString());
+
+            crewVars.Add("TScK", scientists_total.ToString());
+            crewVars.Add("TScL", sLevels_total.ToString());
 
             //return crewVars;
         }
