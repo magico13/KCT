@@ -420,7 +420,7 @@ namespace KerbalConstructionTime
                 }
                 
             }
-
+            double lastUT = KCT_GameStates.UT > 0 ? KCT_GameStates.UT : Planetarium.GetUniversalTime();
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
@@ -435,10 +435,17 @@ namespace KerbalConstructionTime
                         failedLvlChecks = 0;
                     }
                 }
-                /* if (!KCT_GUI.PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated))
+                //Warp code
+                 if (!KCT_GUI.PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated))
                  {
                      IKCTBuildItem ikctItem = KCT_Utilities.NextThingToFinish();
                      if (KCT_GameStates.targetedItem == null && ikctItem != null) KCT_GameStates.targetedItem = ikctItem;
+                     double remaining = ikctItem != null ? ikctItem.GetTimeLeft() : -1;
+                     double dT = TimeWarp.CurrentRate / (KCT_GameStates.UT - lastUT);
+                     if (dT >= 20)
+                         dT = 0.1;
+                     //KCTDebug.Log("dt: " + dT);
+                     int nBuffers = 1;
                      if (KCT_GameStates.canWarp && ikctItem != null && !ikctItem.IsComplete())
                      {
                          int warpRate = TimeWarp.CurrentRateIndex;
@@ -456,9 +463,22 @@ namespace KerbalConstructionTime
                          }
                          else
                          {
-                             if (ikctItem == KCT_GameStates.targetedItem && (10 * TimeWarp.deltaTime) > Math.Max((ikctItem.GetTimeLeft()), 0) && TimeWarp.CurrentRate > 1.0f)
+                             if (ikctItem == KCT_GameStates.targetedItem && warpRate > 0 && TimeWarp.fetch.warpRates[warpRate] * dT * nBuffers > Math.Max(remaining, 0))
                              {
-                                 TimeWarp.SetRate(--warpRate, true);
+                                 //double timeDelta = TimeWarp.CurrentRate * dT * nBuffers - ikctItem.GetTimeLeft();
+                                 KCTDebug.Log("Current delta: " + (TimeWarp.fetch.warpRates[warpRate] * dT) + " Remaining: " + remaining);
+                                 //KCTDebug.Log("dt: " + dT);
+                                 int newRate = warpRate;
+                                 //find the first rate that is lower than the current rate
+                                 while (newRate > 0)
+                                 {
+                                     if (TimeWarp.fetch.warpRates[newRate] * dT * nBuffers < remaining)
+                                        break;
+                                    newRate--;
+                                 }
+                                 KCTDebug.Log("Warping down to " + newRate + " (delta: " + (TimeWarp.fetch.warpRates[newRate] * dT) + ")");
+                                 TimeWarp.SetRate(newRate, true); //hopefully a faster warp down than before
+                                 warpRate = newRate;
                              }
                              else if (warpRate == 0 && KCT_GameStates.warpInitiated)
                              {
@@ -470,19 +490,33 @@ namespace KerbalConstructionTime
                          }
 
                      }
-                     else if (ikctItem != null && ikctItem == KCT_GameStates.targetedItem && (KCT_GameStates.warpInitiated || KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRate != 0 && (ikctItem.GetTimeLeft()) < (TimeWarp.deltaTime * 2) && (!ikctItem.IsComplete())) //Still warp down even if we don't control the clock
+                     else if (ikctItem != null && ikctItem == KCT_GameStates.targetedItem && (KCT_GameStates.warpInitiated || KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRateIndex > 0 && (remaining < 1) && (!ikctItem.IsComplete())) //Still warp down even if we don't control the clock
                      {
-                         TimeWarp.SetRate(0, false);
+                         TimeWarp.SetRate(0, true);
                          KCT_GameStates.warpInitiated = false;
                      }
-                     else if (ikctItem != null && (KCT_GameStates.settings.ForceStopWarp) && TimeWarp.CurrentRate != 0 &&  (!ikctItem.IsComplete()))
+                     else if (ikctItem != null && KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRateIndex > 0 && (!ikctItem.IsComplete()))
                      {
-                         if ((10 * TimeWarp.deltaTime) > Math.Max((ikctItem.GetTimeLeft()), 0) && TimeWarp.CurrentRate > 1.0f)
+                        /* if ((10 * TimeWarp.deltaTime) > Math.Max((ikctItem.GetTimeLeft()), 0) && TimeWarp.CurrentRate > 1.0f)
                          {
                              TimeWarp.SetRate(TimeWarp.CurrentRateIndex-1, true);
+                         }*/
+                         
+                         double timeDelta = TimeWarp.CurrentRate * dT * nBuffers - remaining;
+                         if (timeDelta > remaining)
+                         {
+                             int newRate = TimeWarp.CurrentRateIndex;
+                             //find the first rate that is lower than the current rate
+                             while (newRate > 0)
+                             {
+                                 if (TimeWarp.fetch.warpRates[newRate] * dT * nBuffers < remaining)
+                                     break;
+                                 newRate--;
+                             }
+                             TimeWarp.SetRate(newRate, true);
                          }
                      }
-                 }*/
+                 }
 
                 if (HighLogic.LoadedScene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Simulated flights
                 {

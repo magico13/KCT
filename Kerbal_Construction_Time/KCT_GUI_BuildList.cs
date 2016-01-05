@@ -99,13 +99,25 @@ namespace KerbalConstructionTime
             {
                 //KCT_BuildListVessel ship = (KCT_BuildListVessel)buildItem;
                 
-                string txt = txt = buildItem.GetItemName(), locTxt = "VAB";
+                string txt = buildItem.GetItemName(), locTxt = "VAB";
                 if (buildItem.GetListType() == KCT_BuildListVessel.ListType.Reconditioning)
                 {
                     KCT_Recon_Rollout reconRoll = buildItem as KCT_Recon_Rollout;
                     if (reconRoll.RRType == KCT_Recon_Rollout.RolloutReconType.Reconditioning)
                     {
                         txt = "Reconditioning";
+                        locTxt = reconRoll.launchPadID;
+                    }
+                    else if (reconRoll.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout)
+                    {
+                        KCT_BuildListVessel associated = reconRoll.KSC.VABWarehouse.FirstOrDefault(blv => blv.id.ToString() == reconRoll.associatedID);
+                        txt = associated.shipName + " Rollout";
+                        locTxt = reconRoll.launchPadID;
+                    }
+                    else if (reconRoll.RRType == KCT_Recon_Rollout.RolloutReconType.Rollback)
+                    {
+                        KCT_BuildListVessel associated = reconRoll.KSC.VABWarehouse.FirstOrDefault(blv => blv.id.ToString() == reconRoll.associatedID);
+                        txt = associated.shipName + " Rollback";
                         locTxt = reconRoll.launchPadID;
                     }
                     else
@@ -138,12 +150,12 @@ namespace KerbalConstructionTime
                 {
                     KCT_GameStates.targetedItem = buildItem;
                     KCT_GameStates.canWarp = true;
-                   // KCT_Utilities.RampUpWarp();
+                    KCT_Utilities.RampUpWarp();
                     KCT_GameStates.warpInitiated = true;
-                    if (buildItem.GetBuildRate() > 0)
+                   /* if (buildItem.GetBuildRate() > 0)
                     {
                         TimeWarp.fetch.WarpTo(Planetarium.GetUniversalTime() + buildItem.GetTimeLeft(), KCT_GameStates.settings.MaxTimeWarp, 1);
-                    }
+                    }*/
                 }
                 else if (!HighLogic.LoadedSceneIsEditor && TimeWarp.CurrentRateIndex > 0 && GUILayout.Button("Stop" + System.Environment.NewLine + "Warp"))
                 {
@@ -169,7 +181,7 @@ namespace KerbalConstructionTime
                             KCTDebug.Log("Removing existing alarm");
                             KACWrapper.KAC.DeleteAlarm(alarm.ID);
                         }
-                        string txt = "KCT: ";
+                        txt = "KCT: ";
                         if (buildItem.GetListType() == KCT_BuildListVessel.ListType.Reconditioning)
                         {
                             KCT_Recon_Rollout reconRoll = buildItem as KCT_Recon_Rollout;
@@ -268,12 +280,12 @@ namespace KerbalConstructionTime
                     {
                         KCT_GameStates.targetedItem = item;
                         KCT_GameStates.canWarp = true;
-                        //KCT_Utilities.RampUpWarp(item);
+                        KCT_Utilities.RampUpWarp(item);
                         KCT_GameStates.warpInitiated = true;
-                        if (item.GetBuildRate() > 0)
+                        /*if (item.GetBuildRate() > 0)
                         {
                             TimeWarp.fetch.WarpTo(Planetarium.GetUniversalTime() + item.GetTimeLeft(), KCT_GameStates.settings.MaxTimeWarp, 1);
-                        }
+                        }*/
                     }
                     
                     GUILayout.Label("Reconditioning: "+reconditioning.launchPadID);
@@ -403,9 +415,9 @@ namespace KerbalConstructionTime
                         if (launchSite == "LaunchPad")
                         {
                             if (b.launchSiteID >= 0)
-                                launchSite = b.KSC.LaunchPads[b.launchSiteID].name;
+                                launchSite = KCT_GameStates.ActiveKSC.LaunchPads[b.launchSiteID].name;
                             else
-                                launchSite = b.KSC.ActiveLPInstance.name;
+                                launchSite = KCT_GameStates.ActiveKSC.ActiveLPInstance.name;
                         }
                         KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout, launchSite);
                         KCT_Recon_Rollout rollback = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == b.id.ToString() && r.RRType == KCT_Recon_Rollout.RolloutReconType.Rollback);
@@ -477,6 +489,7 @@ namespace KerbalConstructionTime
                                         {
                                             rollout.SwapRolloutType();
                                         }
+                                       // tmpRollout.launchPadID = KCT_GameStates.ActiveKSC.ActiveLPInstance.name;
                                         KCT_GameStates.ActiveKSC.Recon_Rollout.Add(tmpRollout);
                                     }
                                     else
@@ -913,12 +926,12 @@ namespace KerbalConstructionTime
                     {
                         KCT_GameStates.targetedItem = KCTTech;
                         KCT_GameStates.canWarp = true;
-                        //KCT_Utilities.RampUpWarp(KCTTech);
+                        KCT_Utilities.RampUpWarp(KCTTech);
                         KCT_GameStates.warpInitiated = true;
-                        if (KCTTech.AsIKCTBuildItem().GetBuildRate() > 0)
+                        /*if (KCTTech.AsIKCTBuildItem().GetBuildRate() > 0)
                         {
                             TimeWarp.fetch.WarpTo(Planetarium.GetUniversalTime() + KCTTech.AsIKCTBuildItem().GetTimeLeft(), KCT_GameStates.settings.MaxTimeWarp, 1);
-                        }
+                        }*/
                     }
                     else if (HighLogic.LoadedSceneIsEditor)
                         GUILayout.Space(70);
@@ -1141,13 +1154,13 @@ namespace KerbalConstructionTime
             {
                 KCT_GameStates.targetedItem = b;
                 KCT_GameStates.canWarp = true;
-               // KCT_Utilities.RampUpWarp(b);
+                KCT_Utilities.RampUpWarp(b);
                 KCT_GameStates.warpInitiated = true;
                 showBLPlus = false;
-                if (b.buildRate > 0)
+               /* if (b.buildRate > 0)
                 {
                     TimeWarp.fetch.WarpTo(Planetarium.GetUniversalTime() + b.timeLeft, KCT_GameStates.settings.MaxTimeWarp, 1);
-                }
+                }*/
             }
             if (!b.isFinished && GUILayout.Button("Move to Top"))
             {

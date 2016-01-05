@@ -1576,17 +1576,16 @@ namespace KerbalConstructionTime
 
         public static void RampUpWarp(IKCTBuildItem item)
         {
-            int lastRateIndex = TimeWarp.CurrentRateIndex;
-            int newRate = TimeWarp.CurrentRateIndex + 1;
+            int newRate = TimeWarp.CurrentRateIndex;
             double timeLeft = item.GetTimeLeft();
             if (double.IsPositiveInfinity(timeLeft))
                 timeLeft = KCT_Utilities.NextThingToFinish().GetTimeLeft();
-            while ((timeLeft > 15 * TimeWarp.deltaTime) && (TimeWarp.CurrentRateIndex < KCT_GameStates.settings.MaxTimeWarp) && (lastRateIndex < newRate))
+            while ((newRate + 1 < TimeWarp.fetch.warpRates.Length) && (timeLeft > TimeWarp.fetch.warpRates[newRate + 1]*Planetarium.fetch.fixedDeltaTime) && (newRate < KCT_GameStates.settings.MaxTimeWarp))
             {
-                lastRateIndex = TimeWarp.CurrentRateIndex;
-                TimeWarp.SetRate(lastRateIndex + 1, true);
-                newRate = TimeWarp.CurrentRateIndex;
+                newRate++;
             }
+            TimeWarp.SetRate(newRate, true);
+          //  Debug.Log("Fixed Delta Time: " + Planetarium.fetch.fixedDeltaTime);
         }
 
         public static void DisableModFunctionality()
