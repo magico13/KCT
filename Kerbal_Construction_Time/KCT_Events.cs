@@ -104,7 +104,7 @@ namespace KerbalConstructionTime
                 {
                     upgrading.launchpadID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
                     if (upgrading.launchpadID > 0)
-                        upgrading.commonName += " " + (upgrading.launchpadID+1);
+                        upgrading.commonName += KCT_GameStates.ActiveKSC.ActiveLPInstance.name;//" " + (upgrading.launchpadID+1);
                 }
 
                 if (!upgrading.AlreadyInProgress())

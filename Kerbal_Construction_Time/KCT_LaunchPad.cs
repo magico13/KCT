@@ -61,11 +61,13 @@ namespace KerbalConstructionTime
                             rr.launchPadID = newName;
                         }
                     }
-                    /*foreach (KCT_UpgradingBuilding up in ksc.KSCTech)
+                    foreach (KCT_UpgradingBuilding up in ksc.KSCTech)
                     {
-                        if (up.isLaunchpad && up.launchpadID == name)
-                            up.launchpadID = newName;
-                    }*/ //Done by index not by name, should be fine
+                        if (up.isLaunchpad && up.launchpadID == ksc.LaunchPads.IndexOf(this))
+                        {
+                            up.commonName = newName;
+                        }
+                    }
                     /*foreach (KCT_BuildListVessel blv in ksc.VABWarehouse)
                     {
                         if (blv.la)

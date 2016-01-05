@@ -98,27 +98,41 @@ namespace KerbalConstructionTime
             if (buildItem != null)
             {
                 //KCT_BuildListVessel ship = (KCT_BuildListVessel)buildItem;
-                GUILayout.Label(buildItem.GetItemName());
-                if (buildItem.GetListType() == KCT_BuildListVessel.ListType.VAB || buildItem.GetListType() == KCT_BuildListVessel.ListType.Reconditioning)
+                
+                string txt = txt = buildItem.GetItemName(), locTxt = "VAB";
+                if (buildItem.GetListType() == KCT_BuildListVessel.ListType.Reconditioning)
                 {
-                    GUILayout.Label("VAB", windowSkin.label);
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
+                    KCT_Recon_Rollout reconRoll = buildItem as KCT_Recon_Rollout;
+                    if (reconRoll.RRType == KCT_Recon_Rollout.RolloutReconType.Reconditioning)
+                    {
+                        txt = "Reconditioning";
+                        locTxt = reconRoll.launchPadID;
+                    }
+                    else
+                    {
+                        locTxt = "VAB";
+                    }
+                }
+                else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.VAB)
+                {
+                    locTxt = "VAB";
                 }
                 else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.SPH)
                 {
-                    GUILayout.Label("SPH", windowSkin.label);
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
+                    locTxt = "SPH";
                 }
                 else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.TechNode)
                 {
-                    GUILayout.Label("Tech", windowSkin.label);
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
+                    locTxt = "Tech";
                 }
                 else if (buildItem.GetListType() == KCT_BuildListVessel.ListType.KSC)
                 {
-                    GUILayout.Label("KSC", windowSkin.label);
-                    GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
+                    locTxt = "KSC";
                 }
+
+                GUILayout.Label(txt);
+                GUILayout.Label(locTxt, windowSkin.label);
+                GUILayout.Label(KCT_Utilities.GetColonFormattedTime(buildItem.GetTimeLeft()));
 
                 if (!HighLogic.LoadedSceneIsEditor && TimeWarp.CurrentRateIndex == 0 && GUILayout.Button("Warp to" + System.Environment.NewLine + "Complete"))
                 {
@@ -155,7 +169,32 @@ namespace KerbalConstructionTime
                             KCTDebug.Log("Removing existing alarm");
                             KACWrapper.KAC.DeleteAlarm(alarm.ID);
                         }
-                        KCT_GameStates.KACAlarmId = KACWrapper.KAC.CreateAlarm(KACWrapper.KACAPI.AlarmTypeEnum.Raw, "KCT: " + buildItem.GetItemName() + " Complete", KCT_GameStates.KACAlarmUT);
+                        string txt = "KCT: ";
+                        if (buildItem.GetListType() == KCT_BuildListVessel.ListType.Reconditioning)
+                        {
+                            KCT_Recon_Rollout reconRoll = buildItem as KCT_Recon_Rollout;
+                            if (reconRoll.RRType == KCT_Recon_Rollout.RolloutReconType.Reconditioning)
+                            {
+                                txt += reconRoll.launchPadID + " Reconditioning";
+                            }
+                            else if (reconRoll.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout)
+                            {
+                                KCT_BuildListVessel associated = reconRoll.KSC.VABWarehouse.FirstOrDefault(blv => blv.id.ToString() == reconRoll.associatedID);
+                                txt += associated.shipName + " rollout at " + reconRoll.launchPadID;
+                            }
+                            else if (reconRoll.RRType == KCT_Recon_Rollout.RolloutReconType.Rollback)
+                            {
+                                KCT_BuildListVessel associated = reconRoll.KSC.VABWarehouse.FirstOrDefault(blv => blv.id.ToString() == reconRoll.associatedID);
+                                txt += associated.shipName + " rollback at " + reconRoll.launchPadID;
+                            }
+                            else
+                            {
+                                txt += buildItem.GetItemName() + " Complete";
+                            }
+                        }
+                        else
+                            txt += buildItem.GetItemName() + " Complete";
+                        KCT_GameStates.KACAlarmId = KACWrapper.KAC.CreateAlarm(KACWrapper.KACAPI.AlarmTypeEnum.Raw, txt, KCT_GameStates.KACAlarmUT);
                         KCTDebug.Log("Alarm created with ID: " + KCT_GameStates.KACAlarmId);
                     }
                 }
