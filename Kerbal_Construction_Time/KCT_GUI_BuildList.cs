@@ -435,7 +435,7 @@ namespace KerbalConstructionTime
                         if (rollout != null && rollout.associatedID == b.id.ToString())
                         {
                             padStatus = VesselPadStatus.RollingOut;
-                            status = "Rolling Out";
+                            status = "Rolling Out to "+launchSite;
                             textColor = yellowText;
                             if (rollout.AsBuildItem().IsComplete())
                             {
@@ -446,7 +446,7 @@ namespace KerbalConstructionTime
                         }
                         else if (rollback != null)
                         {
-                            status = "Rolling Back";
+                            status = "Rolling Back from "+launchSite;
                             textColor = yellowText;
                         }
                         else if (recovery != null)
@@ -472,7 +472,8 @@ namespace KerbalConstructionTime
 
                         GUILayout.Label(b.shipName, textColor);
                         GUILayout.Label(status+"   ", textColor, GUILayout.ExpandWidth(false));
-                        if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && (rollout == null || b.id.ToString() != rollout.associatedID) && rollback == null)
+                        bool siteHasActiveRolloutOrRollback = rollout != null || KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollback, launchSite) != null;
+                        if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && !siteHasActiveRolloutOrRollback) //rollout if the pad isn't busy
                         {
                             KCT_Recon_Rollout tmpRollout = new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString(), launchSite);
                             string rolloutText = (i == MouseOnRolloutButton ? KCT_Utilities.GetColonFormattedTime(tmpRollout.AsBuildItem().GetTimeLeft()) : "Rollout");
@@ -509,15 +510,15 @@ namespace KerbalConstructionTime
                                     MouseOnRolloutButton = -1;
                         }
                         else if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && rollout != null && b.id.ToString() == rollout.associatedID && !rollout.AsBuildItem().IsComplete() && rollback == null &&
-                            GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollout.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false)))
+                            GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollout.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false))) //swap rollout to rollback
                         {
                             rollout.SwapRolloutType();
                         }
-                        else if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && rollback != null && b.id.ToString() == rollback.associatedID && !rollback.AsBuildItem().IsComplete())
+                        else if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && rollback != null && !rollback.AsBuildItem().IsComplete())
                         {
                             if (rollout == null)
                             {
-                                if (GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false)))
+                                if (GUILayout.Button(KCT_Utilities.GetColonFormattedTime(rollback.AsBuildItem().GetTimeLeft()), GUILayout.ExpandWidth(false))) //switch rollback back to rollout
                                     rollback.SwapRolloutType();
                             }
                             else
@@ -527,11 +528,17 @@ namespace KerbalConstructionTime
                         }
                         else if (HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && (!rolloutEnabled || (rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())))
                         {
+                            bool operational = !KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed;
+                            string launchTxt = "Launch";
+                            if (!operational)
+                                launchTxt = "Repairs Required";
+                            else if (KCT_Utilities.ReconditioningActive(null, launchSite))
+                                launchTxt = "Reconditioning";
                             if (rolloutEnabled && GameSettings.MODIFIER_KEY.GetKey() && GUILayout.Button("Roll Back", GUILayout.ExpandWidth(false)))
                             {
                                 rollout.SwapRolloutType();
                             }
-                            else if (!GameSettings.MODIFIER_KEY.GetKey() && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
+                            else if (!GameSettings.MODIFIER_KEY.GetKey() && GUILayout.Button(launchTxt, GUILayout.ExpandWidth(false)))
                             {
                                 if (b.launchSiteID >= 0)
                                 {
@@ -542,7 +549,7 @@ namespace KerbalConstructionTime
                                 List<string> facilityChecks = b.MeetsFacilityRequirements();
                                 if (facilityChecks.Count == 0)
                                 {
-                                    bool operational = !KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed;// && KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
+                                   // bool operational = !KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed;// && KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
                                     if (!operational)
                                     {
                                         //ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
