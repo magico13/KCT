@@ -528,7 +528,8 @@ namespace KerbalConstructionTime
                         }
                         else if (HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && (!rolloutEnabled || (rollout != null && b.id.ToString() == rollout.associatedID && rollout.AsBuildItem().IsComplete())))
                         {
-                            bool operational = !KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed;
+                            KCT_LaunchPad pad = KCT_GameStates.ActiveKSC.LaunchPads.Find(lp => lp.name == launchSite);
+                            bool operational = pad!=null ? !pad.destroyed : !KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed;
                             string launchTxt = "Launch";
                             if (!operational)
                                 launchTxt = "Repairs Required";
