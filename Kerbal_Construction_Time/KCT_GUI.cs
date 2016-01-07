@@ -2341,9 +2341,13 @@ namespace KerbalConstructionTime
 
                 if (researchRate == -13)
                 {
-                    researchRate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[0].ToString() }, {"R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
+                    Dictionary<string, string> normalVars = new Dictionary<string, string>() { { "N", KSC.RDUpgrades[0].ToString() }, {"R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } };
+                    KCT_MathParsing.AddCrewVariables(normalVars);
+                    researchRate = KCT_MathParsing.GetStandardFormulaValue("Research", normalVars);
 
-                    upResearchRate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[0]+1).ToString() }, {"R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
+                    Dictionary<string, string> upVars = new Dictionary<string, string>() { { "N", (KSC.RDUpgrades[0]+1).ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } };
+                    KCT_MathParsing.AddCrewVariables(upVars);
+                    upResearchRate = KCT_MathParsing.GetStandardFormulaValue("Research", upVars);
                 }
 
                 if (researchRate >= 0)
