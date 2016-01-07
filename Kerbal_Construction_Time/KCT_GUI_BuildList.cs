@@ -86,6 +86,22 @@ namespace KerbalConstructionTime
             GUIStyle greenText = new GUIStyle(GUI.skin.label);
             greenText.normal.textColor = Color.green;
 
+            GUIStyle normalButton = new GUIStyle(GUI.skin.button);
+            GUIStyle yellowButton = new GUIStyle(GUI.skin.button);
+            yellowButton.normal.textColor = Color.yellow;
+            yellowButton.hover.textColor = Color.yellow;
+            yellowButton.active.textColor = Color.yellow;
+            GUIStyle redButton = new GUIStyle(GUI.skin.button);
+            redButton.normal.textColor = Color.red;
+            redButton.hover.textColor = Color.red;
+            redButton.active.textColor = Color.red;
+
+            GUIStyle greenButton = new GUIStyle(GUI.skin.button);
+            greenButton.normal.textColor = Color.green;
+            greenButton.hover.textColor = Color.green;
+            greenButton.active.textColor = Color.green;
+
+
             int width1 = 120;
             int width2 = 100;
             int butW = 20;
@@ -475,9 +491,14 @@ namespace KerbalConstructionTime
                         bool siteHasActiveRolloutOrRollback = rollout != null || KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollback, launchSite) != null;
                         if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && !siteHasActiveRolloutOrRollback) //rollout if the pad isn't busy
                         {
+                            GUIStyle btnColor = greenButton;
+                            if (KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed)
+                                btnColor = redButton;
+                            else if (KCT_GameStates.ActiveKSC.GetReconditioning(KCT_GameStates.ActiveKSC.ActiveLPInstance.name) != null)
+                                btnColor = yellowButton;
                             KCT_Recon_Rollout tmpRollout = new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString(), launchSite);
                             string rolloutText = (i == MouseOnRolloutButton ? KCT_Utilities.GetColonFormattedTime(tmpRollout.AsBuildItem().GetTimeLeft()) : "Rollout");
-                            if (GUILayout.Button(rolloutText, GUILayout.ExpandWidth(false)))
+                            if (GUILayout.Button(rolloutText, btnColor, GUILayout.ExpandWidth(false)))
                             {
                                 List<string> facilityChecks = b.MeetsFacilityRequirements();
                                 if (facilityChecks.Count == 0)
@@ -530,16 +551,23 @@ namespace KerbalConstructionTime
                         {
                             KCT_LaunchPad pad = KCT_GameStates.ActiveKSC.LaunchPads.Find(lp => lp.name == launchSite);
                             bool operational = pad!=null ? !pad.destroyed : !KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed;
+                            GUIStyle btnColor = greenButton;
                             string launchTxt = "Launch";
                             if (!operational)
+                            {
                                 launchTxt = "Repairs Required";
+                                btnColor = redButton;
+                            }
                             else if (KCT_Utilities.ReconditioningActive(null, launchSite))
+                            {
                                 launchTxt = "Reconditioning";
+                                btnColor = yellowButton;
+                            }
                             if (rolloutEnabled && GameSettings.MODIFIER_KEY.GetKey() && GUILayout.Button("Roll Back", GUILayout.ExpandWidth(false)))
                             {
                                 rollout.SwapRolloutType();
                             }
-                            else if (!GameSettings.MODIFIER_KEY.GetKey() && GUILayout.Button(launchTxt, GUILayout.ExpandWidth(false)))
+                            else if (!GameSettings.MODIFIER_KEY.GetKey() && GUILayout.Button(launchTxt, btnColor, GUILayout.ExpandWidth(false)))
                             {
                                 if (b.launchSiteID >= 0)
                                 {
