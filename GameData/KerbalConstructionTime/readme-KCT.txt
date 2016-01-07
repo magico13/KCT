@@ -19,6 +19,33 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.3.0.0 (01/06/16)
+Notable Additions and Changes:
+ - Multiple launchpads added. Build additional pads to launch ships more often. Each pad has its own rollout and reconditioning timers, along with upgrade and damage states. Can be renamed as well.
+ - All time input fields now support using y, d, h, m, and s for years, days, hours, minutes, and seconds. Can mix and match as needed.
+ - You are now warned when a ship contains invalid parts instead of the game breaking. You have the option to ignore it for now or delete the vessels. If you delete them, you get the funds back. All the offending ships and parts are logged to a file in the save folder.
+ - Improved KSCSwitcher support. Now properly sets the default KSC, each KSC can have its own launchpads, and upgrade points can be shared between them.
+ - Rollout and Launch buttons now colored green if pad is OK, yellow if it is being reconditioned, and red if it is destroyed.
+ - Limited to one rollout or rollback at a time per launchpad. (can't rollout when something is rolling back)
+ - Wheels, Mystery Goo, and the Science Jr. are now reset properly on recover to storage (might need to delete the KCT_ModuleTemplates.cfg file)
+ - Modules to be reset on recover to storage can now have a "parts = part1,part2,part3" line to limit that module to being reset only for those parts
+ - Warp To functionality improved. Now much, much faster to warp down.
+ - Tech Node Research cancellation must now be confirmed.
+ - Delay for moving a vessel to orbit in simulations is now configurable.
+ - Simulations should (hopefully) no longer mess up orbits when they time out and you purchase more time.
+ 
+Preset Updates:
+ - Added several "Crew Variables" to several formulas. Check the Wiki page on Variables for more info.
+ - New formula: NewLaunchPadCostFormula (pretty self-explanatory)
+ - New option: SharedUpgradePool. When True, all KSCS share a single upgrade pool instead of each having their own. Default is False
+ 
+Warnings:
+ - The launchpad changes are potentially save breaking if it doesn't update to the new system correctly. That bug should be fixed, however.
+ - KCT now "upgrades" buildings A LOT. Any mod listening to the OnKSCFacilityUpgrading or OnKSCFacilityUpgraded events will likely be INCOMPATIBLE. Please notify me if you find any such mods and I'll see what I can do.
+
+Other:
+ - New artwork thanks to a friend of mine!
+ 
 v1.2.3.0 (11/09/15)
  - Update to KSP 1.0.5
  
