@@ -900,11 +900,7 @@ namespace KerbalConstructionTime
                 startedFlashing = DateTime.Now; //Set the time to start flashing
             }
 
-            if (KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRateIndex != 0)
-            {
-                TimeWarp.SetRate(0, true);
-                KCT_GameStates.warpInitiated = false;
-            }
+            
 
             StringBuilder Message = new StringBuilder();
             Message.AppendLine("The following vessel is complete:");
@@ -927,6 +923,12 @@ namespace KerbalConstructionTime
 
                 Message.AppendLine(vessel.shipName);
                 Message.AppendLine("Please check the SPH Storage at " + KSC.KSCName + " to launch it.");
+            }
+
+            if ((KCT_GameStates.settings.ForceStopWarp || vessel == KCT_GameStates.targetedItem) && TimeWarp.CurrentRateIndex != 0)
+            {
+                TimeWarp.SetRate(0, true);
+                KCT_GameStates.warpInitiated = false;
             }
 
             //Assign science based on science rate
@@ -2340,6 +2342,76 @@ namespace KerbalConstructionTime
 
 
             return total;
+        }
+
+        public static bool RecoverActiveVesselToStorage(KCT_BuildListVessel.ListType listType)
+        {
+            ShipConstruct test = new ShipConstruct();
+            try
+            {
+                KCTDebug.Log("Attempting to recover active vessel to storage.");
+                GamePersistence.SaveGame("KCT_Backup", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+                KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
+                KCT_GameStates.recoveredVessel.type = listType;
+                if (listType == KCT_BuildListVessel.ListType.VAB)
+                    KCT_GameStates.recoveredVessel.launchSite = "LaunchPad";
+                else
+                    KCT_GameStates.recoveredVessel.launchSite = "Runway";
+
+                //check for symmetry parts and remove those references if they can't be found
+                RemoveMissingSymmetry(KCT_GameStates.recoveredVessel.shipNode);
+
+                //test if we can actually convert it
+                bool success = test.LoadShip(KCT_GameStates.recoveredVessel.shipNode);
+                if (success)
+                    ShipConstruction.CreateBackup(test);
+                KCTDebug.Log("Load test reported success = " + success);
+                if (!success)
+                {
+                    KCT_GameStates.recoveredVessel = null;
+                    return false;
+                }
+
+                GameEvents.OnVesselRecoveryRequested.Fire(FlightGlobals.ActiveVessel);
+                return true;
+            }
+            catch
+            {
+                Debug.LogError("[KCT] Error while recovering craft into inventory.");
+                KCT_GameStates.recoveredVessel = null;
+                ShipConstruction.ClearBackups();
+                return false;
+            }
+        }
+
+        public static void RemoveMissingSymmetry(ConfigNode ship)
+        {
+            //loop through, find all sym = lines and find the part they reference
+            int referencesRemoved = 0;
+            foreach (ConfigNode partNode in ship.GetNodes("PART"))
+            {
+                List<string> toRemove = new List<string>();
+                foreach (string symPart in partNode.GetValues("sym"))
+                {
+                    //find the part in the ship
+                    if (ship.GetNodes("PART").FirstOrDefault(cn => cn.GetValue("part") == symPart) == null)
+                        toRemove.Add(symPart);
+                }
+
+                foreach (string remove in toRemove)
+                {
+                    foreach (ConfigNode.Value val in partNode.values)
+                    {
+                        if (val.value == remove)
+                        {
+                            referencesRemoved++;
+                            partNode.values.Remove(val);
+                            break;
+                        }
+                    }
+                }
+            }
+            KCTDebug.Log("Removed " + referencesRemoved + " invalid symmetry references.");
         }
 
     }

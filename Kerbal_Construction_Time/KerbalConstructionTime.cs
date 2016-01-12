@@ -466,7 +466,7 @@ namespace KerbalConstructionTime
                              if (ikctItem == KCT_GameStates.targetedItem && warpRate > 0 && TimeWarp.fetch.warpRates[warpRate] * dT * nBuffers > Math.Max(remaining, 0))
                              {
                                  //double timeDelta = TimeWarp.CurrentRate * dT * nBuffers - ikctItem.GetTimeLeft();
-                                 KCTDebug.Log("Current delta: " + (TimeWarp.fetch.warpRates[warpRate] * dT) + " Remaining: " + remaining);
+                              //   KCTDebug.Log("Current delta: " + (TimeWarp.fetch.warpRates[warpRate] * dT) + " Remaining: " + remaining);
                                  //KCTDebug.Log("dt: " + dT);
                                  int newRate = warpRate;
                                  //find the first rate that is lower than the current rate
@@ -494,27 +494,6 @@ namespace KerbalConstructionTime
                      {
                          TimeWarp.SetRate(0, true);
                          KCT_GameStates.warpInitiated = false;
-                     }
-                     else if (ikctItem != null && KCT_GameStates.settings.ForceStopWarp && TimeWarp.CurrentRateIndex > 0 && (!ikctItem.IsComplete()))
-                     {
-                        /* if ((10 * TimeWarp.deltaTime) > Math.Max((ikctItem.GetTimeLeft()), 0) && TimeWarp.CurrentRate > 1.0f)
-                         {
-                             TimeWarp.SetRate(TimeWarp.CurrentRateIndex-1, true);
-                         }*/
-                         
-                         double timeDelta = TimeWarp.CurrentRate * dT * nBuffers - remaining;
-                         if (timeDelta > remaining)
-                         {
-                             int newRate = TimeWarp.CurrentRateIndex;
-                             //find the first rate that is lower than the current rate
-                             while (newRate > 0)
-                             {
-                                 if (TimeWarp.fetch.warpRates[newRate] * dT * nBuffers < remaining)
-                                     break;
-                                 newRate--;
-                             }
-                             TimeWarp.SetRate(newRate, true);
-                         }
                      }
                  }
 
@@ -835,6 +814,9 @@ namespace KerbalConstructionTime
                 {
                     KCTDebug.Log("Showing first start.");
                     KCT_GUI.showFirstRun = true;
+
+                    //initialize the proper launchpad
+                    KCT_GameStates.ActiveKSC.ActiveLPInstance.level = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
                 }
                 KCT_GameStates.firstStart = false;
                 if (KCT_GameStates.LaunchFromTS)
@@ -843,6 +825,11 @@ namespace KerbalConstructionTime
                 }
 
                 KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID);
+
+                foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                    foreach (KCT_Recon_Rollout rr in ksc.Recon_Rollout)
+                        if (KCT_Utilities.FindBLVesselByID(new Guid(rr.associatedID)) == null)
+                            ksc.Recon_Rollout.Remove(rr);
             }
         }
 
@@ -884,6 +871,11 @@ namespace KerbalConstructionTime
                 {
                     blv.RemoveFromBuildList(); 
                     KCT_Utilities.AddFunds(blv.cost, TransactionReasons.VesselRollout);
+                    //remove any associated recon_rollout
+                    foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                        foreach (KCT_Recon_Rollout rr in ksc.Recon_Rollout)
+                            if (rr.associatedID == blv.id.ToString())
+                                ksc.Recon_Rollout.Remove(rr);
                 }
             }); //remove the vessel from the game and refund the cost
 

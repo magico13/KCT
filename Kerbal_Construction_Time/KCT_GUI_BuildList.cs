@@ -400,19 +400,9 @@ namespace KerbalConstructionTime
                     GUILayout.Label("VAB Storage");
                     if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel != null && FlightGlobals.ActiveVessel.IsRecoverable && FlightGlobals.ActiveVessel.IsClearToSave() == ClearToSaveStatus.CLEAR && GUILayout.Button("Recover Active Vessel"))
                     {
-                        try
+                        if (!KCT_Utilities.RecoverActiveVesselToStorage(KCT_BuildListVessel.ListType.VAB))
                         {
-                            GamePersistence.SaveGame("KCT_Backup", HighLogic.SaveFolder, SaveMode.OVERWRITE);
-                            KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
-                            KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.VAB;
-                            KCT_GameStates.recoveredVessel.launchSite = "LaunchPad";
-                            // HighLogic.LoadScene(GameScenes.SPACECENTER);
-                            //ShipConstruction.RecoverVesselFromFlight(FlightGlobals.ActiveVessel.protoVessel, HighLogic.CurrentGame.flightState);
-                            GameEvents.OnVesselRecoveryRequested.Fire(FlightGlobals.ActiveVessel);
-                        }
-                        catch
-                        {
-                            Debug.LogError("[KCT] Error while recovering craft into inventory.");
+                            PopupDialog.SpawnPopupDialog("Error!", "There was an error while recovering the ship. Sometimes reloading the scene and trying again works. Sometimes a vessel just can't be recovered this way and you must use the stock recover system.", "OK", false, GUI.skin);
                         }
                     }
                     if (buildList.Count == 0)
@@ -803,18 +793,9 @@ namespace KerbalConstructionTime
                     GUILayout.Label("SPH Storage");
                     if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel != null && FlightGlobals.ActiveVessel.IsRecoverable && FlightGlobals.ActiveVessel.IsClearToSave() == ClearToSaveStatus.CLEAR && GUILayout.Button("Recover Active Vessel"))
                     {
-                        try
+                        if (!KCT_Utilities.RecoverActiveVesselToStorage(KCT_BuildListVessel.ListType.SPH))
                         {
-                            GamePersistence.SaveGame("KCT_Backup", HighLogic.SaveFolder, SaveMode.OVERWRITE);
-                            KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(FlightGlobals.ActiveVessel);
-                            KCT_GameStates.recoveredVessel.type = KCT_BuildListVessel.ListType.SPH;
-                            KCT_GameStates.recoveredVessel.launchSite = "Runway";
-                            //ShipConstruction.RecoverVesselFromFlight(FlightGlobals.ActiveVessel.protoVessel, HighLogic.CurrentGame.flightState);
-                            GameEvents.OnVesselRecoveryRequested.Fire(FlightGlobals.ActiveVessel);
-                        }
-                        catch
-                        {
-                            Debug.LogError("[KCT] Error while recovering craft into inventory.");
+                            PopupDialog.SpawnPopupDialog("Error!", "There was an error while recovering the ship. Sometimes reloading the scene and trying again works. Sometimes a vessel just can't be recovered this way and you must use the stock recover system.", "OK", false, GUI.skin);
                         }
                     }
 
