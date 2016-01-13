@@ -826,10 +826,21 @@ namespace KerbalConstructionTime
 
                 KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID);
 
+
                 foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
-                    foreach (KCT_Recon_Rollout rr in ksc.Recon_Rollout)
+                {
+                    //foreach (KCT_Recon_Rollout rr in ksc.Recon_Rollout)
+                    for (int i = 0; i < ksc.Recon_Rollout.Count; i++)
+                    {
+                        KCT_Recon_Rollout rr = ksc.Recon_Rollout[i];
                         if (KCT_Utilities.FindBLVesselByID(new Guid(rr.associatedID)) == null)
+                        {
+                            KCTDebug.Log("Invalid Recon_Rollout at " + ksc.KSCName + ". ID " + rr.associatedID + " not found.");
                             ksc.Recon_Rollout.Remove(rr);
+                            i--;
+                        }
+                    }
+                }
             }
         }
 
@@ -872,10 +883,6 @@ namespace KerbalConstructionTime
                     blv.RemoveFromBuildList(); 
                     KCT_Utilities.AddFunds(blv.cost, TransactionReasons.VesselRollout);
                     //remove any associated recon_rollout
-                    foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
-                        foreach (KCT_Recon_Rollout rr in ksc.Recon_Rollout)
-                            if (rr.associatedID == blv.id.ToString())
-                                ksc.Recon_Rollout.Remove(rr);
                 }
             }); //remove the vessel from the game and refund the cost
 
@@ -893,6 +900,26 @@ namespace KerbalConstructionTime
             //make new file for missing ships
             string filename = KSPUtil.ApplicationRootPath + "/saves/" + HighLogic.SaveFolder + "/missingParts.txt";
             System.IO.File.WriteAllText(filename, txtToWrite);
+
+
+            //remove all rollout and recon items since they're invalid without the ships
+            foreach (KCT_BuildListVessel blv in errored)
+            {
+                //remove any associated recon_rollout
+                foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                {
+                    for (int i = 0; i < ksc.Recon_Rollout.Count; i++)
+                    {
+                        KCT_Recon_Rollout rr = ksc.Recon_Rollout[i];
+                        if (rr.associatedID == blv.id.ToString())
+                        {
+                            ksc.Recon_Rollout.Remove(rr);
+                            i--;
+                        }
+                    }
+                }
+            }
+
 
             MultiOptionDialog diag = new MultiOptionDialog(txt, "Vessels Contain Missing Parts", KCT_GUI.windowSkin, options);
             PopupDialog.SpawnPopupDialog(diag, false, KCT_GUI.windowSkin);
