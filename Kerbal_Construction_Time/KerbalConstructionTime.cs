@@ -484,6 +484,7 @@ namespace KerbalConstructionTime
                              {
                                  KCT_GameStates.canWarp = false;
                                  KCT_GameStates.warpInitiated = false;
+                                 KCT_GameStates.targetedItem = null;
 
                              }
                              KCT_GameStates.lastWarpRate = warpRate;
@@ -494,6 +495,7 @@ namespace KerbalConstructionTime
                      {
                          TimeWarp.SetRate(0, true);
                          KCT_GameStates.warpInitiated = false;
+                         KCT_GameStates.targetedItem = null;
                      }
                  }
 
@@ -833,7 +835,7 @@ namespace KerbalConstructionTime
                     for (int i = 0; i < ksc.Recon_Rollout.Count; i++)
                     {
                         KCT_Recon_Rollout rr = ksc.Recon_Rollout[i];
-                        if (KCT_Utilities.FindBLVesselByID(new Guid(rr.associatedID)) == null)
+                        if (rr.RRType != KCT_Recon_Rollout.RolloutReconType.Reconditioning && KCT_Utilities.FindBLVesselByID(new Guid(rr.associatedID)) == null)
                         {
                             KCTDebug.Log("Invalid Recon_Rollout at " + ksc.KSCName + ". ID " + rr.associatedID + " not found.");
                             ksc.Recon_Rollout.Remove(rr);

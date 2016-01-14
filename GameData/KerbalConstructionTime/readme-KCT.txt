@@ -19,6 +19,12 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.3.1.0 (01/13/16)
+ - Fix for errors caused when recovering craft to storage with missing symmetry counterparts
+ - Fix for launchpads being stuck at level zero when adding to new save
+ - Fix for lingering recon/rollout when associated craft doesn't exist
+ - Always stop warp when the "warp to" item finishes
+
 v1.3.0.0 (01/06/16)
 Notable Additions and Changes:
  - Multiple launchpads added. Build additional pads to launch ships more often. Each pad has its own rollout and reconditioning timers, along with upgrade and damage states. Can be renamed as well.

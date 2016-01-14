@@ -690,7 +690,14 @@ namespace KerbalConstructionTime
                     }
                 }
             }
+            if (KCT_GameStates.targetedItem != null && KCT_GameStates.targetedItem.IsComplete())
+            {
+                TimeWarp.SetRate(0, true);
+                KCT_GameStates.targetedItem = null;
+                KCT_GameStates.warpInitiated = false;
+            }
             KCT_GameStates.lastUT = UT;
+
         }
 
         public static float GetTotalVesselCost(ProtoVessel vessel, bool includeFuel = true)
