@@ -64,31 +64,67 @@ namespace KerbalConstructionTime
             progress = 0;
             if (type == RolloutReconType.Reconditioning) 
             {
-                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), true);
-                //BP *= (1 - KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit);
-                name = "LaunchPad Reconditioning";
+                try
+                {
+                    BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), true);
+                }
+                catch
+                {
+                    KCTDebug.Log("Error while determining BP for recon_rollout");
+                }
+                finally
+                {
+                    name = "LaunchPad Reconditioning";
+                }
             }
             else if (type == RolloutReconType.Rollout)
             {
-                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
-                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
-                name = "Vessel Rollout";
+                try
+                {
+                    BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
+                }
+                catch
+                {
+                    KCTDebug.Log("Error while determining BP for recon_rollout");
+                }
+                finally
+                {
+                    name = "Vessel Rollout";
+                }
             }
             else if (type == RolloutReconType.Rollback)
             {
-                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
-                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
-                name = "Vessel Rollback";
-                progress = BP;
+                try
+                {
+                    BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
+                }
+                catch
+                {
+                    KCTDebug.Log("Error while determining BP for recon_rollout");
+                }
+                finally
+                {
+                    name = "Vessel Rollback";
+                    progress = BP;
+                }
             }
             else if (type == RolloutReconType.Recovery)
             {
-                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
-                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
-                name = "Vessel Recovery";
-                double KSCDistance = (float)SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(vessel.latitude, vessel.longitude));
-                double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
-                BP += BP * (KSCDistance / maxDist);
+                try
+                {
+                    BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
+                }
+                catch
+                {
+                    KCTDebug.Log("Error while determining BP for recon_rollout");
+                }
+                finally
+                {
+                    name = "Vessel Recovery";
+                    double KSCDistance = (float)SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(vessel.latitude, vessel.longitude));
+                    double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
+                    BP += BP * (KSCDistance / maxDist);
+                }
             }
         }
 
