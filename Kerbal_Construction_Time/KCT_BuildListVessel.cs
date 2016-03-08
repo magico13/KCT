@@ -524,6 +524,10 @@ namespace KerbalConstructionTime
                 TotalMass += ShipConstruction.GetPartTotalMass(p, KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(p)), out n1, out n2);
                 emptyMass += n1;
             }
+            if (TotalMass < 0)
+                TotalMass = 0;
+            if (emptyMass < 0)
+                emptyMass = 0;
             return TotalMass;
         }
 
