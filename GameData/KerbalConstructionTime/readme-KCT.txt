@@ -19,6 +19,9 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.3.2.0 (03/07/16)
+ - Hotfix for potentially game breaking bug regarding build sizes in the SPH
+ 
 v1.3.1.0 (01/13/16)
  - Fix for errors caused when recovering craft to storage with missing symmetry counterparts
  - Fix for launchpads being stuck at level zero when adding to new save

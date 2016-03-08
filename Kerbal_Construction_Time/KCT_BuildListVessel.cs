@@ -458,7 +458,7 @@ namespace KerbalConstructionTime
                 {
                     failedReasons.Add("Part Count limit exceeded");
                 }
-                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(KCT_GameStates.ActiveKSC.ActiveLPInstance.level/2.0F), true);
+                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(KCT_GameStates.ActiveKSC.ActiveLPInstance.level/2.0F, true));
                 if (!sizeCheck.Test())
                 {
                     failedReasons.Add("Size limits exceeded");
