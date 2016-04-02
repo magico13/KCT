@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using KSP.UI.Dialogs;
 
 namespace KerbalConstructionTime
 {
@@ -34,7 +35,7 @@ namespace KerbalConstructionTime
             GUILayout.BeginVertical();
             GUILayout.Label("Presets", yellowText, GUILayout.ExpandHeight(false));
             //preset toolbar in a scrollview
-            presetScrollView = GUILayout.BeginScrollView(presetScrollView, HighLogic.Skin.textArea, GUILayout.Width(presetPosition.width/6.0f));
+            presetScrollView = GUILayout.BeginScrollView(presetScrollView, GUILayout.Width(presetPosition.width/6.0f)); //TODO: update HighLogic.UISkin.textArea
             string[] presetShortNames = KCT_PresetManager.Instance.PresetShortNames(true);
             if (presetIndex == -1)
             {
@@ -85,11 +86,12 @@ namespace KerbalConstructionTime
             }
             if (WorkingPreset.AllowDeletion && presetIndex != presetShortNames.Length - 1 && GUILayout.Button("Delete Preset")) //allowed to be deleted and isn't Custom
             {
-                DialogOption[] options = new DialogOption[2];
-                options[0] = new DialogOption("Delete File", DeleteActivePreset);
-                options[1] = new DialogOption("Cancel", DummyVoid);
-                MultiOptionDialog dialog = new MultiOptionDialog("Are you sure you want to delete the selected Preset, file and all? This cannot be undone!", windowTitle: "Confirm Deletion", options: options);
-                PopupDialog.SpawnPopupDialog(dialog, false, HighLogic.Skin);
+
+                DialogGUIBase[] options = new DialogGUIBase[2];
+              //TODO: figure out  options[0] = new DialogGUIBase("Delete File", DeleteActivePreset);
+               // options[1] = new DialogGUIBase("Cancel", DummyVoid);
+                MultiOptionDialog dialog = new MultiOptionDialog("Are you sure you want to delete the selected Preset, file and all? This cannot be undone!", "Confirm Deletion", null, options);
+                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), dialog, false, HighLogic.UISkin);
             }
             GUILayout.EndVertical();
 
@@ -97,7 +99,7 @@ namespace KerbalConstructionTime
             GUILayout.BeginVertical();
             presetMainScroll = GUILayout.BeginScrollView(presetMainScroll);
             //Preset info section
-            GUILayout.BeginVertical(HighLogic.Skin.textArea);
+            GUILayout.BeginVertical(HighLogic.UISkin.textArea);
             GUILayout.Label("Preset Name: " + WorkingPreset.name);
             GUILayout.Label("Description: " + WorkingPreset.description);
             GUILayout.Label("Author(s): " + WorkingPreset.author);
@@ -107,17 +109,17 @@ namespace KerbalConstructionTime
             //Features section
             GUILayout.BeginVertical();
             GUILayout.Label("Features", yellowText);
-            GUILayout.BeginVertical(HighLogic.Skin.textArea);
-            WorkingPreset.generalSettings.Enabled= GUILayout.Toggle(WorkingPreset.generalSettings.Enabled, "Mod Enabled", HighLogic.Skin.button);
-            WorkingPreset.generalSettings.BuildTimes = GUILayout.Toggle(WorkingPreset.generalSettings.BuildTimes, "Build Times", HighLogic.Skin.button);
-            WorkingPreset.generalSettings.ReconditioningTimes = GUILayout.Toggle(WorkingPreset.generalSettings.ReconditioningTimes, "Launchpad Reconditioning", HighLogic.Skin.button);
-            WorkingPreset.generalSettings.TechUnlockTimes = GUILayout.Toggle(WorkingPreset.generalSettings.TechUnlockTimes, "Tech Unlock Times", HighLogic.Skin.button);
-            WorkingPreset.generalSettings.KSCUpgradeTimes = GUILayout.Toggle(WorkingPreset.generalSettings.KSCUpgradeTimes, "KSC Upgrade Times", HighLogic.Skin.button);
-            WorkingPreset.generalSettings.Simulations = GUILayout.Toggle(WorkingPreset.generalSettings.Simulations, "Allow Simulations", HighLogic.Skin.button);
-            WorkingPreset.generalSettings.SimulationCosts = GUILayout.Toggle(WorkingPreset.generalSettings.SimulationCosts, "Simulation Costs", HighLogic.Skin.button);
-            WorkingPreset.generalSettings.RequireVisitsForSimulations = GUILayout.Toggle(WorkingPreset.generalSettings.RequireVisitsForSimulations, "Must Visit Planets", HighLogic.Skin.button);
-            WorkingPreset.generalSettings.TechUpgrades = GUILayout.Toggle(WorkingPreset.generalSettings.TechUpgrades, "Upgrades From Tech Tree", HighLogic.Skin.button);
-            WorkingPreset.generalSettings.SharedUpgradePool = GUILayout.Toggle(WorkingPreset.generalSettings.SharedUpgradePool, "Shared Upgrade Pool (KSCSwitcher)", HighLogic.Skin.button);
+            GUILayout.BeginVertical(HighLogic.UISkin.textArea);
+            WorkingPreset.generalSettings.Enabled= GUILayout.Toggle(WorkingPreset.generalSettings.Enabled, "Mod Enabled", HighLogic.UISkin.button);
+            WorkingPreset.generalSettings.BuildTimes = GUILayout.Toggle(WorkingPreset.generalSettings.BuildTimes, "Build Times", HighLogic.UISkin.button);
+            WorkingPreset.generalSettings.ReconditioningTimes = GUILayout.Toggle(WorkingPreset.generalSettings.ReconditioningTimes, "Launchpad Reconditioning", HighLogic.UISkin.button);
+            WorkingPreset.generalSettings.TechUnlockTimes = GUILayout.Toggle(WorkingPreset.generalSettings.TechUnlockTimes, "Tech Unlock Times", HighLogic.UISkin.button);
+            WorkingPreset.generalSettings.KSCUpgradeTimes = GUILayout.Toggle(WorkingPreset.generalSettings.KSCUpgradeTimes, "KSC Upgrade Times", HighLogic.UISkin.button);
+            WorkingPreset.generalSettings.Simulations = GUILayout.Toggle(WorkingPreset.generalSettings.Simulations, "Allow Simulations", HighLogic.UISkin.button);
+            WorkingPreset.generalSettings.SimulationCosts = GUILayout.Toggle(WorkingPreset.generalSettings.SimulationCosts, "Simulation Costs", HighLogic.UISkin.button);
+            WorkingPreset.generalSettings.RequireVisitsForSimulations = GUILayout.Toggle(WorkingPreset.generalSettings.RequireVisitsForSimulations, "Must Visit Planets", HighLogic.UISkin.button);
+            WorkingPreset.generalSettings.TechUpgrades = GUILayout.Toggle(WorkingPreset.generalSettings.TechUpgrades, "Upgrades From Tech Tree", HighLogic.UISkin.button);
+            WorkingPreset.generalSettings.SharedUpgradePool = GUILayout.Toggle(WorkingPreset.generalSettings.SharedUpgradePool, "Shared Upgrade Pool (KSCSwitcher)", HighLogic.UISkin.button);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Starting Upgrades:");
@@ -129,7 +131,7 @@ namespace KerbalConstructionTime
 
             GUILayout.BeginVertical(); //Begin time settings
             GUILayout.Label("Time Settings", yellowText);
-            GUILayout.BeginVertical(HighLogic.Skin.textArea);
+            GUILayout.BeginVertical(HighLogic.UISkin.textArea);
             GUILayout.BeginHorizontal();
             GUILayout.Label("Overall Multiplier: ");
             double.TryParse(OMultTmp = GUILayout.TextField(OMultTmp, 10, GUILayout.Width(80)), out WorkingPreset.timeSettings.OverallMultiplier);
@@ -164,7 +166,7 @@ namespace KerbalConstructionTime
             //begin formula settings
             GUILayout.BeginVertical();
             GUILayout.Label("Formula Settings (Advanced)", yellowText);
-            GUILayout.BeginVertical(HighLogic.Skin.textArea);
+            GUILayout.BeginVertical(HighLogic.UISkin.textArea);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Show/Hide Formulas"))
             {
@@ -331,7 +333,7 @@ namespace KerbalConstructionTime
             GUILayout.BeginVertical(GUILayout.Width(100)); //Start general settings
             GUILayout.Label("General Settings", yellowText);
             GUILayout.Label("NOTE: Affects all saves!", yellowText);
-            GUILayout.BeginVertical(HighLogic.Skin.textArea);
+            GUILayout.BeginVertical(HighLogic.UISkin.textArea);
             GUILayout.Label("Max Timewarp");
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("-", GUILayout.ExpandWidth(false)))
@@ -346,14 +348,14 @@ namespace KerbalConstructionTime
             }
             GUILayout.EndHorizontal();
 
-            forceStopWarp = GUILayout.Toggle(forceStopWarp, "Auto Stop TimeWarp", HighLogic.Skin.button);
-            autoAlarms = GUILayout.Toggle(autoAlarms, "Auto KAC Alarms", HighLogic.Skin.button);
-            overrideLaunchBtn = GUILayout.Toggle(overrideLaunchBtn, "Override Launch Button", HighLogic.Skin.button);
-            useBlizzyToolbar = GUILayout.Toggle(useBlizzyToolbar, "Use Toolbar Mod", HighLogic.Skin.button);
-            disableAllMsgs = !GUILayout.Toggle(!disableAllMsgs, "Use Message System", HighLogic.Skin.button);
-            debug = GUILayout.Toggle(debug, "Debug Logging", HighLogic.Skin.button);
+            forceStopWarp = GUILayout.Toggle(forceStopWarp, "Auto Stop TimeWarp", HighLogic.UISkin.button);
+            autoAlarms = GUILayout.Toggle(autoAlarms, "Auto KAC Alarms", HighLogic.UISkin.button);
+            overrideLaunchBtn = GUILayout.Toggle(overrideLaunchBtn, "Override Launch Button", HighLogic.UISkin.button);
+            useBlizzyToolbar = GUILayout.Toggle(useBlizzyToolbar, "Use Toolbar Mod", HighLogic.UISkin.button);
+            disableAllMsgs = !GUILayout.Toggle(!disableAllMsgs, "Use Message System", HighLogic.UISkin.button);
+            debug = GUILayout.Toggle(debug, "Debug Logging", HighLogic.UISkin.button);
 #if DEBUG
-            debugUpdateChecking = GUILayout.Toggle(debugUpdateChecking, "Check for Dev Updates", HighLogic.Skin.button);
+            debugUpdateChecking = GUILayout.Toggle(debugUpdateChecking, "Check for Dev Updates", HighLogic.UISkin.button);
 #endif
             GUILayout.EndVertical();
             GUILayout.EndVertical();

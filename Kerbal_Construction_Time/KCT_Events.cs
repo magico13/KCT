@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using System.Collections;
+using KSP.UI.Screens;
 
 namespace KerbalConstructionTime
 {
@@ -446,7 +447,7 @@ namespace KerbalConstructionTime
             {
                 KCT_GameStates.BodiesVisited.Add(ev.to.bodyName);
                 var message = new ScreenMessage("[KCT] New simulation body unlocked: " + ev.to.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                ScreenMessages.PostScreenMessage(message, true);
+                ScreenMessages.PostScreenMessage(message);
             }
         }
 
@@ -455,7 +456,7 @@ namespace KerbalConstructionTime
             if (!KCT_GUI.PrimarilyDisabled)
             {
                 //KCT_GameStates.flightSimulated = true; //no longer needed b/c that gui wont appear anymore!
-               // PopupDialog.SpawnPopupDialog("Warning!", "To launch vessels you must first build them in the VAB or SPH, then launch them through the main KCT window in the Space Center!", "Ok", false, HighLogic.Skin);
+               // PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Warning!", "To launch vessels you must first build them in the VAB or SPH, then launch them through the main KCT window in the Space Center!", "Ok", false, HighLogic.UISkin);
                 //open the build list to the right page
                 string selection = "VAB";
                 if (v.craftSubfolder.Contains("SPH"))
@@ -493,7 +494,7 @@ namespace KerbalConstructionTime
             }
         }
 
-        public void vesselRecoverEvent(ProtoVessel v)
+        public void vesselRecoverEvent(ProtoVessel v, bool unknownAsOfNow)
         {
             if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)

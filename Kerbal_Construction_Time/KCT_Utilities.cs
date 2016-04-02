@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using KSP.UI.Screens;
 
 namespace KerbalConstructionTime
 {
@@ -1424,7 +1425,7 @@ namespace KerbalConstructionTime
                 {
                     //ScreenMessages.PostScreenMessage("Did not pass editor checks!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     //ScreenMessages.PostScreenMessage(failedReason, 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                    PopupDialog.SpawnPopupDialog("Failed editor checks!", "Warning! This vessel did not pass the editor checks! It will still be built, but you will not be able to launch it without upgrading. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.Skin);
+                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Failed editor checks!", "Warning! This vessel did not pass the editor checks! It will still be built, but you will not be able to launch it without upgrading. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.UISkin);
                     //return null;
                 }
 
@@ -1977,6 +1978,7 @@ namespace KerbalConstructionTime
 
         public static void DisplayMessage(String title, StringBuilder text, MessageSystemButton.MessageButtonColor color, MessageSystemButton.ButtonIcons icon)
         {
+            
             MessageSystem.Message m = new MessageSystem.Message(title, text.ToString(), color, icon);
             MessageSystem.Instance.AddMessage(m);
         }

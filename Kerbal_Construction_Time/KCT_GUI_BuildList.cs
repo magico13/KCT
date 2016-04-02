@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using KSP.UI.Screens;
 
 namespace KerbalConstructionTime
 {
@@ -78,7 +79,7 @@ namespace KerbalConstructionTime
 
             //if (Input.touchCount == 0) MouseOnRolloutButton = false;
 
-            //GUI.skin = HighLogic.Skin;
+            //GUI.skin = HighLogic.UISkin;
             GUIStyle redText = new GUIStyle(GUI.skin.label);
             redText.normal.textColor = Color.red;
             GUIStyle yellowText = new GUIStyle(GUI.skin.label);
@@ -342,11 +343,11 @@ namespace KerbalConstructionTime
                             {
                                 InputLockManager.SetControlLock(ControlTypes.EDITOR_SOFT_LOCK, "KCTPopupLock");
                                 IDSelected = b.id;
-                                DialogOption[] options = new DialogOption[2];
-                                options[0] = new DialogOption("Yes", ScrapVessel);
-                                options[1] = new DialogOption("No", DummyVoid);
-                                MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", windowTitle: "Scrap Vessel", options: options);
-                                PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                                DialogGUIBase[] options = new DialogGUIBase[2];
+                               //TODO: figure out options[0] = new DialogOption("Yes", ScrapVessel);
+                                //options[1] = new DialogOption("No", DummyVoid);
+                                MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", "Scrap Vessel", null, options: options);
+                                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, HighLogic.UISkin);
                             }
                         }
 
@@ -402,7 +403,7 @@ namespace KerbalConstructionTime
                     {
                         if (!KCT_Utilities.RecoverActiveVesselToStorage(KCT_BuildListVessel.ListType.VAB))
                         {
-                            PopupDialog.SpawnPopupDialog("Error!", "There was an error while recovering the ship. Sometimes reloading the scene and trying again works. Sometimes a vessel just can't be recovered this way and you must use the stock recover system.", "OK", false, GUI.skin);
+                            PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),  "Error!", "There was an error while recovering the ship. Sometimes reloading the scene and trying again works. Sometimes a vessel just can't be recovered this way and you must use the stock recover system.", "OK", false, HighLogic.UISkin);
                         }
                     }
                     if (buildList.Count == 0)
@@ -506,12 +507,12 @@ namespace KerbalConstructionTime
                                     }
                                     else
                                     {
-                                        PopupDialog.SpawnPopupDialog("Cannot Launch!", "You must repair the launchpad before you can launch a vessel from it!", "Acknowledged", false, HighLogic.Skin);
+                                        PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),  "Cannot Launch!", "You must repair the launchpad before you can launch a vessel from it!", "Acknowledged", false, HighLogic.UISkin);
                                     }
                                 }
                                 else
                                 {
-                                    PopupDialog.SpawnPopupDialog("Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the VAB and/or Launchpad it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.Skin);
+                                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),  "Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the VAB and/or Launchpad it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.UISkin);
                                 }
                             }
                             if (Event.current.type == EventType.Repaint)
@@ -572,7 +573,7 @@ namespace KerbalConstructionTime
                                     if (!operational)
                                     {
                                         //ScreenMessages.PostScreenMessage("You must repair the launchpad prior to launch!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                                        PopupDialog.SpawnPopupDialog("Cannot Launch!", "You must repair the launchpad before you can launch a vessel from it!", "Acknowledged", false, HighLogic.Skin);
+                                        PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Cannot Launch!", "You must repair the launchpad before you can launch a vessel from it!", "Acknowledged", false, HighLogic.UISkin);
                                     }
                                     else if (KCT_Utilities.ReconditioningActive(null, launchSite))
                                     {
@@ -620,7 +621,7 @@ namespace KerbalConstructionTime
                                 }
                                 else
                                 {
-                                    PopupDialog.SpawnPopupDialog("Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the VAB and/or Launchpad it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.Skin);
+                                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the VAB and/or Launchpad it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.UISkin);
                                 }
                             }
                         }
@@ -691,7 +692,7 @@ namespace KerbalConstructionTime
                     });
                     options[1] = new DialogOption("No", DummyVoid);
                     MultiOptionDialog diag = new MultiOptionDialog("It will cost " + Math.Round(costOfNewLP, 2).ToString("N") + " funds to build a new launchpad. Would you like to build it?", windowTitle: "Build LaunchPad", options: options);
-                    PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, windowSkin);
                 }
                 GUILayout.FlexibleSpace();
                 if (lpCount > 1 && GUILayout.Button(">>", GUILayout.ExpandWidth(false)))
@@ -741,7 +742,7 @@ namespace KerbalConstructionTime
                                 options[0] = new DialogOption("Yes", ScrapVessel);
                                 options[1] = new DialogOption("No", DummyVoid);
                                 MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap " + b.shipName + "?", windowTitle: "Scrap Vessel", options: options);
-                                PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, windowSkin);
                             }
                         }
 
@@ -795,7 +796,7 @@ namespace KerbalConstructionTime
                     {
                         if (!KCT_Utilities.RecoverActiveVesselToStorage(KCT_BuildListVessel.ListType.SPH))
                         {
-                            PopupDialog.SpawnPopupDialog("Error!", "There was an error while recovering the ship. Sometimes reloading the scene and trying again works. Sometimes a vessel just can't be recovered this way and you must use the stock recover system.", "OK", false, GUI.skin);
+                            PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Error!", "There was an error while recovering the ship. Sometimes reloading the scene and trying again works. Sometimes a vessel just can't be recovered this way and you must use the stock recover system.", "OK", false, GUI.skin);
                         }
                     }
 
@@ -872,7 +873,7 @@ namespace KerbalConstructionTime
                             }
                             else
                             {
-                                PopupDialog.SpawnPopupDialog("Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the SPH and/or Runway it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.Skin);
+                                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the SPH and/or Runway it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.UISkin);
                             }
                         }
                         else if (recovery != null)
@@ -973,7 +974,7 @@ namespace KerbalConstructionTime
                         options[0] = new DialogOption("Yes", () => { CancelTechNode(cancelID); });
                         options[1] = new DialogOption("No", DummyVoid);
                         MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to stop researching "+t.techName+"?", windowTitle: "Cancel Node?", options: options);
-                        PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                        PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, windowSkin);
 
                         /*if (CancelTechNode(i))
                         {
@@ -1117,7 +1118,7 @@ namespace KerbalConstructionTime
                 options[0] = new DialogOption("Yes", ScrapVessel);
                 options[1] = new DialogOption("No", DummyVoid);
                 MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", windowTitle: "Scrap Vessel", options: options);
-                PopupDialog.SpawnPopupDialog(diag, false, windowSkin);
+                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, windowSkin);
                 showBLPlus = false;
                 ResetBLWindow();
             }

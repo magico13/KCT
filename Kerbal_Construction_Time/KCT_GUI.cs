@@ -41,7 +41,7 @@ namespace KerbalConstructionTime
         private static Rect simulationConfigPosition = new Rect((Screen.width / 2)-150, (Screen.height / 4), 300, 1);
         private static Rect bLPlusPosition = new Rect(Screen.width-500, 40, 100, 1);
 
-        public static GUISkin windowSkin;// = HighLogic.Skin;// = new GUIStyle(HighLogic.Skin.window);
+        public static GUISkin windowSkin;// = HighLogic.UISkin;// = new GUIStyle(HighLogic.UISkin.window);
 
         private static bool isKSCLocked = false, isEditorLocked = false;
 
@@ -67,53 +67,53 @@ namespace KerbalConstructionTime
 
 
                 if (showSettings)
-                    //settingsPosition = GUILayout.Window(8955, settingsPosition, KCT_GUI.DrawSettings, "KCT Settings", HighLogic.Skin.window);
-                    presetPosition = GUILayout.Window(8955, presetPosition, KCT_GUI.DrawPresetWindow, "KCT Settings", HighLogic.Skin.window);
+                    //settingsPosition = GUILayout.Window(8955, settingsPosition, KCT_GUI.DrawSettings, "KCT Settings", HighLogic.UISkin.window);
+                    presetPosition = GUILayout.Window(8955, presetPosition, KCT_GUI.DrawPresetWindow, "KCT Settings", HighLogic.UISkin.window);
                 if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                     return;
 
                 if (showMainGUI)
-                    mainWindowPosition = GUILayout.Window(8950, mainWindowPosition, KCT_GUI.DrawMainGUI, "Kerbal Construction Time", HighLogic.Skin.window);
+                    mainWindowPosition = GUILayout.Window(8950, mainWindowPosition, KCT_GUI.DrawMainGUI, "Kerbal Construction Time", HighLogic.UISkin.window);
                 if (showEditorGUI)
-                    editorWindowPosition = GUILayout.Window(8953, editorWindowPosition, KCT_GUI.DrawEditorGUI, "Kerbal Construction Time", HighLogic.Skin.window);
+                    editorWindowPosition = GUILayout.Window(8953, editorWindowPosition, KCT_GUI.DrawEditorGUI, "Kerbal Construction Time", HighLogic.UISkin.window);
                 if (showSOIAlert)
-                    SOIAlertPosition = GUILayout.Window(8951, SOIAlertPosition, KCT_GUI.DrawSOIAlertWindow, "SOI Change", HighLogic.Skin.window);
+                    SOIAlertPosition = GUILayout.Window(8951, SOIAlertPosition, KCT_GUI.DrawSOIAlertWindow, "SOI Change", HighLogic.UISkin.window);
                 if (showLaunchAlert)
-                    centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawLaunchAlert, "KCT", HighLogic.Skin.window);
+                    centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawLaunchAlert, "KCT", HighLogic.UISkin.window);
                 if (showSimulationCompleteEditor)
-                    centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawSimulationCompleteEditor, "Simulation Complete!", HighLogic.Skin.window);
+                    centralWindowPosition = GUILayout.Window(8951, centralWindowPosition, KCT_GUI.DrawSimulationCompleteEditor, "Simulation Complete!", HighLogic.UISkin.window);
                 if (showSimulationCompleteFlight)
-                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimulationCompleteFlight, "Simulation Complete!", HighLogic.Skin.window);
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimulationCompleteFlight, "Simulation Complete!", HighLogic.UISkin.window);
                 if (showSimulationWindow)
-                    simulationWindowPosition = GUILayout.Window(8955, simulationWindowPosition, KCT_GUI.DrawSimulationWindow, "KCT Simulation", HighLogic.Skin.window);
+                    simulationWindowPosition = GUILayout.Window(8955, simulationWindowPosition, KCT_GUI.DrawSimulationWindow, "KCT Simulation", HighLogic.UISkin.window);
                 if (showTimeRemaining && KCT_GameStates.simulationTimeLimit > 0)
-                    timeRemainingPosition = GUILayout.Window(8951, timeRemainingPosition, KCT_GUI.DrawSimulationTimeWindow, "Time left:", HighLogic.Skin.window);
+                    timeRemainingPosition = GUILayout.Window(8951, timeRemainingPosition, KCT_GUI.DrawSimulationTimeWindow, "Time left:", HighLogic.UISkin.window);
                 if (showBuildList)
-                    buildListWindowPosition = GUILayout.Window(8950, buildListWindowPosition, KCT_GUI.DrawBuildListWindow, "Build List", HighLogic.Skin.window);
+                    buildListWindowPosition = GUILayout.Window(8950, buildListWindowPosition, KCT_GUI.DrawBuildListWindow, "Build List", HighLogic.UISkin.window);
                 if (showClearLaunch)
-                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawClearLaunch, "Launch site not clear!", HighLogic.Skin.window);
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawClearLaunch, "Launch site not clear!", HighLogic.UISkin.window);
                 if (showShipRoster)
-                    crewListWindowPosition = GUILayout.Window(8955, crewListWindowPosition, KCT_GUI.DrawShipRoster, "Select Crew", HighLogic.Skin.window);
+                    crewListWindowPosition = GUILayout.Window(8955, crewListWindowPosition, KCT_GUI.DrawShipRoster, "Select Crew", HighLogic.UISkin.window);
                 if (showCrewSelect)
-                    crewListWindowPosition = GUILayout.Window(8954, crewListWindowPosition, KCT_GUI.DrawCrewSelect, "Select Crew", HighLogic.Skin.window);
+                    crewListWindowPosition = GUILayout.Window(8954, crewListWindowPosition, KCT_GUI.DrawCrewSelect, "Select Crew", HighLogic.UISkin.window);
                 if (showSimConfig)
-                    simulationConfigPosition = GUILayout.Window(8951, simulationConfigPosition, KCT_GUI.DrawSimulationConfigure, "Simulation Configuration", HighLogic.Skin.window);
+                    simulationConfigPosition = GUILayout.Window(8951, simulationConfigPosition, KCT_GUI.DrawSimulationConfigure, "Simulation Configuration", HighLogic.UISkin.window);
                 if (showBodyChooser)
-                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawBodyChooser, "Choose Body", HighLogic.Skin.window);
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawBodyChooser, "Choose Body", HighLogic.UISkin.window);
                 if (showUpgradeWindow)
-                    upgradePosition = GUILayout.Window(8952, upgradePosition, KCT_GUI.DrawUpgradeWindow, "Upgrades", HighLogic.Skin.window);
+                    upgradePosition = GUILayout.Window(8952, upgradePosition, KCT_GUI.DrawUpgradeWindow, "Upgrades", HighLogic.UISkin.window);
                 if (showBLPlus)
-                    bLPlusPosition = GUILayout.Window(8953, bLPlusPosition, KCT_GUI.DrawBLPlusWindow, "Options", HighLogic.Skin.window);
+                    bLPlusPosition = GUILayout.Window(8953, bLPlusPosition, KCT_GUI.DrawBLPlusWindow, "Options", HighLogic.UISkin.window);
                 if (showRename)
-                    centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawRenameWindow, "Rename", HighLogic.Skin.window);
+                    centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawRenameWindow, "Rename", HighLogic.UISkin.window);
                 if (showFirstRun)
-                    centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawFirstRun, "Kerbal Construction Time", HighLogic.Skin.window);
+                    centralWindowPosition = GUILayout.Window(8954, centralWindowPosition, KCT_GUI.DrawFirstRun, "Kerbal Construction Time", HighLogic.UISkin.window);
                 if (showSimLengthChooser)
-                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimLengthChooser, "Time Limit", HighLogic.Skin.window);
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, KCT_GUI.DrawSimLengthChooser, "Time Limit", HighLogic.UISkin.window);
                 if (showPresetSaver)
-                    presetNamingWindowPosition = GUILayout.Window(8952, presetNamingWindowPosition, KCT_GUI.DrawPresetSaveWindow, "Save as New Preset", HighLogic.Skin.window);
+                    presetNamingWindowPosition = GUILayout.Window(8952, presetNamingWindowPosition, KCT_GUI.DrawPresetSaveWindow, "Save as New Preset", HighLogic.UISkin.window);
                 if (showLaunchSiteSelector)
-                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, DrawLaunchSiteChooser, "Select Site", HighLogic.Skin.window);
+                    centralWindowPosition = GUILayout.Window(8952, centralWindowPosition, DrawLaunchSiteChooser, "Select Site", HighLogic.UISkin.window);
 
 
                 if (unlockEditor)
@@ -746,7 +746,7 @@ namespace KerbalConstructionTime
                     options[0] = new DialogOption("Clear Out Inventory", ClearOutInventory);
                     options[1] = new DialogOption("Cancel", DummyVoid);
                     MultiOptionDialog a = new MultiOptionDialog("Do you wish to clear out the inventory? In return, you will receive "+newUpgrades+" upgrade points.", windowTitle:"Clear Out Inventory", options:options);
-                    PopupDialog.SpawnPopupDialog(a, false, GUI.skin);
+                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), a, false, GUI.skin);
                 }
 
                 List<string> categories = new List<string> { "Pods", "Fuel.", "Eng.", "Ctl.", "Struct.", "Aero", "Util.", "Sci." };
@@ -2039,8 +2039,8 @@ namespace KerbalConstructionTime
                     crewListWindowPosition.height = 1;
                     break;
                 }
-                GUILayout.HorizontalSlider(crew.courage, 0, 1, HighLogic.Skin.horizontalSlider, HighLogic.Skin.horizontalSliderThumb, GUILayout.Width(cWidth));
-                GUILayout.HorizontalSlider(crew.stupidity, 0, 1, HighLogic.Skin.horizontalSlider, HighLogic.Skin.horizontalSliderThumb, GUILayout.Width(cWidth));
+                GUILayout.HorizontalSlider(crew.courage, 0, 1, HighLogic.UISkin.horizontalSlider, HighLogic.UISkin.horizontalSliderThumb, GUILayout.Width(cWidth));
+                GUILayout.HorizontalSlider(crew.stupidity, 0, 1, HighLogic.UISkin.horizontalSlider, HighLogic.UISkin.horizontalSliderThumb, GUILayout.Width(cWidth));
 
                 GUILayout.EndHorizontal();
             }

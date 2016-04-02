@@ -168,7 +168,7 @@ namespace KerbalConstructionTime
             }
             if (KCT_Events.instance.KCTButtonStock != null)
             {
-                ApplicationLauncher.Instance.RemoveModApplication(KCT_Events.instance.KCTButtonStock);
+                KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(KCT_Events.instance.KCTButtonStock);
             }
 
             KCT_GUI.guiDataSaver.Save();
@@ -291,7 +291,7 @@ namespace KerbalConstructionTime
                 if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
                 {
                     KCT_GameStates.delayStart = false;
-                    EditorLogic.fetch.shipNameField.Text = KCT_GameStates.editedVessel.shipName;
+                    EditorLogic.fetch.shipNameField.text = KCT_GameStates.editedVessel.shipName;
                 }
             }
             else if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
@@ -545,11 +545,11 @@ namespace KerbalConstructionTime
 
                 if (!KCT_GUI.PrimarilyDisabled && HighLogic.LoadedScene == GameScenes.SPACECENTER)
                 {
-                    if (VesselSpawnDialog.Instance.Visible)
+                    if (KSP.UI.Screens.VesselSpawnDialog.Instance.Visible)
                     {
-                        POINTER_INFO ptr = new POINTER_INFO();
-                        ptr.evt = POINTER_INFO.INPUT_EVENT.TAP;
-                        VesselSpawnDialog.Instance.ButtonClose(ref ptr);
+                        //POINTER_INFO ptr = new POINTER_INFO();
+                        //ptr.evt = POINTER_INFO.INPUT_EVENT.TAP;
+                        KSP.UI.Screens.VesselSpawnDialog.Instance.ButtonClose();
                         KCTDebug.Log("Attempting to close spawn dialog!");
                     }
                 }
@@ -562,7 +562,7 @@ namespace KerbalConstructionTime
                     options[1] = new DialogOption("SPH Storage", RecoverToSPH);
                     options[2] = new DialogOption("The Scrapyard", RecoverToScrapyard);
                     MultiOptionDialog diag = new MultiOptionDialog("Send recovered vessel to", windowTitle: "Vessel Recovery", options: options);
-                    PopupDialog.SpawnPopupDialog(diag, false, HighLogic.Skin);
+                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, HighLogic.UISkin);
                 }*/
 
                 if (!KCT_GUI.PrimarilyDisabled)
@@ -924,8 +924,8 @@ namespace KerbalConstructionTime
 
 
             MultiOptionDialog diag = new MultiOptionDialog(txt, "Vessels Contain Missing Parts", KCT_GUI.windowSkin, options);
-            PopupDialog.SpawnPopupDialog(diag, false, KCT_GUI.windowSkin);
-            //PopupDialog.SpawnPopupDialog("Vessel Contains Missing Parts", "The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Understood", false, HighLogic.Skin);
+            PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, KCT_GUI.windowSkin);
+            //PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Vessel Contains Missing Parts", "The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Understood", false, HighLogic.UISkin);
         }
 
         public void ShowLaunchAlert()
