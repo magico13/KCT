@@ -344,8 +344,8 @@ namespace KerbalConstructionTime
                                 InputLockManager.SetControlLock(ControlTypes.EDITOR_SOFT_LOCK, "KCTPopupLock");
                                 IDSelected = b.id;
                                 DialogGUIBase[] options = new DialogGUIBase[2];
-                               //TODO: figure out options[0] = new DialogOption("Yes", ScrapVessel);
-                                //options[1] = new DialogOption("No", DummyVoid);
+                                options[0] = new DialogGUIButton("Yes", ScrapVessel);
+                                options[1] = new DialogGUIButton("No", DummyVoid);
                                 MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", "Scrap Vessel", null, options: options);
                                 PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, HighLogic.UISkin);
                             }
@@ -580,7 +580,7 @@ namespace KerbalConstructionTime
                                         //can't launch now
                                         ScreenMessage message = new ScreenMessage("[KCT] Cannot launch while LaunchPad is being reconditioned. It will be finished in "
                                             + KCT_Utilities.GetFormattedTime(((IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning(launchSite)).GetTimeLeft()), 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                                        ScreenMessages.PostScreenMessage(message, true);
+                                        ScreenMessages.PostScreenMessage(message);
                                     }
                                     else
                                     {
@@ -660,8 +660,8 @@ namespace KerbalConstructionTime
                 {
                     //open dialog to unlock new
                     costOfNewLP = KCT_MathParsing.GetStandardFormulaValue("NewLaunchPadCost", new Dictionary<string, string> { { "N", KCT_GameStates.ActiveKSC.LaunchPads.Count.ToString() } });
-                    DialogOption[] options = new DialogOption[2];
-                    options[0] = new DialogOption("Yes", () =>
+                    DialogGUIBase[] options = new DialogGUIBase[2];
+                    options[0] = new DialogGUIButton("Yes", () =>
                     {
                         if (!KCT_Utilities.CurrentGameIsCareer())
                         {
@@ -690,9 +690,9 @@ namespace KerbalConstructionTime
                         }
                         costOfNewLP = -13;
                     });
-                    options[1] = new DialogOption("No", DummyVoid);
-                    MultiOptionDialog diag = new MultiOptionDialog("It will cost " + Math.Round(costOfNewLP, 2).ToString("N") + " funds to build a new launchpad. Would you like to build it?", windowTitle: "Build LaunchPad", options: options);
-                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, windowSkin);
+                    options[1] = new DialogGUIButton("No", DummyVoid);
+                    MultiOptionDialog diag = new MultiOptionDialog("It will cost " + Math.Round(costOfNewLP, 2).ToString("N") + " funds to build a new launchpad. Would you like to build it?", "Build LaunchPad", null, 300, options);
+                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, HighLogic.UISkin);
                 }
                 GUILayout.FlexibleSpace();
                 if (lpCount > 1 && GUILayout.Button(">>", GUILayout.ExpandWidth(false)))
@@ -738,11 +738,11 @@ namespace KerbalConstructionTime
                             {
                                 InputLockManager.SetControlLock(ControlTypes.EDITOR_SOFT_LOCK, "KCTPopupLock");
                                 IDSelected = b.id;
-                                DialogOption[] options = new DialogOption[2];
-                                options[0] = new DialogOption("Yes", ScrapVessel);
-                                options[1] = new DialogOption("No", DummyVoid);
-                                MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap " + b.shipName + "?", windowTitle: "Scrap Vessel", options: options);
-                                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, windowSkin);
+                                DialogGUIBase[] options = new DialogGUIBase[2];
+                                options[0] = new DialogGUIButton("Yes", ScrapVessel);
+                                options[1] = new DialogGUIButton("No", DummyVoid);
+                                MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap " + b.shipName + "?", "Scrap Vessel", null, 300, options);
+                                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, HighLogic.UISkin);
                             }
                         }
 
@@ -796,7 +796,7 @@ namespace KerbalConstructionTime
                     {
                         if (!KCT_Utilities.RecoverActiveVesselToStorage(KCT_BuildListVessel.ListType.SPH))
                         {
-                            PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Error!", "There was an error while recovering the ship. Sometimes reloading the scene and trying again works. Sometimes a vessel just can't be recovered this way and you must use the stock recover system.", "OK", false, GUI.skin);
+                            PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Error!", "There was an error while recovering the ship. Sometimes reloading the scene and trying again works. Sometimes a vessel just can't be recovered this way and you must use the stock recover system.", "OK", false, HighLogic.UISkin);
                         }
                     }
 
@@ -970,11 +970,11 @@ namespace KerbalConstructionTime
                     {
                         forceRecheck = true;
                         cancelID = i;
-                        DialogOption[] options = new DialogOption[2];
-                        options[0] = new DialogOption("Yes", () => { CancelTechNode(cancelID); });
-                        options[1] = new DialogOption("No", DummyVoid);
-                        MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to stop researching "+t.techName+"?", windowTitle: "Cancel Node?", options: options);
-                        PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, windowSkin);
+                        DialogGUIBase[] options = new DialogGUIBase[2];
+                        options[0] = new DialogGUIButton("Yes", () => { CancelTechNode(cancelID); });
+                        options[1] = new DialogGUIButton("No", DummyVoid);
+                        MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to stop researching "+t.techName+"?", "Cancel Node?", null, 300, options);
+                        PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, HighLogic.UISkin);
 
                         /*if (CancelTechNode(i))
                         {
@@ -1114,11 +1114,11 @@ namespace KerbalConstructionTime
             if (!onPad && GUILayout.Button("Scrap"))
             {
                 InputLockManager.SetControlLock(ControlTypes.KSC_ALL, "KCTPopupLock");
-                DialogOption[] options = new DialogOption[2];
-                options[0] = new DialogOption("Yes", ScrapVessel);
-                options[1] = new DialogOption("No", DummyVoid);
-                MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", windowTitle: "Scrap Vessel", options: options);
-                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, windowSkin);
+                DialogGUIBase[] options = new DialogGUIBase[2];
+                options[0] = new DialogGUIButton("Yes", ScrapVessel);
+                options[1] = new DialogGUIButton("No", DummyVoid);
+                MultiOptionDialog diag = new MultiOptionDialog("Are you sure you want to scrap this vessel?", "Scrap Vessel", null, 300, options);
+                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, HighLogic.UISkin);
                 showBLPlus = false;
                 ResetBLWindow();
             }

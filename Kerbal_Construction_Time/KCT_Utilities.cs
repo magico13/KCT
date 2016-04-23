@@ -895,7 +895,7 @@ namespace KerbalConstructionTime
                 //ResearchAndDevelopment.Instance.Science += science;
                 ResearchAndDevelopment.Instance.AddScience(science, reason);
                 var message = new ScreenMessage("[KCT] " + science + " science added.", 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                ScreenMessages.PostScreenMessage(message, true);
+                ScreenMessages.PostScreenMessage(message);
             }
         }
 
@@ -1392,7 +1392,7 @@ namespace KerbalConstructionTime
         public static KCT_BuildListVessel AddVesselToBuildList(bool useInventory)
         {
             KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.SaveShip().GetNodes("PART").ToList(), true, useInventory), EditorLogic.FlagURL);
-            blv.shipName = EditorLogic.fetch.shipNameField.Text;
+            blv.shipName = EditorLogic.fetch.shipNameField.text;
             Dictionary<String, int> inventory = new Dictionary<string,int>();
             if (useInventory)
                 inventory = KCT_GameStates.PartInventory;
@@ -1402,7 +1402,7 @@ namespace KerbalConstructionTime
         public static KCT_BuildListVessel AddVesselToBuildList(Dictionary<String, int> inventory)
         {
             KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, KCT_Utilities.GetBuildTime(EditorLogic.fetch.ship.SaveShip().GetNodes("PART").ToList(), true, inventory), EditorLogic.FlagURL);
-            blv.shipName = EditorLogic.fetch.shipNameField.Text;
+            blv.shipName = EditorLogic.fetch.shipNameField.text;
             return AddVesselToBuildList(blv, inventory);
         }
 
@@ -1438,7 +1438,7 @@ namespace KerbalConstructionTime
                     KCTDebug.Log("Tried to add " + blv.shipName + " to build list but not enough funds.");
                     KCTDebug.Log("Vessel cost: " + GetTotalVesselCost(blv.shipNode) + ", Current funds: " + prevFunds);
                     var msg = new ScreenMessage("Not Enough Funds To Build!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                    ScreenMessages.PostScreenMessage(msg, true);
+                    ScreenMessages.PostScreenMessage(msg);
                     return null;
                 }
                 else
@@ -1476,7 +1476,7 @@ namespace KerbalConstructionTime
             KCTDebug.Log("Launch site is " + blv.launchSite);
             //KCTDebug.Log("Cost Breakdown (total, parts, fuel): " + blv.totalCost + ", " + blv.dryCost + ", " + blv.fuelCost);
             var message = new ScreenMessage("[KCT] Added " + blv.shipName + " to " + type + " build list.", 4.0f, ScreenMessageStyle.UPPER_CENTER);
-            ScreenMessages.PostScreenMessage(message, true);
+            ScreenMessages.PostScreenMessage(message);
             return blv;
         }
 
