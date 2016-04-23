@@ -19,6 +19,9 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.3.3.0-pre (04/22/16)
+ - Pre-release update for KSP v1.1
+ 
 v1.3.2.0 (03/07/16)
  - Hotfix for potentially game breaking bug regarding build sizes in the SPH
  
