@@ -88,8 +88,8 @@ namespace KerbalConstructionTime
             {
 
                 DialogGUIBase[] options = new DialogGUIBase[2];
-              //TODO: figure out  options[0] = new DialogGUIBase("Delete File", DeleteActivePreset);
-               // options[1] = new DialogGUIBase("Cancel", DummyVoid);
+                options[0] = new DialogGUIButton("Delete File", DeleteActivePreset);
+                options[1] = new DialogGUIButton("Cancel", DummyVoid);
                 MultiOptionDialog dialog = new MultiOptionDialog("Are you sure you want to delete the selected Preset, file and all? This cannot be undone!", "Confirm Deletion", null, options);
                 PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), dialog, false, HighLogic.UISkin);
             }
