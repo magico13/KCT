@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using MagiCore;
 
 namespace KerbalConstructionTime
 {
@@ -12,27 +13,27 @@ namespace KerbalConstructionTime
         {
             switch (formulaName)
             {
-                case "Node": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.NodeFormula, variables);
-                case "UpgradeFunds": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeFundsFormula, variables);
-                case "UpgradeScience": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeScienceFormula, variables);
-                case "Research": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ResearchFormula, variables);
-                case "EffectivePart": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.EffectivePartFormula, variables);
-                case "ProceduralPart": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ProceduralPartFormula, variables);
-                case "BP": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BPFormula, variables);
-                case "KSCUpgrade": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KSCUpgradeFormula, variables);
-                case "Reconditioning": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ReconditioningFormula, variables);
-                case "BuildRate": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BuildRateFormula, variables);
-                case "SimCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.SimCostFormula, variables);
-                case "KerbinSimCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KerbinSimCostFormula, variables);
-                case "UpgradeReset": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeResetFormula, variables);
-                case "InventorySales": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.InventorySaleFormula, variables);
-                case "RolloutCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.RolloutCostFormula, variables);
-                case "NewLaunchPadCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.NewLaunchPadCostFormula, variables);
+                case "Node": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.NodeFormula, variables);
+                case "UpgradeFunds": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeFundsFormula, variables);
+                case "UpgradeScience": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeScienceFormula, variables);
+                case "Research": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ResearchFormula, variables);
+                case "EffectivePart": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.EffectivePartFormula, variables);
+                case "ProceduralPart": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ProceduralPartFormula, variables);
+                case "BP": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BPFormula, variables);
+                case "KSCUpgrade": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KSCUpgradeFormula, variables);
+                case "Reconditioning": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ReconditioningFormula, variables);
+                case "BuildRate": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BuildRateFormula, variables);
+                case "SimCost": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.SimCostFormula, variables);
+                case "KerbinSimCost": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KerbinSimCostFormula, variables);
+                case "UpgradeReset": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeResetFormula, variables);
+                case "InventorySales": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.InventorySaleFormula, variables);
+                case "RolloutCost": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.RolloutCostFormula, variables);
+                case "NewLaunchPadCost": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.NewLaunchPadCostFormula, variables);
                 default: return 0;
             }
         }
 
-        public static double ParseMath(string input, Dictionary<string, string> variables)
+       /* public static double ParseMath(string input, Dictionary<string, string> variables)
         {
            // KCTDebug.Log("Input_raw: " + input);
             string raw = input;
@@ -216,7 +217,7 @@ namespace KerbalConstructionTime
             }
 
             return currentVal;
-        }
+        }*/
 
         public static double ParseBuildRateFormula(KCT_BuildListVessel.ListType type, int index, KCT_KSC KSC, bool UpgradedRates = false)
         {

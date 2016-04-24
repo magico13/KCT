@@ -15,7 +15,7 @@ namespace KerbalConstructionTime
         /// </summary>
         /// <param name="time">Time in seconds</param>
         /// <returns></returns>
-        public static string GetFormattedTime(double time)
+      /*  public static string GetFormattedTime(double time)
         {
             if (time > 0)
             {
@@ -186,7 +186,7 @@ namespace KerbalConstructionTime
                 time = -1;
             }
             return time;
-        }
+        }*/
 
         public static Dictionary<String, int> PartListToDict(List<String> list)
         {
@@ -1282,7 +1282,7 @@ namespace KerbalConstructionTime
                 simulationLength = "31536000000"; //1000 Earth years
             CelestialBody Kerbin = Planetarium.fetch.Home;
 
-            double length = KCT_Utilities.ParseTimeString(simulationLength, false);
+            double length = MagiCore.Utilities.ParseTimeString(simulationLength, false);
             length = Math.Min(length, 31536000000.0);
             if (length == 0)
                 length = 31536000000.0;

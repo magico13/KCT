@@ -53,6 +53,9 @@
     <Reference Include="KSPUtil">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\KSP_Data\Managed\KSPUtil.dll</HintPath>
     </Reference>
+    <Reference Include="MagiCore">
+      <HintPath>..\..\MagiCore\MagiCore\obj\Debug\MagiCore.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

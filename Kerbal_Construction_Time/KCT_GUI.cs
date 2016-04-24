@@ -417,8 +417,8 @@ namespace KerbalConstructionTime
             //GUILayout.Label(KCT_GameStates.activeVessel.vessel.Parts.Count.ToString(), GUILayout.ExpandHeight(true));
            // GUILayout.Label(KCT_GameStates.activeVessel.buildTime.ToString(), GUILayout.ExpandHeight(true));
             //GUILayout.Label(KCT_Utilities.GetFormatedTime(KCT_GameStates.activeVessel.finishDate - KCT_GameStates.UT), GUILayout.ExpandHeight(true));
-           // GUILayout.Label(KCT_Utilities.GetFormattedTime(KCT_GameStates.activeVessel.buildTime - KCT_GameStates.activeVessel.progress), GUILayout.ExpandHeight(true));
-            GUILayout.Label(KCT_Utilities.GetFormattedTime(KCT_GameStates.UT).ToString(), GUILayout.ExpandHeight(true));
+           // GUILayout.Label(MagiCore.Utilities.GetFormattedTime(KCT_GameStates.activeVessel.buildTime - KCT_GameStates.activeVessel.progress), GUILayout.ExpandHeight(true));
+            GUILayout.Label(MagiCore.Utilities.GetFormattedTime(KCT_GameStates.UT).ToString(), GUILayout.ExpandHeight(true));
             if (GUILayout.Button("Stop warp"))
             {
                 KCT_GameStates.canWarp = false;
@@ -474,7 +474,7 @@ namespace KerbalConstructionTime
                         }
                     }
                     GUILayout.EndHorizontal();
-                    GUILayout.Label(KCT_Utilities.GetFormattedTime(buildTime / bR));
+                    GUILayout.Label(MagiCore.Utilities.GetFormattedTime(buildTime / bR));
                 }
                 else
                 {
@@ -559,7 +559,7 @@ namespace KerbalConstructionTime
                         buildRateForDisplay = bR.ToString();
                     }
                     GUILayout.EndHorizontal();
-                    GUILayout.Label(KCT_Utilities.GetFormattedTime(Math.Abs(buildTime - newProgress) / bR));
+                    GUILayout.Label(MagiCore.Utilities.GetFormattedTime(Math.Abs(buildTime - newProgress) / bR));
                 }
                 else
                 {
@@ -950,7 +950,7 @@ namespace KerbalConstructionTime
             GUILayout.BeginHorizontal();
             GUILayout.Label("Simulation Length: ");
             simLength = GUILayout.TextField(simLength, GUILayout.Width(150));
-            /*GUILayout.Label(KCT_Utilities.GetColonFormattedTime(float.Parse(simLength) * 3600));
+            /*GUILayout.Label(MagiCore.Utilities.GetColonFormattedTime(float.Parse(simLength) * 3600));
             if (GUILayout.Button("Select", GUILayout.ExpandWidth(false)))
             {
                 //show sim length chooser
@@ -1017,7 +1017,7 @@ namespace KerbalConstructionTime
                 if (KCT_GameStates.simulationBody != Planetarium.fetch.Home)
                     KCT_GameStates.simulateInOrbit = true;
 
-                KCT_GameStates.simulationTimeLimit = KCT_Utilities.ParseTimeString(simLength, false);
+                KCT_GameStates.simulationTimeLimit = MagiCore.Utilities.ParseTimeString(simLength, false);
                 KCT_GameStates.simulationDefaultTimeLimit = KCT_GameStates.simulationTimeLimit;
 
                 if (KCT_GameStates.simulateInOrbit)
@@ -1039,9 +1039,9 @@ namespace KerbalConstructionTime
                 if (advancedSimConfig)
                 {
                     if (fromCurrentUT)
-                        KCT_GameStates.simulationUT = currentUT + KCT_Utilities.ParseTimeString(UTString, false);
+                        KCT_GameStates.simulationUT = currentUT + MagiCore.Utilities.ParseTimeString(UTString, false);
                     else
-                        KCT_GameStates.simulationUT = KCT_Utilities.ParseTimeString(UTString, true);
+                        KCT_GameStates.simulationUT = MagiCore.Utilities.ParseTimeString(UTString, true);
 
                     int.TryParse(delayString, out KCT_GameStates.DelayMoveSeconds);
                 }
@@ -1154,7 +1154,7 @@ namespace KerbalConstructionTime
             foreach (String len in KCT_Utilities.TimeMultipliers.Keys)
             {
                 float time = float.Parse(len) * 3600;
-                string formatted = KCT_Utilities.GetColonFormattedTime(time);
+                string formatted = MagiCore.Utilities.GetColonFormattedTime(time);
                 if (GUILayout.Button(formatted+" (x"+KCT_Utilities.TimeMultipliers[len]+")"))
                 {
                     simLength = len;
@@ -1182,7 +1182,7 @@ namespace KerbalConstructionTime
                 unlockEditor = true;
                 KCT_GUI.centralWindowPosition.width = 150;
             }
-            if (GUILayout.Button("Simulate" + (KCT_GameStates.settings.WindowMode != 1 ? " Vessel" : "")))
+            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.Simulations &&  GUILayout.Button("Simulate" + (KCT_GameStates.settings.WindowMode != 1 ? " Vessel" : "")))
             {
                 simulationConfigPosition.height = 1;
                 showLaunchAlert = false;
@@ -1327,7 +1327,7 @@ namespace KerbalConstructionTime
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
             double time = KCT_GameStates.simulationEndTime - KCT_GameStates.UT;
             if (time > 0)
-                GUILayout.Label(KCT_Utilities.GetColonFormattedTime(time));
+                GUILayout.Label(MagiCore.Utilities.GetColonFormattedTime(time));
             else
                 GUILayout.Label("Pre-launch");
             GUI.skin.label.alignment = TextAnchor.MiddleLeft;
