@@ -37,7 +37,31 @@ namespace KerbalConstructionTime
                 RRTypeInternal = value;
             }
         }
+        public KCT_BuildListVessel associatedBLV
+        {
+            get
+            {
+                if (KSC != null)
+                {
+                    KCT_BuildListVessel ves = KSC.VABWarehouse.Find(blv => blv.id == new Guid(associatedID));
+                    if (ves != null)
+                        return ves;
 
+                    ves = KSC.VABList.Find(blv => blv.id == new Guid(associatedID));
+                    if (ves != null)
+                        return ves;
+
+                    ves = KSC.SPHWarehouse.Find(blv => blv.id == new Guid(associatedID));
+                    if (ves != null)
+                        return ves;
+
+                    ves = KSC.SPHList.Find(blv => blv.id == new Guid(associatedID));
+                    if (ves != null)
+                        return ves;
+                }
+                return null;
+            }
+        }
         public KCT_KSC KSC { get { return KCT_GameStates.KSCs.Count > 0 ? KCT_GameStates.KSCs.FirstOrDefault(k => k.Recon_Rollout.Exists(r=> r.associatedID == this.associatedID)) : null;} }
 
         public KCT_Recon_Rollout()
@@ -197,7 +221,11 @@ namespace KerbalConstructionTime
 
         double IKCTBuildItem.GetBuildRate()
         {
-            List<double> rates = KCT_Utilities.BuildRatesVAB(KSC);
+            List<double> rates = new List<double>();
+            if (associatedBLV != null && associatedBLV.type == KCT_BuildListVessel.ListType.SPH)
+                rates = KCT_Utilities.BuildRatesSPH(KSC);
+            else
+                rates = KCT_Utilities.BuildRatesVAB(KSC);
             double buildRate = 0;
             foreach (double rate in rates)
                 buildRate += rate;
