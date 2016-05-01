@@ -64,6 +64,11 @@ namespace KerbalConstructionTime
                 }
             });*/
 
+            GameEvents.onGUIAdministrationFacilitySpawn.Add(() => { KCT_GUI.hideAll(); });
+            GameEvents.onGUIAstronautComplexSpawn.Add(() => { KCT_GUI.hideAll(); });
+            GameEvents.onGUIMissionControlSpawn.Add(() => { KCT_GUI.hideAll(); });
+            GameEvents.onGUIRnDComplexSpawn.Add(() => { KCT_GUI.hideAll(); });
+            GameEvents.onGUIKSPediaSpawn.Add(() => { KCT_GUI.hideAll(); });
 
             eventAdded = true;
         }

@@ -209,6 +209,8 @@ namespace KerbalConstructionTime
             if (HighLogic.LoadedScene == GameScenes.EDITOR)
             {
                 InvokeRepeating("EditorRecalculation", 1, 1);
+
+                KCT_GUI.buildRateForDisplay = null;
             }
             
             //Code for saving to the persistence.sfs

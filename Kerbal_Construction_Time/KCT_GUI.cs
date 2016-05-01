@@ -435,7 +435,7 @@ namespace KerbalConstructionTime
         public static bool showInventory = false, useInventory = true;
         //private static string currentCategoryString = "NONE";
         private static int currentCategoryInt = -1;
-        private static string buildRateForDisplay;
+        public static string buildRateForDisplay;
         private static int rateIndexHolder = 0;
         public static Dictionary<string, int> PartsInUse = new Dictionary<string, int>();
         private static double finishedShipBP = -1;
@@ -447,13 +447,13 @@ namespace KerbalConstructionTime
             {
                 double buildTime = KCT_GameStates.EditorBuildTime;
                 KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
-                GUILayout.Label("Total Build Points (BP):", GUILayout.ExpandHeight(true));
-                GUILayout.Label(Math.Round(buildTime, 2).ToString(), GUILayout.ExpandHeight(true));
+                //GUILayout.Label("Total Build Points (BP):", GUILayout.ExpandHeight(true));
+                //GUILayout.Label(Math.Round(buildTime, 2).ToString(), GUILayout.ExpandHeight(true));
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Build Time at ");
+                GUILayout.Label("Build Time at rate: ");
                 if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type, null).ToString();
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
-                GUILayout.Label(" BP/s:");
+               // GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
                 if (type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB(null);
                 else rates = KCT_Utilities.BuildRatesSPH(null);
@@ -537,15 +537,17 @@ namespace KerbalConstructionTime
                 if (ship.isFinished) progress = origBP;
                 else progress = ship.progress;
                 double newProgress = Math.Max(0, progress - (1.1 * difference));
-                GUILayout.Label("Original: " + Math.Max(0, Math.Round(progress, 2)) + "/" + Math.Round(origBP, 2) + " BP (" + Math.Max(0, Math.Round(100 * (progress / origBP), 2)) + "%)");
-                GUILayout.Label("Edited: " + Math.Round(newProgress, 2) + "/" + Math.Round(buildTime, 2) + " BP (" + Math.Round(100 * newProgress / buildTime, 2) + "%)");
+                //GUILayout.Label("Original: " + Math.Max(0, Math.Round(progress, 2)) + "/" + Math.Round(origBP, 2) + " BP (" + Math.Max(0, Math.Round(100 * (progress / origBP), 2)) + "%)");
+                GUILayout.Label("Original: " + Math.Max(0, Math.Round(100 * (progress / origBP), 2)) + "%");
+                //GUILayout.Label("Edited: " + Math.Round(newProgress, 2) + "/" + Math.Round(buildTime, 2) + " BP (" + Math.Round(100 * newProgress / buildTime, 2) + "%)");
+                GUILayout.Label("Edited: " + Math.Round(100 * newProgress / buildTime, 2) + "%");
 
                 KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Build Time at ");
+                GUILayout.Label("Build Time at rate: ");
                 if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type, null).ToString();
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
-                GUILayout.Label(" BP/s:");
+               // GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
                 if (ship.type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB(null);
                 else rates = KCT_Utilities.BuildRatesSPH(null);
