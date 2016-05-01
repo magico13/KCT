@@ -64,15 +64,19 @@ namespace KerbalConstructionTime
                 }
             });*/
 
-            GameEvents.onGUIAdministrationFacilitySpawn.Add(() => { KCT_GUI.hideAll(); });
-            GameEvents.onGUIAstronautComplexSpawn.Add(() => { KCT_GUI.hideAll(); });
-            GameEvents.onGUIMissionControlSpawn.Add(() => { KCT_GUI.hideAll(); });
-            GameEvents.onGUIRnDComplexSpawn.Add(() => { KCT_GUI.hideAll(); });
-            GameEvents.onGUIKSPediaSpawn.Add(() => { KCT_GUI.hideAll(); });
+            GameEvents.onGUIAdministrationFacilitySpawn.Add(HideAllGUIs);
+            GameEvents.onGUIAstronautComplexSpawn.Add(HideAllGUIs);
+            GameEvents.onGUIMissionControlSpawn.Add(HideAllGUIs);
+            GameEvents.onGUIRnDComplexSpawn.Add(HideAllGUIs);
+            GameEvents.onGUIKSPediaSpawn.Add(HideAllGUIs);
 
             eventAdded = true;
         }
 
+        public void HideAllGUIs()
+        {
+            KCT_GUI.hideAll();
+        }
        /* public void LevelLoadedEvent(GameScenes scene)
         {
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };

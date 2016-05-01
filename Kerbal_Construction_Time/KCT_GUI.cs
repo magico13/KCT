@@ -339,6 +339,15 @@ namespace KerbalConstructionTime
             showSimLengthChooser = false;
             showPresetSaver = false;
             showLaunchSiteSelector = false;
+           
+
+            if (!KCT_GameStates.settings.PreferBlizzyToolbar)
+            {
+                if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
+                {
+                    KCT_Events.instance.KCTButtonStock.SetFalse(true);
+                }
+            }
             clicked = false;
 
             //VABSelected = false;
@@ -450,10 +459,10 @@ namespace KerbalConstructionTime
                 //GUILayout.Label("Total Build Points (BP):", GUILayout.ExpandHeight(true));
                 //GUILayout.Label(Math.Round(buildTime, 2).ToString(), GUILayout.ExpandHeight(true));
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Build Time at rate: ");
+                GUILayout.Label("Build Time at ");
                 if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type, null).ToString();
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
-               // GUILayout.Label(" BP/s:");
+                GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
                 if (type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB(null);
                 else rates = KCT_Utilities.BuildRatesSPH(null);
@@ -544,10 +553,10 @@ namespace KerbalConstructionTime
 
                 KCT_BuildListVessel.ListType type = EditorLogic.fetch.launchSiteName == "LaunchPad" ? KCT_BuildListVessel.ListType.VAB : KCT_BuildListVessel.ListType.SPH;
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Build Time at rate: ");
+                GUILayout.Label("Build Time at ");
                 if (buildRateForDisplay == null) buildRateForDisplay = KCT_Utilities.GetBuildRate(0, type, null).ToString();
                 buildRateForDisplay = GUILayout.TextField(buildRateForDisplay, GUILayout.Width(75));
-               // GUILayout.Label(" BP/s:");
+                GUILayout.Label(" BP/s:");
                 List<double> rates = new List<double>();
                 if (ship.type == KCT_BuildListVessel.ListType.VAB) rates = KCT_Utilities.BuildRatesVAB(null);
                 else rates = KCT_Utilities.BuildRatesSPH(null);
