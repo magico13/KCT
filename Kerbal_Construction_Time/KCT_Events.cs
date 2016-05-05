@@ -102,7 +102,15 @@ namespace KerbalConstructionTime
         public void FacilityUpgradedEvent(Upgradeables.UpgradeableFacility facility, int lvl)
         {
             if (KCT_GUI.PrimarilyDisabled)
-                return;
+            {
+                bool isLaunchpad = facility.id.ToLower().Contains("launchpad");
+                if (!isLaunchpad)
+                    return;
+
+                //is a launch pad
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.Upgrade(lvl);
+
+            }
 
 
             if (!(allowedToUpgrade || !KCT_PresetManager.Instance.ActivePreset.generalSettings.KSCUpgradeTimes))
