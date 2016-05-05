@@ -784,7 +784,10 @@ namespace KerbalConstructionTime
                     if (KCT_GameStates.settings.OverrideLaunchButton)
                     {
                         KCTDebug.Log("Taking control of launch button");
-                        EditorLogic.fetch.launchBtn.onClick.RemoveAllListeners();//TODO: Don't do this
+
+                        EditorLogic.fetch.launchBtn.onClick.RemoveListener(new UnityEngine.Events.UnityAction(EditorLogic.fetch.launchVessel));
+                        //EditorLogic.fetch.launchBtn.onClick.RemoveAllListeners();//TODO: Don't do this
+                        
                         EditorLogic.fetch.launchBtn.onClick.AddListener(new UnityEngine.Events.UnityAction(((KerbalConstructionTime)instance).ShowLaunchAlert));
                         //= "ShowLaunchAlert";
                        // EditorLogic.fetch.launchBtn.scriptWithMethodToInvoke = KerbalConstructionTime.instance;

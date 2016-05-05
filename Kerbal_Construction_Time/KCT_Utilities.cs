@@ -1847,7 +1847,7 @@ namespace KerbalConstructionTime
             {
                 if (type == "RocketPad")
                     sites.Add("LaunchPad");
-                else
+                else if (type == "Runway")
                     sites.Add("Runway");
                 return sites;
             }
@@ -1859,7 +1859,7 @@ namespace KerbalConstructionTime
                 KCTDebug.Log("siteProperty null");
                 if (type == "RocketPad")
                     sites.Add("LaunchPad");
-                else
+                else if (type == "Runway")
                     sites.Add("Runway");
                 return sites;
             }

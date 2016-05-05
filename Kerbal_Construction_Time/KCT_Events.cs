@@ -284,7 +284,7 @@ namespace KerbalConstructionTime
                     KCT_GUI.ClickOff,
                     KCT_GUI.onHoverOn,
                     KCT_GUI.onHoverOff,
-                    KCT_Events.instance.DummyVoid, //TODO: List next ship here?
+                    KCT_Events.instance.DummyVoid,
                     KCT_Events.instance.DummyVoid,
                     ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.MAPVIEW | ApplicationLauncher.AppScenes.SPACECENTER | ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.VAB,
                     GameDatabase.Instance.GetTexture(texturePath, false));
