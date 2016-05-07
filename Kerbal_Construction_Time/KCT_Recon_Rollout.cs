@@ -37,7 +37,31 @@ namespace KerbalConstructionTime
                 RRTypeInternal = value;
             }
         }
+        public KCT_BuildListVessel associatedBLV
+        {
+            get
+            {
+                if (KSC != null)
+                {
+                    KCT_BuildListVessel ves = KSC.VABWarehouse.Find(blv => blv.id == new Guid(associatedID));
+                    if (ves != null)
+                        return ves;
 
+                    ves = KSC.VABList.Find(blv => blv.id == new Guid(associatedID));
+                    if (ves != null)
+                        return ves;
+
+                    ves = KSC.SPHWarehouse.Find(blv => blv.id == new Guid(associatedID));
+                    if (ves != null)
+                        return ves;
+
+                    ves = KSC.SPHList.Find(blv => blv.id == new Guid(associatedID));
+                    if (ves != null)
+                        return ves;
+                }
+                return null;
+            }
+        }
         public KCT_KSC KSC { get { return KCT_GameStates.KSCs.Count > 0 ? KCT_GameStates.KSCs.FirstOrDefault(k => k.Recon_Rollout.Exists(r=> r.associatedID == this.associatedID)) : null;} }
 
         public KCT_Recon_Rollout()
@@ -51,10 +75,12 @@ namespace KerbalConstructionTime
             launchPadID = "LaunchPad";
         }
 
-        public KCT_Recon_Rollout(Vessel vessel, RolloutReconType type, string id)
+        public KCT_Recon_Rollout(Vessel vessel, RolloutReconType type, string id, string launchSite)
         {
             RRType = type;
             associatedID = id;
+            launchPadID = launchSite;
+            KCTDebug.Log("New recon_rollout at launchsite: " + launchPadID);
             //BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
             //BP = KCT_MathParsing.GetStandardFormulaValue("Reconditioning", new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()},
             //    {"E", KCT_PresetManager.Instance.ActivePreset.timeSettings.ReconditioningEffect.ToString()}, {"X", KCT_PresetManager.Instance.ActivePreset.timeSettings.MaxReconditioning.ToString()}});
@@ -62,38 +88,78 @@ namespace KerbalConstructionTime
             progress = 0;
             if (type == RolloutReconType.Reconditioning) 
             {
-                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), true);
-                //BP *= (1 - KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit);
-                name = "LaunchPad Reconditioning";
+                try
+                {
+                    BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), true);
+                }
+                catch
+                {
+                    KCTDebug.Log("Error while determining BP for recon_rollout");
+                }
+                finally
+                {
+                    name = "LaunchPad Reconditioning";
+                }
             }
             else if (type == RolloutReconType.Rollout)
             {
-                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
-                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
-                name = "Vessel Rollout";
+                try
+                {
+                    BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
+                }
+                catch
+                {
+                    KCTDebug.Log("Error while determining BP for recon_rollout");
+                }
+                finally
+                {
+                    name = "Vessel Rollout";
+                }
             }
             else if (type == RolloutReconType.Rollback)
             {
-                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
-                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
-                name = "Vessel Rollback";
-                progress = BP;
+                try
+                {
+                    BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
+                }
+                catch
+                {
+                    KCTDebug.Log("Error while determining BP for recon_rollout");
+                }
+                finally
+                {
+                    name = "Vessel Rollback";
+                    progress = BP;
+                }
             }
             else if (type == RolloutReconType.Recovery)
             {
-                //BP *= KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit;
-                BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
-                name = "Vessel Recovery";
-                double KSCDistance = (float)SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(vessel.latitude, vessel.longitude));
-                double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
-                BP += BP * (KSCDistance / maxDist);
+                try
+                {
+                    BP = KCT_MathParsing.ParseReconditioningFormula(new KCT_BuildListVessel(vessel), false);
+                }
+                catch
+                {
+                    KCTDebug.Log("Error while determining BP for recon_rollout");
+                }
+                finally
+                {
+                    name = "Vessel Recovery";
+                    double KSCDistance = (float)SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(vessel.latitude, vessel.longitude));
+                    double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
+                    BP += BP * (KSCDistance / maxDist);
+                }
             }
         }
 
-        public KCT_Recon_Rollout(KCT_BuildListVessel vessel, RolloutReconType type, string id)
+        public KCT_Recon_Rollout(KCT_BuildListVessel vessel, RolloutReconType type, string id, string launchSite="")
         {
             RRType = type;
             associatedID = id;
+            if (launchSite != "") //For when we add custom launchpads
+                launchPadID = launchSite;
+            else
+                launchPadID = vessel.launchSite;
             //BP = vessel.GetTotalMass() * KCT_GameStates.timeSettings.ReconditioningEffect * KCT_GameStates.timeSettings.OverallMultiplier; //1 day per 50 tons (default) * overall multiplier
             //BP = KCT_MathParsing.GetStandardFormulaValue("Reconditioning", new Dictionary<string, string>() {{"M", vessel.GetTotalMass().ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()},
             //    {"E", KCT_PresetManager.Instance.ActivePreset.timeSettings.ReconditioningEffect.ToString()}, {"X", KCT_PresetManager.Instance.ActivePreset.timeSettings.MaxReconditioning.ToString()}});
@@ -155,7 +221,11 @@ namespace KerbalConstructionTime
 
         double IKCTBuildItem.GetBuildRate()
         {
-            List<double> rates = KCT_Utilities.BuildRatesVAB(KSC);
+            List<double> rates = new List<double>();
+            if (associatedBLV != null && associatedBLV.type == KCT_BuildListVessel.ListType.SPH)
+                rates = KCT_Utilities.BuildRatesSPH(KSC);
+            else
+                rates = KCT_Utilities.BuildRatesVAB(KSC);
             double buildRate = 0;
             foreach (double rate in rates)
                 buildRate += rate;

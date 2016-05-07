@@ -100,9 +100,10 @@ namespace KerbalConstructionTime
             if (System.IO.File.Exists(SavedFile))
             {
                 KCT_Preset saved = new KCT_Preset(SavedFile);
-                if (FindPresetByShortName(saved.name) != null) //Get settings from the original preset, if it exists
+                KCT_Preset source = FindPresetByShortName(saved.shortName);
+                if (source != null) //Get settings from the original preset, if it exists
                 {
-                    ActivePreset = FindPresetByShortName(saved.shortName);
+                    ActivePreset = source;
                     KCTDebug.Log("Loading settings from preset, rather than save. Name: " + ActivePreset.name);
                 }
                 else
@@ -225,6 +226,7 @@ namespace KerbalConstructionTime
         public KCT_Preset_General generalSettings = new KCT_Preset_General();
         public KCT_Preset_Time timeSettings = new KCT_Preset_Time();
         public KCT_Preset_Formula formulaSettings = new KCT_Preset_Formula();
+        public KCT_Preset_Part_Variables partVariables = new KCT_Preset_Part_Variables();
 
         public string name = "UNINIT", shortName = "UNINIT", description = "NA", author = "NA";
         public bool CareerEnabled = true, ScienceEnabled = true, SandboxEnabled = true; //These just control whether it should appear during these game types
@@ -280,6 +282,7 @@ namespace KerbalConstructionTime
             ConfigNode.LoadObjectFromConfig(generalSettings, Source.generalSettings.AsConfigNode());
             ConfigNode.LoadObjectFromConfig(timeSettings, Source.timeSettings.AsConfigNode());
             ConfigNode.LoadObjectFromConfig(formulaSettings, Source.formulaSettings.AsConfigNode());
+            partVariables.FromConfigNode(Source.partVariables.ToConfigNode());
         }
 
         public ConfigNode AsConfigNode()
@@ -320,6 +323,8 @@ namespace KerbalConstructionTime
             ConfigNode.LoadObjectFromConfig(generalSettings, node.GetNode("KCT_Preset_General"));
             ConfigNode.LoadObjectFromConfig(timeSettings, node.GetNode("KCT_Preset_Time"));
             ConfigNode.LoadObjectFromConfig(formulaSettings, node.GetNode("KCT_Preset_Formula"));
+            if (node.HasNode("KCT_Preset_Part_Variables"))
+                partVariables.FromConfigNode(node.GetNode("KCT_Preset_Part_Variables"));
         }
 
         public void SaveToFile(string filePath)
@@ -347,8 +352,8 @@ namespace KerbalConstructionTime
     {
         [Persistent]
         public bool Enabled = true, BuildTimes = true, ReconditioningTimes = true, TechUnlockTimes = true, KSCUpgradeTimes = true,
-            Simulations = true, SimulationCosts = true, RequireVisitsForSimulations = true,
-            TechUpgrades = true;
+            Simulations = false, SimulationCosts = true, RequireVisitsForSimulations = true,
+            TechUpgrades = true, SharedUpgradePool = false;
         [Persistent]
         public string StartingPoints = "15,15,45"; //Career, Science, and Sandbox modes
     }
@@ -366,8 +371,8 @@ namespace KerbalConstructionTime
             UpgradeFundsFormula = "min(2^([N]+4) * 1000, 1024000)",
             UpgradeScienceFormula = "min(2^([N]+2) * 1.0, 512)",
             ResearchFormula = "[N]*0.5/86400",
-            EffectivePartFormula = "min([C]/([I] + ([B]*([U]+1))), [C])",
-            ProceduralPartFormula = "(([C]-[A]) + ([A]*10/max([I],1))) / max([B]*([U]+1),1)",
+            EffectivePartFormula = "min([C]/([I] + ([B]*([U]+1))) *[MV]*[PV], [C])",
+            ProceduralPartFormula = "(([C]-[A]) + ([A]*10/max([I],1))) / max([B]*([U]+1),1) *[MV]*[PV]",
             BPFormula = "([E]^(1/2))*2000*[O]",
             KSCUpgradeFormula = "([C]^(1/2))*1000*[O]",
             ReconditioningFormula = "min([M]*[O]*[E], [X])*abs([RE]-[S])",
@@ -376,6 +381,89 @@ namespace KerbalConstructionTime
             KerbinSimCostFormula = "max([C]/50000 * ([L]^0.5) * 10, 100)",
             UpgradeResetFormula = "2*([N]+1)", //N = number of times it's been reset
             InventorySaleFormula = "([V]+[P] / 10000)^(0.5)", //Gives the TOTAL amount of points, decimals are kept //[V] = inventory value in funds, [P] = Value of all previous sales combined
-            RolloutCostFormula = "0"; //[M]=Vessel loaded mass, [m]=vessel empty mass, [C]=vessel loaded cost, [c]=vessel empty cost, [BP]=vessel BPs, [E]=editor level, [L]=launch site level (pad), [VAB]=1 if VAB craft, 0 if SPH
+            RolloutCostFormula = "0", //[M]=Vessel loaded mass, [m]=vessel empty mass, [C]=vessel loaded cost, [c]=vessel empty cost, [BP]=vessel BPs, [E]=editor level, [L]=launch site level (pad), [VAB]=1 if VAB craft, 0 if SPH
+            NewLaunchPadCostFormula = "100000*([N]^3)"; //[N]=total number of unlocked launchpads (negative disables)
+    }
+
+    public class KCT_Preset_Part_Variables
+    {
+        //provides the variables [PV] and [MV] to the EffectiveCost functions
+        public Dictionary<string, double> Part_Variables = new Dictionary<string, double>(); //Dictionary of partName : modifier
+        public Dictionary<string, double> Module_Variables = new Dictionary<string, double>(); //Dictionary of moduleName : modifier
+            //if multiple modules are present on the part, they are all multiplied together.
+
+        private ConfigNode DictionaryToNode(Dictionary<string, double> theDict, string nodeName)
+        {
+            ConfigNode node = new ConfigNode(nodeName);
+            foreach (KeyValuePair<string, double> kvp in theDict)
+                node.AddValue(kvp.Key, kvp.Value);
+
+            return node;
+        }
+
+        private Dictionary<string, double> NodeToDictionary(ConfigNode node)
+        {
+            Dictionary<string, double> dict = new Dictionary<string, double>();
+
+            foreach (ConfigNode.Value val in node.values)
+            {
+                double tmp = 1;
+                double.TryParse(val.value, out tmp);
+                dict.Add(val.name, tmp);
+            }
+
+            return dict;
+        }
+
+        public ConfigNode ToConfigNode()
+        {
+            ConfigNode node = new ConfigNode("KCT_Preset_Part_Variables");
+            node.AddNode(DictionaryToNode(Part_Variables, "Part_Variables"));
+            node.AddNode(DictionaryToNode(Module_Variables, "Module_Variables"));
+
+            return node;
+        }
+
+        public void FromConfigNode(ConfigNode node)
+        {
+            Part_Variables.Clear();
+            Module_Variables.Clear();
+
+            if (node.HasNode("Part_Variables"))
+                Part_Variables = NodeToDictionary(node.GetNode("Part_Variables"));
+            if (node.HasNode("Module_Variables"))
+                Module_Variables = NodeToDictionary(node.GetNode("Module_Variables"));
+        }
+
+        public double GetPartVariable(string partName)
+        {
+            if (Part_Variables.ContainsKey(partName))
+                return Part_Variables[partName];
+            return 1.0;
+        }
+
+        //These are all multiplied in case multiple modules exist on one part
+        public double GetModuleVariable(List<string> moduleNames)
+        {
+            double value = 1.0;
+            foreach (string name in moduleNames)
+            {
+                if (Module_Variables.ContainsKey(name))
+                    value *= Module_Variables[name];
+            }
+            return value;
+        }
+
+        //These are all multiplied in case multiple modules exist on one part (this one takes a PartModuleList instead)
+        public double GetModuleVariable(PartModuleList modules)
+        {
+            double value = 1.0;
+            foreach (PartModule mod in modules)
+            {
+                if (Module_Variables.ContainsKey(mod.moduleName))
+                    value *= Module_Variables[mod.moduleName];
+            }
+            return value;
+        }
     }
 }

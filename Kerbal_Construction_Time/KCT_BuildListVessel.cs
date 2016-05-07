@@ -12,8 +12,9 @@ namespace KerbalConstructionTime
         private ShipConstruct ship;
         public double progress, buildPoints;
         public String launchSite, flag, shipName;
+        public int launchSiteID = -1;
         public ListType type;
-        public enum ListType { VAB, SPH, TechNode, Reconditioning, KSC };
+        public enum ListType { None, VAB, SPH, TechNode, Reconditioning, KSC };
         //public List<string> InventoryParts;
         public Dictionary<string, int> InventoryParts;
         public ConfigNode shipNode;
@@ -54,10 +55,20 @@ namespace KerbalConstructionTime
         }
         public bool isFinished { get { return progress >= buildPoints; } }
         public KCT_KSC KSC { get { 
-            return KCT_GameStates.KSCs.FirstOrDefault(k => ( type == ListType.VAB ? (
-                k.VABList.FirstOrDefault(s => s.id == this.id) != null || k.VABWarehouse.FirstOrDefault(s => s.id == this.id) != null)
-            : (k.SPHList.FirstOrDefault(s => s.id == this.id) != null || k.SPHWarehouse.FirstOrDefault(s => s.id == this.id) != null))); 
+            return KCT_GameStates.KSCs.FirstOrDefault(k => ((k.VABList.FirstOrDefault(s => s.id == this.id) != null || k.VABWarehouse.FirstOrDefault(s => s.id == this.id) != null)
+            || (k.SPHList.FirstOrDefault(s => s.id == this.id) != null || k.SPHWarehouse.FirstOrDefault(s => s.id == this.id) != null))); 
         } }
+
+        private bool? _allPartsValid;
+        public bool allPartsValid
+        {
+            get
+            {
+                if (_allPartsValid == null)
+                    _allPartsValid = CheckPartsValid();
+                return (bool)_allPartsValid;
+            }
+        }
 
         public KCT_BuildListVessel(ShipConstruct s, String ls, double bP, String flagURL)
         {
@@ -73,27 +84,31 @@ namespace KerbalConstructionTime
             buildPoints = bP;
             progress = 0;
             flag = flagURL;
-            if (launchSite == "LaunchPad")
+            if (s.shipFacility == EditorFacility.VAB)
                 type = ListType.VAB;
-            else
+            else if (s.shipFacility == EditorFacility.SPH)
                 type = ListType.SPH;
+            else
+                type = ListType.None;
             InventoryParts = new Dictionary<string, int>();
             id = Guid.NewGuid();
             cannotEarnScience = false;
         }
 
-        public KCT_BuildListVessel(String name, String ls, double bP, String flagURL, float spentFunds)
+        public KCT_BuildListVessel(String name, String ls, double bP, String flagURL, float spentFunds, int EditorFacility)
         {
-            ship = new ShipConstruct();
+            //ship = new ShipConstruct();
             launchSite = ls;
             shipName = name;
             buildPoints = bP;
             progress = 0;
             flag = flagURL;
-            if (launchSite == "LaunchPad")
+            if (EditorFacility == (int)EditorFacilities.VAB)
                 type = ListType.VAB;
-            else
+            else if (EditorFacility == (int)EditorFacilities.SPH)
                 type = ListType.SPH;
+            else
+                type = ListType.None;
             InventoryParts = new Dictionary<string, int>();
             cannotEarnScience = false;
             cost = spentFunds;
@@ -196,13 +211,13 @@ namespace KerbalConstructionTime
             {
                 foreach(ConfigNode module in part.GetNodes("MODULE"))
                 {
-                    SanitizeNode(module, templates);
+                    SanitizeNode(KCT_Utilities.PartNameFromNode(part), module, templates);
                 }
             }
             return node;
         }
 
-        private void SanitizeNode(ConfigNode module, ConfigNode[] templates)
+        private void SanitizeNode(string partName, ConfigNode module, ConfigNode[] templates)
         {
             string name = module.GetValue("name");
 
@@ -213,7 +228,7 @@ namespace KerbalConstructionTime
             if (name == "Log")
                 module.ClearValues();
 
-            ConfigNode template = templates.FirstOrDefault(t => t.GetValue("name") == name);
+            ConfigNode template = templates.FirstOrDefault(t => t.GetValue("name") == name && (!t.HasValue("parts") || t.GetValue("parts").Split(',').Contains(partName)));
             if (template == null) return;
             ConfigNode.ValueList values = template.values;
             foreach (ConfigNode.Value val in values)
@@ -231,7 +246,7 @@ namespace KerbalConstructionTime
             }
 
             foreach (ConfigNode node in module.GetNodes("MODULE"))
-                SanitizeNode(node, templates);
+                SanitizeNode(partName, node, templates);
 
             
             /*
@@ -328,12 +343,25 @@ namespace KerbalConstructionTime
             module.AddValue("targetAngle", "0");
             templates.AddNode(module);
 
+            //Repair wheels
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleWheel");
+            module.AddValue("isDamaged", "False");
+            templates.AddNode(module);
+
+            //reset goo and materials bay
+            module = new ConfigNode("MODULE");
+            module.AddValue("name", "ModuleAnimateGeneric");
+            module.AddValue("parts", "GooExperiment,science.module");
+            module.AddValue("animTime", "0");
+            templates.AddNode(module);
+
             templates.Save(KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_ModuleTemplates.cfg");
         }
 
         public KCT_BuildListVessel NewCopy(bool RecalcTime)
         {
-            KCT_BuildListVessel ret = new KCT_BuildListVessel(this.shipName, this.launchSite, this.buildPoints, this.flag, this.cost);
+            KCT_BuildListVessel ret = new KCT_BuildListVessel(this.shipName, this.launchSite, this.buildPoints, this.flag, this.cost, (int)GetEditorFacility());
             ret.shipNode = this.shipNode.CreateCopy();
             ret.id = Guid.NewGuid();
             if (RecalcTime)
@@ -345,6 +373,43 @@ namespace KerbalConstructionTime
             ret.cost = this.cost;
             ret.emptyCost = this.emptyCost;
             return ret;
+        }
+
+        public EditorFacilities GetEditorFacility()
+        {
+            EditorFacilities ret = EditorFacilities.NONE;
+            if (type == ListType.None)
+            {
+                BruteForceLocateVessel();
+            }
+
+            if (type == ListType.VAB)
+                ret = EditorFacilities.VAB;
+            else if (type == ListType.SPH)
+                ret = EditorFacilities.SPH;
+
+            return ret;
+        }
+
+        public void BruteForceLocateVessel()
+        {
+            KCTDebug.Log("Brute force looking for "+shipName);
+            bool found = false;
+            found = KSC.VABList.Exists(b => b.id == this.id);
+            if (found) { type = ListType.VAB; return; }
+            found = KSC.VABWarehouse.Exists(b => b.id == this.id);
+            if (found) { type = ListType.VAB; return; }
+
+            found = KSC.SPHList.Exists(b => b.id == this.id);
+            if (found) { type = ListType.SPH; return; }
+            found = KSC.SPHWarehouse.Exists(b => b.id == this.id);
+            if (found) { type = ListType.SPH; return; }
+
+            if (!found)
+            {
+                KCTDebug.Log("Still can't find ship even after checking every list...");
+                //KCTDebug.Log("Guess we'll do it for every single KSC then!");
+            }
         }
 
         public ShipConstruct GetShip()
@@ -362,6 +427,12 @@ namespace KerbalConstructionTime
 
         public void Launch()
         {
+            if (GetEditorFacility() == EditorFacilities.VAB)
+                HighLogic.CurrentGame.editorFacility = EditorFacility.VAB;
+            else
+                HighLogic.CurrentGame.editorFacility = EditorFacility.SPH;
+           // HighLogic.CurrentGame.editorFacility = GetEditorFacility();
+            
             KCT_GameStates.flightSimulated = false;
             string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
             UpdateRFTanks();
@@ -381,15 +452,15 @@ namespace KerbalConstructionTime
 
             if (this.type == KCT_BuildListVessel.ListType.VAB)
             {
-                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)))
+                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(KCT_GameStates.ActiveKSC.ActiveLPInstance.level/2.0F, true))
                 {
                     failedReasons.Add("Mass limit exceeded");
                 }
-                if (this.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.VehicleAssemblyBuilding)))
+                if (this.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.VehicleAssemblyBuilding), true))
                 {
                     failedReasons.Add("Part Count limit exceeded");
                 }
-                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.LaunchPad)));
+                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(KCT_GameStates.ActiveKSC.ActiveLPInstance.level/2.0F, true));
                 if (!sizeCheck.Test())
                 {
                     failedReasons.Add("Size limits exceeded");
@@ -397,21 +468,32 @@ namespace KerbalConstructionTime
             }
             else if (this.type == KCT_BuildListVessel.ListType.SPH)
             {
-                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway)))
+                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway), false))
                 {
                     failedReasons.Add("Mass limit exceeded");
                 }
-                if (this.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.SpaceplaneHangar)))
+                if (this.ExtractedPartNodes.Count > GameVariables.Instance.GetPartCountLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.SpaceplaneHangar), false))
                 {
                     failedReasons.Add("Part Count limit exceeded");
                 }
-                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.Runway, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway)));
+                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.Runway, GameVariables.Instance.GetCraftSizeLimit(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.Runway), false));
                 if (!sizeCheck.Test())
                 {
                     failedReasons.Add("Size limits exceeded");
                 }
             }
             return failedReasons;
+        }
+
+        public ListType FindTypeFromLists()
+        {
+            if (KSC == null  || KSC.VABList == null || KSC.SPHList == null)
+            {
+                type = ListType.None;
+                return type;
+            }
+            BruteForceLocateVessel();
+            return type;
         }
 
         private void UpdateRFTanks()
@@ -444,6 +526,10 @@ namespace KerbalConstructionTime
                 TotalMass += ShipConstruction.GetPartTotalMass(p, KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(p)), out n1, out n2);
                 emptyMass += n1;
             }
+            if (TotalMass < 0)
+                TotalMass = 0;
+            if (emptyMass < 0)
+                emptyMass = 0;
             return TotalMass;
         }
 
@@ -565,6 +651,39 @@ namespace KerbalConstructionTime
                 retList.Add(returnPart);
             }
             return retList;
+        }
+
+        public bool CheckPartsValid()
+        {
+            //loop through the ship's parts and check if any don't have AvailableParts that match.
+
+            bool valid = true;
+            foreach (ConfigNode pNode in shipNode.GetNodes("PART"))
+            {
+                if (KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(pNode)) == null)
+                {
+                    //invalid part detected!
+                    valid = false;
+                    break;
+                }
+            }
+
+            return valid;
+        }
+
+        public List<string> MissingParts()
+        {
+            List<string> missing = new List<string>();
+            foreach (ConfigNode pNode in shipNode.GetNodes("PART"))
+            {
+                string name = KCT_Utilities.PartNameFromNode(pNode);
+                if (KCT_Utilities.GetAvailablePartByName(name) == null)
+                {
+                    //invalid part detected!
+                    missing.Add(name);
+                }
+            }
+            return missing;
         }
 
         public double AddProgress(double toAdd)

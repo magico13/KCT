@@ -16,10 +16,13 @@ namespace KerbalConstructionTime
         //public List<KCT_TechItem> TechList = new List<KCT_TechItem>();
         public List<int> VABUpgrades = new List<int>() { 0 };
         public List<int> SPHUpgrades = new List<int>() { 0 };
-        public List<int> RDUpgrades = new List<int>() { 0, 0 };
+        public List<int> RDUpgrades = new List<int>() { 0, 0 }; //research/development
         public List<KCT_Recon_Rollout> Recon_Rollout = new List<KCT_Recon_Rollout>();
         public List<double> VABRates = new List<double>(), SPHRates = new List<double>();
         public List<double> UpVABRates = new List<double>(), UpSPHRates = new List<double>();
+
+        public List<KCT_LaunchPad> LaunchPads = new List<KCT_LaunchPad>();
+        public int ActiveLaunchPadID = 0;
 
         public KCT_KSC(string name)
         {
@@ -28,16 +31,39 @@ namespace KerbalConstructionTime
             //We propogate the tech list and upgrades throughout each KSC, since it doesn't make sense for each one to have its own tech.
             RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
             //TechList = KCT_GameStates.ActiveKSC.TechList;
+            LaunchPads.Add(new KCT_LaunchPad("LaunchPad", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad)));
+           /* LaunchPads.Add(new KCT_LaunchPad("LaunchPad", 0, false));
+            LaunchPads.Add(new KCT_LaunchPad("LaunchPad 2", 1, false));
+            LaunchPads.Add(new KCT_LaunchPad("LaunchPad 3", 2, false));*/
         }
 
-        public KCT_Recon_Rollout GetReconditioning()
+        public KCT_LaunchPad ActiveLPInstance
         {
-            return Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
+            get
+            {
+                return LaunchPads.Count > ActiveLaunchPadID ? LaunchPads[ActiveLaunchPadID] : null; 
+            }
         }
 
-        public KCT_Recon_Rollout GetReconRollout(KCT_Recon_Rollout.RolloutReconType type)
+        public int LaunchPadCount
         {
-            return Recon_Rollout.FirstOrDefault(r => r.RRType == type);
+            get
+            {
+                int count = 0;
+                foreach (KCT_LaunchPad lp in LaunchPads)
+                    if (lp.level >= 0) count++;
+                return count;
+            }
+        }
+
+        public KCT_Recon_Rollout GetReconditioning(string launchSite = "LaunchPad")
+        {
+            return Recon_Rollout.FirstOrDefault(r => r.launchPadID == launchSite && ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
+        }
+
+        public KCT_Recon_Rollout GetReconRollout(KCT_Recon_Rollout.RolloutReconType type, string launchSite = "LaunchPad")
+        {
+            return Recon_Rollout.FirstOrDefault(r => r.RRType == type && r.launchPadID == launchSite);
         }
 
         public void RecalculateBuildRates()
@@ -92,11 +118,25 @@ namespace KerbalConstructionTime
             }
         }
 
+        public void SwitchLaunchPad(int LP_ID, bool updateDestrNode = true)
+        {
+            //set the active LP's new state
+            //activate new pad
+
+            //LaunchPads[ActiveLaunchPadID].level = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
+            //LaunchPads[ActiveLaunchPadID].destroyed = !KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB); //Might want to remove this as well
+            if (updateDestrNode)
+                ActiveLPInstance.RefreshDestructionNode();
+
+            LaunchPads[LP_ID].SetActive();
+        }
+
         public ConfigNode AsConfigNode()
         {
             KCTDebug.Log("Saving KSC "+KSCName);
             ConfigNode node = new ConfigNode("KSC");
             node.AddValue("KSCName", KSCName);
+            node.AddValue("ActiveLPID", ActiveLaunchPadID);
             
             ConfigNode vabup = new ConfigNode("VABUpgrades");
             foreach (int upgrade in VABUpgrades)
@@ -206,6 +246,15 @@ namespace KerbalConstructionTime
                 RRCN.AddNode(rrCN);
             }
             node.AddNode(RRCN);
+
+            ConfigNode LPs = new ConfigNode("LaunchPads");
+            foreach (KCT_LaunchPad lp in LaunchPads)
+            {
+                ConfigNode lpCN = lp.AsConfigNode();
+                lpCN.AddNode(lp.DestructionNode);
+                LPs.AddNode(lpCN);
+            }
+            node.AddNode(LPs);
             return node;
         }
 
@@ -221,9 +270,12 @@ namespace KerbalConstructionTime
             KSCTech.Clear();
             //TechList.Clear();
             Recon_Rollout.Clear();
+            
 
 
             this.KSCName = node.GetValue("KSCName");
+            if (!int.TryParse(node.GetValue("ActiveLPID"), out this.ActiveLaunchPadID))
+                this.ActiveLaunchPadID = 0;
             ConfigNode vabup = node.GetNode("VABUpgrades");
             foreach (string upgrade in vabup.GetValues("Upgrade"))
             {
@@ -306,6 +358,19 @@ namespace KerbalConstructionTime
                     KCT_UpgradingBuilding tempUP = new KCT_UpgradingBuilding();
                     ConfigNode.LoadObjectFromConfig(tempUP, upBuild);
                     KSCTech.Add(tempUP);
+                }
+            }
+
+            if (node.HasNode("LaunchPads"))
+            {
+                LaunchPads.Clear();
+                tmp = node.GetNode("LaunchPads");
+                foreach (ConfigNode LP in tmp.GetNodes("KCT_LaunchPad"))
+                {
+                    KCT_LaunchPad tempLP = new KCT_LaunchPad("LP0");
+                    ConfigNode.LoadObjectFromConfig(tempLP, LP);
+                    tempLP.DestructionNode = LP.GetNode("DestructionState");
+                    LaunchPads.Add(tempLP);
                 }
             }
 

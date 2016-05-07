@@ -7,14 +7,14 @@ namespace KerbalConstructionTime
 {
     public static class KCT_GameStates
     {
-        public static double UT;
+        public static double UT, lastUT=0.0;
         public static bool canWarp = false, warpInitiated = false;
         public static int lastWarpRate = 0;
         public static string lastSOIVessel = "";
         public static Dictionary<string, string> vesselDict = new Dictionary<string, string>();
         public static List<VesselType> VesselTypesForSOI = new List<VesselType>() { VesselType.Base, VesselType.Lander, VesselType.Probe, VesselType.Ship, VesselType.Station };
         public static List<Orbit.PatchTransitionType> SOITransitions = new List<Orbit.PatchTransitionType> { Orbit.PatchTransitionType.ENCOUNTER, Orbit.PatchTransitionType.ESCAPE };
-        public static bool delayStart = false, delayMove = false;
+        public static bool delayStart = false;
         public static Dictionary<String, int> PartTracker = new Dictionary<string, int>();
         public static Dictionary<String, int> PartInventory = new Dictionary<string, int>();
         public static bool flightSimulated = false;
@@ -27,7 +27,7 @@ namespace KerbalConstructionTime
         public static KCT_KSC ActiveKSC = null;
         public static List<KCT_KSC> KSCs = new List<KCT_KSC>();
         public static string activeKSCName = "";
-
+        public static bool UpdateLaunchpadDestructionState = false;
         /*public static List<KCT_BuildListVessel> VABList = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
         public static List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
@@ -41,6 +41,7 @@ namespace KerbalConstructionTime
         public static List<KCT_TechItem> TechList = new List<KCT_TechItem>();
 
         public static List<int> PurchasedUpgrades = new List<int>() { 0, 0 };
+        public static int MiscellaneousTempUpgrades = 0, LastKnownTechCount = 0;
         public static float InventorySaleUpgrades = 0, InventorySalesFigures = 0;
         public static int UpgradesResetCounter = 0;
         //public static int TotalUpgradePoints = 0;
@@ -55,6 +56,7 @@ namespace KerbalConstructionTime
         public static Dictionary<string, int> EditedVesselParts = new Dictionary<string, int>();
         public static bool LaunchFromTS = false;
         public static bool LoadingSimulationSave = false;
+        public static List<AvailablePart> ExperimentalParts = new List<AvailablePart>();
 
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
         public static string KACAlarmId = "";
@@ -66,15 +68,21 @@ namespace KerbalConstructionTime
         public static double simulationUT = 0;
         public static double simulationEndTime = 0, simulationTimeLimit = 0, simulationDefaultTimeLimit = 0;
         public static double simOrbitAltitude = 0, simInclination = 0;
-        public static List<String> BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
+        public static List<String> BodiesVisited = new List<string> { Planetarium.fetch.Home.name };
         public static float SimulationCost = 0, FundsToChargeAtSimEnd = 0, FundsGivenForVessel = 0;
         public static int EditorSimulationCount = 0;
+        public static int DelayMoveSeconds = 0;
 
         public static bool TestFlightPartFailures = true;
         public static bool RemoteTechEnabled = true;
 
         public static KCT_OnLoadError erroredDuringOnLoad = new KCT_OnLoadError();
 
+
+        public static int TemporaryModAddedUpgradesButReallyWaitForTheAPI = 0; //Reset when returned to the MainMenu
+        public static int PermanentModAddedUpgradesButReallyWaitForTheAPI = 0; //Saved to the save file
+
+        public static bool vesselErrorAlerted = false;
 
         public static void reset()
         {
@@ -84,10 +92,11 @@ namespace KerbalConstructionTime
             flightSimulated = false;
             simulationInitialized = false;
             vesselDict = new Dictionary<string, string>();
-            BodiesVisited = new List<string> { KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin" };
+            BodiesVisited = new List<string> { Planetarium.fetch.Home.name };
             simulationBody = KCT_Utilities.GetBodyByName(BodiesVisited[0]);
             simulateInOrbit = false;
             firstStart = false;
+            vesselErrorAlerted = false;
             
           /*  VABUpgrades = new List<int>() {0};
             SPHUpgrades = new List<int>() {0};
@@ -95,16 +104,16 @@ namespace KerbalConstructionTime
             PurchasedUpgrades = new List<int>() { 0, 0 };
            // LaunchPadReconditioning = null;
             targetedItem = null;
-            KCT_GUI.fundsCost = -13;
-            KCT_GUI.sciCost = -13;
-            KCT_GUI.nodeRate = -13;
-            KCT_GUI.upNodeRate = -13;
-            KCT_GUI.researchRate = -13;
-            KCT_GUI.upResearchRate = -13;
+            KCT_GUI.ResetFormulaRateHolders();
 
             InventorySaleUpgrades = 0;
             InventorySalesFigures = 0;
 
+            ExperimentalParts.Clear();
+            MiscellaneousTempUpgrades = 0;
+
+
+            lastUT = 0;
             //ActiveKSC = new KCT_KSC("Stock");
             //KSCs = new List<KCT_KSC>() {ActiveKSC};
 

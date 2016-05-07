@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using System.Collections;
+using KSP.UI.Screens;
 
 namespace KerbalConstructionTime
 {
@@ -40,12 +41,42 @@ namespace KerbalConstructionTime
             GameEvents.onGUIRnDComplexDespawn.Add(TechDisableEvent);
             GameEvents.OnKSCFacilityUpgraded.Add(FacilityUpgradedEvent);
             GameEvents.onGameStateLoad.Add(PersistenceLoadEvent);
+
+            GameEvents.OnKSCStructureRepaired.Add(FaciliyRepaired);
+            GameEvents.OnKSCStructureCollapsed.Add(FacilityDestroyed);
        //     GameEvents.OnKSCStructureRepairing.Add(FacilityRepairingEvent);
           //  GameEvents.onLevelWasLoaded.Add(LevelLoadedEvent);
+
+          /*  GameEvents.OnCrewmemberHired.Add((ProtoCrewMember m, int i) =>
+            {
+                foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                {
+                    ksc.RecalculateBuildRates();
+                    ksc.RecalculateUpgradedBuildRates();
+                }
+            });
+            GameEvents.OnCrewmemberSacked.Add((ProtoCrewMember m, int i) =>
+            {
+                foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                {
+                    ksc.RecalculateBuildRates();
+                    ksc.RecalculateUpgradedBuildRates();
+                }
+            });*/
+
+            GameEvents.onGUIAdministrationFacilitySpawn.Add(HideAllGUIs);
+            GameEvents.onGUIAstronautComplexSpawn.Add(HideAllGUIs);
+            GameEvents.onGUIMissionControlSpawn.Add(HideAllGUIs);
+            GameEvents.onGUIRnDComplexSpawn.Add(HideAllGUIs);
+            GameEvents.onGUIKSPediaSpawn.Add(HideAllGUIs);
 
             eventAdded = true;
         }
 
+        public void HideAllGUIs()
+        {
+            KCT_GUI.hideAll();
+        }
        /* public void LevelLoadedEvent(GameScenes scene)
         {
             List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
@@ -58,6 +89,12 @@ namespace KerbalConstructionTime
         public void PersistenceLoadEvent(ConfigNode node)
         {
             KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
+            ConfigNode rnd = node.GetNodes("SCENARIO").FirstOrDefault(n => n.GetValue("name") == "ResearchAndDevelopment");
+            if (rnd != null)
+            {
+                KCT_GameStates.LastKnownTechCount = rnd.GetNodes("Tech").Length;
+                KCTDebug.Log("Counting " + KCT_GameStates.LastKnownTechCount + " tech nodes.");
+            }
         }
 
         //private static int lastLvl = -1;
@@ -65,20 +102,37 @@ namespace KerbalConstructionTime
         public void FacilityUpgradedEvent(Upgradeables.UpgradeableFacility facility, int lvl)
         {
             if (KCT_GUI.PrimarilyDisabled)
-                return;
+            {
+                bool isLaunchpad = facility.id.ToLower().Contains("launchpad");
+                if (!isLaunchpad)
+                    return;
+
+                //is a launch pad
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.Upgrade(lvl);
+
+            }
 
 
             if (!(allowedToUpgrade || !KCT_PresetManager.Instance.ActivePreset.generalSettings.KSCUpgradeTimes))
             {
                 KCT_UpgradingBuilding upgrading = new KCT_UpgradingBuilding(facility, lvl, lvl - 1, facility.id.Split('/').Last());
-                
+
+                upgrading.isLaunchpad = facility.id.ToLower().Contains("launchpad");
+                if (upgrading.isLaunchpad)
+                {
+                    upgrading.launchpadID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
+                    if (upgrading.launchpadID > 0)
+                        upgrading.commonName += KCT_GameStates.ActiveKSC.ActiveLPInstance.name;//" " + (upgrading.launchpadID+1);
+                }
+
                 if (!upgrading.AlreadyInProgress())
                 {
+                    KCT_GameStates.ActiveKSC.KSCTech.Add(upgrading);
                     upgrading.Downgrade();
                     double cost = facility.GetUpgradeCost();
                     upgrading.SetBP(cost);
                     upgrading.cost = cost;
-                    KCT_GameStates.ActiveKSC.KSCTech.Add(upgrading);
+                    
                     ScreenMessages.PostScreenMessage("Facility upgrade requested!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
                     KCTDebug.Log("Facility " + facility.id + " upgrade requested to lvl " + lvl + " for " + cost + " funds, resulting in a BP of " + upgrading.BP);
                 }
@@ -86,6 +140,8 @@ namespace KerbalConstructionTime
                 {
                     //
                     KCT_UpgradingBuilding listBuilding = upgrading.KSC.KSCTech.Find(b => b.id == upgrading.id);
+                    if (upgrading.isLaunchpad)
+                        listBuilding = upgrading.KSC.KSCTech.Find(b => b.isLaunchpad && b.launchpadID == upgrading.launchpadID);
                     listBuilding.Downgrade();
                     KCT_Utilities.AddFunds(listBuilding.cost, TransactionReasons.None);
                     ScreenMessages.PostScreenMessage("Facility is already being upgraded!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
@@ -95,6 +151,13 @@ namespace KerbalConstructionTime
             else
             {
                 KCTDebug.Log("Facility " + facility.id + " upgraded to lvl " + lvl);
+                if (facility.id.ToLower().Contains("launchpad"))
+                {
+                    if (!allowedToUpgrade)
+                        KCT_GameStates.ActiveKSC.ActiveLPInstance.Upgrade(lvl); //also repairs the launchpad
+                    else
+                        KCT_GameStates.ActiveKSC.ActiveLPInstance.level = lvl;
+                }
                 allowedToUpgrade = false;
                 foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                 {
@@ -103,7 +166,7 @@ namespace KerbalConstructionTime
                 }
                 foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                 {
-                    tech.UpdateBuildRate();
+                    tech.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(tech));
                 }
             }
            /* if (lvl <= lastLvl)
@@ -128,6 +191,27 @@ namespace KerbalConstructionTime
             double BP = Math.Sqrt(cost) * 2000 * KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier;
             KCTDebug.Log("Facility being repaired for " + cost + " funds, resulting in a BP of " + BP);
             facility.StopCoroutine("Repair");
+        }
+
+        public void FaciliyRepaired(DestructibleBuilding facility)
+        {
+            if (facility.id.Contains("LaunchPad"))
+            {
+                KCTDebug.Log("LaunchPad was repaired.");
+                //KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].destroyed = false;
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.CompletelyRepairNode();
+            }
+        }
+
+        public void FacilityDestroyed(DestructibleBuilding facility)
+        {
+            if (facility.id.Contains("LaunchPad"))
+            {
+                KCTDebug.Log("LaunchPad was damaged.");
+                //KCT_GameStates.ActiveKSC.LaunchPads[KCT_GameStates.ActiveKSC.ActiveLaunchPadID].destroyed = !KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
+            }
         }
 
         public void RecoveryRequested (Vessel v)
@@ -200,12 +284,18 @@ namespace KerbalConstructionTime
                     KCT_GUI.ClickOff,
                     KCT_GUI.onHoverOn,
                     KCT_GUI.onHoverOff,
-                    KCT_Events.instance.DummyVoid, //TODO: List next ship here?
+                    KCT_Events.instance.DummyVoid,
                     KCT_Events.instance.DummyVoid,
                     ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.MAPVIEW | ApplicationLauncher.AppScenes.SPACECENTER | ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.VAB,
                     GameDatabase.Instance.GetTexture(texturePath, false));
 
                 ApplicationLauncher.Instance.EnableMutuallyExclusive(KCT_Events.instance.KCTButtonStock);
+
+              /*  if (HighLogic.LoadedScene == GameScenes.SPACECENTER && KCT_GameStates.showWindows[0])
+                {
+                    KCTButtonStock.SetTrue(true);
+                    KCT_GUI.clicked = true;
+                }*/
             }
         }
         public void DummyVoid() { }
@@ -226,12 +316,19 @@ namespace KerbalConstructionTime
 
         public void TechUnlockEvent(GameEvents.HostTargetAction<RDTech, RDTech.OperationResult> ev)
         {
+            //TODO: Check if any of the parts are experimental, if so, do the normal KCT stuff and then set them experimental again
             if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
             if (ev.target == RDTech.OperationResult.Successful)
             {
                 KCT_TechItem tech = new KCT_TechItem();
                 if (ev.host != null) 
                     tech = new KCT_TechItem(ev.host);
+
+                foreach (AvailablePart expt in ev.host.partsPurchased)
+                {
+                    if (ResearchAndDevelopment.IsExperimentalPart(expt))
+                        KCT_GameStates.ExperimentalParts.Add(expt);
+                }
 
                 //if (!KCT_GameStates.settings.InstantTechUnlock && !KCT_GameStates.settings.DisableBuildTime) tech.DisableTech();
                 if (!tech.isInList())
@@ -242,14 +339,17 @@ namespace KerbalConstructionTime
                     if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes && KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)
                     {
                         KCT_GameStates.TechList.Add(tech);
-                        ScreenMessages.PostScreenMessage("[KCT] Node will unlock in " + KCT_Utilities.GetFormattedTime(tech.TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                        foreach (KCT_TechItem techItem in KCT_GameStates.TechList)
+                            techItem.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(techItem));
+                        double timeLeft = tech.BuildRate > 0 ? tech.TimeLeft : tech.EstimatedTimeLeft;
+                        ScreenMessages.PostScreenMessage("[KCT] Node will unlock in " + MagiCore.Utilities.GetFormattedTime(timeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
                     }
                 }
                 else
                 {
                     ResearchAndDevelopment.Instance.AddScience(tech.scienceCost, TransactionReasons.RnDTechResearch);
                     ScreenMessages.PostScreenMessage("[KCT] This node is already being researched!", 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                    ScreenMessages.PostScreenMessage("[KCT] It will unlock in " + KCT_Utilities.GetFormattedTime((KCT_GameStates.TechList.First(t => t.techID == ev.host.techID)).TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage("[KCT] It will unlock in " + MagiCore.Utilities.GetFormattedTime((KCT_GameStates.TechList.First(t => t.techID == ev.host.techID)).TimeLeft), 4.0f, ScreenMessageStyle.UPPER_LEFT);
                 }
             }
         }
@@ -267,11 +367,23 @@ namespace KerbalConstructionTime
                 {
                     foreach (KCT_TechItem tech in KCT_GameStates.TechList)
                     {
+                       /* foreach (String partName in tech.UnlockedParts)
+                        {
+                            AvailablePart expt = KCT_Utilities.GetAvailablePartByName(partName);
+                            if (expt != null && ResearchAndDevelopment.IsExperimentalPart(expt))
+                                if (!KCT_GameStates.ExperimentalParts.Contains(expt))
+                                    KCT_GameStates.ExperimentalParts.Add(expt);
+                        }*/
+                        //ResearchAndDevelopment.AddExperimentalPart()
                         tech.DisableTech();
                     }
+                /*    foreach (AvailablePart expt in KCT_GameStates.ExperimentalParts)
+                        ResearchAndDevelopment.AddExperimentalPart(expt);*/
                     //Need to somehow update the R&D instance
                     if (save)
+                    {
                         GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+                    }
                 }
             }
         }
@@ -288,12 +400,21 @@ namespace KerbalConstructionTime
                 KCT_GameStates.ActiveKSC = new KCT_KSC("Stock");
                 KCT_GameStates.KSCs = new List<KCT_KSC>() { KCT_GameStates.ActiveKSC };
                 KCT_GameStates.EditorSimulationCount = 0;
+                KCT_GameStates.LastKnownTechCount = 0;
 
-                KCT_PresetManager.Instance.ClearPresets();
-                KCT_PresetManager.Instance = null;
+                KCT_GameStates.PermanentModAddedUpgradesButReallyWaitForTheAPI = 0;
+                KCT_GameStates.TemporaryModAddedUpgradesButReallyWaitForTheAPI = 0;
+
+                if (KCT_PresetManager.Instance != null)
+                {
+                    KCT_PresetManager.Instance.ClearPresets();
+                    KCT_PresetManager.Instance = null;
+                }
 
                 return;
             }
+
+            KCT_GameStates.MiscellaneousTempUpgrades = 0;
 
             /*if (HighLogic.LoadedScene == GameScenes.MAINMENU)
             {
@@ -343,7 +464,7 @@ namespace KerbalConstructionTime
             {
                 KCT_GameStates.BodiesVisited.Add(ev.to.bodyName);
                 var message = new ScreenMessage("[KCT] New simulation body unlocked: " + ev.to.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                ScreenMessages.PostScreenMessage(message, true);
+                ScreenMessages.PostScreenMessage(message);
             }
         }
 
@@ -351,8 +472,16 @@ namespace KerbalConstructionTime
         {
             if (!KCT_GUI.PrimarilyDisabled)
             {
-                KCT_GameStates.flightSimulated = true;
-                PopupDialog.SpawnPopupDialog("Warning!", "To launch vessels you must first build them in the VAB or SPH, then launch them through the main KCT window in the Space Center!\n\nDo not use this menu to launch vessels!", "Ok", false, HighLogic.Skin);
+                //KCT_GameStates.flightSimulated = true; //no longer needed b/c that gui wont appear anymore!
+               // PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Warning!", "To launch vessels you must first build them in the VAB or SPH, then launch them through the main KCT window in the Space Center!", "Ok", false, HighLogic.UISkin);
+                //open the build list to the right page
+                string selection = "VAB";
+                if (v.craftSubfolder.Contains("SPH"))
+                    selection = "SPH";
+                KCT_GUI.ClickOn();
+                KCT_GUI.SelectList("");
+                KCT_GUI.SelectList(selection);
+                KCTDebug.Log("Opening the GUI to the " + selection);
             }
         }
 
@@ -366,16 +495,23 @@ namespace KerbalConstructionTime
                     KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + (KCT_GameStates.simulationTimeLimit);
                     KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd, TransactionReasons.None);
                 }
-                if (ev.host.protoVessel.landedAt == "LaunchPad" && !KCT_GameStates.flightSimulated && KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes)
+                if (!KCT_GameStates.flightSimulated && KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes)
                 {
-                    KCT_Recon_Rollout reconditioning = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
-                    if (reconditioning == null)
-                        KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(ev.host, KCT_Recon_Rollout.RolloutReconType.Reconditioning, ev.host.id.ToString()));
+                    //KCT_Recon_Rollout reconditioning = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => ((IKCTBuildItem)r).GetItemName() == "LaunchPad Reconditioning");
+                    //if (reconditioning == null)
+                    if (HighLogic.CurrentGame.editorFacility == EditorFacility.VAB)
+                    {
+                        string launchSite = FlightDriver.LaunchSiteName;
+                        if (launchSite == "LaunchPad") launchSite = KCT_GameStates.ActiveKSC.ActiveLPInstance.name;
+                        KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(ev.host, KCT_Recon_Rollout.RolloutReconType.Reconditioning, ev.host.id.ToString(), launchSite));
+
+                    }
+                    
                 }
             }
         }
 
-        public void vesselRecoverEvent(ProtoVessel v)
+        public void vesselRecoverEvent(ProtoVessel v, bool unknownAsOfNow)
         {
             if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
             if (!KCT_GameStates.flightSimulated && !v.vesselRef.isEVA)
@@ -618,10 +754,10 @@ namespace KerbalConstructionTime
 
     public class KCT_UpgradingBuilding : IKCTBuildItem
     {
-        [Persistent] public int upgradeLevel, currentLevel;
+        [Persistent] public int upgradeLevel, currentLevel, launchpadID=0;
         [Persistent] public string id, commonName;
         [Persistent] public double progress=0, BP=0, cost=0;
-        [Persistent] public bool UpgradeProcessed = false;
+        [Persistent] public bool UpgradeProcessed = false, isLaunchpad = false;
         //public bool allowUpgrade = false;
         private KCT_KSC _KSC = null;
         public KCT_UpgradingBuilding(Upgradeables.UpgradeableFacility facility, int newLevel, int oldLevel, string name)
@@ -640,6 +776,14 @@ namespace KerbalConstructionTime
         public void Downgrade()
         {
             KCTDebug.Log("Downgrading " + commonName + " to level " + currentLevel);
+            if (isLaunchpad)
+            {
+                KSC.LaunchPads[launchpadID].level = currentLevel;
+                if (KCT_GameStates.activeKSCName != KSC.KSCName || KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
+                {
+                    return;
+                }
+            }
             foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
             {
                 KCT_Events.allowedToUpgrade = true;
@@ -651,6 +795,17 @@ namespace KerbalConstructionTime
         public void Upgrade()
         {
             KCTDebug.Log("Upgrading " + commonName + " to level " + upgradeLevel);
+            if (isLaunchpad)
+            {
+                KSC.LaunchPads[launchpadID].level = upgradeLevel;
+                KSC.LaunchPads[launchpadID].DestructionNode = new ConfigNode("DestructionState");
+                if (KCT_GameStates.activeKSCName != KSC.KSCName || KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
+                {
+                    UpgradeProcessed = true;
+                    return;
+                }
+                KSC.LaunchPads[launchpadID].Upgrade(upgradeLevel);
+            }
             foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
             {
                 KCT_Events.allowedToUpgrade = true;
@@ -682,7 +837,12 @@ namespace KerbalConstructionTime
             get
             {
                 if (_KSC == null)
-                    _KSC = KCT_GameStates.KSCs.Find(ksc => ksc.KSCTech.Find(ub => ub.id == this.id) != null);
+                {
+                    if (!isLaunchpad)
+                        _KSC = KCT_GameStates.KSCs.Find(ksc => ksc.KSCTech.Find(ub => ub.id == this.id) != null);
+                    else
+                        _KSC = KCT_GameStates.KSCs.Find(ksc => ksc.KSCTech.Find(ub => ub.id == this.id && ub.isLaunchpad && ub.launchpadID == this.launchpadID) != null);
+                }
                 return _KSC;
             }
         }

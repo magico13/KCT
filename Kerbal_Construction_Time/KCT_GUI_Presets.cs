@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using KSP.UI.Dialogs;
 
 namespace KerbalConstructionTime
 {
@@ -34,7 +35,7 @@ namespace KerbalConstructionTime
             GUILayout.BeginVertical();
             GUILayout.Label("Presets", yellowText, GUILayout.ExpandHeight(false));
             //preset toolbar in a scrollview
-            presetScrollView = GUILayout.BeginScrollView(presetScrollView, HighLogic.Skin.textArea, GUILayout.Width(presetPosition.width/6.0f));
+            presetScrollView = GUILayout.BeginScrollView(presetScrollView, GUILayout.Width(presetPosition.width/6.0f)); //TODO: update HighLogic.Skin.textArea
             string[] presetShortNames = KCT_PresetManager.Instance.PresetShortNames(true);
             if (presetIndex == -1)
             {
@@ -85,18 +86,19 @@ namespace KerbalConstructionTime
             }
             if (WorkingPreset.AllowDeletion && presetIndex != presetShortNames.Length - 1 && GUILayout.Button("Delete Preset")) //allowed to be deleted and isn't Custom
             {
-                DialogOption[] options = new DialogOption[2];
-                options[0] = new DialogOption("Delete File", DeleteActivePreset);
-                options[1] = new DialogOption("Cancel", DummyVoid);
-                MultiOptionDialog dialog = new MultiOptionDialog("Are you sure you want to delete the selected Preset, file and all? This cannot be undone!", windowTitle: "Confirm Deletion", options: options);
-                PopupDialog.SpawnPopupDialog(dialog, false, HighLogic.Skin);
+
+                DialogGUIBase[] options = new DialogGUIBase[2];
+                options[0] = new DialogGUIButton("Delete File", DeleteActivePreset);
+                options[1] = new DialogGUIButton("Cancel", DummyVoid);
+                MultiOptionDialog dialog = new MultiOptionDialog("Are you sure you want to delete the selected Preset, file and all? This cannot be undone!", "Confirm Deletion", null, options);
+                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), dialog, false, HighLogic.UISkin);
             }
             GUILayout.EndVertical();
 
             //Main sections
             GUILayout.BeginVertical();
             presetMainScroll = GUILayout.BeginScrollView(presetMainScroll);
-            //Preset info section
+            //Preset info section)
             GUILayout.BeginVertical(HighLogic.Skin.textArea);
             GUILayout.Label("Preset Name: " + WorkingPreset.name);
             GUILayout.Label("Description: " + WorkingPreset.description);
@@ -117,6 +119,7 @@ namespace KerbalConstructionTime
             WorkingPreset.generalSettings.SimulationCosts = GUILayout.Toggle(WorkingPreset.generalSettings.SimulationCosts, "Simulation Costs", HighLogic.Skin.button);
             WorkingPreset.generalSettings.RequireVisitsForSimulations = GUILayout.Toggle(WorkingPreset.generalSettings.RequireVisitsForSimulations, "Must Visit Planets", HighLogic.Skin.button);
             WorkingPreset.generalSettings.TechUpgrades = GUILayout.Toggle(WorkingPreset.generalSettings.TechUpgrades, "Upgrades From Tech Tree", HighLogic.Skin.button);
+            WorkingPreset.generalSettings.SharedUpgradePool = GUILayout.Toggle(WorkingPreset.generalSettings.SharedUpgradePool, "Shared Upgrade Pool (KSCSwitcher)", HighLogic.Skin.button);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Starting Upgrades:");
@@ -146,7 +149,7 @@ namespace KerbalConstructionTime
             double.TryParse(ReEffTmp = GUILayout.TextField(ReEffTmp, 10, GUILayout.Width(80)), out WorkingPreset.timeSettings.ReconditioningEffect);
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Max Reocnditioning: ");
+            GUILayout.Label("Max Reconditioning: ");
             double.TryParse(MaxReTmp = GUILayout.TextField(MaxReTmp, 10, GUILayout.Width(80)), out WorkingPreset.timeSettings.MaxReconditioning);
             GUILayout.EndHorizontal();
             GUILayout.Label("Rollout-Reconditioning Split:");
@@ -253,6 +256,11 @@ namespace KerbalConstructionTime
                 GUILayout.Label("RolloutCosts: ");
                 WorkingPreset.formulaSettings.RolloutCostFormula = GUILayout.TextField(WorkingPreset.formulaSettings.RolloutCostFormula, GUILayout.Width(textWidth));
                 GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("NewLaunchPadCost: ");
+                WorkingPreset.formulaSettings.NewLaunchPadCostFormula = GUILayout.TextField(WorkingPreset.formulaSettings.NewLaunchPadCostFormula, GUILayout.Width(textWidth));
+                GUILayout.EndHorizontal();
             }
 
             GUILayout.EndVertical(); 
@@ -280,17 +288,26 @@ namespace KerbalConstructionTime
                 KCT_GameStates.settings.Debug = debug;
                 KCT_GameStates.settings.AutoKACAlarms = autoAlarms;
                 KCT_GameStates.settings.PreferBlizzyToolbar = useBlizzyToolbar;
+                KCT_GameStates.settings.CheckForDebugUpdates = debugUpdateChecking;
 
                 KCT_GameStates.settings.Save();
                 showSettings = false;
                 if (!PrimarilyDisabled && !showFirstRun)
                 {
+                    ResetBLWindow();
                     if (KCT_Events.instance.KCTButtonStock != null)
                         KCT_Events.instance.KCTButtonStock.SetTrue();
                     else
+                    {
                         showBuildList = true;
+                    }
                 }
                 if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) InputLockManager.RemoveControlLock("KCTKSCLock");
+
+                for (int j = 0; j < KCT_GameStates.TechList.Count; j++)
+                    KCT_GameStates.TechList[j].UpdateBuildRate(j);
+
+                KCT_GUI.ResetFormulaRateHolders();
             }
             if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
             {
@@ -298,11 +315,15 @@ namespace KerbalConstructionTime
                 showSettings = false;
                 if (!PrimarilyDisabled && !showFirstRun)
                 {
+                    ResetBLWindow();
                     if (KCT_Events.instance.KCTButtonStock != null)
                         KCT_Events.instance.KCTButtonStock.SetTrue();
                     else
                         showBuildList = true;
                 }
+
+                for (int j = 0; j < KCT_GameStates.TechList.Count; j++)
+                    KCT_GameStates.TechList[j].UpdateBuildRate(j);
             }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
@@ -333,6 +354,9 @@ namespace KerbalConstructionTime
             useBlizzyToolbar = GUILayout.Toggle(useBlizzyToolbar, "Use Toolbar Mod", HighLogic.Skin.button);
             disableAllMsgs = !GUILayout.Toggle(!disableAllMsgs, "Use Message System", HighLogic.Skin.button);
             debug = GUILayout.Toggle(debug, "Debug Logging", HighLogic.Skin.button);
+#if DEBUG
+            debugUpdateChecking = GUILayout.Toggle(debugUpdateChecking, "Check for Dev Updates", HighLogic.Skin.button);
+#endif
             GUILayout.EndVertical();
             GUILayout.EndVertical();
             

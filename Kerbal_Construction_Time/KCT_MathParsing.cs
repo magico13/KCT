@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using MagiCore;
 
 namespace KerbalConstructionTime
 {
@@ -12,26 +13,27 @@ namespace KerbalConstructionTime
         {
             switch (formulaName)
             {
-                case "Node": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.NodeFormula, variables);
-                case "UpgradeFunds": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeFundsFormula, variables);
-                case "UpgradeScience": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeScienceFormula, variables);
-                case "Research": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ResearchFormula, variables);
-                case "EffectivePart": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.EffectivePartFormula, variables);
-                case "ProceduralPart": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ProceduralPartFormula, variables);
-                case "BP": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BPFormula, variables);
-                case "KSCUpgrade": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KSCUpgradeFormula, variables);
-                case "Reconditioning": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ReconditioningFormula, variables);
-                case "BuildRate": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BuildRateFormula, variables);
-                case "SimCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.SimCostFormula, variables);
-                case "KerbinSimCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KerbinSimCostFormula, variables);
-                case "UpgradeReset": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeResetFormula, variables);
-                case "InventorySales": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.InventorySaleFormula, variables);
-                case "RolloutCost": return ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.RolloutCostFormula, variables);
+                case "Node": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.NodeFormula, variables);
+                case "UpgradeFunds": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeFundsFormula, variables);
+                case "UpgradeScience": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeScienceFormula, variables);
+                case "Research": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ResearchFormula, variables);
+                case "EffectivePart": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.EffectivePartFormula, variables);
+                case "ProceduralPart": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ProceduralPartFormula, variables);
+                case "BP": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BPFormula, variables);
+                case "KSCUpgrade": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KSCUpgradeFormula, variables);
+                case "Reconditioning": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.ReconditioningFormula, variables);
+                case "BuildRate": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.BuildRateFormula, variables);
+                case "SimCost": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.SimCostFormula, variables);
+                case "KerbinSimCost": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.KerbinSimCostFormula, variables);
+                case "UpgradeReset": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.UpgradeResetFormula, variables);
+                case "InventorySales": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.InventorySaleFormula, variables);
+                case "RolloutCost": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.RolloutCostFormula, variables);
+                case "NewLaunchPadCost": return MathParsing.ParseMath(KCT_PresetManager.Instance.ActivePreset.formulaSettings.NewLaunchPadCostFormula, variables);
                 default: return 0;
             }
         }
 
-        public static double ParseMath(string input, Dictionary<string, string> variables)
+       /* public static double ParseMath(string input, Dictionary<string, string> variables)
         {
            // KCTDebug.Log("Input_raw: " + input);
             string raw = input;
@@ -82,7 +84,7 @@ namespace KerbalConstructionTime
                     }
                     else if (ch == "e" || ch == "E")
                     {
-                        int index;
+                        int index=i+2;
                         for (index = i+2; index < input.Length; ++index)
                         {
                             string ch2 = input[index].ToString();
@@ -121,7 +123,7 @@ namespace KerbalConstructionTime
                     int j = parenComma[0];
                     int comma = parenComma[1];
                     string sub = input.Substring(subStart, j - subStart);
-                   // KCTDebug.Log("fn: "+function+" sub: "+sub);
+                    KCTDebug.Log("fn: "+function+" sub: "+sub);
                     double val = 0.0;
 
                     if (function == "l")
@@ -169,7 +171,7 @@ namespace KerbalConstructionTime
                 }
             }
             currentVal = DoMath(currentVal, lastOp, stack);
-            //KCTDebug.Log("(" + raw + ")=(" + input + ")=" + currentVal);
+            KCTDebug.Log("(" + raw + ")=(" + input + ")=" + currentVal);
             return currentVal;
         }
 
@@ -215,7 +217,7 @@ namespace KerbalConstructionTime
             }
 
             return currentVal;
-        }
+        }*/
 
         public static double ParseBuildRateFormula(KCT_BuildListVessel.ListType type, int index, KCT_KSC KSC, bool UpgradedRates = false)
         {
@@ -246,10 +248,12 @@ namespace KerbalConstructionTime
                 numNodes = ResearchAndDevelopment.Instance.snapshot.GetData().GetNodes("Tech").Length;
             variables.Add("S", numNodes.ToString());
 
+            AddCrewVariables(variables);
+
             return GetStandardFormulaValue("BuildRate", variables);
         }
 
-        public static double ParseNodeRateFormula(double ScienceValue, bool UpgradedRates = false)
+        public static double ParseNodeRateFormula(double ScienceValue, int index = 0, bool UpgradedRates = false)
         {
             int RnDLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment);
             int upgrades = KCT_GameStates.TechUpgradesTotal;
@@ -259,12 +263,18 @@ namespace KerbalConstructionTime
             variables.Add("N", upgrades.ToString());
             variables.Add("R", RnDLvl.ToString());
             variables.Add("O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString());
+            variables.Add("I", index.ToString());
+
+            AddCrewVariables(variables);
 
             return GetStandardFormulaValue("Node", variables);
         }
 
         public static double ParseRolloutCostFormula(KCT_BuildListVessel vessel)
         {
+            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled || !KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningTimes)
+                return 0;
+
             double loadedMass, emptyMass, loadedCost, emptyCost;
             loadedCost = vessel.GetTotalCost();
             emptyCost = vessel.emptyCost;
@@ -273,13 +283,15 @@ namespace KerbalConstructionTime
 
             int EditorLevel = 0, LaunchSiteLvl = 0;
             int isVABVessel = 0;
+            if (vessel.type == KCT_BuildListVessel.ListType.None)
+                vessel.FindTypeFromLists();
             if (vessel.type == KCT_BuildListVessel.ListType.VAB)
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
-                LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
+                LaunchSiteLvl = KCT_GameStates.ActiveKSC.ActiveLPInstance.level;//KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
                 isVABVessel = 1;
             }
-            else
+            else if (vessel.type == KCT_BuildListVessel.ListType.SPH)
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.SpaceplaneHangar);
                 LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.Runway);
@@ -295,6 +307,8 @@ namespace KerbalConstructionTime
             variables.Add("BP", BP.ToString());
             variables.Add("L", LaunchSiteLvl.ToString());
             variables.Add("EL", EditorLevel.ToString());
+
+            AddCrewVariables(variables);
 
             return GetStandardFormulaValue("RolloutCost", variables);
         }
@@ -316,7 +330,7 @@ namespace KerbalConstructionTime
             if (vessel.type == KCT_BuildListVessel.ListType.VAB)
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
-                LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
+                LaunchSiteLvl = KCT_GameStates.ActiveKSC.ActiveLPInstance.level;//KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
                 isVABVessel = 1;
             }
             else
@@ -344,7 +358,81 @@ namespace KerbalConstructionTime
             variables.Add("RE", isRecon.ToString());
             variables.Add("S", KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit.ToString());
 
+            AddCrewVariables(variables);
+
             return GetStandardFormulaValue("Reconditioning", variables);
+        }
+
+        public static void AddCrewVariables(Dictionary<string, string> crewVars)
+        {
+            //Dictionary<string, string> crewVars = new Dictionary<string, string>();
+            int pilots=0, engineers=0, scientists=0;
+            int pLevels=0, eLevels=0, sLevels=0;
+
+            int pilots_total = 0, engineers_total = 0, scientists_total = 0;
+            int pLevels_total = 0, eLevels_total = 0, sLevels_total = 0;
+
+            foreach (ProtoCrewMember pcm in HighLogic.CurrentGame.CrewRoster.Crew)
+            {
+                if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available || pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+                {
+                    if (pcm.trait == "Pilot")
+                    {
+                        if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                        {
+                            pilots++;
+                            pLevels += pcm.experienceLevel;
+                        }
+                        pilots_total++;
+                        pLevels_total += pcm.experienceLevel;
+                    }
+                    else if (pcm.trait == "Engineer")
+                    {
+                        if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                        {
+                            engineers++;
+                            eLevels += pcm.experienceLevel;
+                        }
+                        engineers_total++;
+                        eLevels_total += pcm.experienceLevel;
+                    }
+                    else if (pcm.trait == "Scientist")
+                    {
+                        if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                        {
+                            scientists++;
+                            sLevels += pcm.experienceLevel;
+                        }
+                        scientists_total++;
+                        sLevels_total += pcm.experienceLevel;
+                    }
+                }
+                
+            }
+
+            //KCTDebug.Log(pilots + " pilots " + pLevels + " levels");
+            //KCTDebug.Log(engineers + " engineers " + eLevels + " levels");
+            //KCTDebug.Log(scientists + " scientists " + sLevels + " levels");
+
+            crewVars.Add("PiK", pilots.ToString());
+            crewVars.Add("PiL", pLevels.ToString());
+
+            crewVars.Add("EnK", engineers.ToString());
+            crewVars.Add("EnL", eLevels.ToString());
+
+            crewVars.Add("ScK", scientists.ToString());
+            crewVars.Add("ScL", sLevels.ToString());
+
+            crewVars.Add("TPiK", pilots_total.ToString());
+            crewVars.Add("TPiL", pLevels_total.ToString());
+
+            crewVars.Add("TEnK", engineers_total.ToString());
+            crewVars.Add("TEnL", eLevels_total.ToString());
+
+            crewVars.Add("TScK", scientists_total.ToString());
+            crewVars.Add("TScL", sLevels_total.ToString());
+
+            //return crewVars;
         }
     }
 }
