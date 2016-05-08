@@ -194,12 +194,14 @@ namespace KerbalConstructionTime
 
         public static void ClickOff()
         {
+            KCTDebug.Log("ClickOff");
             clicked = false;
             onClick();
         }
 
         public static void ClickOn()
         {
+            KCTDebug.Log("ClickOn");
             clicked = true;
             onClick();
         }
@@ -257,12 +259,12 @@ namespace KerbalConstructionTime
             }
             else if (HighLogic.LoadedScene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated)
             {
-                showSimulationWindow = !showSimulationWindow;
+                showSimulationWindow = clicked;
                 simulationWindowPosition.height = 1;
             }
             else if ((HighLogic.LoadedScene == GameScenes.EDITOR) && !PrimarilyDisabled)
             {
-                showEditorGUI = !showEditorGUI;
+                showEditorGUI = clicked;
                 KCT_GameStates.showWindows[1] = showEditorGUI;
             }
             else if ((HighLogic.LoadedScene == GameScenes.SPACECENTER) || (HighLogic.LoadedScene == GameScenes.TRACKSTATION) && !PrimarilyDisabled)
@@ -293,6 +295,7 @@ namespace KerbalConstructionTime
 
         public static void onHoverOn()
         {
+            KCTDebug.Log("onHoverOn: Clicked = " + clicked);
             if (!PrimarilyDisabled)
             {
                 if (HighLogic.LoadedScene == GameScenes.SPACECENTER || (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated))
@@ -305,6 +308,7 @@ namespace KerbalConstructionTime
         }
         public static void onHoverOff()
         {
+            KCTDebug.Log("onHoverOff: Clicked = " + clicked);
             if (!PrimarilyDisabled && !clicked)
             {
                 if (HighLogic.LoadedScene == GameScenes.SPACECENTER || (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated))
@@ -339,15 +343,16 @@ namespace KerbalConstructionTime
             showSimLengthChooser = false;
             showPresetSaver = false;
             showLaunchSiteSelector = false;
-           
 
-            if (!KCT_GameStates.settings.PreferBlizzyToolbar)
+            //ClickOff();
+
+          /*  if (!KCT_GameStates.settings.PreferBlizzyToolbar)
             {
                 if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
                 {
-                    KCT_Events.instance.KCTButtonStock.SetFalse(true);
+                    KCT_Events.instance.KCTButtonStock.SetFalse(false);
                 }
-            }
+            }*/
             clicked = false;
 
             //VABSelected = false;

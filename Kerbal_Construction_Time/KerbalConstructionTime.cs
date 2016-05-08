@@ -294,6 +294,10 @@ namespace KerbalConstructionTime
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
                     KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[1];
+                    if (KCT_GUI.showEditorGUI)
+                        KCT_GUI.ClickOn();
+                    else
+                        KCT_GUI.ClickOff();
                 }
                 if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
                 {
@@ -308,6 +312,7 @@ namespace KerbalConstructionTime
                     KCT_Utilities.LoadSimulationSave();
                 }*/
                 KCT_GUI.hideAll();
+                //KCT_GUI.clicked = false;
          //       KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID);
             }
 
@@ -403,6 +408,12 @@ namespace KerbalConstructionTime
             }
             #endif
             */
+            if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
+                if (KCT_GUI.clicked)
+                    KCT_Events.instance.KCTButtonStock.SetTrue(false);
+                else
+                    KCT_Events.instance.KCTButtonStock.SetFalse(false);
+
             if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;
 
