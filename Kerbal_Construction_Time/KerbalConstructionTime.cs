@@ -397,8 +397,12 @@ namespace KerbalConstructionTime
         public static bool moved = false;
         private static bool updateChecked = false;
         private static int failedLvlChecks = 0;
+        //private static double elapsedTimer = 0;
+        //private static double elapsedTicks = 0;
         public void FixedUpdate()
         {
+            //System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+
             /*
             #if DEBUG
             if (!updateChecked && KCT_GameStates.settings.CheckForDebugUpdates && !KCT_GameStates.firstStart)
@@ -593,6 +597,16 @@ namespace KerbalConstructionTime
                 //print(e.StackTrace);
                 Debug.LogException(e);
             }
+
+           /* timer.Stop();
+
+            elapsedTimer += timer.Elapsed.TotalMilliseconds;
+            elapsedTicks++;
+            if (elapsedTicks >= 60)
+            {
+                KCTDebug.Log("Time per update: "+(elapsedTimer/elapsedTicks));
+                elapsedTicks = 0;
+            }*/
         }
         
        /* private void RecoverToVAB()

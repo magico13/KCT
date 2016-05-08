@@ -282,7 +282,7 @@ namespace KerbalConstructionTime
             ConfigNode.LoadObjectFromConfig(generalSettings, Source.generalSettings.AsConfigNode());
             ConfigNode.LoadObjectFromConfig(timeSettings, Source.timeSettings.AsConfigNode());
             ConfigNode.LoadObjectFromConfig(formulaSettings, Source.formulaSettings.AsConfigNode());
-            partVariables.FromConfigNode(Source.partVariables.ToConfigNode());
+            partVariables.FromConfigNode(Source.partVariables.AsConfigNode());
         }
 
         public ConfigNode AsConfigNode()
@@ -302,6 +302,7 @@ namespace KerbalConstructionTime
             node.AddNode(generalSettings.AsConfigNode());
             node.AddNode(timeSettings.AsConfigNode());
             node.AddNode(formulaSettings.AsConfigNode());
+            node.AddNode(partVariables.AsConfigNode());
             return node;
         }
 
@@ -415,7 +416,7 @@ namespace KerbalConstructionTime
             return dict;
         }
 
-        public ConfigNode ToConfigNode()
+        public ConfigNode AsConfigNode()
         {
             ConfigNode node = new ConfigNode("KCT_Preset_Part_Variables");
             node.AddNode(DictionaryToNode(Part_Variables, "Part_Variables"));
