@@ -434,7 +434,8 @@ namespace KerbalConstructionTime
 
                     
                     effectiveCost = KCT_MathParsing.GetStandardFormulaValue("EffectivePart", new Dictionary<string, string>() { {"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetMass.ToString()},
-                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect.ToString()}});
+                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect.ToString()}, 
+                    {"PV", PartMultiplier.ToString()}, {"MV", ModuleMultiplier.ToString()}});
 
                     if (InvEff != 0)
                     {
@@ -474,7 +475,8 @@ namespace KerbalConstructionTime
                     int used = (useTracker && KCT_GameStates.PartTracker.ContainsKey(name)) ? KCT_GameStates.PartTracker[name] : 0;
 
                     effectiveCost = KCT_MathParsing.GetStandardFormulaValue("ProceduralPart", new Dictionary<string, string>() { {"A", costRemoved.ToString()},{"C", cost.ToString()}, {"c", dryCost.ToString()}, {"M",wetMass.ToString()},
-                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect.ToString()}});
+                    {"m", dryMass.ToString()}, {"U", used.ToString()}, {"O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString()}, {"I", InvEff.ToString()}, {"B", KCT_PresetManager.Instance.ActivePreset.timeSettings.BuildEffect.ToString()}, 
+                    {"PV", PartMultiplier.ToString()}, {"MV", ModuleMultiplier.ToString()}});
 
                     if (InvEff != 0)
                     {
@@ -1938,6 +1940,8 @@ namespace KerbalConstructionTime
                     .SelectMany(t => t)
                     .FirstOrDefault(t => t.FullName == "regexKSP.KSCLoader");
             object LoaderInstance = GetMemberInfoValue(Loader.GetMember("instance")[0], null);
+            if (LoaderInstance == null)
+                return "Stock";
             object SitesObj = GetMemberInfoValue(Loader.GetMember("Sites")[0], LoaderInstance);
             string lastSite = (string)GetMemberInfoValue(SitesObj.GetType().GetMember("lastSite")[0], SitesObj);
 
