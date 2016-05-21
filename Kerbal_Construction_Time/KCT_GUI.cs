@@ -226,7 +226,7 @@ namespace KerbalConstructionTime
 
             if (PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.SPACECENTER))
             {
-                if (!showSettings)
+                if (clicked)
                     ShowSettings();
                 else
                     showSettings = false;
