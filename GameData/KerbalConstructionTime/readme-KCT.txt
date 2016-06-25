@@ -19,6 +19,9 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.3.4.0 (06/25/16)
+ - Update to KSP 1.1.3
+ 
 v 1.3.3.7 (05/09/16)
  - Update for KSP 1.1.2
  - Now requires MagiCore for math and time parsing
