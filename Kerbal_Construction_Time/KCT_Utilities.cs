@@ -412,13 +412,18 @@ namespace KerbalConstructionTime
                 String name = PartNameFromNode(p);
                 string raw_name = name;
                 double effectiveCost = 0;
-                double cost = GetPartCostFromNode(p);
-                double dryCost = GetPartCostFromNode(p, false);
+                double cost;// = GetPartCostFromNode(p);
+                float dryCost, fuelCost;// = GetPartCostFromNode(p, false);
                 //double wetmass = GetPartMassFromNode(p, true);
                 //double drymass = GetPartMassFromNode(p, false);
                 float dryMass, fuelMass;
-                float wetMass = ShipConstruction.GetPartTotalMass(p, GetAvailablePartByName(name), out dryMass, out fuelMass);
+                float wetMass; //ShipConstruction.GetPartTotalMass(p, GetAvailablePartByName(name), out dryMass, out fuelMass);
+
+                ShipConstruction.GetPartCostsAndMass(p, GetAvailablePartByName(name), out dryCost, out fuelCost, out dryMass, out fuelMass);
+                cost = dryCost + fuelCost;
+                wetMass = dryMass + fuelMass;
                     
+
                 double PartMultiplier = KCT_PresetManager.Instance.ActivePreset.partVariables.GetPartVariable(raw_name);
                 List<string> moduleNames = new List<string>();
                 foreach (ConfigNode modNode in GetModulesFromPartNode(p))
@@ -754,43 +759,30 @@ namespace KerbalConstructionTime
             AvailablePart aPart = GetAvailablePartByName(name);
             if (aPart == null)
                 return 0;
-            float dry, wet;
-            float total = ShipConstruction.GetPartCosts(part, aPart, out dry, out wet);
+            float dryCost, fuelCost;
+            float dryMass, fuelMass;
+            ShipConstruction.GetPartCostsAndMass(part, aPart, out dryCost, out fuelCost, out dryMass, out fuelMass);
+            //float total = ShipConstruction.GetPartCosts(part, aPart, out dry, out wet);
+            
             if (includeFuel)
-                return total;
+                return dryCost+fuelCost;
             else
-                return dry;
+                return dryCost;
         }
 
         public static float GetPartMassFromNode(ConfigNode part, bool includeFuel = true)
         {
-            float dry = 0, total = 0, wet = 0;
-           /* if (float.TryParse(part.GetValue("mass"), out dry))
-            {
-                //mass += p.GetResourceMass();
-                foreach (ConfigNode rsc in part.GetNodes("RESOURCE"))
-                {
-                    PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.GetValue("name"));
-                    wet = dry + def.density * float.Parse(rsc.GetValue("amount"));
-                }
-            }
-            else
-            {
-                AvailablePart p = KCT_Utilities.GetAvailablePartByName(KCT_Utilities.PartNameFromNode(part));
-                if (part != null)
-                {
-                    dry = p.partPrefab.mass;
-                    wet = dry + p.partPrefab.GetResourceMass();
-                }
-            }*/
             AvailablePart aPart = GetAvailablePartByName(PartNameFromNode(part));
             if (aPart == null)
                 return 0;
-            total = ShipConstruction.GetPartTotalMass(part, aPart, out dry, out wet);
+            //total = ShipConstruction.GetPartTotalMass(part, aPart, out dry, out wet);
+            float dryCost, fuelCost;
+            float dryMass, fuelMass;
+            ShipConstruction.GetPartCostsAndMass(part, aPart, out dryCost, out fuelCost, out dryMass, out fuelMass);
             if (includeFuel)
-                return total;
+                return dryMass+fuelMass;
             else
-                return dry;
+                return dryMass;
         }
 
         public static string GetTweakScaleSize(ProtoPartSnapshot part)
@@ -1042,7 +1034,7 @@ namespace KerbalConstructionTime
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts(0);
                 KCTDebug.Log("PP cost: " + cost);
-                foreach (PartResource resource in part.Resources.list)
+                foreach (PartResource resource in part.Resources)
                 {
                     cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.amount);
                 }
@@ -1096,7 +1088,7 @@ namespace KerbalConstructionTime
             if (KCT_Utilities.PartIsProcedural(part))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts(0);
-                foreach (PartResource resource in part.Resources.list)
+                foreach (PartResource resource in part.Resources)
                 {
                     cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.maxAmount);
                 }
@@ -1116,7 +1108,7 @@ namespace KerbalConstructionTime
             if (KCT_Utilities.PartIsProcedural(part))
             {
                 float cost = part.partInfo.cost + part.GetModuleCosts(0);
-                foreach (PartResource resource in part.Resources.list)
+                foreach (PartResource resource in part.Resources)
                 {
                     cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.maxAmount);
                 }

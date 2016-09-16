@@ -39,11 +39,8 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>D:\SteamLibrary\SteamApps\common\Kerbal Space Program\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="KSPUtil">
-      <HintPath>D:\SteamLibrary\SteamApps\common\Kerbal Space Program\KSP_Data\Managed\KSPUtil.dll</HintPath>
-    </Reference>
     <Reference Include="MagiCore">
-      <HintPath>..\..\MagiCore\MagiCore\obj\Debug\MagiCore.dll</HintPath>
+      <HintPath>..\..\MagiCore\MagiCore\obj\Release\MagiCore.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

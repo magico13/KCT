@@ -728,7 +728,7 @@ namespace KerbalConstructionTime
                         {
                             foreach (PartResource rsc in p.Resources)
                             {
-                                PartResource templateRsc = p.partInfo.partPrefab.Resources.list.Find(r => r.resourceName == rsc.resourceName);
+                                PartResource templateRsc = p.partInfo.partPrefab.Resources.FirstOrDefault(r => r.resourceName == rsc.resourceName);
                                 if (templateRsc != null)
                                     rsc.amount = templateRsc.amount;
                             }

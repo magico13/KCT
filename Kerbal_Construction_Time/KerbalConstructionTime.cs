@@ -395,7 +395,7 @@ namespace KerbalConstructionTime
         }
 
         public static bool moved = false;
-        private static bool updateChecked = false;
+        //private static bool updateChecked = false;
         private static int failedLvlChecks = 0;
         //private static double elapsedTimer = 0;
         //private static double elapsedTicks = 0;
@@ -986,11 +986,11 @@ namespace KerbalConstructionTime
                 }
 
                 // This is how you hide tooltips.
-                if (EditorTooltip.Instance != null)
+                /*if (EditorTooltip.Instance != null)
                 {
                     EditorTooltip.Instance.HideToolTip();
                     GameEvents.onTooltipDestroyRequested.Fire();
-                }
+                }*/
             }
         }
 
