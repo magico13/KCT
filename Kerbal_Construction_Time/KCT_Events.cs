@@ -550,8 +550,7 @@ namespace KerbalConstructionTime
             double mass = 0;
             foreach (ProtoPartResourceSnapshot resource in resources)
             {
-                ConfigNode RCN = resource.resourceValues;
-                double amount = double.Parse(RCN.GetValue("amount"));
+				double amount = resource.amount;
                 PartResourceDefinition RD = PartResourceLibrary.Instance.GetDefinition(resource.resourceName);
                 mass += amount * RD.density;
             }
