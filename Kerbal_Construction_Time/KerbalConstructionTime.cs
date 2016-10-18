@@ -294,6 +294,10 @@ namespace KerbalConstructionTime
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
                     KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[1];
+                    if (KCT_GUI.showEditorGUI)
+                        KCT_GUI.ClickOn();
+                    else
+                        KCT_GUI.ClickOff();
                 }
                 if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
                 {
@@ -308,6 +312,7 @@ namespace KerbalConstructionTime
                     KCT_Utilities.LoadSimulationSave();
                 }*/
                 KCT_GUI.hideAll();
+                //KCT_GUI.clicked = false;
          //       KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID);
             }
 
@@ -390,10 +395,14 @@ namespace KerbalConstructionTime
         }
 
         public static bool moved = false;
-        private static bool updateChecked = false;
+        //private static bool updateChecked = false;
         private static int failedLvlChecks = 0;
+        //private static double elapsedTimer = 0;
+        //private static double elapsedTicks = 0;
         public void FixedUpdate()
         {
+            //System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+
             /*
             #if DEBUG
             if (!updateChecked && KCT_GameStates.settings.CheckForDebugUpdates && !KCT_GameStates.firstStart)
@@ -403,6 +412,12 @@ namespace KerbalConstructionTime
             }
             #endif
             */
+            if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
+                if (KCT_GUI.clicked)
+                    KCT_Events.instance.KCTButtonStock.SetTrue(false);
+                else
+                    KCT_Events.instance.KCTButtonStock.SetFalse(false);
+
             if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;
 
@@ -582,6 +597,16 @@ namespace KerbalConstructionTime
                 //print(e.StackTrace);
                 Debug.LogException(e);
             }
+
+           /* timer.Stop();
+
+            elapsedTimer += timer.Elapsed.TotalMilliseconds;
+            elapsedTicks++;
+            if (elapsedTicks >= 60)
+            {
+                KCTDebug.Log("Time per update: "+(elapsedTimer/elapsedTicks));
+                elapsedTicks = 0;
+            }*/
         }
         
        /* private void RecoverToVAB()
@@ -961,11 +986,11 @@ namespace KerbalConstructionTime
                 }
 
                 // This is how you hide tooltips.
-                if (EditorTooltip.Instance != null)
+                /*if (EditorTooltip.Instance != null)
                 {
                     EditorTooltip.Instance.HideToolTip();
                     GameEvents.onTooltipDestroyRequested.Fire();
-                }
+                }*/
             }
         }
 

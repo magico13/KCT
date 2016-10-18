@@ -75,7 +75,8 @@ namespace KerbalConstructionTime
 
         public void HideAllGUIs()
         {
-            KCT_GUI.hideAll();
+            //KCT_GUI.hideAll();
+            KCT_GUI.ClickOff();
         }
        /* public void LevelLoadedEvent(GameScenes scene)
         {
