@@ -157,7 +157,7 @@ namespace KerbalConstructionTime
                 {
                     PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.resourceName);
                     if (def != null)
-                        TotalMass += def.density * float.Parse(rsc.resourceValues.GetValue("amount"));
+						TotalMass += def.density * (float) rsc.amount;
                 }
             }
             cannotEarnScience = true;

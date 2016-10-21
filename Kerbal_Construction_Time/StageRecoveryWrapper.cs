@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 //Change this to your mod's namespace!
@@ -27,10 +26,14 @@ namespace KerbalConstructionTime
             {
                 if (available == null)
                 {
-                    SRType = AssemblyLoader.loadedAssemblies
-                        .Select(a => a.assembly.GetExportedTypes())
-                        .SelectMany(t => t)
-                        .FirstOrDefault(t => t.FullName == "StageRecovery.APIManager");
+					SRType = null;
+					AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+					{
+						if (t.FullName == "StageRecovery.APIManager")
+						{
+							SRType = t;
+						}
+					});
                     available = SRType != null;
                 }
                 return (bool)available;

@@ -20,10 +20,13 @@ namespace Kerbal_Construction_Time //Change this to your mod's namespace
         {
             get
             {
-                Type MCE = AssemblyLoader.loadedAssemblies
-                .Select(a => a.assembly.GetExportedTypes())
-                .SelectMany(t => t)
-                .FirstOrDefault(t => t.FullName == "MissionController.MissionController");
+                Type MCE = null;
+				AssemblyLoader.loadedAssemblies.TypeOperation(t => {
+					if (t.FullName == "MissionController.MissionController")
+					{
+						MCE = t;
+					}
+				});
 
                 if (MCE == null)
                 {

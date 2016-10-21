@@ -25,10 +25,14 @@ namespace CrewQ
             {
                 if (_available == null)
                 {
-                    _type = AssemblyLoader.loadedAssemblies
-                                          .Select(a => a.assembly.GetExportedTypes())
-                                          .SelectMany(t => t)
-                                          .FirstOrDefault(t => t.FullName == "CrewQ.CrewQ");
+					_type = null;
+					AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+					{
+						if (t.FullName == "CrewQ.CrewQ")
+						{
+							_type = t;
+						}
+					});
 
                     _available = _type != null;
                 }
