@@ -89,7 +89,8 @@ namespace KerbalConstructionTime
 
         public void PersistenceLoadEvent(ConfigNode node)
         {
-            KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
+            //KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
+            KCTDebug.Log("Looking for tech nodes.");
             ConfigNode rnd = node.GetNodes("SCENARIO").FirstOrDefault(n => n.GetValue("name") == "ResearchAndDevelopment");
             if (rnd != null)
             {

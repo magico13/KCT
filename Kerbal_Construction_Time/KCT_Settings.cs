@@ -64,7 +64,7 @@ namespace KerbalConstructionTime
            // CheckForUpdates = GameSettings.SEND_PROGRESS_DATA;
             //VersionSpecific = false;
             Debug = false;
-            OverrideLaunchButton = true;
+            OverrideLaunchButton = false;
           //  RecoveryModifier = 0.75F;
           //  Reconditioning = true;
             AutoKACAlarms = true;
