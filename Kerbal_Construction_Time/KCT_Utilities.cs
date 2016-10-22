@@ -1009,7 +1009,7 @@ namespace KerbalConstructionTime
                 KCTDebug.Log("PP cost: " + cost);
                 foreach (ProtoPartResourceSnapshot resource in part.resources)
                 {
-                    cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * float.Parse(resource.resourceValues.GetValue("amount")));
+					cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.amount);
                 }
                 KCTDebug.Log("After fuel costs: " + cost);
                 amt = (int)(cost * 1000);
