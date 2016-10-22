@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2013-2015, Maik Schreiber
+Copyright (c) 2013-2016, Maik Schreiber
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -23,7 +23,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -36,16 +36,16 @@ namespace KerbalConstructionTime
 
 
     /**********************************************************\
-    *          --- DO NOT EDIT BELOW THIS COMMENT ---          *
-    *                                                          *
-    * This file contains classes and interfaces to use the     *
-    * Toolbar Plugin without creating a hard dependency on it. *
-    *                                                          *
-    * There is nothing in this file that needs to be edited    *
-    * by hand.                                                 *
-    *                                                          *
-    *          --- DO NOT EDIT BELOW THIS COMMENT ---          *
-    \**********************************************************/
+	*          --- DO NOT EDIT BELOW THIS COMMENT ---          *
+	*                                                          *
+	* This file contains classes and interfaces to use the     *
+	* Toolbar Plugin without creating a hard dependency on it. *
+	*                                                          *
+	* There is nothing in this file that needs to be edited    *
+	* by hand.                                                 *
+	*                                                          *
+	*          --- DO NOT EDIT BELOW THIS COMMENT ---          *
+	\**********************************************************/
 
 
 
@@ -711,9 +711,9 @@ namespace KerbalConstructionTime
                 if (value != null)
                 {
                     functionDrawable = Activator.CreateInstance(types.functionDrawableType, new object[] {
-						new Action(() => value.Update()),
-						new Func<Vector2, Vector2>((pos) => value.Draw(pos))
-					});
+                        new Action(() => value.Update()),
+                        new Func<Vector2, Vector2>((pos) => value.Draw(pos))
+                    });
                 }
                 types.button.drawableProperty.SetValue(realButton, functionDrawable, null);
                 drawable_ = value;
@@ -824,14 +824,13 @@ namespace KerbalConstructionTime
         internal static Type getType(string name)
         {
             Type type = null;
-			AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-			{
-				if (t.FullName == name)
-				{
-					type = t;
-				}
-			});
-			return type;
+            AssemblyLoader.loadedAssemblies.TypeOperation(t => {
+                if (t.FullName == name)
+                {
+                    type = t;
+                }
+            });
+            return type;
         }
 
         internal static PropertyInfo getProperty(Type type, string name)

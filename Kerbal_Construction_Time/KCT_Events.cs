@@ -89,7 +89,8 @@ namespace KerbalConstructionTime
 
         public void PersistenceLoadEvent(ConfigNode node)
         {
-            KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
+            //KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
+            KCTDebug.Log("Looking for tech nodes.");
             ConfigNode rnd = node.GetNodes("SCENARIO").FirstOrDefault(n => n.GetValue("name") == "ResearchAndDevelopment");
             if (rnd != null)
             {
@@ -226,42 +227,43 @@ namespace KerbalConstructionTime
 
         private void StageRecoverySuccessEvent(Vessel v, float[] infoArray, string reason)
         {
-            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
-            KCTDebug.Log("Recovery Success Event triggered.");
-            float damage = 0;
-            if (infoArray.Length == 3)
-                damage = infoArray[0];
-            else
-                KCTDebug.Log("Malformed infoArray received!");
-            System.Random rand = new System.Random();
-            Dictionary<string, int> destroyed = new Dictionary<string,int>();
-            foreach (ProtoPartSnapshot part in v.protoVessel.protoPartSnapshots)
-            {
-                float random = (float)rand.NextDouble();
-               // string name = part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part);
-                if (random < damage)
-                {
-                    KCT_Utilities.AddPartToInventory(part);
-                }
-                else
-                {
-                    string commonName = part.partInfo.title + KCT_Utilities.GetTweakScaleSize(part);
-                    Debug.Log("[KCT] Part " + commonName + " was too damaged to be used anymore and was scrapped! Chance: "+damage);
-                    if (!destroyed.ContainsKey(commonName))
-                        destroyed.Add(commonName, 1);
-                    else
-                        ++destroyed[commonName];
-                }
-            }
+            return;
+            //if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
+            //KCTDebug.Log("Recovery Success Event triggered.");
+            //float damage = 0;
+            //if (infoArray.Length == 3)
+            //    damage = infoArray[0];
+            //else
+            //    KCTDebug.Log("Malformed infoArray received!");
+            //System.Random rand = new System.Random();
+            //Dictionary<string, int> destroyed = new Dictionary<string,int>();
+            //foreach (ProtoPartSnapshot part in v.protoVessel.protoPartSnapshots)
+            //{
+            //    float random = (float)rand.NextDouble();
+            //   // string name = part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part);
+            //    if (random < damage)
+            //    {
+            //        KCT_Utilities.AddPartToInventory(part);
+            //    }
+            //    else
+            //    {
+            //        string commonName = part.partInfo.title + KCT_Utilities.GetTweakScaleSize(part);
+            //        Debug.Log("[KCT] Part " + commonName + " was too damaged to be used anymore and was scrapped! Chance: "+damage);
+            //        if (!destroyed.ContainsKey(commonName))
+            //            destroyed.Add(commonName, 1);
+            //        else
+            //            ++destroyed[commonName];
+            //    }
+            //}
 
-            if (destroyed.Count > 0 && !KCT_GameStates.settings.DisableAllMessages)
-            {
-                StringBuilder msg = new StringBuilder();
-                msg.AppendLine("The following parts were too damaged to be reused and were scrapped:");
-                foreach (KeyValuePair<string, int> entry in destroyed) msg.AppendLine(entry.Value+" x "+entry.Key);
-                msg.AppendLine("\nChance of failure: " + Math.Round(100 * damage) + "%");
-                KCT_Utilities.DisplayMessage("KCT: Parts Scrapped", msg, MessageSystemButton.MessageButtonColor.ORANGE, MessageSystemButton.ButtonIcons.ALERT);
-            }
+            //if (destroyed.Count > 0 && !KCT_GameStates.settings.DisableAllMessages)
+            //{
+            //    StringBuilder msg = new StringBuilder();
+            //    msg.AppendLine("The following parts were too damaged to be reused and were scrapped:");
+            //    foreach (KeyValuePair<string, int> entry in destroyed) msg.AppendLine(entry.Value+" x "+entry.Key);
+            //    msg.AppendLine("\nChance of failure: " + Math.Round(100 * damage) + "%");
+            //    KCT_Utilities.DisplayMessage("KCT: Parts Scrapped", msg, MessageSystemButton.MessageButtonColor.ORANGE, MessageSystemButton.ButtonIcons.ALERT);
+            //}
         }
 
         private void ShipModifiedEvent(ShipConstruct vessel)
@@ -531,13 +533,13 @@ namespace KerbalConstructionTime
                 }
                 else
                 {
-                    KCTDebug.Log("Adding recovered parts to Part Inventory");
-                    foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
-                    {
-                        //string name = p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p);
+                    //KCTDebug.Log("Adding recovered parts to Part Inventory");
+                    //foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
+                    //{
+                    //    //string name = p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p);
                         
-                        KCT_Utilities.AddPartToInventory(p);
-                    }
+                    //    KCT_Utilities.AddPartToInventory(p);
+                    //}
 
 
                 }
@@ -550,7 +552,6 @@ namespace KerbalConstructionTime
             double mass = 0;
             foreach (ProtoPartResourceSnapshot resource in resources)
             {
-                //ConfigNode RCN = resource.resourceValues;
 				double amount = resource.amount;
                 PartResourceDefinition RD = PartResourceLibrary.Instance.GetDefinition(resource.resourceName);
                 mass += amount * RD.density;
