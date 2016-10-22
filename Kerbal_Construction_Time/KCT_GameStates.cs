@@ -15,8 +15,8 @@ namespace KerbalConstructionTime
         public static List<VesselType> VesselTypesForSOI = new List<VesselType>() { VesselType.Base, VesselType.Lander, VesselType.Probe, VesselType.Ship, VesselType.Station };
         public static List<Orbit.PatchTransitionType> SOITransitions = new List<Orbit.PatchTransitionType> { Orbit.PatchTransitionType.ENCOUNTER, Orbit.PatchTransitionType.ESCAPE };
         public static bool delayStart = false;
-        public static Dictionary<String, int> PartTracker = new Dictionary<string, int>();
-        public static Dictionary<String, int> PartInventory = new Dictionary<string, int>();
+        //public static Dictionary<String, int> PartTracker = new Dictionary<string, int>();
+        //public static Dictionary<String, int> PartInventory = new Dictionary<string, int>();
         public static bool flightSimulated = false;
         public static String simulationReason;
         public static KCT_Settings settings = new KCT_Settings();
@@ -87,8 +87,8 @@ namespace KerbalConstructionTime
         public static void reset()
         {
             //firstStart = true;
-            PartTracker = new Dictionary<string, int>();
-            PartInventory = new Dictionary<string, int>();
+            //PartTracker = new Dictionary<string, int>();
+            //PartInventory = new Dictionary<string, int>();
             flightSimulated = false;
             simulationInitialized = false;
             vesselDict = new Dictionary<string, string>();
