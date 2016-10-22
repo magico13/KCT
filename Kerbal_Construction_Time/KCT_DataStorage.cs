@@ -93,8 +93,8 @@ namespace KerbalConstructionTime
 
         public override void OnDecodeFromConfigNode()
         {
-            KCT_GameStates.PartTracker = ListToDict(PartTracker);
-            KCT_GameStates.PartInventory = ListToDict(PartInventory);
+            //KCT_GameStates.PartTracker = ListToDict(PartTracker);
+            //KCT_GameStates.PartInventory = ListToDict(PartInventory);
             KCT_GameStates.BodiesVisited = BodiesVisited;
           /*  KCT_GameStates.ActiveKSC.VABUpgrades = VABUpgrades;
             KCT_GameStates.ActiveKSC.SPHUpgrades = SPHUpgrades;
@@ -115,8 +115,8 @@ namespace KerbalConstructionTime
 
         public override void OnEncodeToConfigNode()
         {
-            PartTracker = DictToList(KCT_GameStates.PartTracker);
-            PartInventory = DictToList(KCT_GameStates.PartInventory);
+            //PartTracker = DictToList(KCT_GameStates.PartTracker);
+            //PartInventory = DictToList(KCT_GameStates.PartInventory);
            // enabledForSave = KCT_GameStates.settings.enabledForSave;
             BodiesVisited = KCT_GameStates.BodiesVisited;
             /*VABUpgrades = KCT_GameStates.VABUpgrades;
