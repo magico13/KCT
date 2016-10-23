@@ -628,9 +628,12 @@ namespace KerbalConstructionTime
                             ProtoPartModuleSnapshot realChute = p.modules.First(mod => mod.moduleName == "RealChuteModule");
                             if ((object)realChute != null) //Some of this was adopted from DebRefund, as Vendan's method of handling multiple parachutes is better than what I had.
                             {
-                                Type matLibraryType = AssemblyLoader.loadedAssemblies
-                                    .SelectMany(a => a.assembly.GetExportedTypes())
-                                    .SingleOrDefault(t => t.FullName == "RealChute.Libraries.MaterialsLibrary");
+                                Type matLibraryType = null;
+                                AssemblyLoader.loadedAssemblies.TypeOperation(t => {
+									if (t.FullName == "RealChute.Libraries.MaterialsLibrary") {
+										matLibraryType = t;
+									}
+								});
 
                                 ConfigNode[] parchutes = realChute.moduleValues.GetNodes("PARACHUTE");
                                 foreach (ConfigNode chute in parchutes)
