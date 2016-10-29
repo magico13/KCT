@@ -506,14 +506,7 @@ namespace KerbalConstructionTime
                     if (KCT_GameStates.canWarp && ikctItem != null && !ikctItem.IsComplete())
                     {
                         int warpRate = TimeWarp.CurrentRateIndex;
-                        if (SOIAlert())
-                        {
-                            TimeWarp.SetRate(0, true);
-                            KCT_GameStates.canWarp = false;
-                            KCT_GameStates.warpInitiated = false;
-
-                        }
-                        else if (warpRate < KCT_GameStates.lastWarpRate) //if something else changes the warp rate then release control to them, such as Kerbal Alarm Clock
+                        if (warpRate < KCT_GameStates.lastWarpRate) //if something else changes the warp rate then release control to them, such as Kerbal Alarm Clock
                         {
                             KCT_GameStates.canWarp = false;
                             KCT_GameStates.lastWarpRate = 0;
