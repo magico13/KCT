@@ -198,6 +198,7 @@ namespace KerbalConstructionTime
         {
             KCTDebug.Log("Awake called");
             KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
+            KCT_GameStates.PersistenceLoaded = false;
         }
 
         public void Start()
@@ -447,6 +448,7 @@ namespace KerbalConstructionTime
             }
             #endif
             */
+
             if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
                 if (KCT_GUI.clicked)
                     KCT_Events.instance.KCTButtonStock.SetTrue(false);
@@ -465,6 +467,21 @@ namespace KerbalConstructionTime
                 KCT_Utilities.LoadSimulationSave(true);
             }
 
+            if (KCT_GameStates.firstStart)
+            {
+                KCTDebug.Log("Showing first start.");
+                KCT_GUI.showFirstRun = true;
+
+                KCT_GameStates.erroredDuringOnLoad.OnLoadFinish();
+
+                DelayedStart();
+
+                KCT_GameStates.firstStart = false;
+                //initialize the proper launchpad
+                KCT_GameStates.ActiveKSC.ActiveLPInstance.level = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
+
+            }
+
             if (KCT_GameStates.UpdateLaunchpadDestructionState)
             {
                 KCT_GameStates.UpdateLaunchpadDestructionState = false;
@@ -478,6 +495,10 @@ namespace KerbalConstructionTime
                 }
                 
             }
+
+            
+            
+
             double lastUT = KCT_GameStates.UT > 0 ? KCT_GameStates.UT : Planetarium.GetUniversalTime();
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
@@ -865,15 +886,7 @@ namespace KerbalConstructionTime
                     KCT_GUI.showBuildList = false;
                     KCT_GameStates.showWindows[0] = false;
                 }
-                if (KCT_GameStates.firstStart)
-                {
-                    KCTDebug.Log("Showing first start.");
-                    KCT_GUI.showFirstRun = true;
-
-                    //initialize the proper launchpad
-                    KCT_GameStates.ActiveKSC.ActiveLPInstance.level = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
-                }
-                KCT_GameStates.firstStart = false;
+                
                 if (KCT_GameStates.LaunchFromTS)
                 {
                     KCT_GameStates.launchedVessel.Launch();

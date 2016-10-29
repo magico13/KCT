@@ -444,8 +444,6 @@ namespace KerbalConstructionTime
             GUILayout.EndHorizontal();
             if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
                 GUI.DragWindow();
-
-            ClampWindow(ref mainWindowPosition, strict: false);
         }
 
         public static bool showInventory = false, useInventory = false;

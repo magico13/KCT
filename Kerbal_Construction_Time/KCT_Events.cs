@@ -97,6 +97,7 @@ namespace KerbalConstructionTime
                 KCT_GameStates.LastKnownTechCount = rnd.GetNodes("Tech").Length;
                 KCTDebug.Log("Counting " + KCT_GameStates.LastKnownTechCount + " tech nodes.");
             }
+            KCT_GameStates.PersistenceLoaded = true;
         }
 
         //private static int lastLvl = -1;

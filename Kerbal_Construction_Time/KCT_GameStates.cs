@@ -84,6 +84,8 @@ namespace KerbalConstructionTime
 
         public static bool vesselErrorAlerted = false;
 
+        public static bool PersistenceLoaded = false;
+
         public static void reset()
         {
             //firstStart = true;

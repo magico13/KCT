@@ -74,8 +74,8 @@ namespace KerbalConstructionTime
 
         public static void DrawBuildListWindow(int windowID)
         {
-            if (buildListWindowPosition.xMax > Screen.width)
-                buildListWindowPosition.x = Screen.width - buildListWindowPosition.width;
+            //if (buildListWindowPosition.xMax > Screen.width)
+            //    buildListWindowPosition.x = Screen.width - buildListWindowPosition.width;
 
             //if (Input.touchCount == 0) MouseOnRolloutButton = false;
 
@@ -1060,8 +1060,10 @@ namespace KerbalConstructionTime
             GUILayout.EndVertical();
 
            // if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null && KCT_GameStates.settings.PreferBlizzyToolbar)
-                if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
-                    GUI.DragWindow();
+            if (!Input.GetMouseButtonDown(1) && !Input.GetMouseButtonDown(2))
+                GUI.DragWindow();
+
+            ClampWindow(ref buildListWindowPosition, strict: true);
         }
 
         public static void CancelTechNode(int index)
