@@ -1462,7 +1462,7 @@ namespace KerbalConstructionTime
         public static void ResetBLWindow(bool deselectList = true)
         {
             buildListWindowPosition.height = 1;
-            buildListWindowPosition.width = 400;
+            buildListWindowPosition.width = 500;
             if (deselectList)
                 SelectList("None");
             

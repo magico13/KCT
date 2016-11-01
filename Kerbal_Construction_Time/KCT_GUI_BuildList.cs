@@ -940,7 +940,7 @@ namespace KerbalConstructionTime
                     GUILayout.Label(KCTTech.AsIKCTBuildItem().GetItemName());
                     GUILayout.Label(Math.Round(100 * KCTTech.progress / KCTTech.BP, 2) + " %", GUILayout.Width(width1 / 2));
                     GUILayout.Label(MagiCore.Utilities.GetColonFormattedTime(KCTTech.AsIKCTBuildItem().GetTimeLeft()), GUILayout.Width(width1));
-                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp To", GUILayout.Width(70)))
+                    if (!HighLogic.LoadedSceneIsEditor && GUILayout.Button("Warp", GUILayout.Width(70)))
                     {
                         KCT_GameStates.targetedItem = KCTTech;
                         KCT_GameStates.canWarp = true;
@@ -1172,6 +1172,7 @@ namespace KerbalConstructionTime
             if (KCT_GameStates.ActiveKSC.Recon_Rollout.Find(rr => rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.associatedID == b.id.ToString()) != null && GUILayout.Button("Rollback"))
             {
                 KCT_GameStates.ActiveKSC.Recon_Rollout.Find(rr => rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.associatedID == b.id.ToString()).SwapRolloutType();
+                showBLPlus = false;
             }
             if (!b.isFinished && GUILayout.Button("Warp To"))
             {
