@@ -267,7 +267,7 @@ namespace KerbalConstructionTime
                 showEditorGUI = clicked;
                 KCT_GameStates.showWindows[1] = showEditorGUI;
             }
-            else if ((HighLogic.LoadedScene == GameScenes.SPACECENTER) || (HighLogic.LoadedScene == GameScenes.TRACKSTATION) && !PrimarilyDisabled)
+            else if ((HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION) && !PrimarilyDisabled)
             {
                 buildListWindowPosition.height = 1;
                 showBuildList = clicked;

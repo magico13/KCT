@@ -269,8 +269,7 @@ namespace KerbalConstructionTime
 
         private void ShipModifiedEvent(ShipConstruct vessel)
         {
-            KerbalConstructionTime instance = (KerbalConstructionTime)KerbalConstructionTime.instance;
-            instance.editorRecalcuationRequired = true;
+            KerbalConstructionTime.instance.editorRecalcuationRequired = true;
         }
 
         public ApplicationLauncherButton KCTButtonStock = null;
@@ -553,7 +552,7 @@ namespace KerbalConstructionTime
             double mass = 0;
             foreach (ProtoPartResourceSnapshot resource in resources)
             {
-				double amount = resource.amount;
+                double amount = resource.amount;
                 PartResourceDefinition RD = PartResourceLibrary.Instance.GetDefinition(resource.resourceName);
                 mass += amount * RD.density;
             }
@@ -631,10 +630,10 @@ namespace KerbalConstructionTime
                             {
                                 Type matLibraryType = null;
                                 AssemblyLoader.loadedAssemblies.TypeOperation(t => {
-									if (t.FullName == "RealChute.Libraries.MaterialsLibrary") {
-										matLibraryType = t;
-									}
-								});
+                                    if (t.FullName == "RealChute.Libraries.MaterialsLibrary") {
+                                        matLibraryType = t;
+                                    }
+                                });
 
                                 ConfigNode[] parchutes = realChute.moduleValues.GetNodes("PARACHUTE");
                                 foreach (ConfigNode chute in parchutes)

@@ -1014,7 +1014,7 @@ namespace KerbalConstructionTime
      //           KCTDebug.Log("PP cost: " + cost);
      //           foreach (ProtoPartResourceSnapshot resource in part.resources)
      //           {
-					//cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.amount);
+                    //cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.amount);
      //           }
      //           KCTDebug.Log("After fuel costs: " + cost);
      //           amt = (int)(cost * 1000);
@@ -1701,14 +1701,14 @@ namespace KerbalConstructionTime
         {
             get
             {
-				Type SR = null;
-				AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-				{
-					if (t.FullName == "StageRecovery.StageRecovery")
-					{
-						SR = t;
-					}
-				});
+                Type SR = null;
+                AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+                {
+                    if (t.FullName == "StageRecovery.StageRecovery")
+                    {
+                        SR = t;
+                    }
+                });
 
                 if (SR != null) return true;
 
@@ -1720,14 +1720,14 @@ namespace KerbalConstructionTime
         {
             get
             {
-				Type DR = null;
-				AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-				{
-					if (t.FullName == "DebRefund.DebRefundManager")
-					{
-						DR = t;
-					}
-				});
+                Type DR = null;
+                AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+                {
+                    if (t.FullName == "DebRefund.DebRefundManager")
+                    {
+                        DR = t;
+                    }
+                });
 
                 if (DR != null) return true;
 
@@ -1743,14 +1743,14 @@ namespace KerbalConstructionTime
             {
                 if (_TestFlightInstalled == null)
                 {
-					TestFlightInterface = null;
-					AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-					{
-						if (t.FullName == "TestFlightCore.TestFlightInterface")
-						{
-							TestFlightInterface = t;
-						}
-					});
+                    TestFlightInterface = null;
+                    AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+                    {
+                        if (t.FullName == "TestFlightCore.TestFlightInterface")
+                        {
+                            TestFlightInterface = t;
+                        }
+                    });
 
                     _TestFlightInstalled = (TestFlightInterface != null);
                 }
@@ -1765,14 +1765,14 @@ namespace KerbalConstructionTime
             {
                 if (_RTInstalled == null)
                 {
-					Type RTCore = null;
-					AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-					{
-						if (t.FullName == "RemoteTech.RTCore")
-						{
-							RTCore = t;
-						}
-					});
+                    Type RTCore = null;
+                    AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+                    {
+                        if (t.FullName == "RemoteTech.RTCore")
+                        {
+                            RTCore = t;
+                        }
+                    });
 
                     _RTInstalled = (RTCore != null);
                 }
@@ -1786,14 +1786,14 @@ namespace KerbalConstructionTime
             InputLockManager.RemoveControlLock("RTLockSAS");
             InputLockManager.RemoveControlLock("RTLockRCS");
             InputLockManager.RemoveControlLock("RTLockActions");*/
-			/* Type RTSettings = null;
-				AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-				{
-					if (t.FullName == "RemoteTech.RTSettings")
-					{
-						RTSettings = t;
-					}
-				});
+            /* Type RTSettings = null;
+                AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+                {
+                    if (t.FullName == "RemoteTech.RTSettings")
+                    {
+                        RTSettings = t;
+                    }
+                });
 
             if (RTSettings == null)
                 return;
@@ -1805,13 +1805,13 @@ namespace KerbalConstructionTime
 
             //Not working when an antenna is also attached
             Type RTCore = RTCore = null;
-			AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-			{
-				if (t.FullName == "RemoteTech.RTCore")
-				{
-					RTCore = t;
-				}
-			});
+            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+            {
+                if (t.FullName == "RemoteTech.RTCore")
+                {
+                    RTCore = t;
+                }
+            });
             if (RTCore == null)
                 return;
             System.Object RTInstance = GetMemberInfoValue(RTCore.GetMember("Instance")[0], null);
@@ -1869,13 +1869,13 @@ namespace KerbalConstructionTime
 
             //Not quite working properly
             /*Type RTCore = null;
-			AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-			{
-				if (t.FullName == "RemoteTech.RTCore")
-				{
-					RTCore = t;
-				}
-			});
+            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+            {
+                if (t.FullName == "RemoteTech.RTCore")
+                {
+                    RTCore = t;
+                }
+            });
 
             System.Object RTInstance = GetMemberInfoValue(RTCore.GetMember("Instance")[0], null);
             System.Object RTSatellites = GetMemberInfoValue(RTInstance.GetType().GetMember("Satellites")[0], RTInstance);
@@ -1887,14 +1887,14 @@ namespace KerbalConstructionTime
         public static List<string> GetAllOpenKKLaunchSites(string type = "RocketPad")
         {
             List<string> sites = new List<string>();
-			Type KKLaunchSiteManager = null;
-			AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-			{
-				if (t.FullName == "KerbalKonstructs.LaunchSites.LaunchSiteManager")
-				{
-					KKLaunchSiteManager = t;
-				}
-			});
+            Type KKLaunchSiteManager = null;
+            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+            {
+                if (t.FullName == "KerbalKonstructs.LaunchSites.LaunchSiteManager")
+                {
+                    KKLaunchSiteManager = t;
+                }
+            });
             if (KKLaunchSiteManager == null)
             {
                 if (type == "RocketPad")
@@ -1938,14 +1938,14 @@ namespace KerbalConstructionTime
             {
                 if (_KSCSwitcherInstalled == null)
                 {
-					Type Switcher = null;
-					AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-					{
-						if (t.FullName == "regexKSP.KSCSwitcher")
-						{
-							Switcher = t;
-						}
-					});
+                    Type Switcher = null;
+                    AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+                    {
+                        if (t.FullName == "regexKSP.KSCSwitcher")
+                        {
+                            Switcher = t;
+                        }
+                    });
 
                     _KSCSwitcherInstalled = (Switcher != null);
 
@@ -1958,29 +1958,29 @@ namespace KerbalConstructionTime
         public static string GetActiveRSSKSC()
         {
             if (!KSCSwitcherInstalled) return "Stock";
-			/*Type Switcher = null;
-			AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-			{
-				if (t.FullName == "regexKSP.KSCSwitcher")
-				{
-					Switcher = t;
-				}
-			});
+            /*Type Switcher = null;
+            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+            {
+                if (t.FullName == "regexKSP.KSCSwitcher")
+                {
+                    Switcher = t;
+                }
+            });
 
             UnityEngine.Object KSCSwitcherInstance = GameObject.FindObjectOfType(Switcher);
 
             return (string)GetMemberInfoValue(Switcher.GetMember("activeSite")[0], KSCSwitcherInstance);*/
 
-			//get the LastKSC.KSCLoader.instance object
-			//check the Sites object (KSCSiteManager) for the lastSite, if "" then get defaultSite
-			Type Loader = null;
-			AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-			{
-				if (t.FullName == "regexKSP.KSCLoader")
-				{
-					Loader = t;
-				}
-			});
+            //get the LastKSC.KSCLoader.instance object
+            //check the Sites object (KSCSiteManager) for the lastSite, if "" then get defaultSite
+            Type Loader = null;
+            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+            {
+                if (t.FullName == "regexKSP.KSCLoader")
+                {
+                    Loader = t;
+                }
+            });
             object LoaderInstance = GetMemberInfoValue(Loader.GetMember("instance")[0], null);
             if (LoaderInstance == null)
                 return "Stock";
