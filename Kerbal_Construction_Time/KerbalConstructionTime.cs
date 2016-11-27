@@ -138,12 +138,7 @@ namespace KerbalConstructionTime
 
         private void OnDraw()
         {
-            KCT_GUI.SetGUIPositions(OnWindow);
-        }
-
-        private void OnWindow(int windowID)
-        {
-            KCT_GUI.DrawGUIs(windowID);
+            KCT_GUI.SetGUIPositions();
         }
 
         public void Awake()

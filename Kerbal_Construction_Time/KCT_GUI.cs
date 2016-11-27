@@ -49,7 +49,7 @@ namespace KerbalConstructionTime
 
 
         private static List<GameScenes> validScenes = new List<GameScenes> { GameScenes.FLIGHT, GameScenes.EDITOR, GameScenes.SPACECENTER, GameScenes.TRACKSTATION };
-        public static void SetGUIPositions(GUI.WindowFunction OnWindow)
+        public static void SetGUIPositions()
         {
             GUISkin oldSkin = GUI.skin;
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER && windowSkin == null)
@@ -360,44 +360,6 @@ namespace KerbalConstructionTime
             //TechSelected = false;
             //listWindow = -1;
             ResetBLWindow();
-        }
-
-        public static void DrawGUIs(int windowID)
-        {
-            if (showMainGUI)
-                DrawMainGUI(windowID);
-            if (showEditorGUI)
-                DrawEditorGUI(windowID);
-            if (showSOIAlert)
-                DrawSOIAlertWindow(windowID + 1);
-            if (showLaunchAlert)
-                DrawLaunchAlert(windowID);
-            if (showSimulationCompleteEditor)
-                DrawSimulationCompleteEditor(windowID);
-            if (showSimulationCompleteFlight)
-                DrawSimulationCompleteFlight(windowID);
-            if (showSimulationWindow)
-                DrawSimulationWindow(windowID);
-            if (showTimeRemaining && KCT_GameStates.simulationTimeLimit > 0)
-                DrawSimulationTimeWindow(windowID);
-            if (showBuildList)
-                DrawBuildListWindow(windowID);
-            if (showClearLaunch)
-                DrawClearLaunch(windowID);
-            if (showShipRoster)
-                DrawShipRoster(windowID);
-            if (showCrewSelect)
-                DrawCrewSelect(windowID);
-            if (showUpgradeWindow)
-                DrawUpgradeWindow(windowID);
-            if (showRename)
-                DrawRenameWindow(windowID);
-            if (showFirstRun)
-                DrawFirstRun(windowID);
-            if (showSimLengthChooser)
-                DrawSimLengthChooser(windowID);
-            if (showPresetSaver)
-                DrawPresetSaveWindow(windowID);
         }
 
         public static void DrawMainGUI(int windowID) //Deprecated to all hell now I think
