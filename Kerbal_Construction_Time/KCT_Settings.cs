@@ -18,7 +18,6 @@ namespace KerbalConstructionTime
         //[Persistent] public bool CheckForUpdates, VersionSpecific;
         [Persistent] public bool AutoKACAlarms;
         /*[Persistent] public float RecoveryModifierDefault;
-        [Persistent] public bool NoCostSimulationsDefault;
         [Persistent] public bool InstantTechUnlockDefault;
         [Persistent] public bool InstantKSCUpgradeDefault;
         [Persistent] public bool DisableBuildTimeDefault;
@@ -28,7 +27,6 @@ namespace KerbalConstructionTime
         [Persistent] public bool OverrideLaunchButton;
         [Persistent] public bool PreferBlizzyToolbar;
         //[Persistent] public bool AllowParachuteRecovery;
-        [Persistent] public bool NoSimGUI;
         [Persistent] public bool CheckForDebugUpdates = GameSettings.SEND_PROGRESS_DATA;
         //[Persistent] public bool DisableSpecialSurprise;
 
@@ -40,7 +38,6 @@ namespace KerbalConstructionTime
         //Game specific settings
         //public bool enabledForSave = true;
         /*public float RecoveryModifier;
-        public bool NoCostSimulations;
         public bool InstantTechUnlock;
         public bool InstantKSCUpgrades;
         public bool DisableBuildTime;
@@ -70,11 +67,9 @@ namespace KerbalConstructionTime
             AutoKACAlarms = true;
             PreferBlizzyToolbar = false;
           //  AllowParachuteRecovery = true;
-            NoSimGUI = false;
            // DisableSpecialSurprise = false;
 
           /*  RecoveryModifierDefault = 0.75f;
-            NoCostSimulationsDefault = false;
             InstantTechUnlockDefault = false;
             InstantKSCUpgradeDefault = false;
             DisableBuildTimeDefault = false;
@@ -98,7 +93,6 @@ namespace KerbalConstructionTime
                 if (KCT_GameStates.firstStart)
                 {
                     RecoveryModifier = RecoveryModifierDefault;
-                    NoCostSimulations = NoCostSimulationsDefault;
                     InstantTechUnlock = InstantTechUnlockDefault;
                     InstantKSCUpgrades = InstantKSCUpgradeDefault;
                     DisableBuildTime = DisableBuildTimeDefault;

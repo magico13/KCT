@@ -1205,78 +1205,6 @@ namespace KerbalConstructionTime
         //    }
         //}
 
-
-        public static void enableSimulationLocks()
-        {
-            InputLockManager.SetControlLock(ControlTypes.QUICKSAVE, "KCTLockSimQS");
-            InputLockManager.SetControlLock(ControlTypes.QUICKLOAD, "KCTLockSimQL");
-        }
-        public static void disableSimulationLocks()
-        {
-            InputLockManager.RemoveControlLock("KCTLockSimQS");
-            InputLockManager.RemoveControlLock("KCTLockSimQL");
-        }
-
-        public static void MakeSimulationSave()
-        {
-            string backupFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs";
-            string saveFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/persistent.sfs";
-            KCTDebug.Log("Making simulation backup file.");
-            //System.IO.File.Copy(saveFile, backupFile, true);
-            GamePersistence.SaveGame("KCT_simulation_backup", HighLogic.SaveFolder, SaveMode.OVERWRITE);
-        }
-
-        public static void LoadSimulationSave(bool newMethod)
-        {
-            string backupFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs";
-            string saveFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/persistent.sfs";
-            KCT_Utilities.disableSimulationLocks();
-            KCT_GameStates.flightSimulated = false;
-            KerbalConstructionTime.moved = false;
-            KCT_GameStates.simulationEndTime = 0;
-            KCT_GameStates.RemoteTechEnabled = true;
-            KCTDebug.Log("Swapping persistent.sfs with simulation backup file.");
-            if (newMethod)
-            {
-                ConfigNode lastShip = ShipConstruction.ShipConfig;
-                EditorFacility lastEditor = HighLogic.CurrentGame.editorFacility;
-
-                Game newGame = GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
-                GamePersistence.SaveGame(newGame, "persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
-                GameScenes targetScene = HighLogic.LoadedScene;
-                newGame.startScene = targetScene;
-
-                // This has to be before... newGame.Start()
-                if (targetScene == GameScenes.EDITOR)
-                {
-                    newGame.editorFacility = lastEditor;
-                }
-
-
-                newGame.Start();
-
-                // ... And this has to be after. <3 KSP
-                if (targetScene == GameScenes.EDITOR)
-                {
-                    EditorDriver.StartupBehaviour = EditorDriver.StartupBehaviours.LOAD_FROM_CACHE;
-                    ShipConstruction.ShipConfig = lastShip;
-                }
-            }
-            else
-            {
-                System.IO.File.Copy(backupFile, saveFile, true);
-            }
-            System.IO.File.Delete(backupFile);
-            
-            //GamePersistence.LoadGame("KCT_simulation_backup", HighLogic.SaveFolder, true, false);
-            //System.IO.File.Delete(backupFile);
-            KCT_GameStates.LoadingSimulationSave = false;
-            KCT_GameStates.simulationInitialized = false;
-
-            KCT_GameStates.TestFlightPartFailures = true;
-        }
-
-
         public static Dictionary<string, float> TimeMultipliers = new Dictionary<string, float>()
         {
             {"0", 13},
@@ -1294,95 +1222,6 @@ namespace KerbalConstructionTime
             {"43800", 11},
             {"87600", 12},
         };
-
-        public static float CostOfSimulation(CelestialBody body, string simulationLength, ShipConstruct ship, int SimCount, bool landed)
-        {
-            if (simulationLength == "" || simulationLength == "-1")
-                simulationLength = "31536000000"; //1000 Earth years
-            CelestialBody Kerbin = Planetarium.fetch.Home;
-
-            double length = MagiCore.Utilities.ParseTimeString(simulationLength, false);
-            length = Math.Min(length, 31536000000.0);
-            if (length == 0)
-                length = 31536000000.0;
-            if (length < 0) //An error while parsing the value
-                return -1;
-            Dictionary<string, string> vars = new Dictionary<string, string>();
-            vars.Add("L", length.ToString()); //Sim length in seconds
-            vars.Add("M", body.Mass.ToString()); //Body mass
-            vars.Add("KM", Kerbin.Mass.ToString()); //Kerbin mass
-            vars.Add("A", body.atmosphere ? "1" : "0"); //Presence of atmosphere
-            vars.Add("S", (body != Planetarium.fetch.Sun && body.referenceBody != Planetarium.fetch.Sun) ? "1" : "0"); //Is a moon (satellite)
-
-            float out1, out2;
-            vars.Add("m", ship.GetTotalMass().ToString()); //Vessel loaded mass
-            vars.Add("C", ship.GetShipCosts(out out1, out out2).ToString()); //Vessel loaded cost
-
-            vars.Add("s", SimCount.ToString()); //Number of times simulated this editor session
-
-
-            CelestialBody Parent = body;
-            if (Parent != Planetarium.fetch.Sun)
-            {
-                while (Parent.referenceBody != Planetarium.fetch.Sun)
-                {
-                    Parent = Parent.referenceBody;
-                }
-            }
-            double orbitRatio = 1;
-            if (Parent.orbit != null)
-            {
-                if (Parent.orbit.semiMajorAxis >= Kerbin.orbit.semiMajorAxis)
-                    orbitRatio = Parent.orbit.semiMajorAxis / Kerbin.orbit.semiMajorAxis;
-                else
-                    orbitRatio = Kerbin.orbit.semiMajorAxis / Parent.orbit.semiMajorAxis;
-            }
-            vars.Add("SMA", orbitRatio.ToString());
-            vars.Add("PM", Parent.Mass.ToString());
-
-            if ((body == Kerbin) && landed)
-            {
-                return (float)(KCT_MathParsing.GetStandardFormulaValue("KerbinSimCost", vars));
-            }
-            else
-            {
-                return (float)(KCT_MathParsing.GetStandardFormulaValue("SimCost", vars));
-            }
-
-
-
-            /*float timeMultiplier = 13;
-            if (TimeMultipliers.ContainsKey(simulationLength))
-                 timeMultiplier = TimeMultipliers[simulationLength];
-
-            if (orbitBody == Planetarium.fetch.Sun)
-                return 10000 * timeMultiplier;
-
-            float atmosphereMult = orbitBody.atmosphere ? 1.1f : 1f;
-            bool isMoon = orbitBody.referenceBody != Planetarium.fetch.Sun;
-            CelestialBody Parent = orbitBody;
-            while (Parent.referenceBody != Planetarium.fetch.Sun)
-            {
-                Parent = Parent.referenceBody;
-            }
-            
-            CelestialBody Kerbin = GetBodyByName("Kerbin");
-            if (Kerbin == null)
-                Kerbin = GetBodyByName("Earth");
-
-            double orbitRatio = 1;
-            if (Parent.orbit.semiMajorAxis >= Kerbin.orbit.semiMajorAxis)
-                orbitRatio = Parent.orbit.semiMajorAxis / Kerbin.orbit.semiMajorAxis;
-            else
-                orbitRatio = Kerbin.orbit.semiMajorAxis / Parent.orbit.semiMajorAxis;
-
-            double cost = Math.Pow(orbitRatio,2) * 500 * (Parent.atmosphere ? 1.1 : 1);
-            if (isMoon)
-                cost *= atmosphereMult * 1.1;
-
-            cost *= timeMultiplier;
-            return (float)cost;*/
-        }
 
         public static double SpendFunds(double toSpend, TransactionReasons reason)
         {
@@ -1619,7 +1458,6 @@ namespace KerbalConstructionTime
 
         public static void DisableModFunctionality()
         {
-            disableSimulationLocks();
             InputLockManager.RemoveControlLock("KCTLaunchLock");
             KCT_GUI.hideAll();
         }

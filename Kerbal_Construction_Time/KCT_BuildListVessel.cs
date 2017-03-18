@@ -33,9 +33,9 @@ namespace KerbalConstructionTime
                     return double.PositiveInfinity;
             }
         }
-        public List<Part> ExtractedParts { 
-            get 
-            { 
+        public List<Part> ExtractedParts {
+            get
+            {
                 List<Part> temp = new List<Part>();
                 foreach (PseudoPart PP in this.GetPseudoParts())
                 {
@@ -44,7 +44,7 @@ namespace KerbalConstructionTime
                     temp.Add(p);
                 }
                 return temp;
-            } 
+            }
         }
         public List<ConfigNode> ExtractedPartNodes
         {
@@ -54,9 +54,9 @@ namespace KerbalConstructionTime
             }
         }
         public bool isFinished { get { return progress >= buildPoints; } }
-        public KCT_KSC KSC { get { 
+        public KCT_KSC KSC { get {
             return KCT_GameStates.KSCs.FirstOrDefault(k => ((k.VABList.FirstOrDefault(s => s.id == this.id) != null || k.VABWarehouse.FirstOrDefault(s => s.id == this.id) != null)
-            || (k.SPHList.FirstOrDefault(s => s.id == this.id) != null || k.SPHWarehouse.FirstOrDefault(s => s.id == this.id) != null))); 
+            || (k.SPHList.FirstOrDefault(s => s.id == this.id) != null || k.SPHWarehouse.FirstOrDefault(s => s.id == this.id) != null)));
         } }
 
         private bool? _allPartsValid;
@@ -123,7 +123,7 @@ namespace KerbalConstructionTime
                 KCTDebug.Log("Somehow tried to recover something that was null!");
                 return;
             }*/
-            
+
 
             id = Guid.NewGuid();
             shipName = vessel.vesselName;
@@ -248,7 +248,7 @@ namespace KerbalConstructionTime
             foreach (ConfigNode node in module.GetNodes("MODULE"))
                 SanitizeNode(partName, node, templates);
 
-            
+
             /*
             if (name.Contains("ModuleEngines"))
             {
@@ -279,14 +279,14 @@ namespace KerbalConstructionTime
                 module.RemoveNodes("ScienceData");
             }
             */
-            
+
         }
 
         private void CreateInitialTemplates()
         {
             ConfigNode templates = new ConfigNode("KCT_ModuleTemplates");
             ConfigNode module;
-            
+
             //ModuleEngines
             module = new ConfigNode("MODULE");
             module.AddValue("name", "ModuleEngines");
@@ -432,8 +432,7 @@ namespace KerbalConstructionTime
             else
                 HighLogic.CurrentGame.editorFacility = EditorFacility.SPH;
            // HighLogic.CurrentGame.editorFacility = GetEditorFacility();
-            
-            KCT_GameStates.flightSimulated = false;
+
             string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
             UpdateRFTanks();
             shipNode.Save(tempFile);
@@ -643,7 +642,7 @@ namespace KerbalConstructionTime
                     name = CN.GetValue("name");
                     pID = CN.GetValue("uid");
                 }
-                
+
                 //for (int i = 0; i < split.Length - 1; i++)
                 //    pName += split[i];
                 PseudoPart returnPart = new PseudoPart(name, pID);
@@ -727,7 +726,7 @@ namespace KerbalConstructionTime
     {
         public string name;
         public uint uid;
-        
+
         public PseudoPart(string PartName, uint ID)
         {
             name = PartName;

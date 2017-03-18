@@ -138,12 +138,7 @@ namespace KerbalConstructionTime
 
         private void OnDraw()
         {
-            KCT_GUI.SetGUIPositions(OnWindow);
-        }
-
-        private void OnWindow(int windowID)
-        {
-            KCT_GUI.DrawGUIs(windowID);
+            KCT_GUI.SetGUIPositions();
         }
 
         public void Awake()
@@ -262,20 +257,10 @@ namespace KerbalConstructionTime
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
 
             KCT_GUI.guiDataSaver.Load();
-            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
-                KCT_GameStates.reset();
 
             if (HighLogic.LoadedSceneIsEditor)
             {
-                if (KCT_GUI.showSimulationCompleteEditor)
-                {
-                    KCT_GUI.hideAll();
-                    KCT_GUI.showSimulationCompleteEditor = true;
-                }
-                else
-                {
-                    KCT_GUI.hideAll();
-                }
+                KCT_GUI.hideAll();
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
                     KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[1];
@@ -305,7 +290,7 @@ namespace KerbalConstructionTime
                 KCT_GUI.showFirstRun = shouldStart;
             }
 
-            if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
+            if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
             {
                 if (FlightGlobals.ActiveVessel.GetCrewCount() == 0 && KCT_GameStates.launchedCrew.Count > 0)
                 {
@@ -366,7 +351,7 @@ namespace KerbalConstructionTime
                     KCT_GameStates.launchedCrew.Clear();
                 }
             }
-            if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
+            if (HighLogic.LoadedSceneIsFlight)
             {
                 KCT_GUI.hideAll();
                 if (KCT_GameStates.launchedVessel != null && FlightGlobals.ActiveVessel != null && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
@@ -413,10 +398,6 @@ namespace KerbalConstructionTime
             {
                 KCT_GameStates.erroredDuringOnLoad.FireAlert();
             }
-            if (KCT_GameStates.LoadingSimulationSave)
-            {
-                KCT_Utilities.LoadSimulationSave(true);
-            }
 
             if (KCT_GameStates.UpdateLaunchpadDestructionState)
             {
@@ -450,7 +431,7 @@ namespace KerbalConstructionTime
                     }
                 }
                 //Warp code
-                if (!KCT_GUI.PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated))
+                if (!KCT_GUI.PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION))
                 {
                     IKCTBuildItem ikctItem = KCT_Utilities.NextThingToFinish();
                     if (KCT_GameStates.targetedItem == null && ikctItem != null) KCT_GameStates.targetedItem = ikctItem;
@@ -503,45 +484,6 @@ namespace KerbalConstructionTime
                     }
                 }
 
-                if (HighLogic.LoadedScene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Simulated flights
-                {
-                    if (FlightGlobals.ActiveVessel.loaded && !FlightGlobals.ActiveVessel.packed && !moved)
-                    {
-                        //moved = true;
-                        int secondsForMove = KCT_GameStates.DelayMoveSeconds;
-                        if (KCT_GameStates.simulateInOrbit && loadDeferTime == DateTime.MaxValue)
-                        {
-                            loadDeferTime = DateTime.Now;
-                        }
-                        else if (KCT_GameStates.simulateInOrbit && (DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0))
-                        {
-                            KCTDebug.Log("Moving vessel to orbit. " + KCT_GameStates.simulationBody.bodyName + ":" + KCT_GameStates.simOrbitAltitude + ":" + KCT_GameStates.simInclination);
-                            KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simOrbitAltitude, KCT_GameStates.simInclination);
-                            moved = true;
-                            loadDeferTime = DateTime.MaxValue;
-                        }
-                        else if (!KCT_GameStates.simulateInOrbit)
-                            moved = true;
-
-                        if (KCT_GameStates.simulateInOrbit && loadDeferTime != DateTime.MaxValue && lastSeconds != (loadDeferTime.AddSeconds(secondsForMove) - DateTime.Now).Seconds)
-                        {
-                            double remaining = (loadDeferTime.AddSeconds(secondsForMove) - DateTime.Now).TotalSeconds;
-                            ScreenMessages.PostScreenMessage("[KCT] Moving vessel in " + Math.Round(remaining) + " seconds", (float)(remaining - Math.Floor(remaining)), ScreenMessageStyle.UPPER_CENTER);
-                            lastSeconds = (int)remaining;
-                        }
-                    }
-                    if (KCT_GameStates.simulationEndTime > 0 && KCT_GameStates.UT >= KCT_GameStates.simulationEndTime)
-                    {
-                        TimeWarp.SetRate(0, true);
-                        FlightDriver.SetPause(true);
-                        KCT_GUI.showSimulationCompleteFlight = true;
-                    }
-                    if (FlightGlobals.ActiveVessel.situation != Vessel.Situations.PRELAUNCH && KCT_GameStates.simulationEndTime == 0 && KCT_GameStates.simulationTimeLimit > 0)
-                    {
-                        KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + KCT_GameStates.simulationTimeLimit; //Just in case the event doesn't fire
-                    }
-                }
-
                 if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
                 {
                     KCT_Utilities.SetActiveKSCToRSS();
@@ -566,21 +508,11 @@ namespace KerbalConstructionTime
             }
         }
         
-        private static DateTime loadDeferTime = DateTime.MaxValue;
-        private static int lastSeconds = 0;
-
         public static void DelayedStart()
         {
             KCTDebug.Log("DelayedStart start");
             if (KCT_PresetManager.Instance?.ActivePreset == null || !KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;
-
-
-            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.FundsGivenForVessel != 0)
-            {
-                KCT_Utilities.SpendFunds(KCT_GameStates.FundsGivenForVessel, TransactionReasons.VesselRollout);
-                KCT_GameStates.FundsGivenForVessel = 0;
-            }
 
             if (KCT_GUI.PrimarilyDisabled) return;
 
@@ -795,7 +727,6 @@ namespace KerbalConstructionTime
                 EditorLogic.fetch.launchVessel();
             else
             {
-                //just build it, don't offer simulations
                 KCT_Utilities.AddVesselToBuildList();
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
             }
