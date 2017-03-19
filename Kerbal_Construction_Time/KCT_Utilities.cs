@@ -2211,12 +2211,25 @@ namespace KerbalConstructionTime
             int lvl = 0;
             if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
             {
-                lvl = (int)(2 * ScenarioUpgradeableFacilities.GetFacilityLevel(facility));
+                lvl = (int)(ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility) * ScenarioUpgradeableFacilities.GetFacilityLevel(facility));
             }
             else
             {
-                //lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
-                lvl = 2;
+                lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
+            }
+            return lvl;
+        }
+
+        public static int BuildingUpgradeLevel(string facilityID)
+        {
+            int lvl = 0;
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+            {
+                lvl = (int)(ScenarioUpgradeableFacilities.GetFacilityLevelCount(facilityID) * ScenarioUpgradeableFacilities.GetFacilityLevel(facilityID));
+            }
+            else
+            {
+                lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facilityID);
             }
             return lvl;
         }

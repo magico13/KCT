@@ -729,6 +729,8 @@ namespace KerbalConstructionTime
             upgradeLevel = newLevel;
             currentLevel = oldLevel;
             commonName = name;
+
+            KCTDebug.Log(string.Format("Upgrade of {0} requested from {1} to {2}", name, oldLevel, newLevel));
         }
 
         public KCT_UpgradingBuilding()
@@ -774,7 +776,10 @@ namespace KerbalConstructionTime
                 KCT_Events.allowedToUpgrade = true;
                 facility.SetLevel(upgradeLevel);
             }
-            UpgradeProcessed = ((int)(ScenarioUpgradeableFacilities.GetFacilityLevel(id)*2) == upgradeLevel);
+            //UpgradeProcessed = ((int)(ScenarioUpgradeableFacilities.GetFacilityLevel(id)*2) == upgradeLevel);
+            UpgradeProcessed = (KCT_Utilities.BuildingUpgradeLevel(id) == upgradeLevel);
+
+            KCTDebug.Log("Upgrade processed: " + UpgradeProcessed);
 
             //KCT_Events.allowedToUpgrade = false;
         }
@@ -788,6 +793,7 @@ namespace KerbalConstructionTime
         {
            // BP = Math.Sqrt(cost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
             BP = KCT_MathParsing.GetStandardFormulaValue("KSCUpgrade", new Dictionary<string, string>() { { "C", cost.ToString() }, { "O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString() } });
+            if (BP <= 0) { BP = 1; }
         }
 
         public bool AlreadyInProgress()

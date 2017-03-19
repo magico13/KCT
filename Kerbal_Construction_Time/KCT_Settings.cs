@@ -24,7 +24,7 @@ namespace KerbalConstructionTime
         [Persistent] public bool EnableAllBodiesDefault;
         [Persistent] public bool ReconditioningDefault;*/
         [Persistent] public bool Debug;
-        [Persistent] public bool OverrideLaunchButton;
+        [Persistent] public bool OverrideLaunchButton = false;
         [Persistent] public bool PreferBlizzyToolbar;
         //[Persistent] public bool AllowParachuteRecovery;
         [Persistent] public bool CheckForDebugUpdates = GameSettings.SEND_PROGRESS_DATA;

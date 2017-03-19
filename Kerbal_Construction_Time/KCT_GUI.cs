@@ -810,8 +810,6 @@ namespace KerbalConstructionTime
                 GUI.DragWindow();
         }
 
-        private static string orbitAltString = "", orbitIncString = "", UTString = "", delayString = "0";
-
         public static void DrawLaunchAlert(int windowID)
         {
             GUILayout.BeginVertical();
@@ -1476,7 +1474,7 @@ namespace KerbalConstructionTime
             forceStopWarp = KCT_GameStates.settings.ForceStopWarp;
             disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
             debug = KCT_GameStates.settings.Debug;
-            overrideLaunchBtn = KCT_GameStates.settings.OverrideLaunchButton;
+            overrideLaunchBtn = false;//KCT_GameStates.settings.OverrideLaunchButton;
             autoAlarms = KCT_GameStates.settings.AutoKACAlarms;
             useBlizzyToolbar = KCT_GameStates.settings.PreferBlizzyToolbar;
             debugUpdateChecking = KCT_GameStates.settings.CheckForDebugUpdates;

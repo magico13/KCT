@@ -401,6 +401,7 @@ namespace KerbalConstructionTime
 
             if (KCT_GameStates.UpdateLaunchpadDestructionState)
             {
+                KCTDebug.Log("Updating launchpad destruction state.");
                 KCT_GameStates.UpdateLaunchpadDestructionState = false;
                 KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
                 if (KCT_GameStates.ActiveKSC.ActiveLPInstance.upgradeRepair)
