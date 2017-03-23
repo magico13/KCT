@@ -183,9 +183,16 @@ namespace KerbalConstructionTime
             Quaternion OriginalRotation = VesselToSave.vesselTransform.rotation;
             Vector3 OriginalPosition = VesselToSave.vesselTransform.position;
 
-            VesselToSave.SetRotation(new Quaternion(0, 0, 0, 1));
+            if (type == ListType.SPH)
+            {
+                VesselToSave.SetRotation(new Quaternion(0, 0, 0, 1)); //TODO: Figure out the orientation this should be
+            }
+            else
+            {
+                VesselToSave.SetRotation(new Quaternion(0, 0, 0, 1));
+            }
             Vector3 ShipSize = ShipConstruction.CalculateCraftSize(ConstructToSave);
-            VesselToSave.SetPosition(new Vector3(0, ShipSize.y + 2, 0));
+            VesselToSave.SetPosition(new Vector3(0, Math.Min(ShipSize.y + 2, 30), 0)); //Try to limit the max height we put the ship at. 60 is good for the VA but I don't know about the SPH. Lets be conservative with 30
 
             ConfigNode CN = new ConfigNode("ShipConstruct");
             CN = ConstructToSave.SaveShip();
