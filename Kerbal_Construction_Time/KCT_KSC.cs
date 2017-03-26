@@ -32,9 +32,6 @@ namespace KerbalConstructionTime
             RDUpgrades[1] = KCT_GameStates.TechUpgradesTotal;
             //TechList = KCT_GameStates.ActiveKSC.TechList;
             LaunchPads.Add(new KCT_LaunchPad("LaunchPad", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad)));
-           /* LaunchPads.Add(new KCT_LaunchPad("LaunchPad", 0, false));
-            LaunchPads.Add(new KCT_LaunchPad("LaunchPad 2", 1, false));
-            LaunchPads.Add(new KCT_LaunchPad("LaunchPad 3", 2, false));*/
         }
 
         public KCT_LaunchPad ActiveLPInstance

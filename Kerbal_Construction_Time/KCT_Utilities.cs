@@ -2217,6 +2217,7 @@ namespace KerbalConstructionTime
             {
                 lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
             }
+            //KCTDebug.Log($"{facility} is lvl {lvl}/{ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility)}");
             return lvl;
         }
 

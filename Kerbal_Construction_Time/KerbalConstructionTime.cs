@@ -103,7 +103,6 @@ namespace KerbalConstructionTime
                 }
             }
 
-            KerbalConstructionTime.DelayedStart();
             KCT_GUI.CheckToolbar();
             KCT_GameStates.erroredDuringOnLoad.OnLoadFinish();
         }
@@ -148,6 +147,12 @@ namespace KerbalConstructionTime
             KCT_GameStates.PersistenceLoaded = false;
 
             instance = this;
+
+            //add the events
+            if (!KCT_Events.instance.eventAdded)
+            {
+                KCT_Events.instance.addEvents();
+            }
 
             KCT_GameStates.settings.Load(); //Load the settings file, if it exists
 
@@ -239,11 +244,6 @@ namespace KerbalConstructionTime
             }
 
             KACWrapper.InitKACWrapper();
-
-            if (!KCT_Events.instance.eventAdded)
-            {
-                KCT_Events.instance.addEvents();
-            }
 
             if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
             {
@@ -369,6 +369,7 @@ namespace KerbalConstructionTime
                         KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);
                 }
             }
+            delayedStartRan = false;
             KCTDebug.Log("Start finished");
         }
 
@@ -382,53 +383,62 @@ namespace KerbalConstructionTime
         }
 
         public static bool moved = false;
-        private static int failedLvlChecks = 0;
+        private static int lvlCheckTimer = 0;
+        private static bool delayedStartRan = false;
         public void FixedUpdate()
         {
-            if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
-                if (KCT_GUI.clicked)
-                    KCT_Events.instance.KCTButtonStock.SetTrue(false);
-                else
-                    KCT_Events.instance.KCTButtonStock.SetFalse(false);
-
-            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
-                return;
-
-            if (!KCT_GameStates.erroredDuringOnLoad.AlertFired && KCT_GameStates.erroredDuringOnLoad.HasErrored())
-            {
-                KCT_GameStates.erroredDuringOnLoad.FireAlert();
-            }
-
-            if (KCT_GameStates.UpdateLaunchpadDestructionState)
-            {
-                KCTDebug.Log("Updating launchpad destruction state.");
-                KCT_GameStates.UpdateLaunchpadDestructionState = false;
-                KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
-                if (KCT_GameStates.ActiveKSC.ActiveLPInstance.upgradeRepair)
-                {
-                    //repair everything, then update the node
-                    KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
-                    KCT_GameStates.ActiveKSC.ActiveLPInstance.CompletelyRepairNode();
-                    KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
-                }
-                
-            }
-
-            
-            
-
             double lastUT = KCT_GameStates.UT > 0 ? KCT_GameStates.UT : Planetarium.GetUniversalTime();
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
-                if (KCT_GameStates.ActiveKSC != null && KCT_GameStates.ActiveKSC.ActiveLPInstance != null && HighLogic.LoadedScene == GameScenes.SPACECENTER && KCT_Utilities.CurrentGameIsCareer() && KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad) != KCT_GameStates.ActiveKSC.ActiveLPInstance.level)
+                if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
+                    if (KCT_GUI.clicked)
+                        KCT_Events.instance.KCTButtonStock.SetTrue(false);
+                    else
+                        KCT_Events.instance.KCTButtonStock.SetFalse(false);
+
+                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
+                    return;
+
+                if (!KCT_GameStates.erroredDuringOnLoad.AlertFired && KCT_GameStates.erroredDuringOnLoad.HasErrored())
                 {
-                    failedLvlChecks++;
-                    if (failedLvlChecks > 10)
+                    KCT_GameStates.erroredDuringOnLoad.FireAlert();
+                }
+
+                if (KCT_GameStates.UpdateLaunchpadDestructionState)
+                {
+                    KCTDebug.Log("Updating launchpad destruction state.");
+                    KCT_GameStates.UpdateLaunchpadDestructionState = false;
+                    KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
+                    if (KCT_GameStates.ActiveKSC.ActiveLPInstance.upgradeRepair)
                     {
-                        KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID, false);
-                        KCT_GameStates.UpdateLaunchpadDestructionState = true;
-                        failedLvlChecks = 0;
+                        //repair everything, then update the node
+                        KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
+                        KCT_GameStates.ActiveKSC.ActiveLPInstance.CompletelyRepairNode();
+                        KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
+                    }
+
+                }
+
+                if (!delayedStartRan && KCT_GameStates.PersistenceLoaded)
+                {
+                    if (ScenarioUpgradeableFacilities.GetFacilityLevelCount(SpaceCenterFacility.VehicleAssemblyBuilding) >= 0)
+                    {
+                        delayedStartRan = true;
+                        DelayedStart();
+                    }
+                }
+
+                if (KCT_GameStates.ActiveKSC?.ActiveLPInstance != null && HighLogic.LoadedScene == GameScenes.SPACECENTER && KCT_Utilities.CurrentGameIsCareer())
+                {
+                    if (lvlCheckTimer++ > 30)
+                    {
+                        lvlCheckTimer = 0;
+                        if (KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad) != KCT_GameStates.ActiveKSC.ActiveLPInstance.level)
+                        {
+                            KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID, false);
+                            KCT_GameStates.UpdateLaunchpadDestructionState = true;
+                        }
                     }
                 }
                 //Warp code
@@ -601,7 +611,7 @@ namespace KerbalConstructionTime
                         
                         //wtf, why can't we override stock behavior anymore??...
                         
-                        EditorLogic.fetch.launchBtn.onClick.AddListener(new UnityEngine.Events.UnityAction(((KerbalConstructionTime)instance).ShowLaunchAlert));
+                        EditorLogic.fetch.launchBtn.onClick.AddListener(new UnityEngine.Events.UnityAction(instance.ShowLaunchAlert));
                     }
                     else
                         InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
