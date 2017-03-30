@@ -203,6 +203,20 @@ namespace KerbalConstructionTime
                 InvokeRepeating("EditorRecalculation", 1, 1);
 
                 KCT_GUI.buildRateForDisplay = null;
+                if (!KCT_GUI.PrimarilyDisabled)
+                {
+                    if (KCT_GameStates.settings.OverrideLaunchButton)
+                    {
+                        KCTDebug.Log("Attempting to take control of launch button");
+
+                        EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
+
+                        EditorLogic.fetch.launchBtn.onClick.AddListener(ShowLaunchAlert);
+                    }
+                    else
+                        InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+                    KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
+                }
             }
 
             if (KCT_GUI.PrimarilyDisabled)
@@ -348,12 +362,12 @@ namespace KerbalConstructionTime
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 editorRecalcuationRequired = false;
 
-                if (KCT_GameStates.settings.OverrideLaunchButton)
-                {
-                    KCTDebug.Log("Attempting to take control of launch button");
-                    EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
-                    EditorLogic.fetch.launchBtn.onClick.AddListener(ShowLaunchAlert);
-                }
+                //if (KCT_GameStates.settings.OverrideLaunchButton)
+                //{
+                //    KCTDebug.Log("Attempting to take control of launch button");
+                //    EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
+                //    EditorLogic.fetch.launchBtn.onClick.AddListener(ShowLaunchAlert);
+                //}
             }
         }
 
@@ -571,20 +585,6 @@ namespace KerbalConstructionTime
                 {
                     KCTDebug.Log("Editing " + KCT_GameStates.editedVessel.shipName);
                     EditorLogic.fetch.shipNameField.text = KCT_GameStates.editedVessel.shipName;
-                }
-                if (!KCT_GUI.PrimarilyDisabled)
-                {
-                    if (KCT_GameStates.settings.OverrideLaunchButton)
-                    {
-                        KCTDebug.Log("Attempting to take control of launch button");
-
-                        EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
-                        
-                        EditorLogic.fetch.launchBtn.onClick.AddListener(ShowLaunchAlert);
-                    }
-                    else
-                        InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
-                    KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 }
             }
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
