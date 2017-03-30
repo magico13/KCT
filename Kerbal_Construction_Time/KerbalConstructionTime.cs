@@ -105,6 +105,7 @@ namespace KerbalConstructionTime
 
             KCT_GUI.CheckToolbar();
             KCT_GameStates.erroredDuringOnLoad.OnLoadFinish();
+            KerbalConstructionTime.DelayedStart();
         }
     }
 
@@ -203,39 +204,6 @@ namespace KerbalConstructionTime
 
                 KCT_GUI.buildRateForDisplay = null;
             }
-            
-            //Code for saving to the persistence.sfs
-            //ProtoScenarioModule scenario = HighLogic.CurrentGame.scenarios.Find(s => s.moduleName == typeof(KerbalConstructionTimeData).Name);
-            //if (scenario == null)
-            //{
-            //    try
-            //    {
-            //        Debug.Log("[KCT] Adding InternalModule scenario to game '" + HighLogic.CurrentGame.Title + "'");
-            //        HighLogic.CurrentGame.AddProtoScenarioModule(typeof(KerbalConstructionTimeData), new GameScenes[] {GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.EDITOR, GameScenes.TRACKSTATION});
-            //        // the game will add this scenario to the appropriate persistent file on save from now on
-            //    }
-            //    catch (ArgumentException ae)
-            //    {
-            //        Debug.LogException(ae);
-            //    }
-            //    catch
-            //    {
-            //        Debug.Log("[KCT] Unknown failure while adding scenario.");
-            //    }
-            //}
-            //else
-            //{
-            //    if (!scenario.targetScenes.Contains(GameScenes.SPACECENTER))
-            //        scenario.targetScenes.Add(GameScenes.SPACECENTER);
-            //    if (!scenario.targetScenes.Contains(GameScenes.FLIGHT))
-            //        scenario.targetScenes.Add(GameScenes.FLIGHT);
-            //    if (!scenario.targetScenes.Contains(GameScenes.EDITOR))
-            //        scenario.targetScenes.Add(GameScenes.EDITOR);
-            //    if (!scenario.targetScenes.Contains(GameScenes.TRACKSTATION))
-            //        scenario.targetScenes.Add(GameScenes.TRACKSTATION);
-
-            //}
-            //End code for persistence.sfs
 
             if (KCT_GUI.PrimarilyDisabled)
             {
@@ -369,7 +337,7 @@ namespace KerbalConstructionTime
                         KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);
                 }
             }
-            delayedStartRan = false;
+            ratesUpdated = false;
             KCTDebug.Log("Start finished");
         }
 
@@ -379,12 +347,19 @@ namespace KerbalConstructionTime
             {
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 editorRecalcuationRequired = false;
+
+                if (KCT_GameStates.settings.OverrideLaunchButton)
+                {
+                    KCTDebug.Log("Attempting to take control of launch button");
+                    EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
+                    EditorLogic.fetch.launchBtn.onClick.AddListener(ShowLaunchAlert);
+                }
             }
         }
 
         public static bool moved = false;
         private static int lvlCheckTimer = 0;
-        private static bool delayedStartRan = false;
+        private static bool ratesUpdated = false;
         public void FixedUpdate()
         {
             double lastUT = KCT_GameStates.UT > 0 ? KCT_GameStates.UT : Planetarium.GetUniversalTime();
@@ -420,12 +395,19 @@ namespace KerbalConstructionTime
 
                 }
 
-                if (!delayedStartRan && KCT_GameStates.PersistenceLoaded)
+                if (!ratesUpdated && KCT_GameStates.PersistenceLoaded)
                 {
                     if (ScenarioUpgradeableFacilities.GetFacilityLevelCount(SpaceCenterFacility.VehicleAssemblyBuilding) >= 0)
                     {
-                        delayedStartRan = true;
-                        DelayedStart();
+                        ratesUpdated = true;
+                        KCTDebug.Log("Updating build rates");
+                        foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
+                        {
+                            KSC?.RecalculateBuildRates();
+                            KSC?.RecalculateUpgradedBuildRates();
+                        }
+
+                        KCTDebug.Log("Rates updated");
                     }
                 }
 
@@ -539,7 +521,7 @@ namespace KerbalConstructionTime
             if (!KCT_GameStates.vesselErrorAlerted)
             {
                 List<KCT_BuildListVessel> erroredVessels = new List<KCT_BuildListVessel>();
-                foreach (KCT_KSC KSC in KCT_GameStates.KSCs) //this is faster one subsequent scene changes
+                foreach (KCT_KSC KSC in KCT_GameStates.KSCs) //this is faster on subsequent scene changes
                 {
                     foreach (KCT_BuildListVessel blv in KSC.VABList)
                     {
@@ -582,16 +564,6 @@ namespace KerbalConstructionTime
                     PopUpVesselError(erroredVessels);
                 KCT_GameStates.vesselErrorAlerted = true;
             }
-
-            KCTDebug.Log("Updating build rates");
-            foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
-            {
-                KSC?.RecalculateBuildRates();
-                KSC?.RecalculateUpgradedBuildRates();
-            }
-
-            KCTDebug.Log("Rates updated");
-            
            
             if (HighLogic.LoadedSceneIsEditor)
             {
@@ -604,14 +576,11 @@ namespace KerbalConstructionTime
                 {
                     if (KCT_GameStates.settings.OverrideLaunchButton)
                     {
-                        KCTDebug.Log("Taking control of launch button");
+                        KCTDebug.Log("Attempting to take control of launch button");
 
-                        //EditorLogic.fetch.launchBtn.onClick.RemoveListener(new UnityEngine.Events.UnityAction(EditorLogic.fetch.launchVessel));
-                        EditorLogic.fetch.launchBtn.onClick.RemoveAllListeners();//TODO: Don't do this
+                        EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
                         
-                        //wtf, why can't we override stock behavior anymore??...
-                        
-                        EditorLogic.fetch.launchBtn.onClick.AddListener(new UnityEngine.Events.UnityAction(instance.ShowLaunchAlert));
+                        EditorLogic.fetch.launchBtn.onClick.AddListener(ShowLaunchAlert);
                     }
                     else
                         InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
@@ -732,8 +701,9 @@ namespace KerbalConstructionTime
             //PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Vessel Contains Missing Parts", "The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Understood", false, HighLogic.UISkin);
         }
 
-        public void ShowLaunchAlert()
+        public static void ShowLaunchAlert()
         {
+            KCTDebug.Log("Showing Launch Alert");
             if (KCT_GUI.PrimarilyDisabled)
                 EditorLogic.fetch.launchVessel();
             else
