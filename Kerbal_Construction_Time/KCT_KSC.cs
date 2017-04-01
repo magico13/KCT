@@ -252,6 +252,21 @@ namespace KerbalConstructionTime
                 LPs.AddNode(lpCN);
             }
             node.AddNode(LPs);
+
+            //Cache the regular rates
+            ConfigNode CachedVABRates = new ConfigNode("VABRateCache");
+            foreach (double rate in VABRates)
+            {
+                CachedVABRates.AddValue("rate", rate);
+            }
+            node.AddNode(CachedVABRates);
+
+            ConfigNode CachedSPHRates = new ConfigNode("SPHRateCache");
+            foreach (double rate in SPHRates)
+            {
+                CachedVABRates.AddValue("rate", rate);
+            }
+            node.AddNode(CachedSPHRates);
             return node;
         }
 
@@ -267,6 +282,8 @@ namespace KerbalConstructionTime
             KSCTech.Clear();
             //TechList.Clear();
             Recon_Rollout.Clear();
+            VABRates.Clear();
+            SPHRates.Clear();
             
 
 
@@ -368,6 +385,30 @@ namespace KerbalConstructionTime
                     ConfigNode.LoadObjectFromConfig(tempLP, LP);
                     tempLP.DestructionNode = LP.GetNode("DestructionState");
                     LaunchPads.Add(tempLP);
+                }
+            }
+
+            if (node.HasNode("VABRateCache"))
+            {
+                foreach (string rate in node.GetNode("VABRateCache").GetValues("rate"))
+                {
+                    double r;
+                    if (double.TryParse(rate, out r))
+                    {
+                        VABRates.Add(r);
+                    }
+                }
+            }
+
+            if (node.HasNode("SPHRateCache"))
+            {
+                foreach (string rate in node.GetNode("SPHRateCache").GetValues("rate"))
+                {
+                    double r;
+                    if (double.TryParse(rate, out r))
+                    {
+                        SPHRates.Add(r);
+                    }
                 }
             }
 
