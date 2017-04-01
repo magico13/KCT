@@ -959,12 +959,7 @@ namespace KerbalConstructionTime
                 {
                     showClearLaunch = false;
                     centralWindowPosition.height = 1;
-                    pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
-                    parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                    KCT_GameStates.launchedCrew = new List<CrewedPart>();
-                    foreach (PseudoPart pp in pseudoParts)
-                        KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
-                    CrewFirstAvailable();
+                    AssignInitialCrew();
                     showShipRoster = true;
                 }
                 centralWindowPosition.height = 1;
@@ -979,6 +974,67 @@ namespace KerbalConstructionTime
             CenterWindow(ref centralWindowPosition);
         }
 
+        /// <summary>
+        /// Assigns the initial crew to the roster, based on desired roster in the editor 
+        /// </summary>
+        public static void AssignInitialCrew()
+        {
+            KCT_GameStates.launchedCrew.Clear();
+            pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
+            parts = KCT_GameStates.launchedVessel.ExtractedParts;
+            KCT_GameStates.launchedCrew = new List<CrewedPart>();
+            foreach (PseudoPart pp in pseudoParts)
+                KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
+            //try to assign kerbals from the desired manifest
+            if (KCT_GameStates.launchedVessel.DesiredManifest?.Count > 0 && KCT_GameStates.launchedVessel.DesiredManifest.Exists(c => c != null))
+            {
+                KCTDebug.Log("Assigning desired crew manifest.");
+                Queue<ProtoCrewMember> finalCrew = new Queue<ProtoCrewMember>();
+                //try to assign crew from the desired manifest
+                foreach (string name in KCT_GameStates.launchedVessel.DesiredManifest)
+                {
+                    //assign the kerbal with that name to each seat, in order. Let's try that
+                    ProtoCrewMember crew = null;
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        crew = HighLogic.CurrentGame.CrewRoster[name];
+                        if (crew.rosterStatus != ProtoCrewMember.RosterStatus.Available) //only take those that are available
+                        {
+                            crew = null;
+                        }
+                    }
+
+                    finalCrew.Enqueue(crew);
+                }
+
+                //check if any of these crew are even available, if not then go back to CrewFirstAvailable
+                if (finalCrew.FirstOrDefault(c => c != null) == null)
+                {
+                    KCTDebug.Log("Desired crew not available, falling back to default.");
+                    CrewFirstAvailable();
+                    return;
+                }
+
+                //Put the crew where they belong
+                for (int i = 0; i < parts.Count; i++)
+                {
+                    Part part = parts[i];
+                    for (int seat = 0; seat < part.CrewCapacity; seat++)
+                    {
+                        if (finalCrew.Count > 0)
+                        {
+                            ProtoCrewMember crewToInsert = finalCrew.Dequeue();
+                            KCTDebug.Log("Assigning " + (crewToInsert?.name ?? "null"));
+                            KCT_GameStates.launchedCrew[i].crewList.Add(crewToInsert); //even add the nulls, then they should match 1 to 1
+                        }
+                    }
+                }
+            }
+            else
+            {
+                CrewFirstAvailable();
+            }
+        }
 
         private static int partIndexToCrew;
         private static int indexToCrew;
@@ -1219,7 +1275,7 @@ namespace KerbalConstructionTime
                                 KCT_GameStates.launchedCrew[j].crewList[i].rosterStatus = ProtoCrewMember.RosterStatus.Available;
                                 //KCT_GameStates.launchedCrew[j].RemoveAt(i);
                                 KCT_GameStates.launchedCrew[j].crewList[i] = null;
-                                AvailableCrew = null;
+                                AvailableCrew = CrewAvailable();
                             }
                         }
                         else
@@ -1474,7 +1530,7 @@ namespace KerbalConstructionTime
             forceStopWarp = KCT_GameStates.settings.ForceStopWarp;
             disableAllMsgs = KCT_GameStates.settings.DisableAllMessages;
             debug = KCT_GameStates.settings.Debug;
-            overrideLaunchBtn = false;//KCT_GameStates.settings.OverrideLaunchButton;
+            overrideLaunchBtn = KCT_GameStates.settings.OverrideLaunchButton;
             autoAlarms = KCT_GameStates.settings.AutoKACAlarms;
             useBlizzyToolbar = KCT_GameStates.settings.PreferBlizzyToolbar;
             debugUpdateChecking = KCT_GameStates.settings.CheckForDebugUpdates;

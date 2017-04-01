@@ -602,13 +602,7 @@ namespace KerbalConstructionTime
                                                 }
 
                                                 centralWindowPosition.height = 1;
-                                                KCT_GameStates.launchedCrew.Clear();
-                                                parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                                                pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
-                                                KCT_GameStates.launchedCrew = new List<CrewedPart>();
-                                                foreach (PseudoPart pp in pseudoParts)
-                                                    KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
-                                                CrewFirstAvailable();
+                                                AssignInitialCrew();
                                                 showShipRoster = true;
                                             }
                                         }
@@ -854,13 +848,7 @@ namespace KerbalConstructionTime
                                                 KCT_Events.instance.KCTButtonStock.SetFalse();
                                             }
                                             centralWindowPosition.height = 1;
-                                            KCT_GameStates.launchedCrew.Clear();
-                                            parts = KCT_GameStates.launchedVessel.ExtractedParts;
-                                            pseudoParts = KCT_GameStates.launchedVessel.GetPseudoParts();
-                                            KCT_GameStates.launchedCrew = new List<CrewedPart>();
-                                            foreach (PseudoPart pp in pseudoParts)
-                                                KCT_GameStates.launchedCrew.Add(new CrewedPart(pp.uid, new List<ProtoCrewMember>()));
-                                            CrewFirstAvailable();
+                                            AssignInitialCrew();
                                             showShipRoster = true;
                                         }
                                     }

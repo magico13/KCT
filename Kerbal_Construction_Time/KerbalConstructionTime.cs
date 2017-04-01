@@ -361,13 +361,6 @@ namespace KerbalConstructionTime
             {
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 editorRecalcuationRequired = false;
-
-                //if (KCT_GameStates.settings.OverrideLaunchButton)
-                //{
-                //    KCTDebug.Log("Attempting to take control of launch button");
-                //    EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
-                //    EditorLogic.fetch.launchBtn.onClick.AddListener(ShowLaunchAlert);
-                //}
             }
         }
 
@@ -409,7 +402,7 @@ namespace KerbalConstructionTime
 
                 }
 
-                if (!ratesUpdated && KCT_GameStates.PersistenceLoaded)
+                if (!ratesUpdated)
                 {
                     if (ScenarioUpgradeableFacilities.GetFacilityLevelCount(SpaceCenterFacility.VehicleAssemblyBuilding) >= 0)
                     {

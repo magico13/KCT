@@ -124,6 +124,8 @@ namespace KerbalConstructionTime
             float cost = 0, mass = 0, kscDistance = 0;
             [Persistent]
             int EditorFacility = 0, LaunchPadID = -1;
+            [Persistent]
+            List<string> desiredManifest = new List<string>();
 
             public KCT_BuildListVessel ToBuildListVessel()
             {
@@ -143,6 +145,7 @@ namespace KerbalConstructionTime
                 ret.TotalMass = mass;
                 ret.DistanceFromKSC = kscDistance;
                 ret.launchSiteID = LaunchPadID;
+                ret.DesiredManifest = desiredManifest;
                 return ret;
             }
 
@@ -162,6 +165,7 @@ namespace KerbalConstructionTime
                 this.kscDistance = blv.DistanceFromKSC;
                 this.EditorFacility = (int)blv.GetEditorFacility();
                 this.LaunchPadID = blv.launchSiteID;
+                this.desiredManifest = blv.DesiredManifest;
                 return this;
 
             }

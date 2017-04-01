@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using System.IO;
+using KSP.UI;
 
 namespace KerbalConstructionTime
 {
@@ -54,10 +55,20 @@ namespace KerbalConstructionTime
             }
         }
         public bool isFinished { get { return progress >= buildPoints; } }
-        public KCT_KSC KSC { get {
-            return KCT_GameStates.KSCs.FirstOrDefault(k => ((k.VABList.FirstOrDefault(s => s.id == this.id) != null || k.VABWarehouse.FirstOrDefault(s => s.id == this.id) != null)
-            || (k.SPHList.FirstOrDefault(s => s.id == this.id) != null || k.SPHWarehouse.FirstOrDefault(s => s.id == this.id) != null)));
-        } }
+
+        private KCT_KSC _ksc = null;
+        public KCT_KSC KSC
+        {
+            get
+            {
+                if (_ksc == null)
+                {
+                    _ksc = KCT_GameStates.KSCs.FirstOrDefault(k => ((k.VABList.FirstOrDefault(s => s.id == this.id) != null || k.VABWarehouse.FirstOrDefault(s => s.id == this.id) != null)
+                        || (k.SPHList.FirstOrDefault(s => s.id == this.id) != null || k.SPHWarehouse.FirstOrDefault(s => s.id == this.id) != null)));
+                }
+                return _ksc;
+            }
+        }
 
         private bool? _allPartsValid;
         public bool allPartsValid
@@ -68,6 +79,16 @@ namespace KerbalConstructionTime
                     _allPartsValid = CheckPartsValid();
                 return (bool)_allPartsValid;
             }
+        }
+
+        private List<string> _desiredManifest = new List<string>();
+        /// <summary>
+        /// The default crew to use when assigning crew
+        /// </summary>
+        public List<string> DesiredManifest
+        {
+            set { _desiredManifest = value; }
+            get { return _desiredManifest; }
         }
 
         public KCT_BuildListVessel(ShipConstruct s, String ls, double bP, String flagURL)
@@ -93,6 +114,16 @@ namespace KerbalConstructionTime
             InventoryParts = new Dictionary<string, int>();
             id = Guid.NewGuid();
             cannotEarnScience = false;
+
+            //get the crew from the editorlogic
+            DesiredManifest = new List<string>();
+            if (CrewAssignmentDialog.Instance?.GetManifest()?.CrewCount > 0)
+            {
+                foreach (ProtoCrewMember crew in CrewAssignmentDialog.Instance.GetManifest().GetAllCrew(true) ?? new List<ProtoCrewMember>())
+                {
+                    DesiredManifest.Add(crew?.name);
+                }
+            }
         }
 
         public KCT_BuildListVessel(String name, String ls, double bP, String flagURL, float spentFunds, int EditorFacility)
