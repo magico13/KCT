@@ -224,6 +224,7 @@ namespace KerbalConstructionTime
             }
             else if ((HighLogic.LoadedScene == GameScenes.EDITOR) && !PrimarilyDisabled)
             {
+                editorWindowPosition.height = 1;
                 showEditorGUI = clicked;
                 KCT_GameStates.showWindows[1] = showEditorGUI;
             }
@@ -369,7 +370,7 @@ namespace KerbalConstructionTime
         private static int rateIndexHolder = 0;
         public static Dictionary<string, int> PartsInUse = new Dictionary<string, int>();
         private static double finishedShipBP = -1;
-        private static void DrawEditorGUI(int windowID)
+        public static void DrawEditorGUI(int windowID)
         {
             GUILayout.BeginVertical();
             //GUILayout.Label("Current KSC: " + KCT_GameStates.ActiveKSC.KSCName);

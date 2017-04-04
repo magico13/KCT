@@ -105,7 +105,7 @@ namespace KerbalConstructionTime
 
             KCT_GUI.CheckToolbar();
             KCT_GameStates.erroredDuringOnLoad.OnLoadFinish();
-            KerbalConstructionTime.DelayedStart();
+            //KerbalConstructionTime.DelayedStart();
         }
     }
 
@@ -353,6 +353,7 @@ namespace KerbalConstructionTime
             }
             ratesUpdated = false;
             KCTDebug.Log("Start finished");
+            DelayedStart();
         }
 
         private void EditorRecalculation()
