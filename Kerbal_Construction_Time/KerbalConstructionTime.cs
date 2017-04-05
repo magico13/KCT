@@ -338,6 +338,7 @@ namespace KerbalConstructionTime
                 KCT_GUI.hideAll();
                 if (KCT_GameStates.launchedVessel != null && FlightGlobals.ActiveVessel != null && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
                 {
+                    KCT_GameStates.launchedVessel.KSC = null; //it's invalid now
                     KCTDebug.Log("Attempting to remove launched vessel from build list");
                     bool removed = KCT_GameStates.launchedVessel.RemoveFromBuildList();
                     if (removed) //Only do these when the vessel is first removed from the list

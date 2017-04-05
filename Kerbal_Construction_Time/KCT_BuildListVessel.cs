@@ -68,6 +68,10 @@ namespace KerbalConstructionTime
                 }
                 return _ksc;
             }
+            set
+            {
+                _ksc = value;
+            }
         }
 
         private bool? _allPartsValid;
@@ -188,7 +192,7 @@ namespace KerbalConstructionTime
                 {
                     PartResourceDefinition def = PartResourceLibrary.Instance.GetDefinition(rsc.resourceName);
                     if (def != null)
-						TotalMass += def.density * (float)rsc.amount;
+                        TotalMass += def.density * (float)rsc.amount;
                 }
             }
             cannotEarnScience = true;

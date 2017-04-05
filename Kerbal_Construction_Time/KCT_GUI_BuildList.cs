@@ -587,6 +587,7 @@ namespace KerbalConstructionTime
                                         /*if (rollout != null)
                                             KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);*/
                                         KCT_GameStates.launchedVessel = b;
+                                        KCT_GameStates.launchedVessel.KSC = null;
                                         if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, b.launchSite).Count == 0)//  ShipConstruction.CheckLaunchSiteClear(HighLogic.CurrentGame.flightState, "LaunchPad", false))
                                         {
                                             showBLPlus = false;
@@ -836,6 +837,7 @@ namespace KerbalConstructionTime
                                 {
                                     showBLPlus = false;
                                     KCT_GameStates.launchedVessel = b;
+                                    KCT_GameStates.launchedVessel.KSC = null;
                                     if (ShipConstruction.FindVesselsLandedAt(HighLogic.CurrentGame.flightState, "Runway").Count == 0)
                                     {
                                         if (!IsCrewable(b.ExtractedParts))
@@ -1120,6 +1122,7 @@ namespace KerbalConstructionTime
                 b.shipNode.Save(tempFile);
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
                 KCT_GameStates.editedVessel = b;
+                KCT_GameStates.editedVessel.KSC = null;
                 KCT_GameStates.EditorShipEditingMode = true;
                 KCT_GameStates.delayStart = true;
 

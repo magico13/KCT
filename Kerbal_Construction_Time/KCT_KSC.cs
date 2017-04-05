@@ -313,6 +313,7 @@ namespace KerbalConstructionTime
                 ConfigNode.LoadObjectFromConfig(listItem, vessel);
                 KCT_BuildListVessel blv = listItem.ToBuildListVessel();
                 blv.shipNode = vessel.GetNode("ShipNode");
+                blv.KSC = this;
                 this.VABList.Add(blv);
             }
 
@@ -323,6 +324,7 @@ namespace KerbalConstructionTime
                 ConfigNode.LoadObjectFromConfig(listItem, vessel);
                 KCT_BuildListVessel blv = listItem.ToBuildListVessel();
                 blv.shipNode = vessel.GetNode("ShipNode");
+                blv.KSC = this;
                 this.SPHList.Add(blv);
             }
 
@@ -333,6 +335,7 @@ namespace KerbalConstructionTime
                 ConfigNode.LoadObjectFromConfig(listItem, vessel);
                 KCT_BuildListVessel blv = listItem.ToBuildListVessel();
                 blv.shipNode = vessel.GetNode("ShipNode");
+                blv.KSC = this;
                 this.VABWarehouse.Add(blv);
             }
 
@@ -343,6 +346,7 @@ namespace KerbalConstructionTime
                 ConfigNode.LoadObjectFromConfig(listItem, vessel);
                 KCT_BuildListVessel blv = listItem.ToBuildListVessel();
                 blv.shipNode = vessel.GetNode("ShipNode");
+                blv.KSC = this;
                 this.SPHWarehouse.Add(blv);
             }
 
