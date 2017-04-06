@@ -586,73 +586,76 @@ namespace KerbalConstructionTime
         {
             string typeName="";
             bool removed = false;
-            KCT_KSC theKSC = this.KSC;
-            if (theKSC == null)
+            KSC = null; //force a refind
+            if (KSC == null) //I know this looks goofy, but it's a self-caching property that caches on "get"
             {
                 KCTDebug.Log("Could not find the KSC to remove vessel!");
                 return false;
             }
             if (type == ListType.SPH)
             {
-                if (theKSC.SPHWarehouse.Contains(this))
-                    removed = theKSC.SPHWarehouse.Remove(this);
-                else if (theKSC.SPHList.Contains(this))
-                    removed = theKSC.SPHList.Remove(this);
+
+                removed = KSC.SPHWarehouse.Remove(this);
+                if (!removed)
+                {
+                    removed = KSC.SPHList.Remove(this);
+                }
                 typeName="SPH";
             }
             else if (type == ListType.VAB)
             {
-                if (theKSC.VABWarehouse.Contains(this))
-                    removed = theKSC.VABWarehouse.Remove(this);
-                else if (theKSC.VABList.Contains(this))
-                    removed = theKSC.VABList.Remove(this);
+                removed = KSC.VABWarehouse.Remove(this);
+                if (!removed)
+                {
+                    removed = KSC.VABList.Remove(this);
+                }
                 typeName="VAB";
             }
             KCTDebug.Log("Removing " + shipName + " from "+ typeName +" storage/list.");
             if (!removed)
             {
                 KCTDebug.Log("Failed to remove ship from list! Performing direct comparison of ids...");
-                foreach (KCT_BuildListVessel blv in theKSC.SPHWarehouse)
+                foreach (KCT_BuildListVessel blv in KSC.SPHWarehouse)
                 {
                     if (blv.id == this.id)
                     {
                         KCTDebug.Log("Ship found in SPH storage. Removing...");
-                        removed = theKSC.SPHWarehouse.Remove(blv);
+                        removed = KSC.SPHWarehouse.Remove(blv);
                         break;
                     }
                 }
                 if (!removed)
                 {
-                    foreach (KCT_BuildListVessel blv in theKSC.VABWarehouse)
+                    foreach (KCT_BuildListVessel blv in KSC.VABWarehouse)
                     {
                         if (blv.id == this.id)
                         {
                             KCTDebug.Log("Ship found in VAB storage. Removing...");
-                            removed = theKSC.VABWarehouse.Remove(blv);
+                            removed = KSC.VABWarehouse.Remove(blv);
                             break;
                         }
                     }
                 }
                 if (!removed)
                 {
-                    foreach (KCT_BuildListVessel blv in theKSC.VABList)
+                    foreach (KCT_BuildListVessel blv in KSC.VABList)
                     {
                         if (blv.id == this.id)
                         {
                             KCTDebug.Log("Ship found in VAB List. Removing...");
-                            removed = theKSC.VABList.Remove(blv);
+                            removed = KSC.VABList.Remove(blv);
                             break;
                         }
                     }
                 }
                 if (!removed)
                 {
-                    foreach (KCT_BuildListVessel blv in theKSC.SPHList)
+                    foreach (KCT_BuildListVessel blv in KSC.SPHList)
                     {
                         if (blv.id == this.id)
                         {
                             KCTDebug.Log("Ship found in SPH list. Removing...");
-                            removed = theKSC.SPHList.Remove(blv);
+                            removed = KSC.SPHList.Remove(blv);
                             break;
                         }
                     }
