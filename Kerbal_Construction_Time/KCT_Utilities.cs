@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using KSP.UI.Screens;
+using System.Collections;
 
 namespace KerbalConstructionTime
 {
@@ -2299,7 +2300,7 @@ namespace KerbalConstructionTime
                     return false;
                 }
 
-                GameEvents.OnVesselRecoveryRequested.Fire(FlightGlobals.ActiveVessel);
+                KerbalConstructionTime.instance.StartCoroutine(RecoverVessel(FlightGlobals.ActiveVessel));
                 return true;
             }
             catch
@@ -2309,6 +2310,17 @@ namespace KerbalConstructionTime
                 ShipConstruction.ClearBackups();
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Recover the vessel, after the end of the frame. Start it in a coroutine
+        /// </summary>
+        /// <param name="toRecover"></param>
+        /// <returns></returns>
+        public static IEnumerator RecoverVessel(Vessel toRecover)
+        {
+            yield return new WaitForEndOfFrame();
+            GameEvents.OnVesselRecoveryRequested.Fire(toRecover);
         }
 
         public static void RemoveMissingSymmetry(ConfigNode ship)
