@@ -16,8 +16,6 @@ namespace KerbalConstructionTime
         public int launchSiteID = -1;
         public ListType type;
         public enum ListType { None, VAB, SPH, TechNode, Reconditioning, KSC };
-        //public List<string> InventoryParts;
-        public Dictionary<string, int> InventoryParts;
         public ConfigNode shipNode;
         public Guid id;
         public bool cannotEarnScience;
@@ -115,7 +113,6 @@ namespace KerbalConstructionTime
                 type = ListType.SPH;
             else
                 type = ListType.None;
-            InventoryParts = new Dictionary<string, int>();
             id = Guid.NewGuid();
             cannotEarnScience = false;
 
@@ -144,7 +141,6 @@ namespace KerbalConstructionTime
                 type = ListType.SPH;
             else
                 type = ListType.None;
-            InventoryParts = new Dictionary<string, int>();
             cannotEarnScience = false;
             cost = spentFunds;
         }
@@ -168,23 +164,9 @@ namespace KerbalConstructionTime
             emptyCost = KCT_Utilities.GetTotalVesselCost(shipNode, false);
             TotalMass = 0;
             emptyMass = 0;
-            InventoryParts = new Dictionary<string, int>();
             foreach (ProtoPartSnapshot p in vessel.protoVessel.protoPartSnapshots)
             {
-                //InventoryParts.Add(p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p));
                 string name = p.partInfo.name;
-                int amt = 1;
-                if (KCT_Utilities.PartIsProcedural(p))
-                {
-                    float dry, wet;
-                    ShipConstruction.GetPartCosts(p, p.partInfo, out dry, out wet);
-                    amt = (int)(1000 * dry);
-                }
-                else
-                {
-                    name += KCT_Utilities.GetTweakScaleSize(p);
-                }
-                KCT_Utilities.AddToDict(InventoryParts, name, amt);
 
                 TotalMass += p.mass;
                 emptyMass += p.mass;
@@ -197,7 +179,7 @@ namespace KerbalConstructionTime
             }
             cannotEarnScience = true;
 
-            buildPoints = KCT_Utilities.GetBuildTime(shipNode.GetNodes("PART").ToList(), true, InventoryParts);
+            buildPoints = KCT_Utilities.GetBuildTime(shipNode.GetNodes("PART").ToList(), false);
             flag = HighLogic.CurrentGame.flagURL;
             progress = buildPoints;
 
@@ -408,7 +390,7 @@ namespace KerbalConstructionTime
             ret.id = Guid.NewGuid();
             if (RecalcTime)
             {
-                ret.buildPoints = KCT_Utilities.GetBuildTime(ret.ExtractedPartNodes, true, this.InventoryParts.Count > 0);
+                ret.buildPoints = KCT_Utilities.GetBuildTime(ret.ExtractedPartNodes, true);
             }
             ret.TotalMass = this.TotalMass;
             ret.emptyMass = this.emptyMass;

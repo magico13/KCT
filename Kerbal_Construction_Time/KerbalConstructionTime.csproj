@@ -80,6 +80,7 @@
     <Compile Include="KCT_Utilities.cs" />
     <Compile Include="KerbalConstructionTime.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScrapYardWrapper.cs" />
     <Compile Include="StageRecoveryWrapper.cs" />
     <Compile Include="ToolbarWrapper.cs" />
     <Compile Include="Properties\VersionInfo.cs" />

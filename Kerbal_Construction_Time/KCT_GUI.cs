@@ -454,7 +454,7 @@ namespace KerbalConstructionTime
 
                 KCT_BuildListVessel ship = KCT_GameStates.editedVessel;
                 if (finishedShipBP < 0 && ship.isFinished)
-                    finishedShipBP = KCT_Utilities.GetBuildTime(ship.ExtractedPartNodes, true, ship.InventoryParts);
+                    finishedShipBP = KCT_Utilities.GetBuildTime(ship.ExtractedPartNodes, true);
                 double origBP = ship.isFinished ? finishedShipBP : ship.buildPoints; //If the ship is finished, recalculate times. Else, use predefined times.
                 double buildTime = KCT_GameStates.EditorBuildTime;
                 double difference = Math.Abs(buildTime - origBP);
@@ -503,61 +503,8 @@ namespace KerbalConstructionTime
                 {
 
                     finishedShipBP = -1;
-                    Dictionary<string, int> partsForInventory = new Dictionary<string, int>();
-                    //List<string> partsForInventory = new List<string>();
-                    //if (KCT_GUI.useInventory)
-                    //{
-                    //    Dictionary<string, int> newParts = new Dictionary<string, int>(KCT_GUI.PartsInUse);
-                    //    //List<string> newParts = new List<string>(KCT_Utilities.PartDictToList(KCT_GUI.PartsInUse));
-                    //    //List<string> theInventory = new List<string>(KCT_Utilities.PartDictToList(KCT_GameStates.PartInventory));
-                    //    Dictionary<string, int> theInventory = new Dictionary<string, int>(KCT_GameStates.PartInventory);
-                    //   /* foreach (string s in KCT_Utilities.PartDictToList(KCT_GameStates.EditedVesselParts))
-                    //        if (newParts.Contains(s))
-                    //            newParts.Remove(s);*/
-                    //    foreach (KeyValuePair<string, int> kvp in KCT_GameStates.EditedVesselParts)
-                    //    {
-                    //        if (newParts.ContainsKey(kvp.Key))
-                    //        {
-                    //            if (newParts[kvp.Key] >= kvp.Value)
-                    //                newParts[kvp.Key] -= kvp.Value;
-                    //            else
-                    //                newParts[kvp.Key] = 0;
-                    //        }
-                    //    }
-
-                    //    /*foreach (string s in newParts)
-                    //    {
-                    //        if (theInventory.Contains(s))
-                    //        {
-                    //            theInventory.Remove(s);
-                    //            partsForInventory.Add(s);
-                    //        }
-                    //    }*/
-                    //    foreach (KeyValuePair<string, int> kvp in newParts)
-                    //    {
-                    //        if (theInventory.ContainsKey(kvp.Key))
-                    //        {
-                    //            if (theInventory[kvp.Key] >= kvp.Value)
-                    //            {
-                    //                theInventory[kvp.Key] -= kvp.Value;
-                    //                KCT_Utilities.AddToDict(partsForInventory, kvp.Key, kvp.Value);
-                    //            }
-                    //            else
-                    //            {
-                    //                KCT_Utilities.AddToDict(partsForInventory, kvp.Key, theInventory[kvp.Key]);
-                    //                theInventory[kvp.Key] = 0;
-                    //            }
-                    //        }
-                    //    }
-
-                    //}
-                    //foreach (string s in ship.InventoryParts)
-                    //    partsForInventory.Add(s);
-                    foreach (KeyValuePair<string, int> kvp in ship.InventoryParts)
-                        KCT_Utilities.AddToDict(partsForInventory, kvp.Key, kvp.Value);
-
                     KCT_Utilities.AddFunds(ship.cost, TransactionReasons.VesselRollout);
-                    KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(partsForInventory);//new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, buildTime, EditorLogic.FlagURL);
+                    KCT_BuildListVessel newShip = KCT_Utilities.AddVesselToBuildList(useInventory);
                     if (newShip == null)
                     {
                         KCT_Utilities.SpendFunds(ship.cost, TransactionReasons.VesselRollout);
@@ -569,22 +516,6 @@ namespace KerbalConstructionTime
                     KCTDebug.Log("Finished? " + ship.isFinished);
                     if (ship.isFinished)
                         newShip.cannotEarnScience = true;
-
-                    //foreach (string s in newShip.InventoryParts) //Compare the old inventory parts and the new one, removing the new ones from the old
-                    foreach (KeyValuePair<string, int> kvp in newShip.InventoryParts)
-                    {
-                        if (ship.InventoryParts.ContainsKey(kvp.Key))
-                        {
-                            if (ship.InventoryParts[kvp.Key] >= newShip.InventoryParts[kvp.Key])
-                                ship.InventoryParts[kvp.Key] -= newShip.InventoryParts[kvp.Key];
-                            else
-                                ship.InventoryParts[kvp.Key] = 0;
-                            //ship.InventoryParts.Remove(s);
-                        }
-                    }
-                    //foreach (string s in ship.InventoryParts) //Add the remaining old parts to the overall inventory
-                    //foreach (KeyValuePair<string, int> kvp in ship.InventoryParts)
-                    //    KCT_Utilities.AddPartToInventory(kvp.Key, kvp.Value);
 
                     GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
 
@@ -862,65 +793,14 @@ namespace KerbalConstructionTime
                 List<ConfigNode> parts = b.ExtractedPartNodes;
                 float totalCost = 0;
                 foreach (ConfigNode p in parts)
-                    totalCost += KCT_Utilities.GetPartCostFromNode(p);
-                if (b.InventoryParts != null)
                 {
-                    //foreach (KeyValuePair<string, int> kvp in b.InventoryParts)
-                    List<ConfigNode> toRemove = new List<ConfigNode>();
-                    foreach (ConfigNode cn in parts)
-                    {
-                        //ConfigNode aP = parts.Find(a => (KCT_Utilities.PartNameFromNode(a) + KCT_Utilities.GetTweakScaleSize(a)) == kvp.Key);
-                        //if (aP == null)
-                        //    aP = parts.Find(a => (KCT_Utilities.PartNameFromNode(a)) == kvp.Key);
-                        string name = KCT_Utilities.PartNameFromNode(cn);
-                        if (!KCT_Utilities.PartIsProcedural(cn))
-                            name += KCT_Utilities.GetTweakScaleSize(cn);
-                        if (b.InventoryParts.ContainsKey(name))
-                        {
-                            totalCost -= KCT_Utilities.GetPartCostFromNode(cn);
-                            //parts.Remove(cn);
-                            int amt = 1;
-                            if (KCT_Utilities.PartIsProcedural(cn))
-                            {
-                                amt = (int)(1000 * KCT_Utilities.GetPartCostFromNode(cn, false));
-                            }
-                            if (b.InventoryParts[name] >= amt)
-                            {
-                                b.InventoryParts[name] -= amt;
-                                //KCT_Utilities.AddPartToInventory(name, amt);
-                            }
-                            else
-                            {
-                                //KCT_Utilities.AddPartToInventory(name, b.InventoryParts[name]);
-                                b.InventoryParts[name] = 0;
-                            }
-                            if (b.InventoryParts[name] == 0)
-                                b.InventoryParts.Remove(name);
-                            toRemove.Add(cn);
-                        }
-                    }
-                    foreach (ConfigNode cn in toRemove)
-                    {
-                        parts.Remove(cn);
-                    }
+                    totalCost += KCT_Utilities.GetPartCostFromNode(p);
                 }
                 totalCost = (int)(totalCost * b.ProgressPercent() / 100);
-                //float sum = 0;
-                //while (parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum)) != null)
-                //{
-                //    ConfigNode aP = parts.Find(a => KCT_Utilities.GetPartCostFromNode(a) < (totalCost - sum));
-                //    sum += KCT_Utilities.GetPartCostFromNode(aP);
-                //    parts.Remove(aP);
-                //    //KCT_Utilities.AddPartToInventory(aP);
-                //}
-                //buildList.RemoveAt(IndexSelected);
                 b.RemoveFromBuildList();
             }
             else
             {
-                //foreach (ConfigNode p in b.ExtractedPartNodes)
-                //    KCT_Utilities.AddPartToInventory(p);
-               // buildList.RemoveAt(IndexSelected);
                 b.RemoveFromBuildList();
             }
             KCT_Utilities.AddFunds(b.cost, TransactionReasons.VesselRollout);

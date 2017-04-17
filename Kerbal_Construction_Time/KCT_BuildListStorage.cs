@@ -131,15 +131,6 @@ namespace KerbalConstructionTime
             {
                 KCT_BuildListVessel ret = new KCT_BuildListVessel(shipName, launchSite, buildTime, flag, cost, EditorFacility);
                 ret.progress = progress;
-                if (InventoryParts != null)
-                {
-                    int ignore;
-                    if (InventoryParts.Count > 1 && int.TryParse(InventoryParts[1], out ignore))
-                        ret.InventoryParts = KCT_Utilities.PartListToDictAlternating(InventoryParts);
-                    else
-                        ret.InventoryParts = KCT_Utilities.PartListToDict(InventoryParts);
-
-                }
                 ret.id = new Guid(shipID);
                 ret.cannotEarnScience = cannotEarnScience;
                 ret.TotalMass = mass;
@@ -157,7 +148,6 @@ namespace KerbalConstructionTime
                 this.flag = blv.flag;
                 //this.shipURL = blv.shipURL;
                 this.shipName = blv.shipName;
-                this.InventoryParts = KCT_Utilities.PartDictToList(blv.InventoryParts);
                 this.shipID = blv.id.ToString();
                 this.cannotEarnScience = blv.cannotEarnScience;
                 this.cost = blv.cost;
