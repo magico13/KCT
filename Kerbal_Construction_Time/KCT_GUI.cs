@@ -1276,9 +1276,9 @@ namespace KerbalConstructionTime
         private static List<ProtoCrewMember> CrewAvailable()
         {
             List<ProtoCrewMember> availableCrew = new List<ProtoCrewMember>();
-            if (CrewQ.API.Available)
+            if (CrewRandR.API.Available)
             {
-                availableCrew = CrewQ.API.AvailableCrew.ToList();
+                availableCrew = CrewRandR.API.AvailableCrew.ToList();
                 foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Tourist) //Get tourists
                 {
                     bool available = true;
