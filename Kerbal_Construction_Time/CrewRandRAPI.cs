@@ -14,7 +14,6 @@ namespace CrewRandR
     {
         private static bool? _available = null;
         private static Type _type = null;
-        private static object _instance;
 
         /// <summary>
         /// This indicates if CrewRandR is loaded
@@ -26,9 +25,9 @@ namespace CrewRandR
                 if (_available == null)
                 {
                     _type = AssemblyLoader.loadedAssemblies
-                                          .Select(a => a.assembly.GetExportedTypes())
+                                          .Select(a => a.assembly.GetTypes())
                                           .SelectMany(t => t)
-                                          .FirstOrDefault(t => t.FullName == "CrewRandR.CrewRandRProxy");
+                                          .FirstOrDefault(t => t.FullName.Equals("CrewRandR.CrewRandRProxy"));
 
                     _available = _type != null;
                 }
@@ -92,28 +91,12 @@ namespace CrewRandR
         }
 
         // Generic accessors
-        internal static object Instance
-        {
-            get
-            {
-                if (Available && _instance == null)
-                {
-                    _instance = _type.GetProperty("Instance").GetValue(null, null);
-                    return _instance;
-                }
-                else
-                {
-                    throw new Exception("Attempted to access CrewRandR without that mod installed.");
-                }
-            }
-        }
-
         internal static object getProperty(string name, object[] indexes = null)
         {
             if (Available)
             {
-                System.Reflection.PropertyInfo _property = _type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Static);
-                return _property.GetValue(Instance, indexes);
+                System.Reflection.PropertyInfo _property = _type.GetProperty(name, BindingFlags.Public | BindingFlags.Static);
+                return _property.GetValue(null, indexes);
             }
             else
             {
@@ -125,8 +108,8 @@ namespace CrewRandR
         {
             if (Available)
             {
-                MethodInfo _method = _type.GetMethod(name, BindingFlags.NonPublic | BindingFlags.Static);
-                return _method.Invoke(Instance, parameters);
+                MethodInfo _method = _type.GetMethod(name, BindingFlags.Public | BindingFlags.Static);
+                return _method.Invoke(null, parameters);
             }
             else
             {

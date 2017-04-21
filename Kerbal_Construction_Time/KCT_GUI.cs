@@ -31,12 +31,12 @@ namespace KerbalConstructionTime
 
 
         //private static Rect launchAlertPosition = new Rect((Screen.width-75)/2, (Screen.height-100)/2, 150, 100);
-        public static Rect timeRemainingPosition = new Rect((Screen.width-90) / 4, Screen.height - 85, 90, 55);
+        public static Rect timeRemainingPosition = new Rect((Screen.width - 90) / 4, Screen.height - 85, 90, 55);
         public static Rect buildListWindowPosition = new Rect(Screen.width - 400, 40, 400, 1);
-        private static Rect crewListWindowPosition = new Rect((Screen.width-360)/2, (Screen.height / 4), 360, 1);
+        private static Rect crewListWindowPosition = new Rect((Screen.width - 360) / 2, (Screen.height / 4), 360, 1);
         private static Rect settingsPosition = new Rect((3 * Screen.width / 8), (Screen.height / 4), 300, 1);
-        private static Rect upgradePosition = new Rect((Screen.width-260) / 2, (Screen.height / 4), 260, 1);
-        private static Rect bLPlusPosition = new Rect(Screen.width-500, 40, 100, 1);
+        private static Rect upgradePosition = new Rect((Screen.width - 260) / 2, (Screen.height / 4), 260, 1);
+        private static Rect bLPlusPosition = new Rect(Screen.width - 500, 40, 100, 1);
 
         public static GUISkin windowSkin;// = HighLogic.UISkin;// = new GUIStyle(HighLogic.Skin.window);
         //public static UISkinDef windowSkin;
@@ -196,15 +196,15 @@ namespace KerbalConstructionTime
 
         public static void onClick()
         {
-           // clicked = !clicked;
+            // clicked = !clicked;
             if (ToolbarManager.ToolbarAvailable && KCT_GameStates.kctToolbarButton != null)
                 if (KCT_GameStates.kctToolbarButton.Important) KCT_GameStates.kctToolbarButton.Important = false;
 
-          /*  if (!KCT_GameStates.settings.enabledForSave)
-            {
-                ShowSettings();
-                return;
-            }*/
+            /*  if (!KCT_GameStates.settings.enabledForSave)
+              {
+                  ShowSettings();
+                  return;
+              }*/
 
             if (PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.SPACECENTER))
             {
@@ -301,13 +301,13 @@ namespace KerbalConstructionTime
 
             //ClickOff();
 
-          /*  if (!KCT_GameStates.settings.PreferBlizzyToolbar)
-            {
-                if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
-                {
-                    KCT_Events.instance.KCTButtonStock.SetFalse(false);
-                }
-            }*/
+            /*  if (!KCT_GameStates.settings.PreferBlizzyToolbar)
+              {
+                  if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
+                  {
+                      KCT_Events.instance.KCTButtonStock.SetFalse(false);
+                  }
+              }*/
             clicked = false;
 
             //VABSelected = false;
@@ -335,9 +335,9 @@ namespace KerbalConstructionTime
             GUILayout.Label("UT: ", GUILayout.ExpandHeight(true));
             if (GUILayout.Button("Warp until ready."))
             {
-            //    if (FlightGlobals.ActiveVessel.id != KCT_GameStates.activeVessel.vessel.id)
+                //    if (FlightGlobals.ActiveVessel.id != KCT_GameStates.activeVessel.vessel.id)
                 {
-            //        FlightGlobals.SetActiveVessel(KCT_GameStates.activeVessel.vessel);
+                    //        FlightGlobals.SetActiveVessel(KCT_GameStates.activeVessel.vessel);
                 }
                 KCT_GameStates.canWarp = true;
 
@@ -346,9 +346,9 @@ namespace KerbalConstructionTime
 
             GUILayout.BeginVertical();
             //GUILayout.Label(KCT_GameStates.activeVessel.vessel.Parts.Count.ToString(), GUILayout.ExpandHeight(true));
-           // GUILayout.Label(KCT_GameStates.activeVessel.buildTime.ToString(), GUILayout.ExpandHeight(true));
+            // GUILayout.Label(KCT_GameStates.activeVessel.buildTime.ToString(), GUILayout.ExpandHeight(true));
             //GUILayout.Label(KCT_Utilities.GetFormatedTime(KCT_GameStates.activeVessel.finishDate - KCT_GameStates.UT), GUILayout.ExpandHeight(true));
-           // GUILayout.Label(MagiCore.Utilities.GetFormattedTime(KCT_GameStates.activeVessel.buildTime - KCT_GameStates.activeVessel.progress), GUILayout.ExpandHeight(true));
+            // GUILayout.Label(MagiCore.Utilities.GetFormattedTime(KCT_GameStates.activeVessel.buildTime - KCT_GameStates.activeVessel.progress), GUILayout.ExpandHeight(true));
             GUILayout.Label(MagiCore.Utilities.GetFormattedTime(KCT_GameStates.UT).ToString(), GUILayout.ExpandHeight(true));
             if (GUILayout.Button("Stop warp"))
             {
@@ -774,7 +774,7 @@ namespace KerbalConstructionTime
             if (deselectList)
                 SelectList("None");
 
-          //  listWindow = -1;
+            //  listWindow = -1;
         }
 
         private static void ScrapVessel()
@@ -928,7 +928,7 @@ namespace KerbalConstructionTime
         public static void DrawShipRoster(int windowID)
         {
             System.Random rand = new System.Random();
-            GUILayout.BeginVertical(GUILayout.ExpandHeight(true), GUILayout.MaxHeight(Screen.height/2));
+            GUILayout.BeginVertical(GUILayout.ExpandHeight(true), GUILayout.MaxHeight(Screen.height / 2));
             GUILayout.BeginHorizontal();
             randomCrew = GUILayout.Toggle(randomCrew, " Randomize Filling");
             autoHire = GUILayout.Toggle(autoHire, " Auto-Hire Applicants");
@@ -1045,7 +1045,7 @@ namespace KerbalConstructionTime
             foreach (Part p in parts)
             {
                 //Part p = KCT_Utilities.GetAvailablePartByName(s).partPrefab;
-                if (p.CrewCapacity>0)
+                if (p.CrewCapacity > 0)
                 {
                     numberItems += 1 + p.CrewCapacity;
                 }
@@ -1055,7 +1055,7 @@ namespace KerbalConstructionTime
             {
                 //Part p = KCT_Utilities.GetAvailablePartByName(KCT_GameStates.launchedVessel.GetPartNames()[j]).partPrefab;
                 Part p = parts[j];
-                if (p.CrewCapacity>0)
+                if (p.CrewCapacity > 0)
                 {
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(p.partInfo.title.Length <= 25 ? p.partInfo.title : p.partInfo.title.Substring(0, 25));
@@ -1063,7 +1063,7 @@ namespace KerbalConstructionTime
                     {
                         if (KCT_GameStates.launchedCrew.Find(part => part.partID == p.craftID) == null)
                             KCT_GameStates.launchedCrew.Add(new CrewedPart(p.craftID, new List<ProtoCrewMember>()));
-                        for (int i=0; i<p.CrewCapacity; i++)
+                        for (int i = 0; i < p.CrewCapacity; i++)
                         {
                             if (KCT_GameStates.launchedCrew[j].crewList.Count <= i)
                             {
@@ -1151,7 +1151,7 @@ namespace KerbalConstructionTime
                         if (i < KCT_GameStates.launchedCrew[j].crewList.Count && KCT_GameStates.launchedCrew[j].crewList[i] != null)
                         {
                             ProtoCrewMember kerbal = KCT_GameStates.launchedCrew[j].crewList[i];
-                            GUILayout.Label(kerbal.name+", "+kerbal.experienceTrait.Title+" "+kerbal.experienceLevel); //Display the kerbal currently in the seat, followed by occupation and level
+                            GUILayout.Label(kerbal.name + ", " + kerbal.experienceTrait.Title + " " + kerbal.experienceLevel); //Display the kerbal currently in the seat, followed by occupation and level
                             if (GUILayout.Button("Remove", GUILayout.Width(120)))
                             {
                                 KCT_GameStates.launchedCrew[j].crewList[i].rosterStatus = ProtoCrewMember.RosterStatus.Available;
@@ -1212,13 +1212,13 @@ namespace KerbalConstructionTime
                 KCT_GameStates.settings.AutoHireCrew = autoHire;
 
                 //if (HighLogic.LoadedScene != GameScenes.TRACKSTATION)
-                    KCT_GameStates.launchedVessel.Launch();
-               /* else
-                {
-                    HighLogic.LoadScene(GameScenes.SPACECENTER);
-                    KCT_GameStates.LaunchFromTS = true;
-                    //KCT_GameStates.launchedVessel.Launch();
-                }*/
+                KCT_GameStates.launchedVessel.Launch();
+                /* else
+                 {
+                     HighLogic.LoadScene(GameScenes.SPACECENTER);
+                     KCT_GameStates.LaunchFromTS = true;
+                     //KCT_GameStates.launchedVessel.Launch();
+                 }*/
                 showShipRoster = false;
                 crewListWindowPosition.height = 1;
 
@@ -1277,30 +1277,13 @@ namespace KerbalConstructionTime
         private static List<ProtoCrewMember> GetAvailableCrew()
         {
             List<ProtoCrewMember> availableCrew = new List<ProtoCrewMember>();
+            List<ProtoCrewMember> roster = HighLogic.CurrentGame.CrewRoster.Crew.ToList();
             if (CrewRandR.API.Available)
             {
-                availableCrew = CrewRandR.API.AvailableCrew.ToList();
-                foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Tourist) //Get tourists
-                {
-                    bool available = true;
-                    if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
-                    {
-                        foreach (CrewedPart cP in KCT_GameStates.launchedCrew)
-                        {
-                            if (cP.crewList.Contains(crewMember))
-                                available = false;
-                        }
-                    }
-                    else
-                        available = false;
-                    if (available)
-                        availableCrew.Add(crewMember);
-                }
-
-                return availableCrew;
+                roster = CrewRandR.API.AvailableCrew.ToList();
             }
 
-            foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Crew) //Initialize available crew list
+            foreach (ProtoCrewMember crewMember in roster) //Initialize available crew list
             {
                 bool available = true;
                 if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
@@ -1316,6 +1299,8 @@ namespace KerbalConstructionTime
                 if (available)
                     availableCrew.Add(crewMember);
             }
+
+
             foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Tourist) //Get tourists
             {
                 bool available = true;
@@ -1332,6 +1317,8 @@ namespace KerbalConstructionTime
                 if (available)
                     availableCrew.Add(crewMember);
             }
+
+            
             return availableCrew;
         }
 
