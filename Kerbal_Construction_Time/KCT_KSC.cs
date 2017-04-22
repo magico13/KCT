@@ -85,6 +85,18 @@ namespace KerbalConstructionTime
                     SPHRates.Add(rate);
                 index++;
             }
+
+            KCTDebug.Log("VAB Rates:");
+            foreach (double v in VABRates)
+            {
+                KCTDebug.Log(v);
+            }
+
+            KCTDebug.Log("SPH Rates:");
+            foreach (double v in SPHRates)
+            {
+                KCTDebug.Log(v);
+            }
         }
 
         public void RecalculateUpgradedBuildRates()
@@ -264,7 +276,7 @@ namespace KerbalConstructionTime
             ConfigNode CachedSPHRates = new ConfigNode("SPHRateCache");
             foreach (double rate in SPHRates)
             {
-                CachedVABRates.AddValue("rate", rate);
+                CachedSPHRates.AddValue("rate", rate);
             }
             node.AddNode(CachedSPHRates);
             return node;
