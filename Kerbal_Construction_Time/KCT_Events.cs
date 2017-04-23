@@ -771,15 +771,15 @@ namespace KerbalConstructionTime
                 }
                 KSC.LaunchPads[launchpadID].Upgrade(upgradeLevel);
             }
+            KCT_Events.allowedToUpgrade = true;
             foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
             {
-                KCT_Events.allowedToUpgrade = true;
                 facility.SetLevel(upgradeLevel);
             }
-            //UpgradeProcessed = ((int)(ScenarioUpgradeableFacilities.GetFacilityLevel(id)*2) == upgradeLevel);
-            UpgradeProcessed = (KCT_Utilities.BuildingUpgradeLevel(id) == upgradeLevel);
+            int newLvl = KCT_Utilities.BuildingUpgradeLevel(id);
+            UpgradeProcessed = (newLvl == upgradeLevel);
 
-            KCTDebug.Log("Upgrade processed: " + UpgradeProcessed);
+            KCTDebug.Log($"Upgrade processed: {UpgradeProcessed} Current: {newLvl} Desired: {upgradeLevel}");
 
             //KCT_Events.allowedToUpgrade = false;
         }

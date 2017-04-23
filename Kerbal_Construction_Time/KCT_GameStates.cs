@@ -14,26 +14,12 @@ namespace KerbalConstructionTime
         public static List<VesselType> VesselTypesForSOI = new List<VesselType>() { VesselType.Base, VesselType.Lander, VesselType.Probe, VesselType.Ship, VesselType.Station };
         public static List<Orbit.PatchTransitionType> SOITransitions = new List<Orbit.PatchTransitionType> { Orbit.PatchTransitionType.ENCOUNTER, Orbit.PatchTransitionType.ESCAPE };
         public static bool delayStart = false;
-        //public static Dictionary<String, int> PartTracker = new Dictionary<string, int>();
-        //public static Dictionary<String, int> PartInventory = new Dictionary<string, int>();
         public static KCT_Settings settings = new KCT_Settings();
-       // public static KCT_TimeSettings timeSettings = new KCT_TimeSettings();
-      //  public static KCT_FormulaSettings formulaSettings = new KCT_FormulaSettings();
-        //public static ShipBackup recoveryRequestVessel;
 
         public static KCT_KSC ActiveKSC = null;
         public static List<KCT_KSC> KSCs = new List<KCT_KSC>();
         public static string activeKSCName = "";
         public static bool UpdateLaunchpadDestructionState = false;
-        /*public static List<KCT_BuildListVessel> VABList = new List<KCT_BuildListVessel>();
-        public static List<KCT_BuildListVessel> VABWarehouse = new List<KCT_BuildListVessel>();
-        public static List<KCT_BuildListVessel> SPHList = new List<KCT_BuildListVessel>();
-        public static List<KCT_BuildListVessel> SPHWarehouse = new List<KCT_BuildListVessel>();
-        public static List<KCT_TechItem> TechList = new List<KCT_TechItem>();
-        public static List<int> VABUpgrades = new List<int>() {0};
-        public static List<int> SPHUpgrades = new List<int>() {0};
-        public static List<int> RDUpgrades = new List<int>() {0, 0};
-        public static KCT_Reconditioning LaunchPadReconditioning;*/
         public static int TechUpgradesTotal = 0;
         public static List<KCT_TechItem> TechList = new List<KCT_TechItem>();
 
@@ -41,9 +27,7 @@ namespace KerbalConstructionTime
         public static int MiscellaneousTempUpgrades = 0, LastKnownTechCount = 0;
         public static float InventorySaleUpgrades = 0, InventorySalesFigures = 0;
         public static int UpgradesResetCounter = 0;
-        //public static int TotalUpgradePoints = 0;
         public static KCT_BuildListVessel launchedVessel, editedVessel, recoveredVessel;
-        //public static Dictionary<uint, List<ProtoCrewMember>> launchedCrew = new Dictionary<uint, List<ProtoCrewMember>>();
         public static List<CrewedPart> launchedCrew = new List<CrewedPart>();
         public static IButton kctToolbarButton;
         public static bool EditorShipEditingMode = false;
@@ -54,12 +38,11 @@ namespace KerbalConstructionTime
         public static bool LaunchFromTS = false;
         public static List<AvailablePart> ExperimentalParts = new List<AvailablePart>();
 
+        public static Dictionary<string, int> BuildingMaxLevelCache = new Dictionary<string, int>();
+
         public static List<bool> showWindows = new List<bool> { false, true }; //build list, editor
         public static string KACAlarmId = "";
         public static double KACAlarmUT = 0;
-
-        public static bool TestFlightPartFailures = true;
-        public static bool RemoteTechEnabled = true;
 
         public static KCT_OnLoadError erroredDuringOnLoad = new KCT_OnLoadError();
 
@@ -72,17 +55,10 @@ namespace KerbalConstructionTime
         public static bool PersistenceLoaded = false;
         public static void reset()
         {
-            //firstStart = true;
-            //PartTracker = new Dictionary<string, int>();
-            //PartInventory = new Dictionary<string, int>();
             firstStart = false;
             vesselErrorAlerted = false;
 
-          /*  VABUpgrades = new List<int>() {0};
-            SPHUpgrades = new List<int>() {0};
-            RDUpgrades = new List<int>() {0, 0};*/
             PurchasedUpgrades = new List<int>() { 0, 0 };
-           // LaunchPadReconditioning = null;
             targetedItem = null;
             KCT_GUI.ResetFormulaRateHolders();
 
@@ -92,17 +68,9 @@ namespace KerbalConstructionTime
             ExperimentalParts.Clear();
             MiscellaneousTempUpgrades = 0;
 
+            BuildingMaxLevelCache.Clear();
 
             lastUT = 0;
-            //ActiveKSC = new KCT_KSC("Stock");
-            //KSCs = new List<KCT_KSC>() {ActiveKSC};
-
-
-           /* VABList = new List<KCT_BuildListVessel>();
-            VABWarehouse = new List<KCT_BuildListVessel>();
-            SPHList = new List<KCT_BuildListVessel>();
-            SPHWarehouse = new List<KCT_BuildListVessel>();
-            TechList = new List<KCT_TechItem>();*/
         }
 
     }

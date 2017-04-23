@@ -417,6 +417,12 @@ namespace KerbalConstructionTime
                         }
 
                         KCTDebug.Log("Rates updated");
+
+                        foreach (SpaceCenterFacility facility in Enum.GetValues(typeof(SpaceCenterFacility)))
+                        {
+                            KCT_GameStates.BuildingMaxLevelCache[facility.ToString()] = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
+                            KCTDebug.Log("Cached " + facility.ToString() + " max at " + KCT_GameStates.BuildingMaxLevelCache[facility.ToString()]);
+                        }
                     }
                 }
 
