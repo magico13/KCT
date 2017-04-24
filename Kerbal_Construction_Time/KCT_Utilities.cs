@@ -267,7 +267,7 @@ namespace KerbalConstructionTime
         public static double GetBuildTime(List<Part> parts, bool useInventory)
         {
             //get list of parts that are in the inventory
-            List<Part> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts) ?? new List<Part>();
+            List<Part> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts, ScrapYardWrapper.ComparisonStrength.STRICT) ?? new List<Part>();
 
             double totalEffectiveCost = 0;
             foreach (Part p in parts)
@@ -308,7 +308,7 @@ namespace KerbalConstructionTime
         public static double GetBuildTime(List<ConfigNode> parts, bool useInventory)
         {
             //get list of parts that are in the inventory
-            List<ConfigNode> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts) ?? new List<ConfigNode>();
+            List<ConfigNode> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts, ScrapYardWrapper.ComparisonStrength.STRICT) ?? new List<ConfigNode>();
 
             double totalEffectiveCost = 0;
             foreach (ConfigNode p in parts)
@@ -793,18 +793,7 @@ namespace KerbalConstructionTime
                 AddScienceWithMessage((float)(rate*vessel.buildPoints), TransactionReasons.None);
 
             //Add parts to the tracker
-            //if (!vessel.cannotEarnScience)
-            //{
-            //    List<string> trackedParts = new List<string>();
-            //    foreach (ConfigNode p in vessel.ExtractedPartNodes)
-            //    {
-            //        if (!trackedParts.Contains(PartNameFromNode(p)+GetTweakScaleSize(p)))
-            //        {
-            //            AddPartToTracker(PartNameFromNode(p) + GetTweakScaleSize(p));
-            //            trackedParts.Add(PartNameFromNode(p) + GetTweakScaleSize(p));
-            //        }
-            //    }
-            //}
+            ScrapYardWrapper.RecordBuild(vessel.ExtractedPartNodes);
 
             string stor = ListIdentifier == 0 ? "VAB" : "SPH";
             KCTDebug.Log("Moved vessel " + vessel.shipName + " to " +KSC.KSCName + "'s " + stor + " storage.");
@@ -1127,7 +1116,7 @@ namespace KerbalConstructionTime
                 type = "SPH";
             }
 
-            ScrapYardWrapper.ProcessVessel(blv.shipNode.GetNodes("PART").ToList(), useInventory);
+            ScrapYardWrapper.ProcessVessel(blv.shipNode.GetNodes("PART").ToList());
 
             KCTDebug.Log("Added " + blv.shipName + " to " + type + " build list at KSC "+KCT_GameStates.ActiveKSC.KSCName+". Cost: "+blv.cost);
             KCTDebug.Log("Launch site is " + blv.launchSite);

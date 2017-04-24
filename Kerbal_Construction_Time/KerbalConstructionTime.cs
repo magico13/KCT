@@ -149,12 +149,6 @@ namespace KerbalConstructionTime
 
             instance = this;
 
-            //add the events
-            if (!KCT_Events.instance.eventAdded)
-            {
-                KCT_Events.instance.addEvents();
-            }
-
             KCT_GameStates.settings.Load(); //Load the settings file, if it exists
 
             string SavedFile = KSPUtil.ApplicationRootPath + "/saves/" + HighLogic.SaveFolder + "/KCT_Settings.cfg";
@@ -193,6 +187,12 @@ namespace KerbalConstructionTime
         public void Start()
         {
             KCTDebug.Log("Start called");
+
+            //add the events
+            if (!KCT_Events.instance.eventAdded)
+            {
+                KCT_Events.instance.addEvents();
+            }
 
             KCT_GameStates.settings.Save(); //Save the settings file, with defaults if it doesn't exist
             KCT_PresetManager.Instance.SaveActiveToSaveData();

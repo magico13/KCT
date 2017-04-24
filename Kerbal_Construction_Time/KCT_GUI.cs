@@ -791,17 +791,34 @@ namespace KerbalConstructionTime
             if (!b.isFinished)
             {
                 List<ConfigNode> parts = b.ExtractedPartNodes;
-                float totalCost = 0;
-                foreach (ConfigNode p in parts)
-                {
-                    totalCost += KCT_Utilities.GetPartCostFromNode(p);
-                }
-                totalCost = (int)(totalCost * b.ProgressPercent() / 100);
+                //double costCompleted = 0;
+                //foreach (ConfigNode p in parts)
+                //{
+                //    costCompleted += KCT_Utilities.GetPartCostFromNode(p);
+                //}
+                //costCompleted = (costCompleted * b.ProgressPercent() / 100);
                 b.RemoveFromBuildList();
+
+                //only add parts that were already a part of the inventory
+                //except that right now 0 recoveries is the same as not in the inventory
+                List<ConfigNode> partsToReturn = new List<ConfigNode>();
+                foreach (ConfigNode partNode in parts)
+                {
+                    if (ScrapYardWrapper.PartIsFromInventory(partNode))
+                    {
+                        partsToReturn.Add(partNode);
+                    }
+                }
+                if (partsToReturn.Any())
+                {
+                    ScrapYardWrapper.AddPartsToInventory(partsToReturn, false);
+                }
             }
             else
             {
                 b.RemoveFromBuildList();
+                //add parts to inventory
+                ScrapYardWrapper.AddPartsToInventory(b.ExtractedPartNodes, false); //don't count as a recovery
             }
             KCT_Utilities.AddFunds(b.cost, TransactionReasons.VesselRollout);
         }

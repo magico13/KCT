@@ -43,6 +43,8 @@ namespace KerbalConstructionTime
 
             GameEvents.OnKSCStructureRepaired.Add(FaciliyRepaired);
             GameEvents.OnKSCStructureCollapsed.Add(FacilityDestroyed);
+
+            GameEvents.FindEvent<EventVoid>("OnSYInventoryAppliedToVessel")?.Add(SYInventoryApplied);
        //     GameEvents.OnKSCStructureRepairing.Add(FacilityRepairingEvent);
           //  GameEvents.onLevelWasLoaded.Add(LevelLoadedEvent);
 
@@ -256,6 +258,15 @@ namespace KerbalConstructionTime
             //    msg.AppendLine("\nChance of failure: " + Math.Round(100 * damage) + "%");
             //    KCT_Utilities.DisplayMessage("KCT: Parts Scrapped", msg, MessageSystemButton.MessageButtonColor.ORANGE, MessageSystemButton.ButtonIcons.ALERT);
             //}
+        }
+
+        private void SYInventoryApplied()
+        {
+            KCTDebug.Log("Inventory was applied. Recalculating.");
+            if (HighLogic.LoadedSceneIsEditor)
+            {
+                KerbalConstructionTime.instance.editorRecalcuationRequired = true;
+            }
         }
 
         private void ShipModifiedEvent(ShipConstruct vessel)
