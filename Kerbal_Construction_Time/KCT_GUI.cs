@@ -1303,12 +1303,15 @@ namespace KerbalConstructionTime
             foreach (ProtoCrewMember crewMember in roster) //Initialize available crew list
             {
                 bool available = true;
-                if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && !crewMember.inactive)
                 {
                     foreach (CrewedPart cP in KCT_GameStates.launchedCrew)
                     {
                         if (cP.crewList.Contains(crewMember))
+                        {
                             available = false;
+                            break;
+                        }
                     }
                 }
                 else
@@ -1321,12 +1324,15 @@ namespace KerbalConstructionTime
             foreach (ProtoCrewMember crewMember in HighLogic.CurrentGame.CrewRoster.Tourist) //Get tourists
             {
                 bool available = true;
-                if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                if (crewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && !crewMember.inactive)
                 {
                     foreach (CrewedPart cP in KCT_GameStates.launchedCrew)
                     {
                         if (cP.crewList.Contains(crewMember))
+                        {
                             available = false;
+                            break;
+                        }
                     }
                 }
                 else
