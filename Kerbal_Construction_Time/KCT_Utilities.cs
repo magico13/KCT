@@ -267,7 +267,7 @@ namespace KerbalConstructionTime
         public static double GetBuildTime(List<Part> parts, bool useInventory)
         {
             //get list of parts that are in the inventory
-            List<Part> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts, ScrapYardWrapper.ComparisonStrength.STRICT) ?? new List<Part>();
+            IList<Part> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts, ScrapYardWrapper.ComparisonStrength.STRICT) ?? new List<Part>();
 
             double totalEffectiveCost = 0;
             foreach (Part p in parts)
@@ -308,7 +308,7 @@ namespace KerbalConstructionTime
         public static double GetBuildTime(List<ConfigNode> parts, bool useInventory)
         {
             //get list of parts that are in the inventory
-            List<ConfigNode> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts, ScrapYardWrapper.ComparisonStrength.STRICT) ?? new List<ConfigNode>();
+            IList<ConfigNode> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts, ScrapYardWrapper.ComparisonStrength.STRICT) ?? new List<ConfigNode>();
 
             double totalEffectiveCost = 0;
             foreach (ConfigNode p in parts)
