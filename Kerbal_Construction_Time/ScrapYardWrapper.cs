@@ -14,6 +14,25 @@ namespace KerbalConstructionTime
         private static object _instance;
 
         /// <summary>
+        /// The part tracker type to reference
+        /// </summary>
+        public enum TrackType
+        {
+            /// <summary>
+            /// Total number of builds/uses combining new and reused
+            /// </summary>
+            TOTAL,
+            /// <summary>
+            /// Only new builds/uses of the part
+            /// </summary>
+            NEW,
+            /// <summary>
+            /// Only reused builds/uses of the part
+            /// </summary>
+            INVENTORIED
+        }
+
+        /// <summary>
         /// The strictness of comparing two parts for equivalency
         /// </summary>
         public enum ComparisonStrength
@@ -59,84 +78,9 @@ namespace KerbalConstructionTime
             }
         }
 
-        /// <summary>
-        /// Removes inventory parts, refunds funds, marks it as tracked
-        /// </summary>
-        /// <param name="parts">The vessel as a List of Parts</param>
-        /// <returns>True if processed, false otherwise</returns>
-        public static bool ProcessVessel(IEnumerable<Part> parts)
-        {
-            if (!Available)
-            {
-                return false;
-            }
-            return (bool)invokeMethod("ProcessVessel_Parts", parts);
-        }
+        #region Public Methods
 
-        /// <summary>
-        /// Removes inventory parts, refunds funds, marks it as tracked
-        /// </summary>
-        /// <param name="parts">The vessel as a List of part ConfigNodes</param>
-        /// <returns>True if processed, false otherwise</returns>
-        public static bool ProcessVessel(IEnumerable<ConfigNode> parts)
-        {
-            if (!Available)
-            {
-                return false;
-            }
-            return (bool)invokeMethod("ProcessVessel_Nodes", parts);
-        }
-
-        /// <summary>
-        /// Adds a list of parts to the Inventory
-        /// </summary>
-        /// <param name="parts">The list of parts to add</param>
-        /// <param name="incrementRecovery">If true, increments the number of recoveries in the tracker</param>
-        public static void AddPartsToInventory(IEnumerable<Part> parts, bool incrementRecovery)
-        {
-            if (Available)
-            {
-                invokeMethod("AddPartsToInventory_Parts", parts, incrementRecovery);
-            }
-        }
-
-        /// <summary>
-        /// Adds a list of parts to the Inventory
-        /// </summary>
-        /// <param name="parts">The list of parts to add</param>
-        /// <param name="incrementRecovery">If true, increments the number of recoveries in the tracker</param>
-        public static void AddPartsToInventory(IEnumerable<ConfigNode> parts, bool incrementRecovery)
-        {
-            if (Available)
-            {
-                invokeMethod("AddPartsToInventory_Nodes", parts, incrementRecovery);
-            }
-        }
-
-        /// <summary>
-        /// Records a build in the part tracker
-        /// </summary>
-        /// <param name="parts">The vessel as a list of Parts.</param>
-        public static void RecordBuild(IEnumerable<Part> parts)
-        {
-            if (Available)
-            {
-                invokeMethod("RecordBuild_Parts", parts);
-            }
-        }
-
-        /// <summary>
-        /// Records a build in the part tracker
-        /// </summary>
-        /// <param name="parts">The vessel as a list of ConfigNodes.</param>
-        public static void RecordBuild(IEnumerable<ConfigNode> parts)
-        {
-            if (Available)
-            {
-                invokeMethod("RecordBuild_Nodes", parts);
-            }
-        }
-
+        #region Inventory Manipulation
         /// <summary>
         /// Takes a List of Parts and returns the Parts that are present in the inventory. 
         /// </summary>
@@ -170,6 +114,32 @@ namespace KerbalConstructionTime
         }
 
         /// <summary>
+        /// Adds a list of parts to the Inventory
+        /// </summary>
+        /// <param name="parts">The list of parts to add</param>
+        /// <param name="incrementRecovery">If true, increments the number of recoveries in the tracker</param>
+        public static void AddPartsToInventory(IEnumerable<Part> parts, bool incrementRecovery)
+        {
+            if (Available)
+            {
+                invokeMethod("AddPartsToInventory_Parts", parts, incrementRecovery);
+            }
+        }
+
+        /// <summary>
+        /// Adds a list of parts to the Inventory
+        /// </summary>
+        /// <param name="parts">The list of parts to add</param>
+        /// <param name="incrementRecovery">If true, increments the number of recoveries in the tracker</param>
+        public static void AddPartsToInventory(IEnumerable<ConfigNode> parts, bool incrementRecovery)
+        {
+            if (Available)
+            {
+                invokeMethod("AddPartsToInventory_Nodes", parts, incrementRecovery);
+            }
+        }
+
+        /// <summary>
         /// Adds a part to the Inventory
         /// </summary>
         /// <param name="part">The part to add</param>
@@ -198,6 +168,7 @@ namespace KerbalConstructionTime
             }
             return (bool)invokeMethod("AddPartToInventory_Node", part, incrementRecovery);
         }
+
 
         /// <summary>
         /// Removes a part from the Inventory using the given strictness for finding the part
@@ -259,6 +230,184 @@ namespace KerbalConstructionTime
             return invokeMethod("FindInventoryPart_Node", part, strictness.ToString()) as ConfigNode;
         }
 
+        #endregion Inventory Manipulation
+
+
+        #region Vessel Processing
+        /// <summary>
+        /// Removes inventory parts, refunds funds, marks it as tracked
+        /// </summary>
+        /// <param name="parts">The vessel as a List of Parts</param>
+        /// <returns>True if processed, false otherwise</returns>
+        public static bool ProcessVessel(IEnumerable<Part> parts)
+        {
+            if (!Available)
+            {
+                return false;
+            }
+            return (bool)invokeMethod("ProcessVessel_Parts", parts);
+        }
+
+        /// <summary>
+        /// Removes inventory parts, refunds funds, marks it as tracked
+        /// </summary>
+        /// <param name="parts">The vessel as a List of part ConfigNodes</param>
+        /// <returns>True if processed, false otherwise</returns>
+        public static bool ProcessVessel(IEnumerable<ConfigNode> parts)
+        {
+            if (!Available)
+            {
+                return false;
+            }
+            return (bool)invokeMethod("ProcessVessel_Nodes", parts);
+        }
+
+
+
+        /// <summary>
+        /// Records a build in the part tracker
+        /// </summary>
+        /// <param name="parts">The vessel as a list of Parts.</param>
+        public static void RecordBuild(IEnumerable<Part> parts)
+        {
+            if (Available)
+            {
+                invokeMethod("RecordBuild_Parts", parts);
+            }
+        }
+
+        /// <summary>
+        /// Records a build in the part tracker
+        /// </summary>
+        /// <param name="parts">The vessel as a list of ConfigNodes.</param>
+        public static void RecordBuild(IEnumerable<ConfigNode> parts)
+        {
+            if (Available)
+            {
+                invokeMethod("RecordBuild_Nodes", parts);
+            }
+        }
+
+        #endregion Vessel Processing
+
+
+        #region Part Tracker
+        /// <summary>
+        /// Gets the number of builds for a part
+        /// </summary>
+        /// <param name="part">The part to check</param>
+        /// <returns>Number of builds for the part</returns>
+        public static int GetBuildCount(Part part, TrackType trackType = TrackType.TOTAL)
+        {
+            if (!Available)
+            {
+                return 0;
+            }
+            return (int)invokeMethod("GetBuildCount_Part", part, trackType.ToString());
+        }
+
+        /// <summary>
+        /// Gets the number of builds for a part
+        /// </summary>
+        /// <param name="partNode">The ConfigNode of the part to check</param>
+        /// <returns>Number of builds for the part</returns>
+        public static int GetBuildCount(ConfigNode part, TrackType trackType = TrackType.TOTAL)
+        {
+            if (!Available)
+            {
+                return 0;
+            }
+            return (int)invokeMethod("GetBuildCount_Node", part, trackType.ToString());
+        }
+
+        /// <summary>
+        /// Gets the number of total uses of a part
+        /// </summary>
+        /// <param name="part">The part to check</param>
+        /// <returns>Number of uses of the part</returns>
+        public static int GetUseCount(Part part, TrackType trackType = TrackType.TOTAL)
+        {
+            if (!Available)
+            {
+                return 0;
+            }
+            return (int)invokeMethod("GetUseCount_Part", part, trackType.ToString());
+        }
+
+        /// <summary>
+        /// Gets the number of total uses of a part
+        /// </summary>
+        /// <param name="partNode">The ConfigNode of the part to check</param>
+        /// <returns>Number of uses of the part</returns>
+        public static int GetUseCount(ConfigNode part, TrackType trackType = TrackType.TOTAL)
+        {
+            if (!Available)
+            {
+                return 0;
+            }
+            return (int)invokeMethod("GetUseCount_Node", part, trackType.ToString());
+        }
+
+        /// <summary>
+        /// Gets the unique ID for the current part.
+        /// It is recommended to cache this.
+        /// </summary>
+        /// <param name="part">The part to get the ID of</param>
+        /// <returns>The part's ID (a Guid) as a string or null if it can't be gotten</returns>
+        public static string GetPartID(Part part)
+        {
+            if (!Available)
+            {
+                return null;
+            }
+            return invokeMethod("GetPartID_Part", part) as string;
+        }
+
+        /// <summary>
+        /// Gets the unique ID for the current part.
+        /// It is recommended to cache this.
+        /// </summary>
+        /// <param name="part">The part to get the ID of</param>
+        /// <returns>The part's ID (a Guid) as a string or null if it can't be gotten</returns>
+        public static string GetPartID(ConfigNode part)
+        {
+            if (!Available)
+            {
+                return null;
+            }
+            return invokeMethod("GetPartID_Node", part) as string;
+        }
+
+        /// <summary>
+        /// Gets the number of times a part has been recovered. 
+        /// It is recommended to cache this.
+        /// </summary>
+        /// <param name="part">The part to get the TimesRecovered count of.</param>
+        /// <returns>The number of times the part has been recovered.</returns>
+        public static int GetTimesUsed(Part part)
+        {
+            if (!Available)
+            {
+                return 0;
+            }
+            return (int)invokeMethod("GetTimesUsed_Part", part);
+        }
+
+        /// <summary>
+        /// Gets the number of times a part has been recovered. 
+        /// It is recommended to cache this.
+        /// </summary>
+        /// <param name="part">The part to get the TimesRecovered count of.</param>
+        /// <returns>The number of times the part has been recovered.</returns>
+        public static int GetTimesUsed(ConfigNode part)
+        {
+            if (!Available)
+            {
+                return 0;
+            }
+            return (int)invokeMethod("GetTimesUsed_Node", part);
+        }
+
         /// <summary>
         /// Checks if the part is pulled from the inventory or is new
         /// </summary>
@@ -286,62 +435,9 @@ namespace KerbalConstructionTime
             }
             return (bool)invokeMethod("PartIsFromInventory_Node", part);
         }
+        #endregion Part Tracker
 
-        /// <summary>
-        /// Gets the number of builds for a part
-        /// </summary>
-        /// <param name="part">The part to check</param>
-        /// <returns>Number of builds for the part</returns>
-        public static int GetBuildCount(Part part)
-        {
-            if (!Available)
-            {
-                return 0;
-            }
-            return (int)invokeMethod("GetBuildCount_Part", part);
-        }
-
-        /// <summary>
-        /// Gets the number of builds for a part
-        /// </summary>
-        /// <param name="partNode">The ConfigNode of the part to check</param>
-        /// <returns>Number of builds for the part</returns>
-        public static int GetBuildCount(ConfigNode part)
-        {
-            if (!Available)
-            {
-                return 0;
-            }
-            return (int)invokeMethod("GetBuildCount_Node", part);
-        }
-
-        /// <summary>
-        /// Gets the number of total uses of a part
-        /// </summary>
-        /// <param name="part">The part to check</param>
-        /// <returns>Number of uses of the part</returns>
-        public static int GetUseCount(Part part)
-        {
-            if (!Available)
-            {
-                return 0;
-            }
-            return (int)invokeMethod("GetUseCount_Part", part);
-        }
-
-        /// <summary>
-        /// Gets the number of total uses of a part
-        /// </summary>
-        /// <param name="partNode">The ConfigNode of the part to check</param>
-        /// <returns>Number of uses of the part</returns>
-        public static int GetUseCount(ConfigNode part)
-        {
-            if (!Available)
-            {
-                return 0;
-            }
-            return (int)invokeMethod("GetUseCount_Node", part);
-        }
+        #endregion Public Methods
 
         #region Private Methods
         /// <summary>

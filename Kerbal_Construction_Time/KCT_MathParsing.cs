@@ -244,6 +244,10 @@ namespace KerbalConstructionTime
             crewVars.Add("TScK", scientists_total.ToString());
             crewVars.Add("TScL", sLevels_total.ToString());
 
+
+            KCTDebug.Log("Printing crewVars data");
+            foreach (var kvp in crewVars)
+                KCTDebug.Log(kvp.Key + ":" + kvp.Value);
             //return crewVars;
         }
     }
