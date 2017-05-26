@@ -116,8 +116,8 @@ namespace KerbalConstructionTime
             double progress, buildTime;
             [Persistent]
             String launchSite, flag;
-            [Persistent]
-            List<string> InventoryParts;
+            //[Persistent]
+            //List<string> InventoryParts;
             [Persistent]
             bool cannotEarnScience;
             [Persistent]
