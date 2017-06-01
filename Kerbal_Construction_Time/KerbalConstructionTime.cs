@@ -406,23 +406,30 @@ namespace KerbalConstructionTime
 
                 if (!ratesUpdated)
                 {
-                    if (ScenarioUpgradeableFacilities.GetFacilityLevelCount(SpaceCenterFacility.VehicleAssemblyBuilding) >= 0)
+                    if (HighLogic.LoadedScene == GameScenes.SPACECENTER) 
+                    {
+                        if (ScenarioUpgradeableFacilities.GetFacilityLevelCount(SpaceCenterFacility.VehicleAssemblyBuilding) >= 0)
+                        {
+                            ratesUpdated = true;
+                            KCTDebug.Log("Updating build rates");
+                            foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
+                            {
+                                KSC?.RecalculateBuildRates();
+                                KSC?.RecalculateUpgradedBuildRates();
+                            }
+
+                            KCTDebug.Log("Rates updated");
+
+                            foreach (SpaceCenterFacility facility in Enum.GetValues(typeof(SpaceCenterFacility)))
+                            {
+                                KCT_GameStates.BuildingMaxLevelCache[facility.ToString()] = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
+                                KCTDebug.Log("Cached " + facility.ToString() + " max at " + KCT_GameStates.BuildingMaxLevelCache[facility.ToString()]);
+                            }
+                        }
+                    }
+                    else
                     {
                         ratesUpdated = true;
-                        KCTDebug.Log("Updating build rates");
-                        foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
-                        {
-                            KSC?.RecalculateBuildRates();
-                            KSC?.RecalculateUpgradedBuildRates();
-                        }
-
-                        KCTDebug.Log("Rates updated");
-
-                        foreach (SpaceCenterFacility facility in Enum.GetValues(typeof(SpaceCenterFacility)))
-                        {
-                            KCT_GameStates.BuildingMaxLevelCache[facility.ToString()] = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
-                            KCTDebug.Log("Cached " + facility.ToString() + " max at " + KCT_GameStates.BuildingMaxLevelCache[facility.ToString()]);
-                        }
                     }
                 }
 
