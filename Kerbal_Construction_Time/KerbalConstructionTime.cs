@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using KSP;
+using System.Collections;
 
 namespace KerbalConstructionTime
 {
@@ -251,11 +252,6 @@ namespace KerbalConstructionTime
                     else
                         KCT_GUI.ClickOff();
                 }
-                if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
-                {
-                    KCT_GameStates.delayStart = false;
-                    EditorLogic.fetch.shipNameField.text = KCT_GameStates.editedVessel.shipName;
-                }
             }
             else if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
@@ -366,7 +362,8 @@ namespace KerbalConstructionTime
             }
         }
 
-        public static bool moved = false;
+
+        private static bool shouldRunDelayedStart = false;
         private static int lvlCheckTimer = 0;
         private static bool ratesUpdated = false;
         public void FixedUpdate()
@@ -522,7 +519,7 @@ namespace KerbalConstructionTime
                 Debug.LogException(e);
             }
         }
-        
+
         public static void DelayedStart()
         {
             KCTDebug.Log("DelayedStart start");
@@ -718,55 +715,6 @@ namespace KerbalConstructionTime
             {
                 KCT_Utilities.AddVesselToBuildList();
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
-            }
-        }
-
-        public void UpdateOldFormulaCFG()
-        {
-            String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Formulas.cfg";
-            if (System.IO.File.Exists(filePath))
-            {
-                bool didUpdate = false;
-                ConfigNode current = ConfigNode.Load(filePath).GetNode("KCT_FormulaSettings");
-                if (current.HasValue("NodeMax") && current.HasValue("NodeFormula"))
-                {
-                    string max = current.GetValue("NodeMax");
-                    if (max != "" && double.Parse(max) > 0)
-                    {
-                        didUpdate = true;
-                        KCTDebug.Log("Updating node formula.");
-                        string concat = "min(" + max + ", " + current.GetValue("NodeFormula") + ")";
-                        current.SetValue("NodeFormula", concat);
-                    }
-                }
-                if (current.HasValue("UpgradeFundsMax") && current.HasValue("UpgradeFundsFormula"))
-                {
-                    string max = current.GetValue("UpgradeFundsMax");
-                    if (max != "" && double.Parse(max) > 0)
-                    {
-                        didUpdate = true;
-                        KCTDebug.Log("Updating funds upgrades formula.");
-                        string concat = "min(" + max + ", " + current.GetValue("UpgradeFundsFormula") + ")";
-                        current.SetValue("UpgradeFundsFormula", concat);
-                    }
-                }
-                if (current.HasValue("UpgradeScienceMax") && current.HasValue("UpgradeScienceFormula"))
-                {
-                    string max = current.GetValue("UpgradeScienceMax");
-                    if (max != "" && double.Parse(max) > 0)
-                    {
-                        didUpdate = true;
-                        KCTDebug.Log("Updating science upgrades formula.");
-                        string concat = "min(" + max + ", " + current.GetValue("UpgradeScienceFormula") + ")";
-                        current.SetValue("UpgradeScienceFormula", concat);
-                    }
-                }
-                if (didUpdate)
-                {
-                    ConfigNode save = new ConfigNode("KCT_FormulaSettings");
-                    save.AddNode(current);
-                    save.Save(filePath);
-                }
             }
         }
     }

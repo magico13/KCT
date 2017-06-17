@@ -527,10 +527,12 @@ namespace KerbalConstructionTime
                     InputLockManager.RemoveControlLock("KCTEditLaunch");
                     EditorLogic.fetch.Unlock("KCTEditorMouseLock");
                     KCTDebug.Log("Edits saved.");
+
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
                 if (GUILayout.Button("Cancel Edits"))
                 {
+                    KCTDebug.Log("Edits cancelled.");
                     finishedShipBP = -1;
                     KCT_GameStates.EditorShipEditingMode = false;
 
@@ -539,7 +541,9 @@ namespace KerbalConstructionTime
                     InputLockManager.RemoveControlLock("KCTEditNew");
                     InputLockManager.RemoveControlLock("KCTEditLaunch");
                     EditorLogic.fetch.Unlock("KCTEditorMouseLock");
-                    KCTDebug.Log("Edits cancelled.");
+
+                    ScrapYardWrapper.ProcessVessel(KCT_GameStates.editedVessel.ExtractedPartNodes);
+
                     HighLogic.LoadScene(GameScenes.SPACECENTER);
                 }
                 GUILayout.EndHorizontal();
@@ -800,18 +804,20 @@ namespace KerbalConstructionTime
                 b.RemoveFromBuildList();
 
                 //only add parts that were already a part of the inventory
-                //except that right now 0 recoveries is the same as not in the inventory
-                List<ConfigNode> partsToReturn = new List<ConfigNode>();
-                foreach (ConfigNode partNode in parts)
+                if (ScrapYardWrapper.Available)
                 {
-                    if (ScrapYardWrapper.PartIsFromInventory(partNode))
+                    List<ConfigNode> partsToReturn = new List<ConfigNode>();
+                    foreach (ConfigNode partNode in parts)
                     {
-                        partsToReturn.Add(partNode);
+                        if (ScrapYardWrapper.PartIsFromInventory(partNode))
+                        {
+                            partsToReturn.Add(partNode);
+                        }
                     }
-                }
-                if (partsToReturn.Any())
-                {
-                    ScrapYardWrapper.AddPartsToInventory(partsToReturn, false);
+                    if (partsToReturn.Any())
+                    {
+                        ScrapYardWrapper.AddPartsToInventory(partsToReturn, false);
+                    }
                 }
             }
             else
@@ -820,6 +826,7 @@ namespace KerbalConstructionTime
                 //add parts to inventory
                 ScrapYardWrapper.AddPartsToInventory(b.ExtractedPartNodes, false); //don't count as a recovery
             }
+            ScrapYardWrapper.SetProcessedStatus(ScrapYardWrapper.GetPartID(b.ExtractedPartNodes[0]), false);
             KCT_Utilities.AddFunds(b.cost, TransactionReasons.VesselRollout);
         }
 

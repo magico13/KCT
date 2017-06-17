@@ -230,6 +230,19 @@ namespace KerbalConstructionTime
             return invokeMethod("FindInventoryPart_Node", part, strictness.ToString()) as ConfigNode;
         }
 
+        /// <summary>
+        /// Finds a part in the inventory for the given id
+        /// </summary>
+        /// <param name="id">The id of the part to search for.</param>
+        /// <returns>A ConfigNode representing the InventoryPart, or null if none found.</returns>
+        public static ConfigNode FindInventoryPart(string id)
+        {
+            if (!Available)
+            {
+                return null;
+            }
+            return invokeMethod("FindInventoryPart_ID", id) as ConfigNode;
+        }
         #endregion Inventory Manipulation
 
 
@@ -286,6 +299,21 @@ namespace KerbalConstructionTime
             {
                 invokeMethod("RecordBuild_Nodes", parts);
             }
+        }
+
+        /// <summary>
+        /// Sets whether a vessel is tracked or not
+        /// </summary>
+        /// <param name="id">The ID of the vessel</param>
+        /// <param name="newStatus">The status to set</param>
+        /// <returns>The previous status</returns>
+        public static bool SetProcessedStatus(string id, bool newStatus)
+        {
+            if (Available)
+            {
+                return (bool)invokeMethod("SetProcessedStatus_ID", id, newStatus);
+            }
+            return false;
         }
 
         #endregion Vessel Processing

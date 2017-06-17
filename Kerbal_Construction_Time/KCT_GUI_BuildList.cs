@@ -1124,22 +1124,11 @@ namespace KerbalConstructionTime
                 KCT_GameStates.editedVessel = b;
                 KCT_GameStates.editedVessel.KSC = null;
                 KCT_GameStates.EditorShipEditingMode = true;
-                KCT_GameStates.delayStart = true;
 
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_EXIT, "KCTEditExit");
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_LOAD, "KCTEditLoad");
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_NEW, "KCTEditNew");
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTEditLaunch");
-
-                KCT_GameStates.EditedVesselParts.Clear();
-                foreach (ConfigNode node in b.ExtractedPartNodes)
-                {
-                    string name = KCT_Utilities.PartNameFromNode(node) + KCT_Utilities.GetTweakScaleSize(node);
-                    if (!KCT_GameStates.EditedVesselParts.ContainsKey(name))
-                        KCT_GameStates.EditedVesselParts.Add(name, 1);
-                    else
-                        ++KCT_GameStates.EditedVesselParts[name];
-                }
 
                 //EditorDriver.StartAndLoadVessel(tempFile);
                 EditorDriver.StartAndLoadVessel(tempFile, b.type == KCT_BuildListVessel.ListType.VAB ? EditorFacility.VAB : EditorFacility.SPH);
