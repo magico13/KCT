@@ -366,7 +366,7 @@ namespace KerbalConstructionTime
             }
         }
 
-        public static bool moved = false;
+
         private static int lvlCheckTimer = 0;
         private static bool ratesUpdated = false;
         public void FixedUpdate()

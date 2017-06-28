@@ -491,7 +491,7 @@ namespace KerbalConstructionTime
                             string rolloutText = (i == MouseOnRolloutButton ? MagiCore.Utilities.GetColonFormattedTime(tmpRollout.AsBuildItem().GetTimeLeft()) : "Rollout");
                             if (GUILayout.Button(rolloutText, btnColor, GUILayout.ExpandWidth(false)))
                             {
-                                List<string> facilityChecks = b.MeetsFacilityRequirements();
+                                List<string> facilityChecks = b.MeetsFacilityRequirements(false);
                                 if (facilityChecks.Count == 0)
                                 {
                                     if (!KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed)
@@ -566,7 +566,7 @@ namespace KerbalConstructionTime
                                 }
                                 b.launchSiteID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
 
-                                List<string> facilityChecks = b.MeetsFacilityRequirements();
+                                List<string> facilityChecks = b.MeetsFacilityRequirements(false);
                                 if (facilityChecks.Count == 0)
                                 {
                                    // bool operational = !KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed;// && KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.VAB);//new PreFlightTests.FacilityOperational("LaunchPad", "building").Test();
@@ -825,7 +825,7 @@ namespace KerbalConstructionTime
                         //ScenarioDestructibles.protoDestructibles["KSCRunway"].
                         if (HighLogic.LoadedScene != GameScenes.TRACKSTATION && recovery == null && GUILayout.Button("Launch", GUILayout.ExpandWidth(false)))
                         {
-                            List<string> facilityChecks = b.MeetsFacilityRequirements();
+                            List<string> facilityChecks = b.MeetsFacilityRequirements(false);
                             if (facilityChecks.Count == 0)
                             {
                                 bool operational = KCT_Utilities.LaunchFacilityIntact(KCT_BuildListVessel.ListType.SPH);//new PreFlightTests.FacilityOperational("Runway", "building").Test();
