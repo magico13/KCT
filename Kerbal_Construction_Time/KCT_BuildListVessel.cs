@@ -464,7 +464,7 @@ namespace KerbalConstructionTime
             KCT_GameStates.LaunchFromTS = false;
         }
 
-        public List<string> MeetsFacilityRequirements()
+        public List<string> MeetsFacilityRequirements(bool highestFacility = true)
         {
             List<string> failedReasons = new List<string>();
             if (!KCT_Utilities.CurrentGameIsCareer())
@@ -475,7 +475,10 @@ namespace KerbalConstructionTime
 
             if (this.type == KCT_BuildListVessel.ListType.VAB)
             {
-                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(KCT_GameStates.ActiveKSC.ActiveLPInstance.level/2.0F, true))
+                KCT_LaunchPad selectedPad = highestFacility ? KCT_GameStates.ActiveKSC.GetHighestLevelLaunchPad() : KCT_GameStates.ActiveKSC.ActiveLPInstance;
+                float launchpadNormalizedLevel = 1.0f * selectedPad.level / KCT_GameStates.BuildingMaxLevelCache["LaunchPad"];
+                
+                if (this.GetTotalMass() > GameVariables.Instance.GetCraftMassLimit(launchpadNormalizedLevel, true))
                 {
                     failedReasons.Add("Mass limit exceeded");
                 }
@@ -483,7 +486,7 @@ namespace KerbalConstructionTime
                 {
                     failedReasons.Add("Part Count limit exceeded");
                 }
-                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(KCT_GameStates.ActiveKSC.ActiveLPInstance.level/2.0F, true));
+                PreFlightTests.CraftWithinSizeLimits sizeCheck = new PreFlightTests.CraftWithinSizeLimits(template, SpaceCenterFacility.LaunchPad, GameVariables.Instance.GetCraftSizeLimit(launchpadNormalizedLevel, true));
                 if (!sizeCheck.Test())
                 {
                     failedReasons.Add("Size limits exceeded");
@@ -537,7 +540,6 @@ namespace KerbalConstructionTime
             }
         }
 
-        //NOTE: This is an approximation. This won't properly take into account for resources and tweakscale! DO NOT USE IF YOU CARE 100% ABOUT THE MASS
         public double GetTotalMass()
         {
             if (TotalMass != 0 && emptyMass != 0) return TotalMass;

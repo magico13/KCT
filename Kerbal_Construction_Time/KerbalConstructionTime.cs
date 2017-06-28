@@ -363,7 +363,6 @@ namespace KerbalConstructionTime
         }
 
 
-        private static bool shouldRunDelayedStart = false;
         private static int lvlCheckTimer = 0;
         private static bool ratesUpdated = false;
         public void FixedUpdate()

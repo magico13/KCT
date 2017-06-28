@@ -140,6 +140,24 @@ namespace KerbalConstructionTime
             LaunchPads[LP_ID].SetActive();
         }
 
+        /// <summary>
+        /// Finds the highest level LaunchPad on the KSC
+        /// </summary>
+        /// <returns>The instance of the highest level LaunchPad</returns>
+        public KCT_LaunchPad GetHighestLevelLaunchPad()
+        {
+            KCT_LaunchPad highest = LaunchPads[0];
+
+            foreach (KCT_LaunchPad pad in LaunchPads)
+            {
+                if (pad.level > highest.level)
+                {
+                    highest = pad;
+                }
+            }
+            return highest;
+        }
+
         public ConfigNode AsConfigNode()
         {
             KCTDebug.Log("Saving KSC "+KSCName);

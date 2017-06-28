@@ -1080,7 +1080,7 @@ namespace KerbalConstructionTime
             {
                 //Check upgrades
                 //First, mass limit
-                List<string> facilityChecks = blv.MeetsFacilityRequirements();
+                List<string> facilityChecks = blv.MeetsFacilityRequirements(true);
                 if (facilityChecks.Count != 0)
                 {
                     PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "editorChecksFailedPopup", "Failed editor checks!",
@@ -1957,7 +1957,7 @@ namespace KerbalConstructionTime
             int max = lvl;
             if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
             {
-                lvl = (int)(lvl * ScenarioUpgradeableFacilities.GetFacilityLevel(facilityID));
+                lvl = (int)Math.Round((lvl * ScenarioUpgradeableFacilities.GetFacilityLevel(facilityID))); //let's not store discrete things with integers! No! Let's use floats! -Squad
             }
 
             //KCTDebug.Log($"FacilityID: {facilityID} max: {max} lvl: {lvl}");
