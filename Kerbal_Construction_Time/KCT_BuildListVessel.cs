@@ -455,7 +455,9 @@ namespace KerbalConstructionTime
                 HighLogic.CurrentGame.editorFacility = EditorFacility.VAB;
             else
                 HighLogic.CurrentGame.editorFacility = EditorFacility.SPH;
-           // HighLogic.CurrentGame.editorFacility = GetEditorFacility();
+            // HighLogic.CurrentGame.editorFacility = GetEditorFacility();
+
+            KCT_Utilities.SetKKLaunchSite(launchSite, HighLogic.CurrentGame.editorFacility);
 
             string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
             UpdateRFTanks();

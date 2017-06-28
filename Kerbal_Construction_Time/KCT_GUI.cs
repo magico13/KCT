@@ -372,6 +372,10 @@ namespace KerbalConstructionTime
         private static double finishedShipBP = -1;
         public static void DrawEditorGUI(int windowID)
         {
+            if (EditorLogic.fetch == null)
+            {
+                return;
+            }
             GUILayout.BeginVertical();
             //GUILayout.Label("Current KSC: " + KCT_GameStates.ActiveKSC.KSCName);
             if (!KCT_GameStates.EditorShipEditingMode) //Build mode

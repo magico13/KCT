@@ -1516,7 +1516,7 @@ namespace KerbalConstructionTime
             Type KKLaunchSiteManager = null;
             AssemblyLoader.loadedAssemblies.TypeOperation(t =>
             {
-                if (t.FullName == "KerbalKonstructs.LaunchSites.LaunchSiteManager")
+                if (t.FullName == "KerbalKonstructs.Core.LaunchSiteManager")
                 {
                     KKLaunchSiteManager = t;
                 }
@@ -1531,7 +1531,7 @@ namespace KerbalConstructionTime
             }
             KCTDebug.Log("Site manager is good.");
 
-            System.Object siteProperty = GetMemberInfoValue(KKLaunchSiteManager.GetProperty("AllLaunchSites", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy), null);
+            object siteProperty = GetMemberInfoValue(KKLaunchSiteManager.GetProperty("AllLaunchSites", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy), null);
             if (siteProperty == null)
             {
                 KCTDebug.Log("siteProperty null");
@@ -1542,19 +1542,91 @@ namespace KerbalConstructionTime
                 return sites;
             }
 
-            foreach (var launchSite in siteProperty as System.Collections.IList)
+            KCTDebug.Log("Site property is good.");
+
+            foreach (var launchSite in siteProperty as IList)
             {
                 //get each launch site available
-                string name = GetMemberInfoValue(launchSite.GetType().GetMember("name")[0], launchSite) as string;
-                string openState = GetMemberInfoValue(launchSite.GetType().GetMember("openclosestate")[0], launchSite) as string;
-                string category = GetMemberInfoValue(launchSite.GetType().GetMember("category")[0], launchSite) as string;
+                string name = GetMemberInfoValue(launchSite.GetType().GetMember("LaunchSiteName")[0], launchSite) as string;
+                bool? isOpen = GetMemberInfoValue(launchSite.GetType().GetProperty("isOpen"), launchSite) as bool?;
+                string category = GetMemberInfoValue(launchSite.GetType().GetMember("Category")[0], launchSite) as string;
 
-                KCTDebug.Log("Launchsite info: Name: " + name + " Status: " + openState + " Category: " + category);
-                if (category == type && (!CurrentGameIsCareer() || openState == "Open"))
+                KCTDebug.Log("Launchsite info: Name: " + name + " Open?: " + isOpen + " Category: " + category);
+                if (isOpen == true && category == type)
                     sites.Add(name);
             }
             
             return sites;
+        }
+
+
+        public static void SetKKLaunchSite(string siteName, EditorFacility facility)
+        {
+            KCTDebug.Log("Setting active KK site to " + siteName);
+            Type KKLaunchSiteManager = null;
+            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+            {
+                if (t.FullName == "KerbalKonstructs.Core.LaunchSiteManager")
+                {
+                    KKLaunchSiteManager = t;
+                }
+            });
+            if (KKLaunchSiteManager == null)
+            {
+                return;
+            }
+            KCTDebug.Log("Site manager is good.");
+
+            object siteProperty = GetMemberInfoValue(KKLaunchSiteManager.GetProperty("AllLaunchSites", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy), null);
+            if (siteProperty == null)
+            {
+                KCTDebug.Log("siteProperty null");
+                return;
+            }
+
+            KCTDebug.Log("Site property is good.");
+
+            foreach (var launchSite in siteProperty as IList)
+            {
+                //get each launch site available
+                string name = GetMemberInfoValue(launchSite.GetType().GetMember("LaunchSiteName")[0], launchSite) as string;
+                if (name == siteName)
+                {
+                    KCTDebug.Log("Found site " + name);
+                    System.Reflection.FieldInfo facilityObj = null;
+                    if ( (facilityObj = launchSite.GetType().GetField("facility", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)) != null)
+                    {
+                        KCTDebug.Log("Facility exists");
+                        PSystemSetup.SpaceCenterFacility facilityFinal = facilityObj.GetValue(launchSite) as PSystemSetup.SpaceCenterFacility;
+                        if (facilityFinal != null)
+                        {
+                            if (facility == EditorFacility.SPH)
+                            {
+                                facilityFinal.name = "Runway";
+                            }
+                            else
+                            {
+                                facilityFinal.name = "LaunchPad";
+                            }
+                        }
+                    }
+
+                    if (EditorLogic.fetch != null)
+                    {
+                        EditorLogic.fetch.launchSiteName = siteName;
+                    }
+                    var currentSiteField = KKLaunchSiteManager.GetField("currentLaunchSite", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.FlattenHierarchy);
+                    if (currentSiteField != null)
+                    {
+                        currentSiteField.SetValue(null, siteName);
+                    }
+
+
+                    KCTDebug.Log("Facility set");
+                    //KKLaunchSiteManager.GetMethod("setLaunchSite", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)?.Invoke(null, new object[] { launchSite }); //this requires the editor to be the current scene
+                    return;
+                }
+            }
         }
 
         private static bool? _KSCSwitcherInstalled = null;

@@ -1102,6 +1102,7 @@ namespace KerbalConstructionTime
                     launchSites.AddRange(KCT_Utilities.GetAllOpenKKLaunchSites("Helipad"));
                 showBLPlus = false;
                 showLaunchSiteSelector = true;
+                centralWindowPosition.width = 300;
             }
             if (!onPad && GUILayout.Button("Scrap"))
             {
@@ -1201,9 +1202,13 @@ namespace KerbalConstructionTime
             bLPlusPosition.width = width;
         }
 
+
+        private static Vector2 launchSiteScrollView;
         public static void DrawLaunchSiteChooser(int windowID)
         {
             GUILayout.BeginVertical();
+            launchSiteScrollView = GUILayout.BeginScrollView(launchSiteScrollView, GUILayout.Height((float)Math.Min(Screen.height * 0.75, 25*launchSites.Count + 10)));
+
             foreach (string launchsite in launchSites)
             {
                 if (GUILayout.Button(launchsite))
@@ -1214,7 +1219,7 @@ namespace KerbalConstructionTime
                     showLaunchSiteSelector = false;
                 }
             }
-
+            GUILayout.EndScrollView();
             GUILayout.EndVertical();
             CenterWindow(ref centralWindowPosition);
         }
