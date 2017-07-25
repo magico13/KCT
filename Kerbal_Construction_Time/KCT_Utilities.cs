@@ -464,7 +464,7 @@ namespace KerbalConstructionTime
             if (KCT_GameStates.lastUT == 0)
                 KCT_GameStates.lastUT = UT;
             double UTDiff = UT - KCT_GameStates.lastUT;
-            if (UTDiff > 0 && UTDiff < (TimeWarp.fetch.warpRates[TimeWarp.fetch.warpRates.Length - 1] * 2))
+            if (UTDiff > 0 && (HighLogic.LoadedSceneIsEditor || UTDiff < (TimeWarp.fetch.warpRates[TimeWarp.fetch.warpRates.Length - 1] * 2)))
             {
                 foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                 {
