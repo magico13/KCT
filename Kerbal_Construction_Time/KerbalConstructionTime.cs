@@ -5,6 +5,7 @@ using System.Text;
 using UnityEngine;
 using KSP;
 using System.Collections;
+using KSP.UI.Screens;
 
 namespace KerbalConstructionTime
 {
@@ -113,6 +114,12 @@ namespace KerbalConstructionTime
     //[KSPAddon(KSPAddon.Startup.EditorAny | KSPAddon.Startup.Flight | KSPAddon.Startup.SpaceCentre | KSPAddon.Startup.TrackingStation, false)]
     public class KerbalConstructionTime : MonoBehaviour
     {
+        internal void FacilityContextMenuSpawn(KSCFacilityContextMenu menu)
+        {
+            KCT_KSCContextMenuOverrider overrider = new KCT_KSCContextMenuOverrider(menu);
+            StartCoroutine(overrider.OnContextMenuSpawn());
+        }
+
         public bool editorRecalcuationRequired;
         public int updateRateThrottle;
 

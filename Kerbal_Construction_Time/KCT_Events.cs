@@ -72,6 +72,8 @@ namespace KerbalConstructionTime
             GameEvents.onGUIRnDComplexSpawn.Add(HideAllGUIs);
             GameEvents.onGUIKSPediaSpawn.Add(HideAllGUIs);
 
+            GameEvents.onFacilityContextMenuSpawn.Add(FacilityContextMenuSpawn);
+
             eventAdded = true;
         }
 
@@ -110,43 +112,43 @@ namespace KerbalConstructionTime
             }
 
 
-            if (!(allowedToUpgrade || !KCT_PresetManager.Instance.ActivePreset.generalSettings.KSCUpgradeTimes))
-            {
-                KCT_UpgradingBuilding upgrading = new KCT_UpgradingBuilding(facility, lvl, lvl - 1, facility.id.Split('/').Last());
+            //if (!(allowedToUpgrade || !KCT_PresetManager.Instance.ActivePreset.generalSettings.KSCUpgradeTimes))
+            //{
+            //    KCT_UpgradingBuilding upgrading = new KCT_UpgradingBuilding(facility.id, lvl, lvl - 1, facility.id.Split('/').Last());
 
-                upgrading.isLaunchpad = facility.id.ToLower().Contains("launchpad");
-                if (upgrading.isLaunchpad)
-                {
-                    upgrading.launchpadID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
-                    if (upgrading.launchpadID > 0)
-                        upgrading.commonName += KCT_GameStates.ActiveKSC.ActiveLPInstance.name;//" " + (upgrading.launchpadID+1);
-                }
+            //    upgrading.isLaunchpad = facility.id.ToLower().Contains("launchpad");
+            //    if (upgrading.isLaunchpad)
+            //    {
+            //        upgrading.launchpadID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
+            //        if (upgrading.launchpadID > 0)
+            //            upgrading.commonName += KCT_GameStates.ActiveKSC.ActiveLPInstance.name;//" " + (upgrading.launchpadID+1);
+            //    }
 
-                if (!upgrading.AlreadyInProgress())
-                {
-                    KCT_GameStates.ActiveKSC.KSCTech.Add(upgrading);
-                    upgrading.Downgrade();
-                    double cost = facility.GetUpgradeCost();
-                    upgrading.SetBP(cost);
-                    upgrading.cost = cost;
+            //    if (!upgrading.AlreadyInProgress())
+            //    {
+            //        KCT_GameStates.ActiveKSC.KSCTech.Add(upgrading);
+            //        upgrading.Downgrade();
+            //        double cost = facility.GetUpgradeCost();
+            //        upgrading.SetBP(cost);
+            //        upgrading.cost = cost;
 
-                    ScreenMessages.PostScreenMessage("Facility upgrade requested!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                    KCTDebug.Log("Facility " + facility.id + " upgrade requested to lvl " + lvl + " for " + cost + " funds, resulting in a BP of " + upgrading.BP);
-                }
-                else if (lvl != upgrading.currentLevel)
-                {
-                    //
-                    KCT_UpgradingBuilding listBuilding = upgrading.KSC.KSCTech.Find(b => b.id == upgrading.id);
-                    if (upgrading.isLaunchpad)
-                        listBuilding = upgrading.KSC.KSCTech.Find(b => b.isLaunchpad && b.launchpadID == upgrading.launchpadID);
-                    listBuilding.Downgrade();
-                    KCT_Utilities.AddFunds(listBuilding.cost, TransactionReasons.None);
-                    ScreenMessages.PostScreenMessage("Facility is already being upgraded!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
-                    KCTDebug.Log("Facility " + facility.id + " tried to upgrade to lvl " + lvl + " but already in list!");
-                }
-            }
-            else
-            {
+            //        ScreenMessages.PostScreenMessage("Facility upgrade requested!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+            //        KCTDebug.Log("Facility " + facility.id + " upgrade requested to lvl " + lvl + " for " + cost + " funds, resulting in a BP of " + upgrading.BP);
+            //    }
+            //    else if (lvl != upgrading.currentLevel)
+            //    {
+            //        //
+            //        KCT_UpgradingBuilding listBuilding = upgrading.KSC.KSCTech.Find(b => b.id == upgrading.id);
+            //        if (upgrading.isLaunchpad)
+            //            listBuilding = upgrading.KSC.KSCTech.Find(b => b.isLaunchpad && b.launchpadID == upgrading.launchpadID);
+            //        listBuilding.Downgrade();
+            //        KCT_Utilities.AddFunds(listBuilding.cost, TransactionReasons.None);
+            //        ScreenMessages.PostScreenMessage("Facility is already being upgraded!", 4.0f, ScreenMessageStyle.UPPER_CENTER);
+            //        KCTDebug.Log("Facility " + facility.id + " tried to upgrade to lvl " + lvl + " but already in list!");
+            //    }
+            //}
+            //else
+            //{
                 KCTDebug.Log("Facility " + facility.id + " upgraded to lvl " + lvl);
                 if (facility.id.ToLower().Contains("launchpad"))
                 {
@@ -165,7 +167,7 @@ namespace KerbalConstructionTime
                 {
                     tech.UpdateBuildRate(KCT_GameStates.TechList.IndexOf(tech));
                 }
-            }
+            //}
            /* if (lvl <= lastLvl)
             {
                 lastLvl = -1;
@@ -187,7 +189,7 @@ namespace KerbalConstructionTime
             double cost = facility.RepairCost;
             double BP = Math.Sqrt(cost) * 2000 * KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier;
             KCTDebug.Log("Facility being repaired for " + cost + " funds, resulting in a BP of " + BP);
-            facility.StopCoroutine("Repair");
+            //facility.StopCoroutine("Repair");
         }
 
         public void FaciliyRepaired(DestructibleBuilding facility)
@@ -218,6 +220,11 @@ namespace KerbalConstructionTime
             //backup.SaveShip(tempFile);
 
            // KCT_GameStates.recoveryRequestVessel = backup; //ConfigNode.Load(tempFile);
+        }
+
+        public void FacilityContextMenuSpawn(KSCFacilityContextMenu menu)
+        {
+            KerbalConstructionTime.instance.FacilityContextMenuSpawn(menu);
         }
 
         private void StageRecoverySuccessEvent(Vessel v, float[] infoArray, string reason)
@@ -563,146 +570,6 @@ namespace KerbalConstructionTime
                 mass += amount * RD.density;
             }
             return (float)mass;
-        }
-    }
-
-    public class KCT_UpgradingBuilding : IKCTBuildItem
-    {
-        [Persistent] public int upgradeLevel, currentLevel, launchpadID=0;
-        [Persistent] public string id, commonName;
-        [Persistent] public double progress=0, BP=0, cost=0;
-        [Persistent] public bool UpgradeProcessed = false, isLaunchpad = false;
-        //public bool allowUpgrade = false;
-        private KCT_KSC _KSC = null;
-        public KCT_UpgradingBuilding(Upgradeables.UpgradeableFacility facility, int newLevel, int oldLevel, string name)
-        {
-            id = facility.id;
-            upgradeLevel = newLevel;
-            currentLevel = oldLevel;
-            commonName = name;
-
-            KCTDebug.Log(string.Format("Upgrade of {0} requested from {1} to {2}", name, oldLevel, newLevel));
-        }
-
-        public KCT_UpgradingBuilding()
-        {
-
-        }
-
-        public void Downgrade()
-        {
-            KCTDebug.Log("Downgrading " + commonName + " to level " + currentLevel);
-            if (isLaunchpad)
-            {
-                KSC.LaunchPads[launchpadID].level = currentLevel;
-                if (KCT_GameStates.activeKSCName != KSC.KSCName || KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
-                {
-                    return;
-                }
-            }
-            foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
-            {
-                KCT_Events.allowedToUpgrade = true;
-                facility.SetLevel(currentLevel);
-            }
-            //KCT_Events.allowedToUpgrade = false;
-        }
-
-        public void Upgrade()
-        {
-            KCTDebug.Log("Upgrading " + commonName + " to level " + upgradeLevel);
-            if (isLaunchpad)
-            {
-                KSC.LaunchPads[launchpadID].level = upgradeLevel;
-                KSC.LaunchPads[launchpadID].DestructionNode = new ConfigNode("DestructionState");
-                if (KCT_GameStates.activeKSCName != KSC.KSCName || KCT_GameStates.ActiveKSC.ActiveLaunchPadID != launchpadID)
-                {
-                    UpgradeProcessed = true;
-                    return;
-                }
-                KSC.LaunchPads[launchpadID].Upgrade(upgradeLevel);
-            }
-            KCT_Events.allowedToUpgrade = true;
-            foreach (Upgradeables.UpgradeableFacility facility in GetFacilityReferences())
-            {
-                facility.SetLevel(upgradeLevel);
-            }
-            int newLvl = KCT_Utilities.BuildingUpgradeLevel(id);
-            UpgradeProcessed = (newLvl == upgradeLevel);
-
-            KCTDebug.Log($"Upgrade processed: {UpgradeProcessed} Current: {newLvl} Desired: {upgradeLevel}");
-
-            //KCT_Events.allowedToUpgrade = false;
-        }
-
-        List<Upgradeables.UpgradeableFacility> GetFacilityReferences()
-        {
-            return ScenarioUpgradeableFacilities.protoUpgradeables[id].facilityRefs;
-        }
-
-        public void SetBP(double cost)
-        {
-           // BP = Math.Sqrt(cost) * 2000 * KCT_GameStates.timeSettings.OverallMultiplier;
-            BP = KCT_MathParsing.GetStandardFormulaValue("KSCUpgrade", new Dictionary<string, string>() { { "C", cost.ToString() }, { "O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString() } });
-            if (BP <= 0) { BP = 1; }
-        }
-
-        public bool AlreadyInProgress()
-        {
-            return (KSC != null);
-        }
-
-        public KCT_KSC KSC
-        {
-            get
-            {
-                if (_KSC == null)
-                {
-                    if (!isLaunchpad)
-                        _KSC = KCT_GameStates.KSCs.Find(ksc => ksc.KSCTech.Find(ub => ub.id == this.id) != null);
-                    else
-                        _KSC = KCT_GameStates.KSCs.Find(ksc => ksc.KSCTech.Find(ub => ub.id == this.id && ub.isLaunchpad && ub.launchpadID == this.launchpadID) != null);
-                }
-                return _KSC;
-            }
-        }
-
-        string IKCTBuildItem.GetItemName()
-        {
-            return commonName;
-        }
-        double IKCTBuildItem.GetBuildRate()
-        {
-            double rateTotal = 0;
-            if (KSC != null)
-            {
-                foreach (double rate in KCT_Utilities.BuildRatesSPH(KSC))
-                    rateTotal += rate;
-                foreach (double rate in KCT_Utilities.BuildRatesVAB(KSC))
-                    rateTotal += rate;
-            }
-            return rateTotal;
-        }
-        double IKCTBuildItem.GetTimeLeft()
-        {
-            return (BP - progress) / ((IKCTBuildItem)this).GetBuildRate();
-        }
-        bool IKCTBuildItem.IsComplete()
-        {
-            return progress >= BP;
-        }
-        KCT_BuildListVessel.ListType IKCTBuildItem.GetListType()
-        {
-            return KCT_BuildListVessel.ListType.KSC;
-        }
-        public IKCTBuildItem AsIKCTBuildItem()
-        {
-            return (IKCTBuildItem)this;
-        }
-        public void AddProgress(double amt)
-        {
-            progress += amt;
-            if (progress > BP) progress = BP;
         }
     }
 }

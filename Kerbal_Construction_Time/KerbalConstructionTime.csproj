@@ -72,6 +72,7 @@
     <Compile Include="KCT_GUI_BuildList.cs" />
     <Compile Include="KCT_GUI_Presets.cs" />
     <Compile Include="KCT_KSC.cs" />
+    <Compile Include="KCT_KSCUpgradeOverrider.cs" />
     <Compile Include="KCT_LaunchPad.cs" />
     <Compile Include="KCT_MathParsing.cs" />
     <Compile Include="KCT_OrbitAdjuster.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="KCT_Settings.cs" />
     <Compile Include="KCT_TechControl.cs" />
     <Compile Include="KCT_UpdateChecker.cs" />
+    <Compile Include="KCT_UpgradingBuilding.cs" />
     <Compile Include="KCT_Utilities.cs" />
     <Compile Include="KerbalConstructionTime.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
