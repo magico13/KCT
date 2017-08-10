@@ -489,6 +489,8 @@ namespace KerbalConstructionTime
                             else if (hasRecond = KCT_GameStates.ActiveKSC.GetReconditioning(KCT_GameStates.ActiveKSC.ActiveLPInstance.name) != null)
                                 btnColor = yellowButton;
                             KCT_Recon_Rollout tmpRollout = new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString(), launchSite);
+                            if (tmpRollout.cost > 0d)
+                                GUILayout.Label("√" + tmpRollout.cost.ToString("N0"));
                             string rolloutText = (i == MouseOnRolloutButton ? MagiCore.Utilities.GetColonFormattedTime(tmpRollout.AsBuildItem().GetTimeLeft()) : "Rollout");
                             if (GUILayout.Button(rolloutText, btnColor, GUILayout.ExpandWidth(false)))
                             {
