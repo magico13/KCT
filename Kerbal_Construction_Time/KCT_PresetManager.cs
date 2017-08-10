@@ -354,6 +354,8 @@ namespace KerbalConstructionTime
         public Dictionary<string, double> Module_Variables = new Dictionary<string, double>(); //Dictionary of moduleName : modifier
             //if multiple modules are present on the part, they are all multiplied together.
 
+        public Dictionary<string, double> Global_Variables = new Dictionary<string, double>();
+
         private ConfigNode DictionaryToNode(Dictionary<string, double> theDict, string nodeName)
         {
             ConfigNode node = new ConfigNode(nodeName);
@@ -382,6 +384,7 @@ namespace KerbalConstructionTime
             ConfigNode node = new ConfigNode("KCT_Preset_Part_Variables");
             node.AddNode(DictionaryToNode(Part_Variables, "Part_Variables"));
             node.AddNode(DictionaryToNode(Module_Variables, "Module_Variables"));
+            node.AddNode(DictionaryToNode(Global_Variables, "Global_Variables"));
 
             return node;
         }
@@ -390,11 +393,14 @@ namespace KerbalConstructionTime
         {
             Part_Variables.Clear();
             Module_Variables.Clear();
+            Global_Variables.Clear();
 
             if (node.HasNode("Part_Variables"))
                 Part_Variables = NodeToDictionary(node.GetNode("Part_Variables"));
             if (node.HasNode("Module_Variables"))
                 Module_Variables = NodeToDictionary(node.GetNode("Module_Variables"));
+            if (node.HasNode("Global_Variables"))
+                Global_Variables = NodeToDictionary(node.GetNode("Global_Variables"));
         }
 
         public double GetPartVariable(string partName)
@@ -416,6 +422,17 @@ namespace KerbalConstructionTime
             return value;
         }
 
+        public double GetGlobalVariable(List<string> moduleNames)
+        {
+            double value = 1.0;
+            foreach (string name in moduleNames)
+            {
+                if (Global_Variables.ContainsKey(name))
+                    value *= Global_Variables[name];
+            }
+            return value;
+        }
+
         //These are all multiplied in case multiple modules exist on one part (this one takes a PartModuleList instead)
         public double GetModuleVariable(PartModuleList modules)
         {
@@ -426,6 +443,24 @@ namespace KerbalConstructionTime
                     value *= Module_Variables[mod.moduleName];
             }
             return value;
+        }
+
+        public void SetGlobalVariables(List<string> variables, PartModuleList modules)
+        {
+            foreach (PartModule mod in modules)
+            {
+                if (Global_Variables.ContainsKey(mod.moduleName))
+                    variables.AddUnique(mod.moduleName);
+            }
+        }
+
+        public void SetGlobalVariables(List<string> variables, List<string> moduleNames)
+        {
+            foreach (string name in moduleNames)
+            {
+                if (Global_Variables.ContainsKey(name))
+                    variables.AddUnique(name);
+            }
         }
     }
 }
