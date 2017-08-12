@@ -522,7 +522,35 @@ namespace KerbalConstructionTime
                 Debug.LogException(e);
             }
         }
-        
+
+        public void LateUpdate()
+        {
+            // FIXME really should run this only once, and then again on techlist change.
+            // For now, spam per frame
+            if (KSP.UI.Screens.RDController.Instance != null)
+            {
+                for (int i = KSP.UI.Screens.RDController.Instance.nodes.Count; i-- > 0;)
+                {
+                    KSP.UI.Screens.RDNode node = KSP.UI.Screens.RDController.Instance.nodes[i];
+                    if (node.tech != null)
+                    {
+                        if (HasTechInList(node.tech.techID))
+                            node.graphics.SetIconColor(Color.red);
+                        // else reset? Bleh, why bother.
+                    }
+                }
+            }
+        }
+
+        protected bool HasTechInList(string id)
+        {
+            for (int i = KCT_GameStates.TechList.Count; i-- > 0;)
+                if (KCT_GameStates.TechList[i].techID == id)
+                    return true;
+
+            return false;
+        }
+
         public static void DelayedStart()
         {
             KCTDebug.Log("DelayedStart start");
