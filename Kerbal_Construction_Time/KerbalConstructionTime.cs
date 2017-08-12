@@ -538,7 +538,7 @@ namespace KerbalConstructionTime
                     if (node.tech != null)
                     {
                         if (HasTechInList(node.tech.techID))
-                            node.graphics.SetIconColor(Color.red);
+                            node.graphics.SetIconColor(XKCDColors.KSPNotSoGoodOrange);
                         // else reset? Bleh, why bother.
                     }
                 }
