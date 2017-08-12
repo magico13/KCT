@@ -1190,7 +1190,9 @@ namespace KerbalConstructionTime
                     KCT_GameStates.ActiveKSC.SPHList.Insert(0, b);
                 }
             }
-            if (!b.isFinished && GUILayout.Button("Rush Build 10%\n√" + Math.Round(0.2 * b.GetTotalCost())))
+            if (!b.isFinished 
+                && (KCT_PresetManager.Instance.ActivePreset.generalSettings.MaxRushClicks == 0 || b.rushBuildClicks < KCT_PresetManager.Instance.ActivePreset.generalSettings.MaxRushClicks) 
+                && GUILayout.Button("Rush Build 10%\n√" + Math.Round(0.2 * b.GetTotalCost())))
             {
                 double cost = b.GetTotalCost();
                 cost *= 0.2;
@@ -1199,6 +1201,7 @@ namespace KerbalConstructionTime
                 {
                     b.AddProgress(remainingBP * 0.1);
                     KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
+                    ++b.rushBuildClicks;
                 }
 
             }

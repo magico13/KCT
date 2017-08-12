@@ -320,6 +320,8 @@ namespace KerbalConstructionTime
             TechUpgrades = true, SharedUpgradePool = false;
         [Persistent]
         public string StartingPoints = "15,15,45"; //Career, Science, and Sandbox modes
+        [Persistent]
+        public int MaxRushClicks = 0;
     }
 
     public class KCT_Preset_Time : ConfigNodeStorage
