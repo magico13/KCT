@@ -20,6 +20,7 @@ namespace KerbalConstructionTime
         public Guid id;
         public bool cannotEarnScience;
         public float cost = 0, TotalMass = 0, DistanceFromKSC = 0;
+        public int rushBuildClicks = 0;
         public float emptyCost = 0, emptyMass = 0;
         public double buildRate { get { return KCT_Utilities.GetBuildRate(this); } }
         public double timeLeft
@@ -184,6 +185,8 @@ namespace KerbalConstructionTime
             progress = buildPoints;
 
             DistanceFromKSC = (float)SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(vessel.latitude, vessel.longitude));
+
+            rushBuildClicks = 0;
         }
 
         private ConfigNode FromInFlightVessel(Vessel VesselToSave)

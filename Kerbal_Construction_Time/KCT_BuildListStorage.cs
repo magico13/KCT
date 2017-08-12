@@ -123,6 +123,8 @@ namespace KerbalConstructionTime
             [Persistent]
             float cost = 0, mass = 0, kscDistance = 0;
             [Persistent]
+            int rushBuildClicks = 0;
+            [Persistent]
             int EditorFacility = 0, LaunchPadID = -1;
             [Persistent]
             List<string> desiredManifest = new List<string>();
@@ -135,6 +137,7 @@ namespace KerbalConstructionTime
                 ret.cannotEarnScience = cannotEarnScience;
                 ret.TotalMass = mass;
                 ret.DistanceFromKSC = kscDistance;
+                ret.rushBuildClicks = rushBuildClicks;
                 ret.launchSiteID = LaunchPadID;
                 ret.DesiredManifest = desiredManifest;
                 return ret;
@@ -151,6 +154,7 @@ namespace KerbalConstructionTime
                 this.shipID = blv.id.ToString();
                 this.cannotEarnScience = blv.cannotEarnScience;
                 this.cost = blv.cost;
+                this.rushBuildClicks = blv.rushBuildClicks;
                 this.mass = blv.TotalMass;
                 this.kscDistance = blv.DistanceFromKSC;
                 this.EditorFacility = (int)blv.GetEditorFacility();
