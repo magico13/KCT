@@ -21,6 +21,9 @@ namespace KerbalConstructionTime
         public bool cannotEarnScience;
         public float cost = 0, TotalMass = 0, DistanceFromKSC = 0;
         public int rushBuildClicks = 0;
+        public int numStages = 0;
+        public int numStageParts = 0;
+        public double stagePartCost = 0d;
         public float emptyCost = 0, emptyMass = 0;
         public double buildRate { get { return KCT_Utilities.GetBuildRate(this); } }
         public double timeLeft
@@ -104,6 +107,20 @@ namespace KerbalConstructionTime
             cost = s.GetShipCosts(out emptyCost, out fuel);
             TotalMass = s.GetShipMass(out emptyMass, out fuel);
 
+            HashSet<int> stages = new HashSet<int>();
+            numStageParts = 0;
+            stagePartCost = 0d;
+            foreach (Part p in s.Parts)
+            {
+                if (p.stagingOn)
+                {
+                    stages.Add(p.inverseStage);
+                    ++numStageParts;
+                    stagePartCost += p.GetModuleCosts(p.partInfo.cost, ModifierStagingSituation.CURRENT) + p.partInfo.cost;
+                }
+            }
+            numStages = stages.Count;
+
             launchSite = ls;
             buildPoints = bP;
             progress = 0;
@@ -165,10 +182,13 @@ namespace KerbalConstructionTime
             emptyCost = KCT_Utilities.GetTotalVesselCost(shipNode, false);
             TotalMass = 0;
             emptyMass = 0;
+
+            HashSet<int> stages = new HashSet<int>();
             foreach (ProtoPartSnapshot p in vessel.protoVessel.protoPartSnapshots)
             {
                 string name = p.partInfo.name;
 
+                stages.Add(p.inverseStageIndex);
                 TotalMass += p.mass;
                 emptyMass += p.mass;
                 foreach (ProtoPartResourceSnapshot rsc in p.resources)
@@ -179,6 +199,8 @@ namespace KerbalConstructionTime
                 }
             }
             cannotEarnScience = true;
+            numStages = stages.Count;
+            // FIXME ignore stageable part count and cost - it'll be fixed when we put this back in the editor.
 
             buildPoints = KCT_Utilities.GetBuildTime(shipNode.GetNodes("PART").ToList(), false);
             flag = HighLogic.CurrentGame.flagURL;
@@ -399,6 +421,9 @@ namespace KerbalConstructionTime
             ret.emptyMass = this.emptyMass;
             ret.cost = this.cost;
             ret.emptyCost = this.emptyCost;
+            ret.numStageParts = this.numStageParts;
+            ret.numStages = this.numStages;
+            ret.stagePartCost = this.stagePartCost;
             return ret;
         }
 

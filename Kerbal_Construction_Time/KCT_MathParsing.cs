@@ -130,6 +130,9 @@ namespace KerbalConstructionTime
             variables.Add("LM", LaunchSiteMax.ToString());
             variables.Add("EL", EditorLevel.ToString());
             variables.Add("ELM", EditorMax.ToString());
+            variables.Add("SN", vessel.numStages.ToString());
+            variables.Add("SP", vessel.numStageParts.ToString());
+            variables.Add("SC", vessel.stagePartCost.ToString());
 
             AddCrewVariables(variables);
 
