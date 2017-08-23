@@ -1995,26 +1995,25 @@ namespace KerbalConstructionTime
 
         public static int BuildingUpgradeLevel(SpaceCenterFacility facility)
         {
-            int lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
-            if (lvl < 0)
-            {
-                if (!KCT_GameStates.BuildingMaxLevelCache.TryGetValue(facility.ToString(), out lvl))
-                {
-                    //screw it, let's call it 2
-                    lvl = 2;
-                    KCTDebug.Log($"Couldn't get actual max level or cached one for {facility}. Assuming 2.");
-                }
-            }
-            int max = lvl;
+            int lvl = BuildingUpgradeMaxLevel(facility);
             if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
             {
-                lvl = (int)(lvl * ScenarioUpgradeableFacilities.GetFacilityLevel(facility));
+                lvl = (int)Math.Round((lvl * ScenarioUpgradeableFacilities.GetFacilityLevel(facility)));
             }
-            //KCTDebug.Log($"Facility: {facility} max: {max} lvl: {lvl}");
             return lvl;
         }
 
         public static int BuildingUpgradeLevel(string facilityID)
+        {
+            int lvl = BuildingUpgradeMaxLevel(facilityID);
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+            {
+                lvl = (int)Math.Round((lvl * ScenarioUpgradeableFacilities.GetFacilityLevel(facilityID))); //let's not store discrete things with integers! No! Let's use floats! -Squad
+            }
+            return lvl;
+        }
+
+        public static int BuildingUpgradeMaxLevel(string facilityID)
         {
             int lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facilityID);
             if (lvl < 0)
@@ -2026,14 +2025,21 @@ namespace KerbalConstructionTime
                     KCTDebug.Log($"Couldn't get actual max level or cached one for {facilityID}. Assuming 2.");
                 }
             }
-            int max = lvl;
-            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+            return lvl;
+        }
+
+        public static int BuildingUpgradeMaxLevel(SpaceCenterFacility facility)
+        {
+            int lvl = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
+            if (lvl < 0)
             {
-                lvl = (int)Math.Round((lvl * ScenarioUpgradeableFacilities.GetFacilityLevel(facilityID))); //let's not store discrete things with integers! No! Let's use floats! -Squad
+                if (!KCT_GameStates.BuildingMaxLevelCache.TryGetValue(facility.ToString(), out lvl))
+                {
+                    //screw it, let's call it 2
+                    lvl = 2;
+                    KCTDebug.Log($"Couldn't get actual max level or cached one for {facility}. Assuming 2.");
+                }
             }
-
-            //KCTDebug.Log($"FacilityID: {facilityID} max: {max} lvl: {lvl}");
-
             return lvl;
         }
 

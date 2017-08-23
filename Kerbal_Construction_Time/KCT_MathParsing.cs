@@ -34,23 +34,26 @@ namespace KerbalConstructionTime
         public static double ParseBuildRateFormula(KCT_BuildListVessel.ListType type, int index, KCT_KSC KSC, bool UpgradedRates = false)
         {
             //N = num upgrades, I = rate index, L = VAB/SPH upgrade level, R = R&D level
-            int level = 0, upgrades = 0;
+            int level = 0, upgrades = 0, levelMax = 0;
             Dictionary<string, string> variables = new Dictionary<string, string>();
             if (type == KCT_BuildListVessel.ListType.VAB)
             {
                 level = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
+                levelMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
                 if (KSC.VABUpgrades.Count > index)
                     upgrades = KSC.VABUpgrades[index];
             }
             else if (type == KCT_BuildListVessel.ListType.SPH)
             {
                 level = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.SpaceplaneHangar);
+                levelMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.SpaceplaneHangar);
                 if (KSC.SPHUpgrades.Count > index)
                     upgrades = KSC.SPHUpgrades[index];
             }
             if (UpgradedRates)
                 upgrades++;
             variables.Add("L", level.ToString());
+            variables.Add("LM", level.ToString());
             variables.Add("N", upgrades.ToString());
             variables.Add("I", index.ToString());
             variables.Add("R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString());
@@ -68,12 +71,14 @@ namespace KerbalConstructionTime
         public static double ParseNodeRateFormula(double ScienceValue, int index = 0, bool UpgradedRates = false)
         {
             int RnDLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment);
+            int RnDMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.ResearchAndDevelopment);
             int upgrades = KCT_GameStates.TechUpgradesTotal;
             if (UpgradedRates) upgrades++;
             Dictionary<string, string> variables = new Dictionary<string, string>();
             variables.Add("S", ScienceValue.ToString());
             variables.Add("N", upgrades.ToString());
             variables.Add("R", RnDLvl.ToString());
+            variables.Add("RM", RnDMax.ToString());
             variables.Add("O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString());
             variables.Add("I", index.ToString());
 
@@ -93,7 +98,7 @@ namespace KerbalConstructionTime
             loadedMass = vessel.GetTotalMass();
             emptyMass = vessel.emptyMass;
 
-            int EditorLevel = 0, LaunchSiteLvl = 0;
+            int EditorLevel = 0, LaunchSiteLvl = 0, EditorMax = 0, LaunchSiteMax = 0;
             int isVABVessel = 0;
             if (vessel.type == KCT_BuildListVessel.ListType.None)
                 vessel.FindTypeFromLists();
@@ -101,12 +106,16 @@ namespace KerbalConstructionTime
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
                 LaunchSiteLvl = KCT_GameStates.ActiveKSC.ActiveLPInstance.level;//KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
+                EditorMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
+                LaunchSiteMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.LaunchPad);
                 isVABVessel = 1;
             }
             else if (vessel.type == KCT_BuildListVessel.ListType.SPH)
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.SpaceplaneHangar);
                 LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.Runway);
+                EditorMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.SpaceplaneHangar);
+                LaunchSiteMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.Runway);
             }
             double BP = vessel.buildPoints;
 
@@ -118,7 +127,9 @@ namespace KerbalConstructionTime
             variables.Add("VAB", isVABVessel.ToString());
             variables.Add("BP", BP.ToString());
             variables.Add("L", LaunchSiteLvl.ToString());
+            variables.Add("LM", LaunchSiteMax.ToString());
             variables.Add("EL", EditorLevel.ToString());
+            variables.Add("ELM", EditorMax.ToString());
 
             AddCrewVariables(variables);
 
@@ -137,18 +148,22 @@ namespace KerbalConstructionTime
             loadedMass = vessel.GetTotalMass();
             emptyMass = vessel.emptyMass;
 
-            int EditorLevel = 0, LaunchSiteLvl = 0;
+            int EditorLevel = 0, LaunchSiteLvl = 0, EditorMax = 0, LaunchSiteMax = 0;
             int isVABVessel = 0;
             if (vessel.type == KCT_BuildListVessel.ListType.VAB)
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
                 LaunchSiteLvl = KCT_GameStates.ActiveKSC.ActiveLPInstance.level;//KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
+                EditorMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
+                LaunchSiteMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.LaunchPad);
                 isVABVessel = 1;
             }
             else
             {
                 EditorLevel = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.SpaceplaneHangar);
                 LaunchSiteLvl = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.Runway);
+                EditorMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.SpaceplaneHangar);
+                LaunchSiteMax = KCT_Utilities.BuildingUpgradeMaxLevel(SpaceCenterFacility.Runway);
             }
             double BP = vessel.buildPoints;
             double OverallMult = KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier;
@@ -162,13 +177,16 @@ namespace KerbalConstructionTime
             variables.Add("VAB", isVABVessel.ToString());
             variables.Add("BP", BP.ToString());
             variables.Add("L", LaunchSiteLvl.ToString());
+            variables.Add("LM", LaunchSiteMax.ToString());
             variables.Add("EL", EditorLevel.ToString());
+            variables.Add("ELM", EditorMax.ToString());
             variables.Add("O", OverallMult.ToString());
             variables.Add("E", ReconEffect.ToString());
             variables.Add("X", MaxRecon.ToString());
             int isRecon = isReconditioning ? 1 : 0;
             variables.Add("RE", isRecon.ToString());
             variables.Add("S", KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit.ToString());
+
 
             AddCrewVariables(variables);
 
