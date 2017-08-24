@@ -119,6 +119,9 @@ namespace KerbalConstructionTime
             variables.Add("BP", BP.ToString());
             variables.Add("L", LaunchSiteLvl.ToString());
             variables.Add("EL", EditorLevel.ToString());
+            variables.Add("SN", vessel.numStages.ToString());
+            variables.Add("SP", vessel.numStageParts.ToString());
+            variables.Add("SC", vessel.stagePartCost.ToString());
 
             AddCrewVariables(variables);
 
@@ -169,6 +172,9 @@ namespace KerbalConstructionTime
             int isRecon = isReconditioning ? 1 : 0;
             variables.Add("RE", isRecon.ToString());
             variables.Add("S", KCT_PresetManager.Instance.ActivePreset.timeSettings.RolloutReconSplit.ToString());
+            variables.Add("SN", vessel.numStages.ToString());
+            variables.Add("SP", vessel.numStageParts.ToString());
+            variables.Add("SC", vessel.stagePartCost.ToString());
 
             AddCrewVariables(variables);
 
