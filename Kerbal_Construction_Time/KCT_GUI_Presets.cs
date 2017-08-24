@@ -294,6 +294,12 @@ namespace KerbalConstructionTime
                 for (int j = 0; j < KCT_GameStates.TechList.Count; j++)
                     KCT_GameStates.TechList[j].UpdateBuildRate(j);
 
+                foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
+                {
+                    ksc.RecalculateBuildRates();
+                    ksc.RecalculateUpgradedBuildRates();
+                }
+
                 KCT_GUI.ResetFormulaRateHolders();
             }
             if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
