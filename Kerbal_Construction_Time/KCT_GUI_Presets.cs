@@ -300,7 +300,6 @@ namespace KerbalConstructionTime
                     ksc.RecalculateBuildRates();
                     ksc.RecalculateUpgradedBuildRates();
                 }
-
                 KCT_GUI.ResetFormulaRateHolders();
             }
             if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
