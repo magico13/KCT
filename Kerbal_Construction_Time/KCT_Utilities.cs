@@ -270,6 +270,9 @@ namespace KerbalConstructionTime
             IList<Part> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts, ScrapYardWrapper.ComparisonStrength.STRICT) ?? new List<Part>();
 
             double totalEffectiveCost = 0;
+
+            List<string> globalVariables = new List<string>();
+
             foreach (Part p in parts)
             {
                 string name = p.partInfo.name;
@@ -282,6 +285,7 @@ namespace KerbalConstructionTime
 
                 double PartMultiplier = KCT_PresetManager.Instance.ActivePreset.partVariables.GetPartVariable(name);
                 double ModuleMultiplier = KCT_PresetManager.Instance.ActivePreset.partVariables.GetModuleVariable(p.Modules);
+                KCT_PresetManager.Instance.ActivePreset.partVariables.SetGlobalVariables(globalVariables, p.Modules);
 
                 double InvEff = (inventorySample.Contains(p) ? KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect : 0);
                 int builds = ScrapYardWrapper.GetBuildCount(p);
@@ -301,7 +305,7 @@ namespace KerbalConstructionTime
                 if (effectiveCost < 0) effectiveCost = 0;
                 totalEffectiveCost += effectiveCost;
             }
-            double finalBP = KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string, string>() { { "E", totalEffectiveCost.ToString() }, { "O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString() } });
+            double finalBP = KCT_PresetManager.Instance.ActivePreset.partVariables.GetGlobalVariable(globalVariables) * KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string, string>() { { "E", totalEffectiveCost.ToString() }, { "O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString() } });
             return finalBP;
         }
 
@@ -311,6 +315,7 @@ namespace KerbalConstructionTime
             IList<ConfigNode> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts, ScrapYardWrapper.ComparisonStrength.STRICT) ?? new List<ConfigNode>();
 
             double totalEffectiveCost = 0;
+            List<string> globalVariables = new List<string>();
             foreach (ConfigNode p in parts)
             {
                 string name = PartNameFromNode(p);
@@ -331,6 +336,7 @@ namespace KerbalConstructionTime
                 foreach (ConfigNode modNode in GetModulesFromPartNode(p))
                     moduleNames.Add(modNode.GetValue("name"));
                 double ModuleMultiplier = KCT_PresetManager.Instance.ActivePreset.partVariables.GetModuleVariable(moduleNames);
+                KCT_PresetManager.Instance.ActivePreset.partVariables.SetGlobalVariables(globalVariables, moduleNames);
 
                 double InvEff = (inventorySample.Contains(p) ? KCT_PresetManager.Instance.ActivePreset.timeSettings.InventoryEffect : 0);
                 int builds = ScrapYardWrapper.GetBuildCount(p);
@@ -349,7 +355,7 @@ namespace KerbalConstructionTime
                 if (effectiveCost < 0) effectiveCost = 0;
                 totalEffectiveCost += effectiveCost;
             }
-            double finalBP = KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string, string>() { { "E", totalEffectiveCost.ToString() }, { "O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString() } });
+            double finalBP = KCT_PresetManager.Instance.ActivePreset.partVariables.GetGlobalVariable(globalVariables) * KCT_MathParsing.GetStandardFormulaValue("BP", new Dictionary<string, string>() { { "E", totalEffectiveCost.ToString() }, { "O", KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier.ToString() } });
             return finalBP;
             //return Math.Sqrt(totalEffectiveCost) * 2000 * KCT_PresetManager.Instance.ActivePreset.timeSettings.OverallMultiplier;
         }

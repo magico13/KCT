@@ -37,6 +37,7 @@ namespace KerbalConstructionTime
             GameEvents.onEditorShipModified.Add(ShipModifiedEvent);
             GameEvents.OnPartPurchased.Add(PartPurchasedEvent);
             //GameEvents.OnVesselRecoveryRequested.Add(RecoveryRequested);
+            GameEvents.onGUIRnDComplexSpawn.Add(TechEnableEvent);
             GameEvents.onGUIRnDComplexDespawn.Add(TechDisableEvent);
             GameEvents.OnKSCFacilityUpgraded.Add(FacilityUpgradedEvent);
             GameEvents.onGameStateLoad.Add(PersistenceLoadEvent);
@@ -389,6 +390,15 @@ namespace KerbalConstructionTime
         public void TechDisableEvent()
         {
             TechDisableEventFinal(true);
+        }
+
+        public void TechEnableEvent()
+        {
+            if (KCT_PresetManager.Instance.ActivePreset.generalSettings.TechUnlockTimes && KCT_PresetManager.Instance.ActivePreset.generalSettings.BuildTimes)
+            {
+                foreach (KCT_TechItem techItem in KCT_GameStates.TechList)
+                    techItem.EnableTech();
+            }
         }
 
         public void TechDisableEventFinal(bool save=false)

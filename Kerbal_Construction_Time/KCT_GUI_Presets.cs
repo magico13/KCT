@@ -113,6 +113,7 @@ namespace KerbalConstructionTime
             WorkingPreset.generalSettings.Enabled= GUILayout.Toggle(WorkingPreset.generalSettings.Enabled, "Mod Enabled", HighLogic.Skin.button);
             WorkingPreset.generalSettings.BuildTimes = GUILayout.Toggle(WorkingPreset.generalSettings.BuildTimes, "Build Times", HighLogic.Skin.button);
             WorkingPreset.generalSettings.ReconditioningTimes = GUILayout.Toggle(WorkingPreset.generalSettings.ReconditioningTimes, "Launchpad Reconditioning", HighLogic.Skin.button);
+            WorkingPreset.generalSettings.ReconditioningBlocksPad = GUILayout.Toggle(WorkingPreset.generalSettings.ReconditioningBlocksPad, "Reconditioning Blocks Pad", HighLogic.Skin.button);
             WorkingPreset.generalSettings.TechUnlockTimes = GUILayout.Toggle(WorkingPreset.generalSettings.TechUnlockTimes, "Tech Unlock Times", HighLogic.Skin.button);
             WorkingPreset.generalSettings.KSCUpgradeTimes = GUILayout.Toggle(WorkingPreset.generalSettings.KSCUpgradeTimes, "KSC Upgrade Times", HighLogic.Skin.button);
             WorkingPreset.generalSettings.TechUpgrades = GUILayout.Toggle(WorkingPreset.generalSettings.TechUpgrades, "Upgrades From Tech Tree", HighLogic.Skin.button);
@@ -299,7 +300,6 @@ namespace KerbalConstructionTime
                     ksc.RecalculateBuildRates();
                     ksc.RecalculateUpgradedBuildRates();
                 }
-
                 KCT_GUI.ResetFormulaRateHolders();
             }
             if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))

@@ -482,37 +482,47 @@ namespace KerbalConstructionTime
                         bool siteHasActiveRolloutOrRollback = rollout != null || KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollback, launchSite) != null;
                         if (rolloutEnabled && !HighLogic.LoadedSceneIsEditor && recovery == null && !siteHasActiveRolloutOrRollback) //rollout if the pad isn't busy
                         {
+                            bool hasRecond = false;
                             GUIStyle btnColor = greenButton;
                             if (KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed)
                                 btnColor = redButton;
-                            else if (KCT_GameStates.ActiveKSC.GetReconditioning(KCT_GameStates.ActiveKSC.ActiveLPInstance.name) != null)
+                            else if (hasRecond = KCT_GameStates.ActiveKSC.GetReconditioning(KCT_GameStates.ActiveKSC.ActiveLPInstance.name) != null)
                                 btnColor = yellowButton;
                             KCT_Recon_Rollout tmpRollout = new KCT_Recon_Rollout(b, KCT_Recon_Rollout.RolloutReconType.Rollout, b.id.ToString(), launchSite);
+                            if (tmpRollout.cost > 0d)
+                                GUILayout.Label("√" + tmpRollout.cost.ToString("N0"));
                             string rolloutText = (i == MouseOnRolloutButton ? MagiCore.Utilities.GetColonFormattedTime(tmpRollout.AsBuildItem().GetTimeLeft()) : "Rollout");
                             if (GUILayout.Button(rolloutText, btnColor, GUILayout.ExpandWidth(false)))
                             {
-                                List<string> facilityChecks = b.MeetsFacilityRequirements(false);
-                                if (facilityChecks.Count == 0)
+                                if (KCT_PresetManager.Instance.ActivePreset.generalSettings.ReconditioningBlocksPad && hasRecond)
                                 {
-                                    if (!KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed)
-                                    {
-                                        b.launchSiteID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
-
-                                        if (rollout != null)
-                                        {
-                                            rollout.SwapRolloutType();
-                                        }
-                                       // tmpRollout.launchPadID = KCT_GameStates.ActiveKSC.ActiveLPInstance.name;
-                                        KCT_GameStates.ActiveKSC.Recon_Rollout.Add(tmpRollout);
-                                    }
-                                    else
-                                    {
-                                        PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "cannotLaunchRepairPopup", "Cannot Launch!", "You must repair the launchpad before you can launch a vessel from it!", "Acknowledged", false, HighLogic.UISkin);
-                                    }
+                                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "cannotRollOutReconditioningPopup", "Cannot Roll out!", "You must finish reconditioning the launchpad before you can roll out to it!", "Acknowledged", false, HighLogic.UISkin);
                                 }
                                 else
                                 {
-                                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "cannotLaunchEditorChecksPopup", "Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the VAB and/or Launchpad it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.UISkin);
+                                    List<string> facilityChecks = b.MeetsFacilityRequirements(false);
+                                    if (facilityChecks.Count == 0)
+                                    {
+                                        if (!KCT_GameStates.ActiveKSC.ActiveLPInstance.destroyed)
+                                        {
+                                            b.launchSiteID = KCT_GameStates.ActiveKSC.ActiveLaunchPadID;
+
+                                            if (rollout != null)
+                                            {
+                                                rollout.SwapRolloutType();
+                                            }
+                                            // tmpRollout.launchPadID = KCT_GameStates.ActiveKSC.ActiveLPInstance.name;
+                                            KCT_GameStates.ActiveKSC.Recon_Rollout.Add(tmpRollout);
+                                        }
+                                        else
+                                        {
+                                            PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "cannotLaunchRepairPopup", "Cannot Launch!", "You must repair the launchpad before you can launch a vessel from it!", "Acknowledged", false, HighLogic.UISkin);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "cannotLaunchEditorChecksPopup", "Cannot Launch!", "Warning! This vessel did not pass the editor checks! Until you upgrade the VAB and/or Launchpad it cannot be launched. Listed below are the failed checks:\n" + String.Join("\n", facilityChecks.ToArray()), "Acknowledged", false, HighLogic.UISkin);
+                                    }
                                 }
                             }
                             if (Event.current.type == EventType.Repaint)
@@ -1180,7 +1190,9 @@ namespace KerbalConstructionTime
                     KCT_GameStates.ActiveKSC.SPHList.Insert(0, b);
                 }
             }
-            if (!b.isFinished && GUILayout.Button("Rush Build 10%\n√" + Math.Round(0.2 * b.GetTotalCost())))
+            if (!b.isFinished 
+                && (KCT_PresetManager.Instance.ActivePreset.generalSettings.MaxRushClicks == 0 || b.rushBuildClicks < KCT_PresetManager.Instance.ActivePreset.generalSettings.MaxRushClicks) 
+                && GUILayout.Button("Rush Build 10%\n√" + Math.Round(0.2 * b.GetTotalCost())))
             {
                 double cost = b.GetTotalCost();
                 cost *= 0.2;
@@ -1189,6 +1201,7 @@ namespace KerbalConstructionTime
                 {
                     b.AddProgress(remainingBP * 0.1);
                     KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
+                    ++b.rushBuildClicks;
                 }
 
             }
