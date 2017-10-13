@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using KSP;
+using System.Collections;
+using KSP.UI.Screens;
 
 namespace KerbalConstructionTime
 {
@@ -22,7 +24,7 @@ namespace KerbalConstructionTime
     [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
     public class KCT_SpaceCenter : KerbalConstructionTime
     {
-        
+
     }
 
     [KSPAddon(KSPAddon.Startup.EditorAny, false)]
@@ -31,12 +33,7 @@ namespace KerbalConstructionTime
 
     }
 
-   /* [KSPAddon(KSPAddon.Startup.EditorSPH, false)]
-    public class KCT_SPHEditor : KerbalConstructionTime
-    {
-
-    }*/
-
+    [KSPScenario(ScenarioCreationOptions.AddToAllGames, new GameScenes[] { GameScenes.EDITOR, GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.TRACKSTATION})]
     public class KerbalConstructionTimeData : ScenarioModule
     {
         public override void OnSave(ConfigNode node)
@@ -93,7 +90,6 @@ namespace KerbalConstructionTime
                 }
             }
             KCT_Utilities.SetActiveKSCToRSS();
-            //KCT_Utilities.SetActiveKSC(KCT_GameStates.activeKSCName);
 
             
             ConfigNode tmp = node.GetNode("TechList");
@@ -108,22 +104,57 @@ namespace KerbalConstructionTime
                     KCT_GameStates.TechList.Add(techItem);
                 }
             }
-            //KCT_GameStates.ActiveKSC.AsConfigNode().Save(KSPUtil.ApplicationRootPath + "/KSC.node");
 
-            KerbalConstructionTime.DelayedStart();
             KCT_GUI.CheckToolbar();
             KCT_GameStates.erroredDuringOnLoad.OnLoadFinish();
+            //KerbalConstructionTime.DelayedStart();
         }
     }
 
+    //[KSPAddon(KSPAddon.Startup.EditorAny | KSPAddon.Startup.Flight | KSPAddon.Startup.SpaceCentre | KSPAddon.Startup.TrackingStation, false)]
     public class KerbalConstructionTime : MonoBehaviour
     {
+        internal void FacilityContextMenuSpawn(KSCFacilityContextMenu menu)
+        {
+            KCT_KSCContextMenuOverrider overrider = new KCT_KSCContextMenuOverrider(menu);
+            StartCoroutine(overrider.OnContextMenuSpawn());
+        }
+
         public bool editorRecalcuationRequired;
         public int updateRateThrottle;
 
-        public static MonoBehaviour instance;
-        internal KerbalConstructionTime()
+        public static KerbalConstructionTime instance;
+
+        public void OnDestroy()//more toolbar stuff
         {
+            if (KCT_GameStates.kctToolbarButton != null)
+            {
+                KCT_GameStates.kctToolbarButton.Destroy();
+            }
+            if (KCT_Events.instance.KCTButtonStock != null)
+            {
+                KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(KCT_Events.instance.KCTButtonStock);
+            }
+
+            KCT_GUI.guiDataSaver.Save();
+        }
+
+        private void OnGUI()
+        {
+            OnDraw();
+        }
+
+        private void OnDraw()
+        {
+            KCT_GUI.SetGUIPositions();
+        }
+
+        public void Awake()
+        {
+            KCTDebug.Log("Awake called");
+            KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
+            KCT_GameStates.PersistenceLoaded = false;
+
             instance = this;
 
             KCT_GameStates.settings.Load(); //Load the settings file, if it exists
@@ -140,6 +171,8 @@ namespace KerbalConstructionTime
             }
             KCT_PresetManager.Instance.SetActiveFromSaveData();
 
+
+            //Add the toolbar button
             if (ToolbarManager.ToolbarAvailable && ToolbarManager.Instance != null && KCT_GameStates.settings.PreferBlizzyToolbar)
             {
                 KCTDebug.Log("Adding Toolbar Button");
@@ -156,54 +189,21 @@ namespace KerbalConstructionTime
                     });
                 }
             }
-        }
-
-        
-
-        public void OnDestroy()//more toolbar stuff
-        {
-            if (KCT_GameStates.kctToolbarButton != null)
-            {
-                KCT_GameStates.kctToolbarButton.Destroy();
-            }
-            if (KCT_Events.instance.KCTButtonStock != null)
-            {
-                KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(KCT_Events.instance.KCTButtonStock);
-            }
-
-            KCT_GUI.guiDataSaver.Save();
-        }
-
-       /* public void Awake()
-        {
-            RenderingManager.AddToPostDrawQueue(0, OnDraw);
-        }*/
-
-        private void OnGUI()
-        {
-            OnDraw();
-        }
-
-        private void OnDraw()
-        {
-            KCT_GUI.SetGUIPositions(OnWindow);
-        }
-
-        private void OnWindow(int windowID)
-        {
-            KCT_GUI.DrawGUIs(windowID);
+            KCTDebug.Log("Awake finished");
         }
 
         public void Start()
         {
+            KCTDebug.Log("Start called");
+
+            //add the events
+            if (!KCT_Events.instance.eventAdded)
+            {
+                KCT_Events.instance.addEvents();
+            }
+
             KCT_GameStates.settings.Save(); //Save the settings file, with defaults if it doesn't exist
             KCT_PresetManager.Instance.SaveActiveToSaveData();
-
-           /* KCT_GameStates.timeSettings.Load(); //Load the time settings
-            KCT_GameStates.timeSettings.Save(); //Save the time settings
-            UpdateOldFormulaCFG(); //Update the formula cfg file to the new format so things aren't broken
-            KCT_GameStates.formulaSettings.Load();
-            KCT_GameStates.formulaSettings.Save();*/
 
             // Ghetto event queue
             if (HighLogic.LoadedScene == GameScenes.EDITOR)
@@ -211,40 +211,21 @@ namespace KerbalConstructionTime
                 InvokeRepeating("EditorRecalculation", 1, 1);
 
                 KCT_GUI.buildRateForDisplay = null;
-            }
-            
-            //Code for saving to the persistence.sfs
-            ProtoScenarioModule scenario = HighLogic.CurrentGame.scenarios.Find(s => s.moduleName == typeof(KerbalConstructionTimeData).Name);
-            if (scenario == null)
-            {
-                try
+                if (!KCT_GUI.PrimarilyDisabled)
                 {
-                    Debug.Log("[KCT] Adding InternalModule scenario to game '" + HighLogic.CurrentGame.Title + "'");
-                    HighLogic.CurrentGame.AddProtoScenarioModule(typeof(KerbalConstructionTimeData), new GameScenes[] {GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.EDITOR, GameScenes.TRACKSTATION});
-                    // the game will add this scenario to the appropriate persistent file on save from now on
-                }
-                catch (ArgumentException ae)
-                {
-                    Debug.LogException(ae);
-                }
-                catch
-                {
-                    Debug.Log("[KCT] Unknown failure while adding scenario.");
-                }
-            }
-            else
-            {
-                if (!scenario.targetScenes.Contains(GameScenes.SPACECENTER))
-                    scenario.targetScenes.Add(GameScenes.SPACECENTER);
-                if (!scenario.targetScenes.Contains(GameScenes.FLIGHT))
-                    scenario.targetScenes.Add(GameScenes.FLIGHT);
-                if (!scenario.targetScenes.Contains(GameScenes.EDITOR))
-                    scenario.targetScenes.Add(GameScenes.EDITOR);
-                if (!scenario.targetScenes.Contains(GameScenes.TRACKSTATION))
-                    scenario.targetScenes.Add(GameScenes.TRACKSTATION);
+                    if (KCT_GameStates.settings.OverrideLaunchButton)
+                    {
+                        KCTDebug.Log("Attempting to take control of launch button");
 
+                        EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
+
+                        EditorLogic.fetch.launchBtn.onClick.AddListener(ShowLaunchAlert);
+                    }
+                    else
+                        InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+                    KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
+                }
             }
-            //End code for persistence.sfs
 
             if (KCT_GUI.PrimarilyDisabled)
             {
@@ -253,11 +234,6 @@ namespace KerbalConstructionTime
             }
 
             KACWrapper.InitKACWrapper();
-
-            if (!KCT_Events.instance.eventAdded)
-            {
-                KCT_Events.instance.addEvents();
-            }
 
             if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
             {
@@ -270,27 +246,11 @@ namespace KerbalConstructionTime
 
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
 
-           /* List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.EDITOR };
-            if (validScenes.Contains(HighLogic.LoadedScene) && System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
-            {
-                KCT_Utilities.LoadSimulationSave();
-            }*/
-
             KCT_GUI.guiDataSaver.Load();
-            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
-                KCT_GameStates.reset();
 
             if (HighLogic.LoadedSceneIsEditor)
             {
-                if (KCT_GUI.showSimulationCompleteEditor)
-                {
-                    KCT_GUI.hideAll();
-                    KCT_GUI.showSimulationCompleteEditor = true;
-                }
-                else
-                {
-                    KCT_GUI.hideAll();
-                }
+                KCT_GUI.hideAll();
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
                     KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[1];
@@ -299,33 +259,27 @@ namespace KerbalConstructionTime
                     else
                         KCT_GUI.ClickOff();
                 }
-                if (KCT_GameStates.EditorShipEditingMode && KCT_GameStates.delayStart)
-                {
-                    KCT_GameStates.delayStart = false;
-                    EditorLogic.fetch.shipNameField.text = KCT_GameStates.editedVessel.shipName;
-                }
             }
             else if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
-               /* if (System.IO.File.Exists(KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs"))
-                {
-                    KCT_Utilities.LoadSimulationSave();
-                }*/
+                bool shouldStart = KCT_GUI.showFirstRun;
                 KCT_GUI.hideAll();
-                //KCT_GUI.clicked = false;
-         //       KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID);
+                if (!shouldStart)
+                {
+                    KCT_GUI.showBuildList = KCT_GameStates.showWindows[0];
+                    if (KCT_GUI.showBuildList)
+                        KCT_GUI.ClickOn();
+                    else
+                        KCT_GUI.ClickOff();
+                }
+                KCT_GUI.showFirstRun = shouldStart;
             }
 
-            if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
+            if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
             {
                 if (FlightGlobals.ActiveVessel.GetCrewCount() == 0 && KCT_GameStates.launchedCrew.Count > 0)
                 {
                     KerbalRoster roster = HighLogic.CurrentGame.CrewRoster;
-
-                    /*  foreach (CrewedPart c in KCT_GameStates.launchedCrew)
-                      {
-                          KCTDebug.Log(c.partID);
-                      }*/
 
                     for (int i = 0; i < FlightGlobals.ActiveVessel.parts.Count; i++)
                     {
@@ -382,7 +336,28 @@ namespace KerbalConstructionTime
                     KCT_GameStates.launchedCrew.Clear();
                 }
             }
-            KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                KCT_GUI.hideAll();
+                if (KCT_GameStates.launchedVessel != null && FlightGlobals.ActiveVessel != null && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
+                {
+                    KCT_GameStates.launchedVessel.KSC = null; //it's invalid now
+                    KCTDebug.Log("Attempting to remove launched vessel from build list");
+                    bool removed = KCT_GameStates.launchedVessel.RemoveFromBuildList();
+                    if (removed) //Only do these when the vessel is first removed from the list
+                    {
+                        //Add the cost of the ship to the funds so it can be removed again by KSP
+                        KCT_Utilities.AddFunds(KCT_GameStates.launchedVessel.cost, TransactionReasons.VesselRollout);
+                        FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
+                    }
+                    KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == KCT_GameStates.launchedVessel.id.ToString());
+                    if (rollout != null)
+                        KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);
+                }
+            }
+            ratesUpdated = false;
+            KCTDebug.Log("Start finished");
+            DelayedStart();
         }
 
         private void EditorRecalculation()
@@ -394,71 +369,87 @@ namespace KerbalConstructionTime
             }
         }
 
-        public static bool moved = false;
-        private static bool updateChecked = false;
-        private static int failedLvlChecks = 0;
-        //private static double elapsedTimer = 0;
-        //private static double elapsedTicks = 0;
+
+        private static int lvlCheckTimer = 0;
+        private static bool ratesUpdated = false;
         public void FixedUpdate()
         {
-            //System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
-
-            /*
-            #if DEBUG
-            if (!updateChecked && KCT_GameStates.settings.CheckForDebugUpdates && !KCT_GameStates.firstStart)
-            {
-                KCT_UpdateChecker.CheckForUpdate(false, false);
-                updateChecked = true;
-            }
-            #endif
-            */
-            if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
-                if (KCT_GUI.clicked)
-                    KCT_Events.instance.KCTButtonStock.SetTrue(false);
-                else
-                    KCT_Events.instance.KCTButtonStock.SetFalse(false);
-
-            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
-                return;
-
-            if (!KCT_GameStates.erroredDuringOnLoad.AlertFired && KCT_GameStates.erroredDuringOnLoad.HasErrored())
-            {
-                KCT_GameStates.erroredDuringOnLoad.FireAlert();
-            }
-            if (KCT_GameStates.LoadingSimulationSave)
-            {
-                KCT_Utilities.LoadSimulationSave(true);
-            }
-
-            if (KCT_GameStates.UpdateLaunchpadDestructionState)
-            {
-                KCT_GameStates.UpdateLaunchpadDestructionState = false;
-                KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
-                if (KCT_GameStates.ActiveKSC.ActiveLPInstance.upgradeRepair)
-                {
-                    //repair everything, then update the node
-                    KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
-                    KCT_GameStates.ActiveKSC.ActiveLPInstance.CompletelyRepairNode();
-                    KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
-                }
-                
-            }
             double lastUT = KCT_GameStates.UT > 0 ? KCT_GameStates.UT : Planetarium.GetUniversalTime();
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
             {
-                if (KCT_GameStates.ActiveKSC != null && KCT_GameStates.ActiveKSC.ActiveLPInstance != null && HighLogic.LoadedScene == GameScenes.SPACECENTER && KCT_Utilities.CurrentGameIsCareer() && KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad) != KCT_GameStates.ActiveKSC.ActiveLPInstance.level)
+                if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
+                    if (KCT_GUI.clicked)
+                        KCT_Events.instance.KCTButtonStock.SetTrue(false);
+                    else
+                        KCT_Events.instance.KCTButtonStock.SetFalse(false);
+
+                if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
+                    return;
+
+                if (!KCT_GameStates.erroredDuringOnLoad.AlertFired && KCT_GameStates.erroredDuringOnLoad.HasErrored())
                 {
-                    failedLvlChecks++;
-                    if (failedLvlChecks > 10)
+                    KCT_GameStates.erroredDuringOnLoad.FireAlert();
+                }
+
+                if (KCT_GameStates.UpdateLaunchpadDestructionState)
+                {
+                    KCTDebug.Log("Updating launchpad destruction state.");
+                    KCT_GameStates.UpdateLaunchpadDestructionState = false;
+                    KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
+                    if (KCT_GameStates.ActiveKSC.ActiveLPInstance.upgradeRepair)
                     {
-                        KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID, false);
-                        KCT_GameStates.UpdateLaunchpadDestructionState = true;
-                        failedLvlChecks = 0;
+                        //repair everything, then update the node
+                        KCT_GameStates.ActiveKSC.ActiveLPInstance.RefreshDestructionNode();
+                        KCT_GameStates.ActiveKSC.ActiveLPInstance.CompletelyRepairNode();
+                        KCT_GameStates.ActiveKSC.ActiveLPInstance.SetDestructibleStateFromNode();
+                    }
+
+                }
+
+                if (!ratesUpdated)
+                {
+                    if (HighLogic.LoadedScene == GameScenes.SPACECENTER) 
+                    {
+                        if (ScenarioUpgradeableFacilities.GetFacilityLevelCount(SpaceCenterFacility.VehicleAssemblyBuilding) >= 0)
+                        {
+                            ratesUpdated = true;
+                            KCTDebug.Log("Updating build rates");
+                            foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
+                            {
+                                KSC?.RecalculateBuildRates();
+                                KSC?.RecalculateUpgradedBuildRates();
+                            }
+
+                            KCTDebug.Log("Rates updated");
+
+                            foreach (SpaceCenterFacility facility in Enum.GetValues(typeof(SpaceCenterFacility)))
+                            {
+                                KCT_GameStates.BuildingMaxLevelCache[facility.ToString()] = ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility);
+                                KCTDebug.Log("Cached " + facility.ToString() + " max at " + KCT_GameStates.BuildingMaxLevelCache[facility.ToString()]);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ratesUpdated = true;
+                    }
+                }
+
+                if (KCT_GameStates.ActiveKSC?.ActiveLPInstance != null && HighLogic.LoadedScene == GameScenes.SPACECENTER && KCT_Utilities.CurrentGameIsCareer())
+                {
+                    if (lvlCheckTimer++ > 30)
+                    {
+                        lvlCheckTimer = 0;
+                        if (KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad) != KCT_GameStates.ActiveKSC.ActiveLPInstance.level)
+                        {
+                            KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID, false);
+                            KCT_GameStates.UpdateLaunchpadDestructionState = true;
+                        }
                     }
                 }
                 //Warp code
-                if (!KCT_GUI.PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION && !KCT_GameStates.flightSimulated))
+                if (!KCT_GUI.PrimarilyDisabled && (HighLogic.LoadedScene == GameScenes.FLIGHT || HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.TRACKSTATION))
                 {
                     IKCTBuildItem ikctItem = KCT_Utilities.NextThingToFinish();
                     if (KCT_GameStates.targetedItem == null && ikctItem != null) KCT_GameStates.targetedItem = ikctItem;
@@ -471,14 +462,7 @@ namespace KerbalConstructionTime
                     if (KCT_GameStates.canWarp && ikctItem != null && !ikctItem.IsComplete())
                     {
                         int warpRate = TimeWarp.CurrentRateIndex;
-                        if (SOIAlert())
-                        {
-                            TimeWarp.SetRate(0, true);
-                            KCT_GameStates.canWarp = false;
-                            KCT_GameStates.warpInitiated = false;
-
-                        }
-                        else if (warpRate < KCT_GameStates.lastWarpRate) //if something else changes the warp rate then release control to them, such as Kerbal Alarm Clock
+                        if (warpRate < KCT_GameStates.lastWarpRate) //if something else changes the warp rate then release control to them, such as Kerbal Alarm Clock
                         {
                             KCT_GameStates.canWarp = false;
                             KCT_GameStates.lastWarpRate = 0;
@@ -487,9 +471,6 @@ namespace KerbalConstructionTime
                         {
                             if (ikctItem == KCT_GameStates.targetedItem && warpRate > 0 && TimeWarp.fetch.warpRates[warpRate] * dT * nBuffers > Math.Max(remaining, 0))
                             {
-                                //double timeDelta = TimeWarp.CurrentRate * dT * nBuffers - ikctItem.GetTimeLeft();
-                            //   KCTDebug.Log("Current delta: " + (TimeWarp.fetch.warpRates[warpRate] * dT) + " Remaining: " + remaining);
-                                //KCTDebug.Log("dt: " + dT);
                                 int newRate = warpRate;
                                 //find the first rate that is lower than the current rate
                                 while (newRate > 0)
@@ -521,45 +502,6 @@ namespace KerbalConstructionTime
                     }
                 }
 
-                if (HighLogic.LoadedScene == GameScenes.FLIGHT && KCT_GameStates.flightSimulated) //Simulated flights
-                {
-                    if (FlightGlobals.ActiveVessel.loaded && !FlightGlobals.ActiveVessel.packed && !moved)
-                    {
-                        //moved = true;
-                        int secondsForMove = KCT_GameStates.DelayMoveSeconds;
-                        if (KCT_GameStates.simulateInOrbit && loadDeferTime == DateTime.MaxValue)
-                        {
-                            loadDeferTime = DateTime.Now;
-                        }
-                        else if (KCT_GameStates.simulateInOrbit && (DateTime.Now.CompareTo(loadDeferTime.AddSeconds(secondsForMove)) > 0))
-                        {
-                            KCTDebug.Log("Moving vessel to orbit. " + KCT_GameStates.simulationBody.bodyName + ":" + KCT_GameStates.simOrbitAltitude + ":" + KCT_GameStates.simInclination);
-                            KCT_OrbitAdjuster.PutInOrbitAround(KCT_GameStates.simulationBody, KCT_GameStates.simOrbitAltitude, KCT_GameStates.simInclination);
-                            moved = true;
-                            loadDeferTime = DateTime.MaxValue;
-                        }
-                        else if (!KCT_GameStates.simulateInOrbit)
-                            moved = true;
-
-                        if (KCT_GameStates.simulateInOrbit && loadDeferTime != DateTime.MaxValue && lastSeconds != (loadDeferTime.AddSeconds(secondsForMove) - DateTime.Now).Seconds)
-                        {
-                            double remaining = (loadDeferTime.AddSeconds(secondsForMove) - DateTime.Now).TotalSeconds;
-                            ScreenMessages.PostScreenMessage("[KCT] Moving vessel in " + Math.Round(remaining) + " seconds", (float)(remaining - Math.Floor(remaining)), ScreenMessageStyle.UPPER_CENTER);
-                            lastSeconds = (int)remaining;
-                        }
-                    }
-                    if (KCT_GameStates.simulationEndTime > 0 && KCT_GameStates.UT >= KCT_GameStates.simulationEndTime)
-                    {
-                        TimeWarp.SetRate(0, true);
-                        FlightDriver.SetPause(true);
-                        KCT_GUI.showSimulationCompleteFlight = true;
-                    }
-                    if (FlightGlobals.ActiveVessel.situation != Vessel.Situations.PRELAUNCH && KCT_GameStates.simulationEndTime == 0 && KCT_GameStates.simulationTimeLimit > 0)
-                    {
-                        KCT_GameStates.simulationEndTime = Planetarium.GetUniversalTime() + KCT_GameStates.simulationTimeLimit; //Just in case the event doesn't fire
-                    }
-                }
-
                 if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
                 {
                     KCT_Utilities.SetActiveKSCToRSS();
@@ -569,23 +511,10 @@ namespace KerbalConstructionTime
                 {
                     if (KSP.UI.Screens.VesselSpawnDialog.Instance != null && KSP.UI.Screens.VesselSpawnDialog.Instance.Visible)
                     {
-                        //POINTER_INFO ptr = new POINTER_INFO();
-                        //ptr.evt = POINTER_INFO.INPUT_EVENT.TAP;
                         KSP.UI.Screens.VesselSpawnDialog.Instance.ButtonClose();
                         KCTDebug.Log("Attempting to close spawn dialog!");
                     }
                 }
-
-               /* if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.recoveredVessel != null)
-                {
-                    InputLockManager.SetControlLock(ControlTypes.All, "KCTPopupLock");
-                    DialogGUIBase[] options = new DialogGUIBase[3];
-                    options[0] = new DialogGUIButton("VAB Storage", RecoverToVAB);
-                    options[1] = new DialogGUIButton("SPH Storage", RecoverToSPH);
-                    options[2] = new DialogGUIButton("The Scrapyard", RecoverToScrapyard);
-                    MultiOptionDialog diag = new MultiOptionDialog("Send recovered vessel to", windowTitle: "Vessel Recovery", options: options);
-                    PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, HighLogic.UISkin);
-                }*/
 
                 if (!KCT_GUI.PrimarilyDisabled)
                     KCT_Utilities.ProgressBuildTime();
@@ -593,133 +522,59 @@ namespace KerbalConstructionTime
             }
             catch (Exception e)
             {
-                //print(e.Message);
-                //print(e.StackTrace);
                 Debug.LogException(e);
             }
+        }
 
-           /* timer.Stop();
-
-            elapsedTimer += timer.Elapsed.TotalMilliseconds;
-            elapsedTicks++;
-            if (elapsedTicks >= 60)
+        public void LateUpdate()
+        {
+            // FIXME really should run this only once, and then again on techlist change.
+            // For now, spam per frame
+            if (KSP.UI.Screens.RDController.Instance != null)
             {
-                KCTDebug.Log("Time per update: "+(elapsedTimer/elapsedTicks));
-                elapsedTicks = 0;
-            }*/
-        }
-        
-       /* private void RecoverToVAB()
-        {
-            KCT_Utilities.SpendFunds(KCT_GameStates.recoveredVessel.cost, TransactionReasons.VesselRollout);
-            KCT_GameStates.recoveredVessel.UpdateShipType(KCT_BuildListVessel.ListType.VAB);
-            KCT_GameStates.ActiveKSC.VABWarehouse.Add(KCT_GameStates.recoveredVessel);
-            KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(KCT_GameStates.recoveredVessel, KCT_Recon_Rollout.RolloutReconType.Recovery, KCT_GameStates.recoveredVessel.id.ToString()));
-            KCT_GameStates.recoveredVessel = null;
-            InputLockManager.RemoveControlLock("KCTPopupLock");
-            
-        }
-        private void RecoverToSPH()
-        {
-            KCT_Utilities.SpendFunds(KCT_GameStates.recoveredVessel.cost, TransactionReasons.VesselRollout);
-            KCT_GameStates.recoveredVessel.UpdateShipType(KCT_BuildListVessel.ListType.SPH);
-            KCT_GameStates.ActiveKSC.SPHWarehouse.Add(KCT_GameStates.recoveredVessel);
-            KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(KCT_GameStates.recoveredVessel, KCT_Recon_Rollout.RolloutReconType.Recovery, KCT_GameStates.recoveredVessel.id.ToString()));
-            KCT_GameStates.recoveredVessel = null;
-            InputLockManager.RemoveControlLock("KCTPopupLock");
-        }
-        private void RecoverToScrapyard()
-        {
-            KCTDebug.Log("Adding recovered parts to Part Inventory");
-            foreach (ConfigNode p in KCT_GameStates.recoveredVessel.ExtractedPartNodes)
-            {
-               // string name = p.partInfo.name + KCT_Utilities.GetTweakScaleSize(p);
-                KCT_Utilities.AddPartToInventory(p);
+                for (int i = KSP.UI.Screens.RDController.Instance.nodes.Count; i-- > 0;)
+                {
+                    KSP.UI.Screens.RDNode node = KSP.UI.Screens.RDController.Instance.nodes[i];
+                    if (node.tech != null)
+                    {
+                        if (HasTechInList(node.tech.techID))
+                            node.graphics.SetIconColor(XKCDColors.KSPNotSoGoodOrange);
+                        // else reset? Bleh, why bother.
+                    }
+                }
             }
-            KCT_GameStates.recoveredVessel = null;
-            InputLockManager.RemoveControlLock("KCTPopupLock");
+        }
 
-        }*/
+        protected bool HasTechInList(string id)
+        {
+            for (int i = KCT_GameStates.TechList.Count; i-- > 0;)
+                if (KCT_GameStates.TechList[i].techID == id)
+                    return true;
 
-        private static DateTime loadDeferTime = DateTime.MaxValue;
-        private static int lastSeconds = 0;
+            return false;
+        }
 
         public static void DelayedStart()
         {
-
-        //    KCTDebug.Log(ScenarioUpgradeableFacilities.protoUpgradeables.Keys);
-          //  KCTDebug.Log(ScenarioUpgradeableFacilities.protoUpgradeables.Values.ElementAt(0).facilityRefs[0].name);
-
-
-           /* if (!updateChecked)
-            {
-                if (KCT_GameStates.settings.CheckForUpdates && !KCT_GameStates.firstStart) //Check for updates
-                    KCT_UpdateChecker.CheckForUpdate(false, KCT_GameStates.settings.VersionSpecific);
-                updateChecked = true;
-            }*/
-
-            if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
+            KCTDebug.Log("DelayedStart start");
+            if (KCT_PresetManager.Instance?.ActivePreset == null || !KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;
 
-            List<GameScenes> validScenes = new List<GameScenes> { GameScenes.SPACECENTER };
-            if (validScenes.Contains(HighLogic.LoadedScene))
-            {
-                //Check for simulation save and load it.
-                string backupFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/KCT_simulation_backup.sfs";
-                if (System.IO.File.Exists(backupFile))
-                {
-                    KCT_GameStates.LoadingSimulationSave = true;
-                  /*  if (!KCT_GameStates.LoadingSimulationSave)
-                        KCT_Utilities.LoadSimulationSave();
-                    else
-                        System.IO.File.Delete(backupFile);*/
-                }
-            }
-
-            if (HighLogic.LoadedSceneIsFlight && KCT_GameStates.flightSimulated)
-            {
-                KCTDebug.Log("Simulation started");
-                KCT_GUI.hideAll();
-                KCT_GUI.showSimulationWindow = !KCT_GameStates.settings.NoSimGUI;
-                KCT_GUI.showTimeRemaining = true;
-                if (!KCT_GameStates.simulationInitialized)
-                {
-                    Planetarium.SetUniversalTime(KCT_GameStates.simulationUT);
-                    KCT_GameStates.simulationInitialized = true;
-                }
-            }
-
-            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.FundsToChargeAtSimEnd != 0)
-            {
-                KCT_Utilities.SpendFunds(KCT_GameStates.FundsToChargeAtSimEnd, TransactionReasons.None);
-                KCT_GameStates.FundsToChargeAtSimEnd = 0;
-            }
-            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.FundsGivenForVessel != 0)
-            {
-                KCT_Utilities.SpendFunds(KCT_GameStates.FundsGivenForVessel, TransactionReasons.VesselRollout);
-                KCT_GameStates.FundsGivenForVessel = 0;
-            }
-            if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
-            {
-                List<VesselType> invalidTypes = new List<VesselType> { VesselType.Debris, VesselType.SpaceObject, VesselType.Unknown };
-                if (!invalidTypes.Contains(FlightGlobals.ActiveVessel.vesselType) && !KCT_GameStates.BodiesVisited.Contains(FlightGlobals.ActiveVessel.mainBody.bodyName))
-                {
-                    KCT_GameStates.BodiesVisited.Add(FlightGlobals.ActiveVessel.mainBody.bodyName);
-                    var message = new ScreenMessage("[KCT] New simulation body unlocked: " + FlightGlobals.ActiveVessel.mainBody.bodyName, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                    ScreenMessages.PostScreenMessage(message);
-                    KCTDebug.Log("Unlocked sim body: " + FlightGlobals.ActiveVessel.mainBody.bodyName);
-                }
-            }
-
             if (KCT_GUI.PrimarilyDisabled) return;
-            
+
             //The following should only be executed when fully enabled for the save
-            
+
+            if (KCT_GameStates.ActiveKSC == null)
+            {
+                KCT_Utilities.SetActiveKSCToRSS();
+            }
+
+            KCTDebug.Log("Checking vessels for missing parts.");
             //check that all parts are valid in all ships. If not, warn the user and disable that vessel (once that code is written)
             if (!KCT_GameStates.vesselErrorAlerted)
             {
                 List<KCT_BuildListVessel> erroredVessels = new List<KCT_BuildListVessel>();
-                foreach (KCT_KSC KSC in KCT_GameStates.KSCs) //this is faster one subsequent scene changes
+                foreach (KCT_KSC KSC in KCT_GameStates.KSCs) //this is faster on subsequent scene changes
                 {
                     foreach (KCT_BuildListVessel blv in KSC.VABList)
                     {
@@ -762,40 +617,6 @@ namespace KerbalConstructionTime
                     PopUpVesselError(erroredVessels);
                 KCT_GameStates.vesselErrorAlerted = true;
             }
-
-            foreach (KCT_KSC KSC in KCT_GameStates.KSCs)
-            {
-                KSC.RecalculateBuildRates();
-                KSC.RecalculateUpgradedBuildRates();
-            }
-
-            if (!HighLogic.LoadedSceneIsFlight && KCT_GameStates.buildSimulatedVessel)
-            {
-                KCT_GameStates.buildSimulatedVessel = false;
-                KCT_BuildListVessel toBuild = KCT_GameStates.launchedVessel.NewCopy(false);
-                toBuild.buildPoints = KCT_Utilities.GetBuildTime(toBuild.ExtractedPartNodes, true, KCT_GUI.useInventory);
-                KCT_Utilities.AddVesselToBuildList(toBuild, KCT_GUI.useInventory);
-            }
-
-            if (HighLogic.LoadedSceneIsFlight && !KCT_GameStates.flightSimulated)
-            {
-                KCT_GUI.hideAll();
-                if (FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH && KCT_GameStates.launchedVessel != null)
-                {
-                    bool removed = KCT_GameStates.launchedVessel.RemoveFromBuildList();
-                    if (removed) //Only do these when the vessel is first removed from the list
-                    {
-                        //Add the cost of the ship to the funds so it can be removed again by KSP
-                        //KCT_Utilities.AddFunds(KCT_Utilities.GetTotalVesselCost(FlightGlobals.ActiveVessel.protoVessel), TransactionReasons.VesselRollout);
-                        KCT_Utilities.AddFunds(KCT_GameStates.launchedVessel.cost, TransactionReasons.VesselRollout);
-                        FlightGlobals.ActiveVessel.vesselName = KCT_GameStates.launchedVessel.shipName;
-                    }
-
-                    KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.Recon_Rollout.FirstOrDefault(r => r.associatedID == KCT_GameStates.launchedVessel.id.ToString());
-                    if (rollout != null)
-                        KCT_GameStates.ActiveKSC.Recon_Rollout.Remove(rollout);
-                }
-            }
            
             if (HighLogic.LoadedSceneIsEditor)
             {
@@ -804,26 +625,10 @@ namespace KerbalConstructionTime
                     KCTDebug.Log("Editing " + KCT_GameStates.editedVessel.shipName);
                     EditorLogic.fetch.shipNameField.text = KCT_GameStates.editedVessel.shipName;
                 }
-                if (!KCT_GUI.PrimarilyDisabled)
-                {
-                    if (KCT_GameStates.settings.OverrideLaunchButton)
-                    {
-                        KCTDebug.Log("Taking control of launch button");
-
-                        EditorLogic.fetch.launchBtn.onClick.RemoveListener(new UnityEngine.Events.UnityAction(EditorLogic.fetch.launchVessel));
-                        //EditorLogic.fetch.launchBtn.onClick.RemoveAllListeners();//TODO: Don't do this
-                        
-                        EditorLogic.fetch.launchBtn.onClick.AddListener(new UnityEngine.Events.UnityAction(((KerbalConstructionTime)instance).ShowLaunchAlert));
-                        //= "ShowLaunchAlert";
-                       // EditorLogic.fetch.launchBtn.scriptWithMethodToInvoke = KerbalConstructionTime.instance;
-                    }
-                    else
-                        InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
-                    KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
-                }
             }
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER)
             {
+                KCTDebug.Log("SP Start");
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
                     if (ToolbarManager.ToolbarAvailable && KCT_GameStates.settings.PreferBlizzyToolbar)
@@ -833,15 +638,9 @@ namespace KerbalConstructionTime
                     {
                         if (KCT_Events.instance != null && KCT_Events.instance.KCTButtonStock != null)
                         {
-                            //KCT_Events.instance.KCTButtonStock.SetTrue(true);
-                            //KCT_GUI.clicked = true;
                             if (KCT_GameStates.showWindows[0])
                                 KCT_GUI.ClickOn();
                         }
-                      /*  else
-                        {
-                            KCT_GUI.showEditorGUI = KCT_GameStates.showWindows[0];
-                        }*/
                     }
                     KCT_GUI.ResetBLWindow();
                 }
@@ -850,22 +649,22 @@ namespace KerbalConstructionTime
                     KCT_GUI.showBuildList = false;
                     KCT_GameStates.showWindows[0] = false;
                 }
+                KCTDebug.Log("SP UI done");
+
                 if (KCT_GameStates.firstStart)
                 {
                     KCTDebug.Log("Showing first start.");
+                    KCT_GameStates.firstStart = false;
                     KCT_GUI.showFirstRun = true;
-
+                    
                     //initialize the proper launchpad
                     KCT_GameStates.ActiveKSC.ActiveLPInstance.level = KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.LaunchPad);
-                }
-                KCT_GameStates.firstStart = false;
-                if (KCT_GameStates.LaunchFromTS)
-                {
-                    KCT_GameStates.launchedVessel.Launch();
+
                 }
 
+                KCTDebug.Log("SP switch starting");
                 KCT_GameStates.ActiveKSC.SwitchLaunchPad(KCT_GameStates.ActiveKSC.ActiveLaunchPadID);
-
+                KCTDebug.Log("SP switch done");
 
                 foreach (KCT_KSC ksc in KCT_GameStates.KSCs)
                 {
@@ -881,36 +680,9 @@ namespace KerbalConstructionTime
                         }
                     }
                 }
+                KCTDebug.Log("SP done");
             }
-        }
-
-        public bool SOIAlert()
-        {
-            foreach (Vessel v in FlightGlobals.Vessels)
-            {
-                if (KCT_GameStates.VesselTypesForSOI.Contains(v.vesselType))
-                {
-                    if (v != FlightGlobals.ActiveVessel)
-                    {
-                        if (!KCT_GameStates.vesselDict.ContainsKey(v.id.ToString()))
-                        {
-                            KCT_GameStates.vesselDict.Add(v.id.ToString(), v.mainBody.bodyName);
-                            print("Vessel " + v.id.ToString() + " added to lstVessels.");
-
-                        }
-                        else if (v.mainBody.bodyName != KCT_GameStates.vesselDict[v.id.ToString()])
-                        {
-                            KCT_GameStates.lastSOIVessel = v.name;
-                            print("Vessel " + v.id.ToString() + " SOI change.");
-                            KCT_GameStates.vesselDict[v.id.ToString()] = v.mainBody.bodyName;
-                            KCT_GUI.showSOIAlert = true;
-                            return true;
-
-                        }
-                    }
-                }
-            }
-            return false;
+            KCTDebug.Log("DelayedStart finished");
         }
 
         public static void PopUpVesselError(List<KCT_BuildListVessel> errored)
@@ -963,83 +735,20 @@ namespace KerbalConstructionTime
             }
 
 
-            MultiOptionDialog diag = new MultiOptionDialog(txt, "Vessels Contain Missing Parts", null, options);
+            MultiOptionDialog diag = new MultiOptionDialog("missingPartsPopup", txt, "Vessels Contain Missing Parts", null, options);
             PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), diag, false, HighLogic.UISkin);
             //PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Vessel Contains Missing Parts", "The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Understood", false, HighLogic.UISkin);
         }
 
-        public void ShowLaunchAlert()
+        public static void ShowLaunchAlert()
         {
+            KCTDebug.Log("Showing Launch Alert");
             if (KCT_GUI.PrimarilyDisabled)
                 EditorLogic.fetch.launchVessel();
             else
             {
-                KCT_GUI.showLaunchAlert = true;
-                EditorLogic.fetch.Lock(true, true, true, "KCTGUILock");
-
-                //Pop up the window at the mouse cursor if we're in mode 1
-                if (KCT_GameStates.settings.WindowMode == 1)
-                {
-                    KCT_GUI.centralWindowPosition.width = 50;
-                    KCT_GUI.centralWindowPosition.y = Mouse.screenPos.y;
-                    KCT_GUI.centralWindowPosition.x = Mouse.screenPos.x - (KCT_GUI.centralWindowPosition.width/2);
-                }
-
-                // This is how you hide tooltips.
-                if (EditorTooltip.Instance != null)
-                {
-                    EditorTooltip.Instance.HideToolTip();
-                    GameEvents.onTooltipDestroyRequested.Fire();
-                }
-            }
-        }
-
-        public void UpdateOldFormulaCFG()
-        {
-            String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Formulas.cfg";
-            if (System.IO.File.Exists(filePath))
-            {
-                bool didUpdate = false;
-                ConfigNode current = ConfigNode.Load(filePath).GetNode("KCT_FormulaSettings");
-                if (current.HasValue("NodeMax") && current.HasValue("NodeFormula"))
-                {
-                    string max = current.GetValue("NodeMax");
-                    if (max != "" && double.Parse(max) > 0)
-                    {
-                        didUpdate = true;
-                        KCTDebug.Log("Updating node formula.");
-                        string concat = "min(" + max + ", " + current.GetValue("NodeFormula") + ")";
-                        current.SetValue("NodeFormula", concat);
-                    }
-                }
-                if (current.HasValue("UpgradeFundsMax") && current.HasValue("UpgradeFundsFormula"))
-                {
-                    string max = current.GetValue("UpgradeFundsMax");
-                    if (max != "" && double.Parse(max) > 0)
-                    {
-                        didUpdate = true;
-                        KCTDebug.Log("Updating funds upgrades formula.");
-                        string concat = "min(" + max + ", " + current.GetValue("UpgradeFundsFormula") + ")";
-                        current.SetValue("UpgradeFundsFormula", concat);
-                    }
-                }
-                if (current.HasValue("UpgradeScienceMax") && current.HasValue("UpgradeScienceFormula"))
-                {
-                    string max = current.GetValue("UpgradeScienceMax");
-                    if (max != "" && double.Parse(max) > 0)
-                    {
-                        didUpdate = true;
-                        KCTDebug.Log("Updating science upgrades formula.");
-                        string concat = "min(" + max + ", " + current.GetValue("UpgradeScienceFormula") + ")";
-                        current.SetValue("UpgradeScienceFormula", concat);
-                    }
-                }
-                if (didUpdate)
-                {
-                    ConfigNode save = new ConfigNode("KCT_FormulaSettings");
-                    save.AddNode(current);
-                    save.Save(filePath);
-                }
+                KCT_Utilities.AddVesselToBuildList();
+                KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
             }
         }
     }

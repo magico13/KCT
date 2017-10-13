@@ -73,7 +73,6 @@ namespace KerbalConstructionTime
         [Persistent] bool enabledForSave = (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX
             || (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX));
 
-        [Persistent] public float fundsFromSimulation = 0;
 
 
 
@@ -82,27 +81,22 @@ namespace KerbalConstructionTime
         [Persistent] List<int> SPHUpgrades = new List<int>() {0};
         [Persistent] List<int> RDUpgrades = new List<int>() {0,0};
         [Persistent] List<int> PurchasedUpgrades = new List<int>() {0,0};
-        [Persistent] List<String> BodiesVisited = new List<string> {KCT_Utilities.GetBodyByName("Earth") != null ? "Earth" : "Kerbin"};
         [Persistent] List<String> PartTracker = new List<String>();
         [Persistent] List<String> PartInventory = new List<String>();
         [Persistent] string activeKSC = "";
-        [Persistent] string SimulationTime = "";
         [Persistent] float SalesFigures = 0;
         [Persistent] int UpgradesResetCounter = 0, TechUpgrades = 0, SavedUpgradePointsPreAPI = 0;
 
 
         public override void OnDecodeFromConfigNode()
         {
-            KCT_GameStates.PartTracker = ListToDict(PartTracker);
-            KCT_GameStates.PartInventory = ListToDict(PartInventory);
-            KCT_GameStates.BodiesVisited = BodiesVisited;
+            //KCT_GameStates.PartTracker = ListToDict(PartTracker);
+            //KCT_GameStates.PartInventory = ListToDict(PartInventory);
           /*  KCT_GameStates.ActiveKSC.VABUpgrades = VABUpgrades;
             KCT_GameStates.ActiveKSC.SPHUpgrades = SPHUpgrades;
             KCT_GameStates.ActiveKSC.RDUpgrades = RDUpgrades;*/
             KCT_GameStates.PurchasedUpgrades = PurchasedUpgrades;
-            KCT_GameStates.FundsGivenForVessel = fundsFromSimulation;
             KCT_GameStates.activeKSCName = activeKSC;
-            KCT_GUI.simLength = SimulationTime;
             KCT_GameStates.InventorySalesFigures = SalesFigures;
             KCT_GameStates.InventorySaleUpgrades = (float)KCT_MathParsing.GetStandardFormulaValue("InventorySales", new Dictionary<string, string> { { "V", "0" }, { "P", SalesFigures.ToString() } });
             KCT_GameStates.UpgradesResetCounter = UpgradesResetCounter;
@@ -115,19 +109,16 @@ namespace KerbalConstructionTime
 
         public override void OnEncodeToConfigNode()
         {
-            PartTracker = DictToList(KCT_GameStates.PartTracker);
-            PartInventory = DictToList(KCT_GameStates.PartInventory);
+            //PartTracker = DictToList(KCT_GameStates.PartTracker);
+            //PartInventory = DictToList(KCT_GameStates.PartInventory);
            // enabledForSave = KCT_GameStates.settings.enabledForSave;
-            BodiesVisited = KCT_GameStates.BodiesVisited;
             /*VABUpgrades = KCT_GameStates.VABUpgrades;
             SPHUpgrades = KCT_GameStates.SPHUpgrades;
             RDUpgrades = KCT_GameStates.RDUpgrades;*/
             TechUpgrades = KCT_GameStates.TechUpgradesTotal;
             PurchasedUpgrades = KCT_GameStates.PurchasedUpgrades;
-            fundsFromSimulation = KCT_GameStates.FundsGivenForVessel;
             //firstStart = KCT_GameStates.firstStart;
             activeKSC = KCT_GameStates.ActiveKSC.KSCName;
-            SimulationTime = KCT_GUI.simLength;
             SalesFigures = KCT_GameStates.InventorySalesFigures;
             UpgradesResetCounter = KCT_GameStates.UpgradesResetCounter;
             SavedUpgradePointsPreAPI = KCT_GameStates.PermanentModAddedUpgradesButReallyWaitForTheAPI;
@@ -139,7 +130,6 @@ namespace KerbalConstructionTime
         {
             //KCT_GameStates.settings.enabledForSave = enabledForSave;
             /*KCT_GameStates.settings.RecoveryModifier = RecoveryModifier;
-            KCT_GameStates.settings.NoCostSimulations = NoCostSimulations;
             KCT_GameStates.settings.DisableBuildTime = DisableBuildTime;
             KCT_GameStates.settings.InstantTechUnlock = InstantTechUnlock;
             KCT_GameStates.settings.EnableAllBodies = EnableAllBodies;
@@ -150,7 +140,6 @@ namespace KerbalConstructionTime
         {
            // enabledForSave = KCT_GameStates.settings.enabledForSave;
             /*RecoveryModifier = KCT_GameStates.settings.RecoveryModifier;
-            NoCostSimulations = KCT_GameStates.settings.NoCostSimulations;
             DisableBuildTime = KCT_GameStates.settings.DisableBuildTime;
             InstantTechUnlock = KCT_GameStates.settings.InstantTechUnlock;
             EnableAllBodies = KCT_GameStates.settings.EnableAllBodies;
