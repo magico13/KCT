@@ -28,6 +28,11 @@ namespace KerbalConstructionTime
                 SpaceCenterBuilding hostBuilding = getMember<SpaceCenterBuilding>("host");
                 KCTDebug.Log("Trying to override upgrade button of menu for "+hostBuilding.facilityName);
                 UnityEngine.UI.Button button = getMember<UnityEngine.UI.Button>("UpgradeButton");
+                if (button == null)
+                {
+                    KCTDebug.Log("Could not find UpgradeButton by name, using index instead.", true);
+                    button = getMember<UnityEngine.UI.Button>(2);
+                }
                 if (button != null)
                 {
                     KCTDebug.Log("Found upgrade button, overriding it.");
@@ -35,12 +40,41 @@ namespace KerbalConstructionTime
                     
                     button.onClick.AddListener(handleUpgrade);
                 }
+                else
+                {
+                    throw new Exception("UpgradeButton not found. Cannot override.");
+                }
             }
         }
 
         internal T getMember<T>(string name)
         {
-            object o = KCT_Utilities.GetMemberInfoValue(_menu.GetType().GetMember(name, BindingFlags.NonPublic | BindingFlags.Instance).FirstOrDefault(), _menu);
+            
+            MemberInfo member = _menu.GetType().GetMember(name, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)?.FirstOrDefault();
+            if (member == null)
+            {
+                KCTDebug.Log($"Member was null when trying to find '{name}'", true);
+                return default(T);
+            }
+            object o = KCT_Utilities.GetMemberInfoValue(member, _menu);
+            if (o is T)
+            {
+                return (T)o;
+            }
+            return default(T);
+        }
+
+        internal T getMember<T>(int index)
+        {
+            IEnumerable<MemberInfo> memberList = _menu.GetType().GetMembers(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Where(m => m.ToString().Contains(typeof(T).ToString()));
+            KCTDebug.Log($"Found {memberList.Count()} matches for {typeof(T)}");
+            MemberInfo member = memberList.Count() >= index ? memberList.ElementAt(index) : null;
+            if (member == null)
+            {
+                KCTDebug.Log($"Member was null when trying to find element at index {index} for type '{typeof(T).ToString()}'", true);
+                return default(T);
+            }
+            object o = KCT_Utilities.GetMemberInfoValue(member, _menu);
             if (o is T)
             {
                 return (T)o;

@@ -8,12 +8,12 @@ namespace KerbalConstructionTime
 {
     public class KCTDebug
     {
-        public static void Log(object message)
+        public static void Log(object message, bool always = false)
         {
         #if DEBUG
             bool isBetaVersion = true;
         #else
-            bool isBetaVersion = false;
+            bool isBetaVersion = always;
         #endif
             if (KCT_GameStates.settings.Debug || isBetaVersion)
             {
