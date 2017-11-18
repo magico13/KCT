@@ -646,6 +646,10 @@ namespace KerbalConstructionTime
                     //Simple fix for mod function being "weird" in the negative direction
                     //http://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
                     KCT_GameStates.ActiveKSC.SwitchLaunchPad(((KCT_GameStates.ActiveKSC.ActiveLaunchPadID - 1) % lpCount + lpCount) % lpCount);
+                    if (HighLogic.LoadedSceneIsEditor)
+                    {
+                        KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
+                    }
                 }
                 GUILayout.FlexibleSpace();
                 GUILayout.Label("Current: " + KCT_GameStates.ActiveKSC.ActiveLPInstance.name+" ("+(KCT_GameStates.ActiveKSC.ActiveLPInstance.level+1)+")");
@@ -703,6 +707,10 @@ namespace KerbalConstructionTime
                 if (lpCount > 1 && GUILayout.Button(">>", GUILayout.ExpandWidth(false)))
                 {
                     KCT_GameStates.ActiveKSC.SwitchLaunchPad((KCT_GameStates.ActiveKSC.ActiveLaunchPadID + 1) % KCT_GameStates.ActiveKSC.LaunchPadCount);
+                    if (HighLogic.LoadedSceneIsEditor)
+                    {
+                        KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
+                    }
                 }
                 GUILayout.EndHorizontal();
             }
