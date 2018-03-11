@@ -22,11 +22,6 @@ namespace KerbalConstructionTime
         {
             GameEvents.onGUILaunchScreenSpawn.Add(launchScreenOpenEvent);
             GameEvents.onVesselRecovered.Add(vesselRecoverEvent);
-            if (StageRecoveryWrapper.StageRecoveryAvailable)
-            {
-                KCTDebug.Log("Deferring stage recovery to StageRecovery.");
-                StageRecoveryWrapper.AddRecoverySuccessEvent(StageRecoverySuccessEvent);
-            }
 
             //GameEvents.onLaunch.Add(vesselSituationChange);
             GameEvents.onVesselSituationChange.Add(vesselSituationChange);
@@ -226,47 +221,6 @@ namespace KerbalConstructionTime
         public void FacilityContextMenuSpawn(KSCFacilityContextMenu menu)
         {
             KerbalConstructionTime.instance.FacilityContextMenuSpawn(menu);
-        }
-
-        private void StageRecoverySuccessEvent(Vessel v, float[] infoArray, string reason)
-        {
-            return;
-            //if (!KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled) return;
-            //KCTDebug.Log("Recovery Success Event triggered.");
-            //float damage = 0;
-            //if (infoArray.Length == 3)
-            //    damage = infoArray[0];
-            //else
-            //    KCTDebug.Log("Malformed infoArray received!");
-            //System.Random rand = new System.Random();
-            //Dictionary<string, int> destroyed = new Dictionary<string,int>();
-            //foreach (ProtoPartSnapshot part in v.protoVessel.protoPartSnapshots)
-            //{
-            //    float random = (float)rand.NextDouble();
-            //   // string name = part.partInfo.name + KCT_Utilities.GetTweakScaleSize(part);
-            //    if (random < damage)
-            //    {
-            //        KCT_Utilities.AddPartToInventory(part);
-            //    }
-            //    else
-            //    {
-            //        string commonName = part.partInfo.title + KCT_Utilities.GetTweakScaleSize(part);
-            //        Debug.Log("[KCT] Part " + commonName + " was too damaged to be used anymore and was scrapped! Chance: "+damage);
-            //        if (!destroyed.ContainsKey(commonName))
-            //            destroyed.Add(commonName, 1);
-            //        else
-            //            ++destroyed[commonName];
-            //    }
-            //}
-
-            //if (destroyed.Count > 0 && !KCT_GameStates.settings.DisableAllMessages)
-            //{
-            //    StringBuilder msg = new StringBuilder();
-            //    msg.AppendLine("The following parts were too damaged to be reused and were scrapped:");
-            //    foreach (KeyValuePair<string, int> entry in destroyed) msg.AppendLine(entry.Value+" x "+entry.Key);
-            //    msg.AppendLine("\nChance of failure: " + Math.Round(100 * damage) + "%");
-            //    KCT_Utilities.DisplayMessage("KCT: Parts Scrapped", msg, MessageSystemButton.MessageButtonColor.ORANGE, MessageSystemButton.ButtonIcons.ALERT);
-            //}
         }
 
         private void SYInventoryApplied()

@@ -412,6 +412,13 @@ namespace KerbalConstructionTime
         {
             KCT_BuildListVessel ret = new KCT_BuildListVessel(this.shipName, this.launchSite, this.buildPoints, this.flag, this.cost, (int)GetEditorFacility());
             ret.shipNode = this.shipNode.CreateCopy();
+
+            //refresh all inventory parts to new
+            foreach (ConfigNode part in ret.ExtractedPartNodes)
+            {
+                ScrapYardWrapper.RefreshPart(part);
+            }
+
             ret.id = Guid.NewGuid();
             if (RecalcTime)
             {
