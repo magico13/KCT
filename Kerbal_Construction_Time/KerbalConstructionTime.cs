@@ -38,7 +38,11 @@ namespace KerbalConstructionTime
     {
         public override void OnSave(ConfigNode node)
         {
-           // Boolean error = false;
+            if (KCT_Utilities.CurrentGameIsMission())
+            {
+                return;
+            }
+            // Boolean error = false;
             KCTDebug.Log("Writing to persistence.");
             base.OnSave(node);
             KCT_DataStorage kctVS = new KCT_DataStorage();
@@ -64,8 +68,13 @@ namespace KerbalConstructionTime
         }
         public override void OnLoad(ConfigNode node)
         {
-            KCTDebug.Log("Reading from persistence.");
+            
             base.OnLoad(node);
+            if (KCT_Utilities.CurrentGameIsMission())
+            {
+                return;
+            }
+            KCTDebug.Log("Reading from persistence.");
             KCT_GameStates.KSCs.Clear();
             KCT_GameStates.ActiveKSC = null;
             //KCT_Utilities.SetActiveKSC("Stock");
@@ -141,16 +150,19 @@ namespace KerbalConstructionTime
 
         private void OnGUI()
         {
-            OnDraw();
-        }
-
-        private void OnDraw()
-        {
+            if (KCT_Utilities.CurrentGameIsMission())
+            {
+                return;
+            }
             KCT_GUI.SetGUIPositions();
         }
 
         public void Awake()
         {
+            if (KCT_Utilities.CurrentGameIsMission())
+            {
+                return;
+            }
             KCTDebug.Log("Awake called");
             KCT_GameStates.erroredDuringOnLoad.OnLoadStart();
             KCT_GameStates.PersistenceLoaded = false;
@@ -194,6 +206,11 @@ namespace KerbalConstructionTime
 
         public void Start()
         {
+            if (KCT_Utilities.CurrentGameIsMission())
+            {
+                return;
+            }
+
             KCTDebug.Log("Start called");
 
             //add the events
@@ -374,6 +391,11 @@ namespace KerbalConstructionTime
         private static bool ratesUpdated = false;
         public void FixedUpdate()
         {
+            if (KCT_Utilities.CurrentGameIsMission())
+            {
+                return;
+            }
+
             double lastUT = KCT_GameStates.UT > 0 ? KCT_GameStates.UT : Planetarium.GetUniversalTime();
             KCT_GameStates.UT = Planetarium.GetUniversalTime();
             try
@@ -528,6 +550,10 @@ namespace KerbalConstructionTime
 
         public void LateUpdate()
         {
+            if (KCT_Utilities.CurrentGameIsMission())
+            {
+                return;
+            }
             // FIXME really should run this only once, and then again on techlist change.
             // For now, spam per frame
             if (KSP.UI.Screens.RDController.Instance != null)
@@ -556,6 +582,10 @@ namespace KerbalConstructionTime
 
         public static void DelayedStart()
         {
+            if (KCT_Utilities.CurrentGameIsMission())
+            {
+                return;
+            }
             KCTDebug.Log("DelayedStart start");
             if (KCT_PresetManager.Instance?.ActivePreset == null || !KCT_PresetManager.Instance.ActivePreset.generalSettings.Enabled)
                 return;

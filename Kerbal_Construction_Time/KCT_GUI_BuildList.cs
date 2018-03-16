@@ -1113,14 +1113,18 @@ namespace KerbalConstructionTime
             //This vessel is rolled out onto the pad
             if (!onPad && GUILayout.Button("Select LaunchSite"))
             {
-                string launchType = b.type == KCT_BuildListVessel.ListType.VAB ? "RocketPad" : "Runway";
-                launchSites = KCT_Utilities.GetAllOpenKKLaunchSites(launchType);
-                launchSites.AddRange(KCT_Utilities.GetAllOpenKKLaunchSites("Other"));
-                if (b.type == KCT_BuildListVessel.ListType.SPH)
-                    launchSites.AddRange(KCT_Utilities.GetAllOpenKKLaunchSites("Helipad"));
-                showBLPlus = false;
-                showLaunchSiteSelector = true;
-                centralWindowPosition.width = 300;
+                launchSites = KCT_Utilities.GetLaunchSites(b.type == KCT_BuildListVessel.ListType.VAB);
+
+                if (launchSites.Any())
+                {
+                    showBLPlus = false;
+                    showLaunchSiteSelector = true;
+                    centralWindowPosition.width = 300;
+                }
+                else
+                {
+                    PopupDialog.SpawnPopupDialog(new MultiOptionDialog("KCTNoLaunchsites", "No launch sites available to choose from. Try visiting an editor first.", "No Launch Sites", null, new DialogGUIButton("OK", () => { })), false, HighLogic.UISkin);
+                }
             }
             if (!onPad && GUILayout.Button("Scrap"))
             {

@@ -11,183 +11,6 @@ namespace KerbalConstructionTime
 {
     static class KCT_Utilities
     {
-        /// <summary>
-        /// Formats a string from a time value into days, hours, minutes, and seconds.
-        /// </summary>
-        /// <param name="time">Time in seconds</param>
-        /// <returns></returns>
-      /*  public static string GetFormattedTime(double time)
-        {
-            if (time > 0)
-            {
-                StringBuilder formatedTime = new StringBuilder();
-                if (GameSettings.KERBIN_TIME)
-                {
-                    formatedTime.AppendFormat("{0,2:0} days, ", Math.Floor(time / 21600));
-                    time = time % 21600;
-                }
-                else
-                {
-                    formatedTime.AppendFormat("{0,2:0} days, ", Math.Floor(time / 86400));
-                    time = time % 86400;
-                }
-                formatedTime.AppendFormat("{0,2:0} hours, ", Math.Floor(time / 3600));
-                time = time % 3600;
-                formatedTime.AppendFormat("{0,2:0} minutes, ", Math.Floor(time / 60));
-                time = time % 60;
-                formatedTime.AppendFormat("{0,2:0} seconds", time);
-
-                return formatedTime.ToString();
-            }
-            else
-            {
-                return "0 days,  0 hours,  0 minutes,  0 seconds";
-            }
-
-        }
-
-        public static string GetColonFormattedTime(double time)
-        {
-            if (time > 0)
-            {
-                StringBuilder formatedTime = new StringBuilder();
-                if (GameSettings.KERBIN_TIME)
-                {
-                    formatedTime.AppendFormat("{0,2:00}:", Math.Floor(time / 21600));
-                    time = time % 21600;
-                }
-                else
-                {
-                    formatedTime.AppendFormat("{0,2:00}:", Math.Floor(time / 86400));
-                    time = time % 86400;
-                }
-                formatedTime.AppendFormat("{0,2:00}:", Math.Floor(time / 3600));
-                time = time % 3600;
-                formatedTime.AppendFormat("{0,2:00}:", Math.Floor(time / 60));
-                time = time % 60;
-                formatedTime.AppendFormat("{0,2:00}", time);   
-
-                return formatedTime.ToString();
-            }
-            else
-            {
-                return "00:00:00:00";
-            }
-        }
-
-        public static double ParseTimeString(string timeString, bool toUT = true)
-        {
-            //if it doesn't contain colons, we assume it's not colon formatted
-            if (timeString.Contains(":"))
-            {
-                return ParseColonFormattedTime(timeString, toUT);
-            }
-            else if (timeString.Contains("s") || timeString.Contains("m") || timeString.Contains("h") || timeString.Contains("d") || timeString.Contains("y"))
-            {
-                return ParseCommonFormattedTime(timeString, toUT);
-            }
-            else
-            {
-                return double.Parse(timeString);
-            }
-                
-        }
-
-        public static double ParseCommonFormattedTime(string timeString, bool toUT=true)
-        {
-            //parses strings like "12d 14h 32m" or "3y8d"
-            double time = -1;
-            timeString = timeString.ToLower(); //make sure everything is lowercase
-            string[] parts = Regex.Split(timeString, "([a-z])");//split on characters (should also include the character as the next element of the array)
-            int len = parts.Length;
-            double sPerDay = GameSettings.KERBIN_TIME ? 6 * 3600 : 24 * 3600;
-            double sPerYear = GameSettings.KERBIN_TIME ? 426 * sPerDay : 365 * sPerDay;
-
-            //loop over all the elements, if it's y,d,h,m,s then take the previous element as the number
-            if (len > 1)
-            {
-                for (int i = 1; i < len; i++)
-                {
-                    double multiplier = 1;
-                    double value = 0;
-
-                    string s = parts[i].Trim();
-                    if (s == "s")
-                    {
-                        //seconds
-                        multiplier = 1;
-                        double.TryParse(parts[i - 1], out value);
-                    }
-                    else if (s == "m")
-                    {
-                        //minutes
-                        multiplier = 60;
-                        double.TryParse(parts[i - 1], out value);
-                    }
-                    else if (s == "h")
-                    {
-                        //hours
-                        multiplier = 3600;
-                        double.TryParse(parts[i - 1], out value);
-                    }
-                    else if (s == "d")
-                    {
-                        //days
-                        multiplier = sPerDay;
-                        double.TryParse(parts[i - 1], out value);
-                        if (toUT)
-                            value -= 1;
-                    }
-                    else if (s == "y")
-                    {
-                        //years
-                        multiplier = sPerYear;
-                        double.TryParse(parts[i - 1], out value);
-                        if (toUT)
-                            value -= 1;
-                    }
-
-                    time += multiplier * value;
-                }
-            }
-            return time;
-        }
-
-        public static double ParseColonFormattedTime(string timeString, bool toUT=true)
-        {
-            //toUT is for converting a string that is given as a formatted UT (Starting with Y1, D1)
-            double time = -1;
-            string[] parts = timeString.Split(':');
-            int len = parts.Length;
-            double sPerDay = GameSettings.KERBIN_TIME ? 6 * 3600 : 24 * 3600;
-            double sPerYear = GameSettings.KERBIN_TIME ? 426 * sPerDay : 365 * sPerDay;
-            try
-            {
-                time = double.Parse(parts[len - 1]);
-                if (len > 1)
-                    time += 60 * double.Parse(parts[len - 2]); //minutes
-                if (len > 2)
-                    time += 3600 * double.Parse(parts[len - 3]); //hours
-                if (len > 3)
-                { 
-                    time += sPerDay * double.Parse(parts[len - 4]); //days
-                    if (toUT)
-                        time -= sPerDay;
-                }
-                if (len > 4)
-                {
-                    time += sPerYear * double.Parse(parts[len - 5]); //years
-                    if (toUT)
-                        time -= sPerYear;
-                }
-            }
-            catch
-            {
-                //KCTDebug.Log("Error parsing time string.");
-                time = -1;
-            }
-            return time;
-        }*/
 
         public static Dictionary<String, int> PartListToDict(List<String> list)
         {
@@ -210,52 +33,22 @@ namespace KerbalConstructionTime
             {
                 KCT_Utilities.AddToDict(newInv, list[i], int.Parse(list[i + 1]));
             }
-                /*foreach (String s in list)
-                {
-                    if (newInv.Keys.Contains(s))
-                        newInv[s]++;
-                    else
-                        newInv.Add(s, 1);
-                }*/
             return newInv;
         }
-
-       /* public static Dictionary<String, int> PartListToDict(List<Part> list)
-        {
-            Dictionary<String, int> newInv = new Dictionary<String, int>();
-            foreach (Part p in list)
-            {
-                string s = p.partInfo.name;
-                if (newInv.Keys.Contains(s))
-                    newInv[s]++;
-                else
-                    newInv.Add(s, 1);
-            }
-            return newInv;
-        }*/
 
         public static List<String> PartDictToList(Dictionary<String, int> dict)
         {
             List<String> ret = new List<string>();
             for (int i = 0; i < dict.Count; i++)
             {
-                //for (int j=0; j<dict.Values.ElementAt(i); j++)
-              //  {
-                    ret.Add(dict.Keys.ElementAt(i));
-                    ret.Add(dict.Values.ElementAt(i).ToString());
-               // }
+                ret.Add(dict.Keys.ElementAt(i));
+                ret.Add(dict.Values.ElementAt(i).ToString());
             }
             return ret;
         }
 
         public static AvailablePart GetAvailablePartByName(string partName)
         {
-            /*foreach (AvailablePart a in PartLoader.LoadedPartsList)
-            {
-                if (a.name == partName)
-                    return a;
-            }
-            return null;*/
             return PartLoader.getPartInfoByName(partName);
         }
 
@@ -741,6 +534,10 @@ namespace KerbalConstructionTime
         {
             return HighLogic.CurrentGame.Mode == Game.Modes.CAREER;
         }
+        public static bool CurrentGameIsMission()
+        {
+            return HighLogic.CurrentGame.Mode == Game.Modes.MISSION || HighLogic.CurrentGame.Mode == Game.Modes.MISSION_BUILDER;
+        }
 
         public static void AddScienceWithMessage(float science, TransactionReasons reason)
         {
@@ -1182,16 +979,6 @@ namespace KerbalConstructionTime
                     }
                 }
             }
-            /*if (KCT_Utilities.ReconditioningActive(null))
-            {
-                IKCTBuildItem blv = (IKCTBuildItem)KCT_GameStates.ActiveKSC.GetReconditioning();
-                double time = blv.GetTimeLeft();
-                if (time < shortestTime)
-                {
-                    thing = blv;
-                    shortestTime = time;
-                }
-            }*/
             foreach (IKCTBuildItem blv in KCT_GameStates.TechList)
             {
                 double time = blv.GetTimeLeft();
@@ -1202,31 +989,6 @@ namespace KerbalConstructionTime
                 }
             }
             return thing;
-        }
-
-        public static KCT_BuildListVessel NextShipToFinish()
-        {
-            KCT_BuildListVessel ship = null;
-            double shortestTime = double.PositiveInfinity;
-            foreach (KCT_BuildListVessel blv in KCT_GameStates.ActiveKSC.VABList)
-            {
-                double time = blv.timeLeft;
-                if (time < shortestTime)
-                {
-                    ship = blv;
-                    shortestTime = time;
-                }
-            }
-            foreach (KCT_BuildListVessel blv in KCT_GameStates.ActiveKSC.SPHList)
-            {
-                double time = blv.timeLeft;
-                if (time < shortestTime)
-                {
-                    ship = blv;
-                    shortestTime = time;
-                }
-            }
-            return ship;
         }
 
         public static void RampUpWarp()
@@ -1256,15 +1018,6 @@ namespace KerbalConstructionTime
             KCT_GUI.hideAll();
         }
 
-        public static CelestialBody GetBodyByName(String name)
-        {
-            /*foreach (CelestialBody b in FlightGlobals.Bodies)
-            {
-                if (b.bodyName.ToLower() == name.ToLower())
-                    return b;
-            }*/
-            return FlightGlobals.Bodies.FirstOrDefault(b => b.bodyName.ToLower() == name.ToLower());
-        }
 
         public static object GetMemberInfoValue(System.Reflection.MemberInfo member, object sourceObject)
         {
@@ -1299,270 +1052,12 @@ namespace KerbalConstructionTime
             return spentPoints;
         }
 
-       /* public static float GetRecoveryValueForChuteLanding(ProtoVessel pv)
+
+        public static List<string> GetLaunchSites(bool isVAB)
         {
-            bool probeCoreAttached = false;
-           // foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
-            {
-                //if (pps.modules.Find(module => (module.moduleName == "ModuleCommand" && ((ModuleCommand)module.moduleRef).minimumCrew == 0)) != null)
-                if (pv.wasControllable)
-                {
-                    KCTDebug.Log("Vessel was controllable!");
-                    probeCoreAttached = true;
-                }
-            }
-            float RecoveryMod = probeCoreAttached ? 1.0f : KCT_GameStates.settings.RecoveryModifier;
-            double distanceFromKSC = SpaceCenter.Instance.GreatCircleDistance(SpaceCenter.Instance.cb.GetRelSurfaceNVector(pv.latitude, pv.longitude));
-            double maxDist = SpaceCenter.Instance.cb.Radius * Math.PI;
-            float recoveryPercent = RecoveryMod * Mathf.Lerp(0.98f, 0.1f, (float)(distanceFromKSC / maxDist));
-            float totalReturn = 0;
-            foreach (ProtoPartSnapshot pps in pv.protoPartSnapshots)
-            {
-                float dryCost, fuelCost;
-                totalReturn += ShipConstruction.GetPartCosts(pps, pps.partInfo, out dryCost, out fuelCost);
-            }
-            float totalBeforeReturn = (float)Math.Round(totalReturn, 2);
-            totalReturn *= recoveryPercent;
-            totalReturn = (float)Math.Round(totalReturn, 2);
-            KCTDebug.Log("Vessel being recovered by KCT. Percent returned: " + 100 * recoveryPercent + "%. Distance from KSC: " + Math.Round(distanceFromKSC/1000, 2) + " km");
-            KCTDebug.Log("Funds being returned: " + totalReturn + "/" + totalBeforeReturn);
-            return totalReturn;
-        }*/
-
-        public static bool StageRecoveryAddonActive
-        {
-            get
-            {
-                Type SR = null;
-                AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-                {
-                    if (t.FullName == "StageRecovery.StageRecovery")
-                    {
-                        SR = t;
-                    }
-                });
-
-                if (SR != null) return true;
-
-                return false;
-            }
-        }
-
-        public static bool DebRefundAddonActive
-        {
-            get
-            {
-                Type DR = null;
-                AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-                {
-                    if (t.FullName == "DebRefund.DebRefundManager")
-                    {
-                        DR = t;
-                    }
-                });
-
-                if (DR != null) return true;
-
-                return false;
-            }
-        }
-
-        public static Type TestFlightInterface;
-        private static bool? _TestFlightInstalled = null;
-        public static bool TestFlightInstalled
-        {
-            get
-            {
-                if (_TestFlightInstalled == null)
-                {
-                    TestFlightInterface = null;
-                    AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-                    {
-                        if (t.FullName == "TestFlightCore.TestFlightInterface")
-                        {
-                            TestFlightInterface = t;
-                        }
-                    });
-
-                    _TestFlightInstalled = (TestFlightInterface != null);
-                }
-                return (_TestFlightInstalled == null ? false : (bool)_TestFlightInstalled);
-            }
-        }
-
-        private static bool? _RTInstalled = null;
-        public static bool RemoteTechInstalled
-        {
-            get
-            {
-                if (_RTInstalled == null)
-                {
-                    Type RTCore = null;
-                    AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-                    {
-                        if (t.FullName == "RemoteTech.RTCore")
-                        {
-                            RTCore = t;
-                        }
-                    });
-
-                    _RTInstalled = (RTCore != null);
-                }
-                return (_RTInstalled == null ? false : (bool)_RTInstalled);
-            }
-        }
-
-        public static void DisableRemoteTechLocks()
-        {
-            /*InputLockManager.RemoveControlLock("RTLockStaging");
-            InputLockManager.RemoveControlLock("RTLockSAS");
-            InputLockManager.RemoveControlLock("RTLockRCS");
-            InputLockManager.RemoveControlLock("RTLockActions");*/
-            /* Type RTSettings = null;
-                AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-                {
-                    if (t.FullName == "RemoteTech.RTSettings")
-                    {
-                        RTSettings = t;
-                    }
-                });
-
-            if (RTSettings == null)
-                return;
-
-            var RTSettingInstance = GetMemberInfoValue(RTSettings.GetMember("Instance")[0], RTSettings);
-
-            System.Reflection.PropertyInfo multiplier = RTSettingInstance.GetType().GetProperty("RangeMultiplier");
-            multiplier.SetValue(RTSettingInstance, float.PositiveInfinity, null);*/
-
-            //Not working when an antenna is also attached
-            Type RTCore = RTCore = null;
-            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-            {
-                if (t.FullName == "RemoteTech.RTCore")
-                {
-                    RTCore = t;
-                }
-            });
-            if (RTCore == null)
-                return;
-            System.Object RTInstance = GetMemberInfoValue(RTCore.GetMember("Instance")[0], null);
-
-
-            foreach (Part p in FlightGlobals.ActiveVessel.parts)
-            {
-                if (p.Modules.Contains("ModuleRTAntenna"))
-                {
-                    PartModule antenna = p.Modules["ModuleRTAntenna"];
-                    if (antenna != null)
-                    {
-                        //System.Reflection.MethodInfo onDestroy = antenna.GetType().GetMethod("OnDestroy");
-                        //onDestroy.Invoke(antenna, null);
-                        System.Object RTAntennas = GetMemberInfoValue(RTInstance.GetType().GetMember("Antennas")[0], RTInstance);
-                        System.Reflection.MethodInfo unRegisterMethod = RTAntennas.GetType().GetMethod("Unregister");
-                        unRegisterMethod.Invoke(RTAntennas, new object[] { FlightGlobals.ActiveVessel.id, antenna });
-
-                        System.Reflection.MethodInfo unRegisterProtosMethod = RTAntennas.GetType().GetMethod("UnregisterProtos");
-                        unRegisterProtosMethod.Invoke(RTAntennas, new object[] { FlightGlobals.ActiveVessel.id });
-                    }
-                }
-             /*   if (p.Modules.Contains("ModuleSPU"))
-                {
-                    PartModule spu = p.Modules["ModuleSPU"];
-                    if (spu != null)
-                    {
-                        System.Reflection.MethodInfo onDestroy = spu.GetType().GetMethod("OnDestroy");
-                        onDestroy.Invoke(spu, null);
-                    }
-                }*/
-            }
-
-            foreach (Part p in FlightGlobals.ActiveVessel.parts)
-            {
-                if (p.Modules.Contains("ModuleSPU"))
-                {
-                    PartModule spu = p.Modules["ModuleSPU"];
-                    if (spu != null)
-                    {
-                        System.Reflection.MethodInfo onDestroy = spu.GetType().GetMethod("OnDestroy");
-                        onDestroy.Invoke(spu, null);
-                    }
-                }
-            }
-
-            InputLockManager.RemoveControlLock("RTLockStaging");
-            InputLockManager.RemoveControlLock("RTLockSAS");
-            InputLockManager.RemoveControlLock("RTLockRCS");
-            InputLockManager.RemoveControlLock("RTLockActions");
-        }
-
-        public static void EnableRemoteTechLocks()
-        {
-
-            //Not quite working properly
-            /*Type RTCore = null;
-            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-            {
-                if (t.FullName == "RemoteTech.RTCore")
-                {
-                    RTCore = t;
-                }
-            });
-
-            System.Object RTInstance = GetMemberInfoValue(RTCore.GetMember("Instance")[0], null);
-            System.Object RTSatellites = GetMemberInfoValue(RTInstance.GetType().GetMember("Satellites")[0], RTInstance);
-            Type RTSatType = RTSatellites.GetType();
-            System.Reflection.MethodInfo registerMethod = RTSatType.GetMethod("RegisterProto");
-            registerMethod.Invoke(RTSatellites, new object[] { FlightGlobals.ActiveVessel });*/
-        }
-
-        public static List<string> GetAllOpenKKLaunchSites(string type = "RocketPad")
-        {
-            List<string> sites = new List<string>();
-            Type KKLaunchSiteManager = null;
-            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
-            {
-                if (t.FullName == "KerbalKonstructs.Core.LaunchSiteManager")
-                {
-                    KKLaunchSiteManager = t;
-                }
-            });
-            if (KKLaunchSiteManager == null)
-            {
-                if (type == "RocketPad")
-                    sites.Add("LaunchPad");
-                else if (type == "Runway")
-                    sites.Add("Runway");
-                return sites;
-            }
-            KCTDebug.Log("Site manager is good.");
-
-            object siteProperty = GetMemberInfoValue(KKLaunchSiteManager.GetProperty("AllLaunchSites", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy), null);
-            if (siteProperty == null)
-            {
-                KCTDebug.Log("siteProperty null");
-                if (type == "RocketPad")
-                    sites.Add("LaunchPad");
-                else if (type == "Runway")
-                    sites.Add("Runway");
-                return sites;
-            }
-
-            KCTDebug.Log("Site property is good.");
-
-            foreach (var launchSite in siteProperty as IList)
-            {
-                //get each launch site available
-                string name = GetMemberInfoValue(launchSite.GetType().GetMember("LaunchSiteName")[0], launchSite) as string;
-                bool? isOpen = GetMemberInfoValue(launchSite.GetType().GetProperty("isOpen"), launchSite) as bool?;
-                string category = GetMemberInfoValue(launchSite.GetType().GetMember("Category")[0], launchSite) as string;
-
-                KCTDebug.Log("Launchsite info: Name: " + name + " Open?: " + isOpen + " Category: " + category);
-                if (isOpen == true && category == type)
-                    sites.Add(name);
-            }
-            
-            return sites;
+            EditorDriver.editorFacility = isVAB ? EditorFacility.VAB : EditorFacility.SPH;
+            typeof(EditorDriver).GetMethod("setupValidLaunchSites", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)?.Invoke(null, null);
+            return EditorDriver.ValidLaunchSites;
         }
 
 
