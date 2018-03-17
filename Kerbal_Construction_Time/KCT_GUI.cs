@@ -2024,13 +2024,12 @@ namespace KerbalConstructionTime
 
     public class GUIDataSaver
     {
-        protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Windows.txt";
-        [Persistent] GUIPosition editorPositionSaved, timeLimitPositionSaved, buildListPositionSaved;
+        protected String filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/PluginData/KCT_Windows.txt";
+        [Persistent] GUIPosition editorPositionSaved, buildListPositionSaved;
         public void Save()
         {
             buildListPositionSaved = new GUIPosition("buildList", KCT_GUI.buildListWindowPosition.x, KCT_GUI.buildListWindowPosition.y, KCT_GameStates.showWindows[0]);
             editorPositionSaved = new GUIPosition("editor", KCT_GUI.editorWindowPosition.x, KCT_GUI.editorWindowPosition.y, KCT_GameStates.showWindows[1]);
-            timeLimitPositionSaved = new GUIPosition("timeLimit", KCT_GUI.timeRemainingPosition.x, KCT_GUI.timeRemainingPosition.y, KCT_GUI.showTimeRemaining);
 
             ConfigNode cnTemp = ConfigNode.CreateConfigFromObject(this, new ConfigNode());
             cnTemp.Save(filePath);
@@ -2044,20 +2043,13 @@ namespace KerbalConstructionTime
             ConfigNode cnToLoad = ConfigNode.Load(filePath);
             ConfigNode.LoadObjectFromConfig(this, cnToLoad);
 
-            if (KCT_GameStates.settings.PreferBlizzyToolbar && ToolbarManager.ToolbarAvailable)
-            {
-                KCT_GUI.buildListWindowPosition.x = buildListPositionSaved.xPos;
-                KCT_GUI.buildListWindowPosition.y = buildListPositionSaved.yPos;
-            }
+            KCT_GUI.buildListWindowPosition.x = buildListPositionSaved.xPos;
+            KCT_GUI.buildListWindowPosition.y = buildListPositionSaved.yPos;
             KCT_GameStates.showWindows[0] = buildListPositionSaved.visible;
 
             KCT_GUI.editorWindowPosition.x = editorPositionSaved.xPos;
             KCT_GUI.editorWindowPosition.y = editorPositionSaved.yPos;
             KCT_GameStates.showWindows[1] = editorPositionSaved.visible;
-
-            KCT_GUI.timeRemainingPosition.x = timeLimitPositionSaved.xPos;
-            KCT_GUI.timeRemainingPosition.y = timeLimitPositionSaved.yPos;
-            //We don't care about it's visibility. That's determined separately.
         }
     }
 }

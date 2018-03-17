@@ -140,7 +140,9 @@ namespace KerbalConstructionTime
             {
                 foreach (ProtoCrewMember crew in CrewAssignmentDialog.Instance.GetManifest().GetAllCrew(true) ?? new List<ProtoCrewMember>())
                 {
-                    DesiredManifest.Add(crew?.name);
+                   
+                        DesiredManifest.Add(crew?.name ?? string.Empty);
+                    
                 }
             }
         }
@@ -487,12 +489,13 @@ namespace KerbalConstructionTime
         public void Launch()
         {
             if (GetEditorFacility() == EditorFacilities.VAB)
+            {
                 HighLogic.CurrentGame.editorFacility = EditorFacility.VAB;
+            }
             else
+            {
                 HighLogic.CurrentGame.editorFacility = EditorFacility.SPH;
-            // HighLogic.CurrentGame.editorFacility = GetEditorFacility();
-
-            KCT_Utilities.SetKKLaunchSite(launchSite, HighLogic.CurrentGame.editorFacility);
+            }
 
             string tempFile = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/temp.craft";
             UpdateRFTanks();

@@ -97,8 +97,8 @@ namespace KerbalConstructionTime
             KCT_GameStates.ActiveKSC.RDUpgrades = RDUpgrades;*/
             KCT_GameStates.PurchasedUpgrades = PurchasedUpgrades;
             KCT_GameStates.activeKSCName = activeKSC;
-            KCT_GameStates.InventorySalesFigures = SalesFigures;
-            KCT_GameStates.InventorySaleUpgrades = (float)KCT_MathParsing.GetStandardFormulaValue("InventorySales", new Dictionary<string, string> { { "V", "0" }, { "P", SalesFigures.ToString() } });
+            //KCT_GameStates.InventorySalesFigures = SalesFigures;
+            //KCT_GameStates.InventorySaleUpgrades = (float)KCT_MathParsing.GetStandardFormulaValue("InventorySales", new Dictionary<string, string> { { "V", "0" }, { "P", SalesFigures.ToString() } });
             KCT_GameStates.UpgradesResetCounter = UpgradesResetCounter;
             KCT_GameStates.TechUpgradesTotal = TechUpgrades;
             KCT_GameStates.PermanentModAddedUpgradesButReallyWaitForTheAPI = SavedUpgradePointsPreAPI;

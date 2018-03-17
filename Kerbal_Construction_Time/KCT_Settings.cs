@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -7,7 +8,8 @@ namespace KerbalConstructionTime
 {
     public class KCT_Settings
     {
-        protected string filePath = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/KCT_Config.txt";
+        protected string directory = KSPUtil.ApplicationRootPath + "GameData/KerbalConstructionTime/PluginData/";
+        protected string fileName = "KCT_Config.txt";
         [Persistent]
         public int MaxTimeWarp;
         [Persistent]
@@ -44,9 +46,9 @@ namespace KerbalConstructionTime
 
         public void Load()
         {
-            if (System.IO.File.Exists(filePath))
+            if (File.Exists(Path.Combine(directory, fileName)))
             {
-                ConfigNode cnToLoad = ConfigNode.Load(filePath);
+                ConfigNode cnToLoad = ConfigNode.Load(Path.Combine(directory, fileName));
                 ConfigNode.LoadObjectFromConfig(this, cnToLoad);
 
                 KCT_GUI.autoHire = AutoHireCrew;
@@ -56,8 +58,9 @@ namespace KerbalConstructionTime
 
         public void Save()
         {
+            Directory.CreateDirectory(directory);
             ConfigNode cnTemp = ConfigNode.CreateConfigFromObject(this, new ConfigNode());
-            cnTemp.Save(filePath);
+            cnTemp.Save(Path.Combine(directory, fileName));
         }
     }
 }

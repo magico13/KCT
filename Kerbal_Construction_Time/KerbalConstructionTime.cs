@@ -6,6 +6,7 @@ using UnityEngine;
 using KSP;
 using System.Collections;
 using KSP.UI.Screens;
+using KSP.UI;
 
 namespace KerbalConstructionTime
 {
@@ -230,6 +231,7 @@ namespace KerbalConstructionTime
                 KCT_GUI.buildRateForDisplay = null;
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
+                    
                     if (KCT_GameStates.settings.OverrideLaunchButton)
                     {
                         KCTDebug.Log("Attempting to take control of launch button");
@@ -239,7 +241,11 @@ namespace KerbalConstructionTime
                         EditorLogic.fetch.launchBtn.onClick.AddListener(ShowLaunchAlert);
                     }
                     else
+                    {
                         InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+                    }
+                    FindObjectOfType<UILaunchsiteController>().locked = true;
+
                     KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 }
             }

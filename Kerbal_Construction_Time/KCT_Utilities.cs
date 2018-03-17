@@ -919,7 +919,7 @@ namespace KerbalConstructionTime
                 type = "SPH";
             }
 
-            ScrapYardWrapper.ProcessVessel(blv.shipNode.GetNodes("PART").ToList());
+            ScrapYardWrapper.ProcessVessel(blv.ExtractedPartNodes);
 
             KCTDebug.Log("Added " + blv.shipName + " to " + type + " build list at KSC "+KCT_GameStates.ActiveKSC.KSCName+". Cost: "+blv.cost);
             KCTDebug.Log("Launch site is " + blv.launchSite);
