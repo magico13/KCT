@@ -1153,7 +1153,6 @@ namespace KerbalConstructionTime
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_NEW, "KCTEditNew");
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTEditLaunch");
 
-                //EditorDriver.StartAndLoadVessel(tempFile);
                 EditorDriver.StartAndLoadVessel(tempFile, b.type == KCT_BuildListVessel.ListType.VAB ? EditorFacility.VAB : EditorFacility.SPH);
             }
             if (GUILayout.Button("Rename"))
@@ -1170,7 +1169,7 @@ namespace KerbalConstructionTime
             }
             if (GUILayout.Button("Duplicate"))
             {
-                KCT_Utilities.AddVesselToBuildList(b.NewCopy(true), true);
+                KCT_Utilities.AddVesselToBuildList(b.NewCopy(true));
             }
             if (KCT_GameStates.ActiveKSC.Recon_Rollout.Find(rr => rr.RRType == KCT_Recon_Rollout.RolloutReconType.Rollout && rr.associatedID == b.id.ToString()) != null && GUILayout.Button("Rollback"))
             {

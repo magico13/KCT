@@ -54,11 +54,6 @@ namespace KerbalConstructionTime
 
         public static double GetBuildTime(List<Part> parts)
         {
-            return GetBuildTime(parts, true);
-        }
-
-        public static double GetBuildTime(List<Part> parts, bool useInventory)
-        {
             //get list of parts that are in the inventory
             IList<Part> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts, ScrapYardWrapper.ComparisonStrength.STRICT) ?? new List<Part>();
 
@@ -102,7 +97,7 @@ namespace KerbalConstructionTime
             return finalBP;
         }
 
-        public static double GetBuildTime(List<ConfigNode> parts, bool useInventory)
+        public static double GetBuildTime(List<ConfigNode> parts)
         {
             //get list of parts that are in the inventory
             IList<ConfigNode> inventorySample = ScrapYardWrapper.GetPartsInInventory(parts, ScrapYardWrapper.ComparisonStrength.STRICT) ?? new List<ConfigNode>();
@@ -596,7 +591,10 @@ namespace KerbalConstructionTime
                 AddScienceWithMessage((float)(rate*vessel.buildPoints), TransactionReasons.None);
 
             //Add parts to the tracker
-            ScrapYardWrapper.RecordBuild(vessel.ExtractedPartNodes);
+            if (!vessel.cannotEarnScience) //if the vessel was previously completed, then we shouldn't register it as a new build
+            {
+                ScrapYardWrapper.RecordBuild(vessel.ExtractedPartNodes);
+            }
 
             string stor = ListIdentifier == 0 ? "VAB" : "SPH";
             KCTDebug.Log("Moved vessel " + vessel.shipName + " to " +KSC.KSCName + "'s " + stor + " storage.");
@@ -624,227 +622,10 @@ namespace KerbalConstructionTime
             //}
             KCT_GUI.ResetBLWindow(false);
             if (!KCT_GameStates.settings.DisableAllMessages)
+            {
                 DisplayMessage("Vessel Complete!", Message, MessageSystemButton.MessageButtonColor.GREEN, MessageSystemButton.ButtonIcons.COMPLETE);
+            }
         }
-
-     //   public static void AddPartToInventory(ProtoPartSnapshot part)
-     //   {
-     //       string name = part.partInfo.name;
-     //       int amt = 1;
-     //       if (KCT_Utilities.PartIsProcedural(part))
-     //       {
-     //           float cost = part.partInfo.cost + part.moduleCosts;
-     //           KCTDebug.Log("PP cost: " + cost);
-     //           foreach (ProtoPartResourceSnapshot resource in part.resources)
-     //           {
-                    //cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.amount);
-     //           }
-     //           KCTDebug.Log("After fuel costs: " + cost);
-     //           amt = (int)(cost * 1000);
-
-     //           AddPartToInventory(name, amt);
-     //           return;
-     //       }
-     //       else
-     //       {
-     //           string tweakscale = GetTweakScaleSize(part); //partName,tweakscale
-     //           name += tweakscale;
-     //           AddPartToInventory(name, amt);
-     //           return;
-     //       }
-     //   }
-
-     //   public static void AddPartToInventory(Part part)
-     //   {
-     //       string name = part.partInfo.name;
-     //       int amt = 1;
-     //       if (KCT_Utilities.PartIsProcedural(part))
-     //       {
-     //           float cost = part.partInfo.cost + part.GetModuleCosts(0);
-     //           KCTDebug.Log("PP cost: " + cost);
-     //           foreach (PartResource resource in part.Resources)
-     //           {
-     //               cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.amount);
-     //           }
-     //           KCTDebug.Log("After fuel costs: " + cost);
-     //           amt = (int)(cost * 1000);
-
-     //           AddPartToInventory(name, amt);
-     //           return;
-     //       }
-     //       else
-     //       {
-     //           string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
-     //           string nameToStore = part.partInfo.name + tweakscale;
-     //           AddPartToInventory(nameToStore, amt);
-     //           return;
-     //       }
-     //   }
-     //   public static void AddPartToInventory(ConfigNode part)
-     //   {
-     //       string name = PartNameFromNode(part) + GetTweakScaleSize(part);
-     //       int amt = 1;
-     //       if (KCT_Utilities.PartIsProcedural(part))
-     //       {
-     //           name = PartNameFromNode(part);
-     //           amt = (int)(1000 * GetPartCostFromNode(part, false));
-     //       }
-     //       AddPartToInventory(name, amt);
-     //   }
-     //   public static void AddPartToInventory(String name)
-     //   {
-     //       AddPartToInventory(name, 1);
-     //   }
-     //   public static void AddPartToInventory(String name, int amt)
-     //   {
-     //       if (KCT_GameStates.PartInventory.ContainsKey(name))
-     //       {
-     //           KCT_GameStates.PartInventory[name] += amt;
-     //       }
-     //       else
-     //       {
-     //           KCT_GameStates.PartInventory.Add(name, amt);
-     //       }
-     //       KCTDebug.Log("Added "+amt+"x"+name+" to part inventory");
-     //   }
-
-
-     //   public static int RemovePartFromInventory(Part part)
-     //   {
-     //       string name = part.partInfo.name;
-     //       int amt = 1;
-     //       if (KCT_Utilities.PartIsProcedural(part))
-     //       {
-     //           float cost = part.partInfo.cost + part.GetModuleCosts(0);
-     //           foreach (PartResource resource in part.Resources)
-     //           {
-     //               cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.maxAmount);
-     //           }
-     //           amt = (int)(cost * 1000);
-     //       }
-     //       else
-     //           name += GetTweakScaleSize(part.protoPartSnapshot); 
-     //       /*string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
-     //       string nameToStore = part.partInfo.name + tweakscale;
-     //       return RemovePartFromInventory(nameToStore);*/
-     //       return RemovePartFromInventory(name, amt);
-     //   }
-     //   public static int RemovePartFromInventory(Part part, Dictionary<String, int> inventory)
-     //   {
-     //       string name = part.partInfo.name;
-     //       int amt = 1;
-     //       if (KCT_Utilities.PartIsProcedural(part))
-     //       {
-     //           float cost = part.partInfo.cost + part.GetModuleCosts(0);
-     //           foreach (PartResource resource in part.Resources)
-     //           {
-     //               cost -= (float)(PartResourceLibrary.Instance.GetDefinition(resource.resourceName).unitCost * resource.maxAmount);
-     //           }
-     //           amt = (int)(cost * 1000);
-     //       }
-     //       else
-     //           name += GetTweakScaleSize(part.protoPartSnapshot); 
-     //       /*string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
-     //       string nameToStore = part.partInfo.name + tweakscale;*/
-     //       return RemovePartFromInventory(name, inventory, amt);
-     //   }
-     //   public static int RemovePartFromInventory(ConfigNode part)
-     //   {
-     //       string name = PartNameFromNode(part) + GetTweakScaleSize(part);
-     //       int amt = 1;
-     //       if (KCT_Utilities.PartIsProcedural(part))
-     //       {
-     //           name = PartNameFromNode(part);
-     //           amt = (int)(1000 * GetPartCostFromNode(part, false));
-     //       }
-     //       //return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part));
-     //       return RemovePartFromInventory(name, amt);
-     //   }
-     //   public static int RemovePartFromInventory(ConfigNode part, Dictionary<String, int> inventory)
-     //   {
-     //       string name = PartNameFromNode(part) + GetTweakScaleSize(part);
-     //       int amt = 1;
-     //       if (KCT_Utilities.PartIsProcedural(part))
-     //       {
-     //           name = PartNameFromNode(part);
-     //           amt = (int)(1000 * GetPartCostFromNode(part, false));
-     //       }
-     //       //return RemovePartFromInventory(PartNameFromNode(part) + GetTweakScaleSize(part), inventory, 1);
-     //       return RemovePartFromInventory(name, inventory, amt);
-     //   }
-     //   public static int RemovePartFromInventory(String name, int amt)
-     //   {
-     //       return RemovePartFromInventory(name, KCT_GameStates.PartInventory, amt);
-     //   }
-     //   public static int RemovePartFromInventory(String name, Dictionary<String, int> inventory, int amt)
-     //   {
-     //       int removed = 0;
-     //       if (inventory.ContainsKey(name))
-     //       {
-     //           removed = inventory[name] >= amt ? amt : inventory[name];
-     //           inventory[name] -= removed;
-     //           if (inventory[name] == 0)
-     //           {
-     //               inventory.Remove(name);
-     //           }
-     //           KCTDebug.Log("Removed " + removed + "x" + name + " from part inventory");
-     //       }
-     //       return removed;
-     //   }
-
-        //public static void AddPartToTracker(Part part)
-        //{
-        //    string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
-        //    string nameToStore = part.partInfo.name + tweakscale;
-        //    AddPartToTracker(nameToStore);
-        //}
-        //public static void AddPartToTracker(String name)
-        //{
-        //    if (KCT_GameStates.PartTracker.ContainsKey(name))
-        //    {
-        //        ++KCT_GameStates.PartTracker[name];
-        //    }
-        //    else
-        //    {
-        //        KCT_GameStates.PartTracker.Add(name, 1);
-        //    }
-        // //   KCTDebug.Log("Added "+name+" to part tracker");
-        //}
-
-        //public static void RemovePartFromTracker(Part part)
-        //{
-        //    string tweakscale = GetTweakScaleSize(part.protoPartSnapshot); //partName,tweakscale
-        //    string nameToStore = part.partInfo.name + tweakscale;
-        //    RemovePartFromTracker(nameToStore);
-        //}
-        //public static void RemovePartFromTracker(String name)
-        //{
-        //    if (KCT_GameStates.PartTracker.ContainsKey(name))
-        //    {
-        //        --KCT_GameStates.PartTracker[name];
-        //        if (KCT_GameStates.PartTracker[name] == 0)
-        //            KCT_GameStates.PartTracker.Remove(name);
-        //    //    KCTDebug.Log("Removed "+name+" from part tracker");
-        //    }
-        //}
-
-        public static Dictionary<string, float> TimeMultipliers = new Dictionary<string, float>()
-        {
-            {"0", 13},
-            {"0.25", 1},
-            {"0.5", 1.5f},
-            {"1", 2},
-            {"2", 3},
-            {"6", 4},
-            {"12", 5},
-            {"24", 6},
-            {"48", 7},
-            {"168", 8},
-            {"672", 9},
-            {"8760", 10},
-            {"43800", 11},
-            {"87600", 12},
-        };
 
         public static double SpendFunds(double toSpend, TransactionReasons reason)
         {
@@ -867,17 +648,12 @@ namespace KerbalConstructionTime
 
         public static KCT_BuildListVessel AddVesselToBuildList()
         {
-            return AddVesselToBuildList(true);
-        }
-
-        public static KCT_BuildListVessel AddVesselToBuildList(bool useInventory)
-        {
-            KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, GetBuildTime(EditorLogic.fetch.ship.SaveShip().GetNodes("PART").ToList(), useInventory), EditorLogic.FlagURL);
+            KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, GetBuildTime(EditorLogic.fetch.ship.Parts), EditorLogic.FlagURL);
             blv.shipName = EditorLogic.fetch.shipNameField.text;
-            return AddVesselToBuildList(blv, useInventory);
+            return AddVesselToBuildList(blv);
         }
 
-        public static KCT_BuildListVessel AddVesselToBuildList(KCT_BuildListVessel blv, bool useInventory)
+        public static KCT_BuildListVessel AddVesselToBuildList(KCT_BuildListVessel blv)
         {
             if (CurrentGameIsCareer())
             {
@@ -1281,21 +1057,12 @@ namespace KerbalConstructionTime
         public static void RecalculateEditorBuildTime(ShipConstruct ship)
         {
             if (!HighLogic.LoadedSceneIsEditor)
+            {
                 return;
-            KCT_GUI.PartsInUse.Clear();
-
-            if (!KCT_GameStates.EditorShipEditingMode)
-            {
-                KCT_GameStates.EditorBuildTime = GetBuildTime(ship.Parts, KCT_GUI.useInventory);
-                KCT_GameStates.EditorRolloutCosts = KCT_MathParsing.ParseRolloutCostFormula(new KCT_BuildListVessel(ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL));
             }
-            else
-            {
-                KCT_GameStates.EditorBuildTime = GetBuildTime(ship.parts, KCT_GUI.useInventory);
 
-                KCT_GameStates.EditorRolloutCosts = KCT_MathParsing.ParseRolloutCostFormula(new KCT_BuildListVessel(ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL));
-
-            }
+            KCT_GameStates.EditorBuildTime = GetBuildTime(ship.Parts);
+            KCT_GameStates.EditorRolloutCosts = KCT_MathParsing.ParseRolloutCostFormula(new KCT_BuildListVessel(ship, EditorLogic.fetch.launchSiteName, KCT_GameStates.EditorBuildTime, EditorLogic.FlagURL));
         }
 
         public static bool ApproximatelyEqual(double d1, double d2, double error = 0.01 )

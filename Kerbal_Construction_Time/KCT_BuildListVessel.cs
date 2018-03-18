@@ -204,7 +204,7 @@ namespace KerbalConstructionTime
             numStages = stages.Count;
             // FIXME ignore stageable part count and cost - it'll be fixed when we put this back in the editor.
 
-            buildPoints = KCT_Utilities.GetBuildTime(shipNode.GetNodes("PART").ToList(), false);
+            buildPoints = KCT_Utilities.GetBuildTime(shipNode.GetNodes("PART").ToList());
             flag = HighLogic.CurrentGame.flagURL;
             progress = buildPoints;
 
@@ -424,7 +424,7 @@ namespace KerbalConstructionTime
             ret.id = Guid.NewGuid();
             if (RecalcTime)
             {
-                ret.buildPoints = KCT_Utilities.GetBuildTime(ret.ExtractedPartNodes, true);
+                ret.buildPoints = KCT_Utilities.GetBuildTime(ret.ExtractedPartNodes);
             }
             ret.TotalMass = this.TotalMass;
             ret.emptyMass = this.emptyMass;

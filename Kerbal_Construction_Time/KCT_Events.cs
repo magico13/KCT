@@ -28,7 +28,7 @@ namespace KerbalConstructionTime
             GameEvents.onGameSceneLoadRequested.Add(gameSceneEvent);
             GameEvents.OnTechnologyResearched.Add(TechUnlockEvent);
             //if (!ToolbarManager.ToolbarAvailable || !KCT_GameStates.settings.PreferBlizzyToolbar)
-                GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
+            GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
             GameEvents.onEditorShipModified.Add(ShipModifiedEvent);
             GameEvents.OnPartPurchased.Add(PartPurchasedEvent);
             //GameEvents.OnVesselRecoveryRequested.Add(RecoveryRequested);
@@ -42,6 +42,7 @@ namespace KerbalConstructionTime
 
             GameEvents.FindEvent<EventVoid>("OnSYInventoryAppliedToVessel")?.Add(SYInventoryApplied);
             GameEvents.FindEvent<EventVoid>("OnSYReady")?.Add(SYReady);
+            GameEvents.FindEvent<EventData<Part>>("OnSYInventoryAppliedToPart")?.Add((p) => { KerbalConstructionTime.instance.editorRecalcuationRequired = true; });
             //     GameEvents.OnKSCStructureRepairing.Add(FacilityRepairingEvent);
             //  GameEvents.onLevelWasLoaded.Add(LevelLoadedEvent);
 
@@ -484,7 +485,11 @@ namespace KerbalConstructionTime
                 if (KCT_GameStates.recoveredVessel != null && v.vesselName == KCT_GameStates.recoveredVessel.shipName)
                 {
                     //KCT_GameStates.recoveredVessel = new KCT_BuildListVessel(v);
-                    KCT_Utilities.SpendFunds(KCT_GameStates.recoveredVessel.cost, TransactionReasons.VesselRollout); //pay for the ship again
+                    //rebuy the ship if ScrapYard isn't overriding funds
+                    if (!ScrapYardWrapper.OverrideFunds)
+                    {
+                        KCT_Utilities.SpendFunds(KCT_GameStates.recoveredVessel.cost, TransactionReasons.VesselRollout); //pay for the ship again
+                    }
 
                     //pull all of the parts out of the inventory
                     //This is a bit funky since we grab the part id from our part, grab the inventory part out, then try to reapply that ontop of our part
@@ -511,12 +516,17 @@ namespace KerbalConstructionTime
                         ScrapYardWrapper.ProcessVessel(KCT_GameStates.recoveredVessel.ExtractedPartNodes);
 
                         //reset the BP
-                        KCT_GameStates.recoveredVessel.buildPoints = KCT_Utilities.GetBuildTime(KCT_GameStates.recoveredVessel.ExtractedPartNodes, true);
+                        KCT_GameStates.recoveredVessel.buildPoints = KCT_Utilities.GetBuildTime(KCT_GameStates.recoveredVessel.ExtractedPartNodes);
                     }
                     if (KCT_GameStates.recoveredVessel.type == KCT_BuildListVessel.ListType.VAB)
+                    {
                         KCT_GameStates.ActiveKSC.VABWarehouse.Add(KCT_GameStates.recoveredVessel);
+                    }
                     else
+                    {
                         KCT_GameStates.ActiveKSC.SPHWarehouse.Add(KCT_GameStates.recoveredVessel);
+                    }
+
                     KCT_GameStates.ActiveKSC.Recon_Rollout.Add(new KCT_Recon_Rollout(KCT_GameStates.recoveredVessel, KCT_Recon_Rollout.RolloutReconType.Recovery, KCT_GameStates.recoveredVessel.id.ToString()));
                     KCT_GameStates.recoveredVessel = null;
                 }
