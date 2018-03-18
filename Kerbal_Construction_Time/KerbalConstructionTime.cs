@@ -238,13 +238,39 @@ namespace KerbalConstructionTime
 
                         EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
 
-                        EditorLogic.fetch.launchBtn.onClick.AddListener(ShowLaunchAlert);
+                        EditorLogic.fetch.launchBtn.onClick.AddListener(() => { ShowLaunchAlert(null); });
+
+                        //delete listeners to the launchsite specific buttons
+                        UILaunchsiteController controller = FindObjectOfType<UILaunchsiteController>();
+                        IEnumerable list = controller.GetType().GetField("launchPadItems", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy)?.GetValue(controller) as IEnumerable;
+                        if (list != null)
+                        {
+                            foreach (object site in list)
+                            {
+                                //find and disable the button
+                                //why isn't EditorLaunchPadItem public despite all of its members being public?
+                                UnityEngine.UI.Button button = site.GetType().GetField("buttonLaunch", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).GetValue(site) as UnityEngine.UI.Button;
+                                if (button != null)
+                                {
+                                    button.onClick = new UnityEngine.UI.Button.ButtonClickedEvent();
+                                    string siteName = site.GetType().GetField("siteName", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).GetValue(site) as string;
+                                    button.onClick.AddListener(() => { ShowLaunchAlert(siteName); });
+                                }
+                            }
+                        }
                     }
                     else
                     {
                         InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+
+                        UILaunchsiteController controller = FindObjectOfType<UILaunchsiteController>();
+                        if (controller != null)
+                        {
+                            controller.locked = true;
+                        }
                     }
-                    FindObjectOfType<UILaunchsiteController>().locked = true;
+                    
+                    
 
                     KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 }
@@ -776,14 +802,16 @@ namespace KerbalConstructionTime
             //PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Vessel Contains Missing Parts", "The KCT vessel " + errored.shipName + " contains missing or invalid parts. You will not be able to do anything with the vessel until the parts are available again.", "Understood", false, HighLogic.UISkin);
         }
 
-        public static void ShowLaunchAlert()
+        public static void ShowLaunchAlert(string launchSite)
         {
             KCTDebug.Log("Showing Launch Alert");
             if (KCT_GUI.PrimarilyDisabled)
+            {
                 EditorLogic.fetch.launchVessel();
+            }
             else
             {
-                KCT_Utilities.AddVesselToBuildList();
+                KCT_Utilities.AddVesselToBuildList(launchSite);
                 KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
             }
         }

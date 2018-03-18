@@ -648,7 +648,16 @@ namespace KerbalConstructionTime
 
         public static KCT_BuildListVessel AddVesselToBuildList()
         {
-            KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, EditorLogic.fetch.launchSiteName, GetBuildTime(EditorLogic.fetch.ship.Parts), EditorLogic.FlagURL);
+            return AddVesselToBuildList(EditorLogic.fetch.launchSiteName);
+        }
+
+        public static KCT_BuildListVessel AddVesselToBuildList(string launchSite)
+        {
+            if (string.IsNullOrEmpty(launchSite))
+            {
+                launchSite = EditorLogic.fetch.launchSiteName;
+            }
+            KCT_BuildListVessel blv = new KCT_BuildListVessel(EditorLogic.fetch.ship, launchSite, GetBuildTime(EditorLogic.fetch.ship.Parts), EditorLogic.FlagURL);
             blv.shipName = EditorLogic.fetch.shipNameField.text;
             return AddVesselToBuildList(blv);
         }
