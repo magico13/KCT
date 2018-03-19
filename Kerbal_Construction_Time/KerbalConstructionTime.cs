@@ -593,10 +593,12 @@ namespace KerbalConstructionTime
                 for (int i = KSP.UI.Screens.RDController.Instance.nodes.Count; i-- > 0;)
                 {
                     KSP.UI.Screens.RDNode node = KSP.UI.Screens.RDController.Instance.nodes[i];
-                    if (node.tech != null)
+                    if (node?.tech != null)
                     {
                         if (HasTechInList(node.tech.techID))
-                            node.graphics.SetIconColor(XKCDColors.KSPNotSoGoodOrange);
+                        {
+                            node.graphics?.SetIconColor(XKCDColors.KSPNotSoGoodOrange);
+                        }
                         // else reset? Bleh, why bother.
                     }
                 }
