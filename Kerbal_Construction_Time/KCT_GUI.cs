@@ -380,6 +380,10 @@ namespace KerbalConstructionTime
             {
                 return;
             }
+            if (editorWindowPosition.width < 275)
+            {
+                editorWindowPosition.width = 275;
+            }
             GUILayout.BeginVertical();
             //GUILayout.Label("Current KSC: " + KCT_GameStates.ActiveKSC.KSCName);
             if (!KCT_GameStates.EditorShipEditingMode) //Build mode
