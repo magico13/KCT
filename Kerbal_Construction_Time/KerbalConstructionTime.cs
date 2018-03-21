@@ -242,18 +242,19 @@ namespace KerbalConstructionTime
 
                         //delete listeners to the launchsite specific buttons
                         UILaunchsiteController controller = FindObjectOfType<UILaunchsiteController>();
-                        IEnumerable list = controller.GetType().GetField("launchPadItems", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy)?.GetValue(controller) as IEnumerable;
+                        //IEnumerable list = controller.GetType().GetField("launchPadItems", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy)?.GetValue(controller) as IEnumerable;
+                        IEnumerable list = controller.GetType().GetPrivateMemberValue("launchPadItems", controller, 4) as IEnumerable;
                         if (list != null)
                         {
                             foreach (object site in list)
                             {
                                 //find and disable the button
                                 //why isn't EditorLaunchPadItem public despite all of its members being public?
-                                UnityEngine.UI.Button button = site.GetType().GetField("buttonLaunch", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).GetValue(site) as UnityEngine.UI.Button;
+                                UnityEngine.UI.Button button = site.GetType().GetPublicValue<UnityEngine.UI.Button>("buttonLaunch", site);
                                 if (button != null)
                                 {
                                     button.onClick = new UnityEngine.UI.Button.ButtonClickedEvent();
-                                    string siteName = site.GetType().GetField("siteName", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).GetValue(site) as string;
+                                    string siteName = site.GetType().GetPublicValue<string>("siteName", site);
                                     button.onClick.AddListener(() => { ShowLaunchAlert(siteName); });
                                 }
                             }

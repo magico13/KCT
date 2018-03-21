@@ -89,6 +89,7 @@
     <Compile Include="StageRecoveryWrapper.cs" />
     <Compile Include="ToolbarWrapper.cs" />
     <Compile Include="Properties\VersionInfo.cs" />
+    <Compile Include="TypeExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
