@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using KSP.UI.Screens;
 using System.Collections;
+using KSP.UI;
 
 namespace KerbalConstructionTime
 {
@@ -586,9 +587,14 @@ namespace KerbalConstructionTime
             }
 
             //Assign science based on science rate
-            double rate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[0].ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
-            if (CurrentGameHasScience() && !vessel.cannotEarnScience && rate > 0)
-                AddScienceWithMessage((float)(rate*vessel.buildPoints), TransactionReasons.None);
+            if (CurrentGameHasScience() && !vessel.cannotEarnScience)
+            {
+                double rate = KCT_MathParsing.GetStandardFormulaValue("Research", new Dictionary<string, string>() { { "N", KSC.RDUpgrades[0].ToString() }, { "R", KCT_Utilities.BuildingUpgradeLevel(SpaceCenterFacility.ResearchAndDevelopment).ToString() } });
+                if (rate > 0)
+                {
+                    AddScienceWithMessage((float)(rate * vessel.buildPoints), TransactionReasons.None);
+                }
+            }
 
             //Add parts to the tracker
             if (!vessel.cannotEarnScience) //if the vessel was previously completed, then we shouldn't register it as a new build
@@ -1367,6 +1373,51 @@ namespace KerbalConstructionTime
             KCTDebug.Log("Removed " + referencesRemoved + " invalid symmetry references.");
         }
 
+        /// <summary>
+        /// Overrides or disables the editor's launch button (and individual site buttons) depending on settings
+        /// </summary>
+        public static void HandleEditorButton()
+        {
+            if (KCT_GameStates.settings.OverrideLaunchButton)
+            {
+                KCTDebug.Log("Attempting to take control of launch button");
+
+                EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
+
+                EditorLogic.fetch.launchBtn.onClick.AddListener(() => { KerbalConstructionTime.ShowLaunchAlert(null); });
+
+                //delete listeners to the launchsite specific buttons
+                UILaunchsiteController controller = UnityEngine.Object.FindObjectOfType<UILaunchsiteController>();
+
+                //IEnumerable list = controller.GetType().GetField("launchPadItems", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy)?.GetValue(controller) as IEnumerable;
+                IEnumerable list = controller.GetType().GetPrivateMemberValue("launchPadItems", controller, 4) as IEnumerable;
+                if (list != null)
+                {
+                    foreach (object site in list)
+                    {
+                        //find and disable the button
+                        //why isn't EditorLaunchPadItem public despite all of its members being public?
+                        UnityEngine.UI.Button button = site.GetType().GetPublicValue<UnityEngine.UI.Button>("buttonLaunch", site);
+                        if (button != null)
+                        {
+                            button.onClick = new UnityEngine.UI.Button.ButtonClickedEvent();
+                            string siteName = site.GetType().GetPublicValue<string>("siteName", site);
+                            button.onClick.AddListener(() => { KerbalConstructionTime.ShowLaunchAlert(siteName); });
+                        }
+                    }
+                }
+            }
+            else
+            {
+                InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
+
+                UILaunchsiteController controller = UnityEngine.Object.FindObjectOfType<UILaunchsiteController>();
+                if (controller != null)
+                {
+                    controller.locked = true;
+                }
+            }
+        }
     }
 }
 /*

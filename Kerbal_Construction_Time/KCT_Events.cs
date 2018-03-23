@@ -68,6 +68,7 @@ namespace KerbalConstructionTime
             GameEvents.onGUIMissionControlSpawn.Add(HideAllGUIs);
             GameEvents.onGUIRnDComplexSpawn.Add(HideAllGUIs);
             GameEvents.onGUIKSPediaSpawn.Add(HideAllGUIs);
+            GameEvents.onEditorStarted.Add(() => { KCT_Utilities.HandleEditorButton(); });
 
             GameEvents.onFacilityContextMenuSpawn.Add(FacilityContextMenuSpawn);
 

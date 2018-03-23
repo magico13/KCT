@@ -231,48 +231,7 @@ namespace KerbalConstructionTime
                 KCT_GUI.buildRateForDisplay = null;
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
-                    
-                    if (KCT_GameStates.settings.OverrideLaunchButton)
-                    {
-                        KCTDebug.Log("Attempting to take control of launch button");
-
-                        EditorLogic.fetch.launchBtn.onClick = new UnityEngine.UI.Button.ButtonClickedEvent(); //delete all other listeners (sorry :( )
-
-                        EditorLogic.fetch.launchBtn.onClick.AddListener(() => { ShowLaunchAlert(null); });
-
-                        //delete listeners to the launchsite specific buttons
-                        UILaunchsiteController controller = FindObjectOfType<UILaunchsiteController>();
-                        //IEnumerable list = controller.GetType().GetField("launchPadItems", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy)?.GetValue(controller) as IEnumerable;
-                        IEnumerable list = controller.GetType().GetPrivateMemberValue("launchPadItems", controller, 4) as IEnumerable;
-                        if (list != null)
-                        {
-                            foreach (object site in list)
-                            {
-                                //find and disable the button
-                                //why isn't EditorLaunchPadItem public despite all of its members being public?
-                                UnityEngine.UI.Button button = site.GetType().GetPublicValue<UnityEngine.UI.Button>("buttonLaunch", site);
-                                if (button != null)
-                                {
-                                    button.onClick = new UnityEngine.UI.Button.ButtonClickedEvent();
-                                    string siteName = site.GetType().GetPublicValue<string>("siteName", site);
-                                    button.onClick.AddListener(() => { ShowLaunchAlert(siteName); });
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
-
-                        UILaunchsiteController controller = FindObjectOfType<UILaunchsiteController>();
-                        if (controller != null)
-                        {
-                            controller.locked = true;
-                        }
-                    }
-                    
-                    
-
+                    KCT_Utilities.HandleEditorButton();
                     KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 }
             }
