@@ -231,7 +231,6 @@ namespace KerbalConstructionTime
                 KCT_GUI.buildRateForDisplay = null;
                 if (!KCT_GUI.PrimarilyDisabled)
                 {
-                    KCT_Utilities.HandleEditorButton();
                     KCT_Utilities.RecalculateEditorBuildTime(EditorLogic.fetch.ship);
                 }
             }

@@ -1378,6 +1378,10 @@ namespace KerbalConstructionTime
         /// </summary>
         public static void HandleEditorButton()
         {
+            if (KCT_GUI.PrimarilyDisabled)
+            {
+                return;
+            }
             if (KCT_GameStates.settings.OverrideLaunchButton)
             {
                 KCTDebug.Log("Attempting to take control of launch button");
