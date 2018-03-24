@@ -380,9 +380,10 @@ namespace KerbalConstructionTime
             {
                 return;
             }
-            if (editorWindowPosition.width < 275)
+            if (editorWindowPosition.width < 275) //the size keeps getting changed for some reason, so this will avoid that
             {
                 editorWindowPosition.width = 275;
+                editorWindowPosition.height = 1;
             }
             GUILayout.BeginVertical();
             //GUILayout.Label("Current KSC: " + KCT_GameStates.ActiveKSC.KSCName);
