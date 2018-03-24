@@ -1382,6 +1382,11 @@ namespace KerbalConstructionTime
             {
                 return;
             }
+
+            //also set the editor ui to 1 height
+            KCT_GUI.editorWindowPosition.height = 1;
+
+
             if (KCT_GameStates.settings.OverrideLaunchButton)
             {
                 KCTDebug.Log("Attempting to take control of launch button");
