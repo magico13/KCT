@@ -186,7 +186,7 @@ namespace KerbalConstructionTime
     }
 }
 /*
-Copyright (C) 2014  Michael Marvin, Zachary Eck
+Copyright (C) 2018  Michael Marvin, Zachary Eck
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

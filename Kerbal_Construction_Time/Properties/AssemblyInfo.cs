@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Kerbal_Construction_Time")]
+[assembly: AssemblyTitle("KerbalConstructionTime")]
 [assembly: AssemblyDescription("A Kerbal Space Program addon that adds construction time for vessels.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Kerbal_Construction_Time")]
-[assembly: AssemblyCopyright("Copyright ©  2015, Michael Marvin")]
+[assembly: AssemblyProduct("KerbalConstructionTime")]
+[assembly: AssemblyCopyright("Copyright ©  2018, Michael Marvin")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

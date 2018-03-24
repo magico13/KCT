@@ -19,6 +19,35 @@ If at all possible, please include directions about how to replicate the issue a
 Issue tracker: https://github.com/magico13/KCT/issues
 
 Changelog:
+v1.4.0.68 (2018-03-24)
+ - Update to KSP 1.4.1
+ - Removed part inventory, optionally use ScrapYard mod instead.
+ - Build list and editor UI are now clamped to the screen such that the center of the window cannot go off-screen.
+ - Build list will remember if it was visible in the space center scene and will try to resume that state
+ - Build list is now slightly wider, 500 pixels instead of 400
+ - Ships recovered into storage will no longer end up completely in the ceiling
+ - Crew selector will try to use the crew layout set in the editor, unless kerbals are missing
+ - Build rates are cached for use in other scenes where they can't be calculated correctly do to missing building level information
+ - Support for CrewRandR added. Crew that are grounded are not allowed to be on flights.
+ - New method of handling KSC upgrades by overriding the upgrade button on the UI. Less prone to errors since it doesn't have to downgrade buildings.
+ - Round level checks when getting building levels. Fixes various issues, especially with Custom Barn Kit.
+ - Added variables to some formulas for max building level (LM for launchsite max and ELM for editor max)
+ - Fixed issues with support for Editor Time modlet.
+ - Fixed bug where build rate 2 was showing up when it shouldn't be when changing presets.
+ - Numerous additions added by NathanKell, some of which I don't really know what they do:
+    - Fake-unlock tech nodes that are being researched when entering R&D
+    - Support external checking of crew availability per part
+    - Show rollout costs in the build UI
+    - Add support for Global_Variables
+    - Allow limiting the number of "rush build" clicks
+    - Support tracking the number of stages, number of staging parts, and cost of staging parts
+ - Update the rollout time/costs when switching launchpad
+ - Refresh parts when duplicating vessels (ScrapYard specific). Fixes issue where inventory parts were being duplicated.
+ - Integrate with the Making History Expansion's multiple launchsite feature. Can choose launchsite from BL+ window as before or from editor when building.
+ - Moved settings into PluginData folder.
+ - Some trickery to make sure the editor window doesn't get shrunk, as is happening for some as yet to be determined reason.
+ - Various refactoring and removal of unused code to improve stability, maintainability, and performance.
+
 v1.3.4.0 (06/25/16)
  - Update to KSP 1.1.3
  

@@ -75,7 +75,6 @@
     <Compile Include="KCT_KSCUpgradeOverrider.cs" />
     <Compile Include="KCT_LaunchPad.cs" />
     <Compile Include="KCT_MathParsing.cs" />
-    <Compile Include="KCT_OrbitAdjuster.cs" />
     <Compile Include="KCT_PresetManager.cs" />
     <Compile Include="KCT_Recon_Rollout.cs" />
     <Compile Include="KCT_Settings.cs" />
