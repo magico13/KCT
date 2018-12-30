@@ -530,10 +530,12 @@ namespace KerbalConstructionTime
         {
             return HighLogic.CurrentGame.Mode == Game.Modes.CAREER;
         }
+        /* 1.4 Addition
         public static bool CurrentGameIsMission()
         {
             return HighLogic.CurrentGame.Mode == Game.Modes.MISSION || HighLogic.CurrentGame.Mode == Game.Modes.MISSION_BUILDER;
         }
+        */
 
         public static void AddScienceWithMessage(float science, TransactionReasons reason)
         {
@@ -843,13 +845,14 @@ namespace KerbalConstructionTime
             return spentPoints;
         }
 
-
+        /* 1.4 Addition
         public static List<string> GetLaunchSites(bool isVAB)
         {
             EditorDriver.editorFacility = isVAB ? EditorFacility.VAB : EditorFacility.SPH;
             typeof(EditorDriver).GetMethod("setupValidLaunchSites", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)?.Invoke(null, null);
             return EditorDriver.ValidLaunchSites;
         }
+        */
 
         private static bool? _KSCSwitcherInstalled = null;
         public static bool KSCSwitcherInstalled
@@ -1395,6 +1398,7 @@ namespace KerbalConstructionTime
 
                 EditorLogic.fetch.launchBtn.onClick.AddListener(() => { KerbalConstructionTime.ShowLaunchAlert(null); });
 
+                /* 1.4 Addition
                 //delete listeners to the launchsite specific buttons
                 UILaunchsiteController controller = UnityEngine.Object.FindObjectOfType<UILaunchsiteController>();
 
@@ -1415,16 +1419,18 @@ namespace KerbalConstructionTime
                         }
                     }
                 }
+                */
             }
             else
             {
                 InputLockManager.SetControlLock(ControlTypes.EDITOR_LAUNCH, "KCTLaunchLock");
-
+                /* 1.4 Addition
                 UILaunchsiteController controller = UnityEngine.Object.FindObjectOfType<UILaunchsiteController>();
                 if (controller != null)
                 {
                     controller.locked = true;
                 }
+                */
             }
         }
     }

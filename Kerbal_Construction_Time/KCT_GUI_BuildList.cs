@@ -1101,6 +1101,8 @@ namespace KerbalConstructionTime
             KCT_BuildListVessel b = KCT_Utilities.FindBLVesselByID(IDSelected);
             GUILayout.BeginVertical();
             string launchSite = b.launchSite;
+            float rbMultiplier = KCT_PresetManager.Instance.ActivePreset.generalSettings.RushMultiplier;
+
             if (launchSite == "LaunchPad")
             {
                 if (b.launchSiteID >= 0)
@@ -1111,6 +1113,7 @@ namespace KerbalConstructionTime
             KCT_Recon_Rollout rollout = KCT_GameStates.ActiveKSC.GetReconRollout(KCT_Recon_Rollout.RolloutReconType.Rollout, launchSite);
             bool onPad = rollout != null && rollout.AsBuildItem().IsComplete() && rollout.associatedID == b.id.ToString();
             //This vessel is rolled out onto the pad
+            /* 1.4 Addition
             if (!onPad && GUILayout.Button("Select LaunchSite"))
             {
                 launchSites = KCT_Utilities.GetLaunchSites(b.type == KCT_BuildListVessel.ListType.VAB);
@@ -1126,6 +1129,7 @@ namespace KerbalConstructionTime
                     PopupDialog.SpawnPopupDialog(new MultiOptionDialog("KCTNoLaunchsites", "No launch sites available to choose from. Try visiting an editor first.", "No Launch Sites", null, new DialogGUIButton("OK", () => { })), false, HighLogic.UISkin);
                 }
             }
+            */
             if (!onPad && GUILayout.Button("Scrap"))
             {
                 InputLockManager.SetControlLock(ControlTypes.KSC_ALL, "KCTPopupLock");
@@ -1203,15 +1207,15 @@ namespace KerbalConstructionTime
             }
             if (!b.isFinished 
                 && (KCT_PresetManager.Instance.ActivePreset.generalSettings.MaxRushClicks == 0 || b.rushBuildClicks < KCT_PresetManager.Instance.ActivePreset.generalSettings.MaxRushClicks) 
-                && GUILayout.Button("Rush Build 10%\n√" + Math.Round(0.2 * b.GetTotalCost())))
+                && GUILayout.Button("Rush Build 10%\n√" + Math.Round(rbMultiplier * b.GetTotalCost())))
             {
                 double cost = b.GetTotalCost();
-                cost *= 0.2;
+                double rush = cost * rbMultiplier;
                 double remainingBP = b.buildPoints - b.progress;
-                if (Funding.Instance.Funds >= cost)
+                if (Funding.Instance.Funds >= rush)
                 {
                     b.AddProgress(remainingBP * 0.1);
-                    KCT_Utilities.SpendFunds(cost, TransactionReasons.None);
+                    KCT_Utilities.SpendFunds(rush, TransactionReasons.None);
                     ++b.rushBuildClicks;
                 }
 

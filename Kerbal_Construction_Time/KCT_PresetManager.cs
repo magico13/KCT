@@ -322,6 +322,8 @@ namespace KerbalConstructionTime
         public string StartingPoints = "15,15,45"; //Career, Science, and Sandbox modes
         [Persistent]
         public int MaxRushClicks = 0;
+        [Persistent]
+        public float RushMultiplier = 0.5f;
     }
 
     public class KCT_Preset_Time : ConfigNodeStorage
